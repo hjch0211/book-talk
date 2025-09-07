@@ -1,0 +1,47 @@
+package kr.co.booktalk
+
+import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.servlet.http.HttpServletRequest
+import org.springframework.http.HttpStatus
+import org.springframework.http.ResponseEntity
+import org.springframework.web.bind.annotation.ExceptionHandler
+import org.springframework.web.bind.annotation.RestControllerAdvice
+import org.springframework.web.servlet.resource.NoResourceFoundException
+
+@RestControllerAdvice
+class GlobalExceptionHandler {
+    private val logger = KotlinLogging.logger {}
+
+    @ExceptionHandler(NoResourceFoundException::class)
+    fun handle(e: NoResourceFoundException, request: HttpServletRequest): ResponseEntity<ApiResult<Unit>> {
+        logger.warn { "${request.method} ${request.requestURL} ${e.message}" }
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+            .body(ApiResult(Unit, ApiResult.Error("No Resource Found")))
+    }
+
+    @ExceptionHandler(HttpException::class)
+    fun handle(e: HttpException, request: HttpServletRequest): ResponseEntity<ApiResult<Unit>> {
+        logger.warn { "${request.method} ${request.requestURL} ${e.status} ${e.responseMessage}" }
+        return ResponseEntity.status(e.status)
+            .body(ApiResult(Unit, ApiResult.Error(e.responseMessage, e.errorCode)))
+    }
+}
+
+class HttpException(
+    val status: HttpStatus,
+    val responseMessage: String,
+    val errorCode: String? = null,
+    message: String? = null,
+    cause: Throwable? = null,
+) : RuntimeException(message?.let { "$status $it" } ?: status.toString(), cause)
+
+enum class ErrorCode
+
+fun httpBadRequest(message: String, errorCode: ErrorCode? = null): Nothing =
+    throw HttpException(HttpStatus.BAD_REQUEST, message, errorCode?.name)
+
+fun httpUnauthenticated(message: String, errorCode: ErrorCode? = null): Nothing =
+    throw HttpException(HttpStatus.UNAUTHORIZED, message, errorCode?.name)
+
+fun httpInternalServerError(errorCode: ErrorCode? = null): Nothing =
+    throw HttpException(HttpStatus.INTERNAL_SERVER_ERROR, "Internal server error", errorCode?.name)

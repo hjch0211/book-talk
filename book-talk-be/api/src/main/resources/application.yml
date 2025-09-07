@@ -1,0 +1,15 @@
+logging:
+  level:
+    root: info
+
+server:
+  port: 8080
+  shutdown: graceful
+
+spring:
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
+  config:
+    import:
+      - classpath:application-data.yml
+      - classpath:application-lib.yml
