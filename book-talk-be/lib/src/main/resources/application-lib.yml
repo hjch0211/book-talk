@@ -1,0 +1,14 @@
+lib:
+  aes:
+    secret-string: ${AES_SECRET_STRING}
+  jwt:
+    access:
+      secret: ${JWT_ACCESS_SECRET}
+      audience: ${JWT_ACCESS_AUDIENCE}
+      issuer: ${JWT_ACCESS_ISSUER}
+      expiring-time: ${JWT_ACCESS_EXPIRING_TIME}
+    refresh:
+      secret: ${JWT_REFRESH_SECRET}
+      audience: ${JWT_REFRESH_AUDIENCE}
+      issuer: ${JWT_REFRESH_ISSUER}
+      expiring-time: ${JWT_REFRESH_EXPIRING_TIME}

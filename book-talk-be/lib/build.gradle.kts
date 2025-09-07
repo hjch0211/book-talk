@@ -5,14 +5,14 @@ plugins {
     id("io.spring.dependency-management")
 }
 
-description = "book-talk data"
+description = "book-talk library"
 
 dependencies {
-    implementation(project(":lib"))
-    api("org.springframework.boot:spring-boot-starter-data-jpa")
-
-    // DB
-    runtimeOnly("org.postgresql:postgresql")
+    implementation("org.springframework.boot:spring-boot-starter")
+    implementation("io.github.oshai:kotlin-logging-jvm:6.0.3")
+    implementation("at.favre.lib:bcrypt:0.10.2")
+    api("com.auth0:java-jwt:4.4.0")
+    implementation(libs.bundles.ktor.client)
 }
 
 kotlin {
