@@ -22,7 +22,7 @@ class DebateMemberEntity(
     val account: AccountEntity,
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "status", nullable = false)
+    @Column(name = "role", nullable = false)
     val role: DebateMemberRole
 ) : AuditableLongIdEntity()
 
@@ -36,4 +36,6 @@ interface DebateMemberRepository : JpaRepository<DebateMemberEntity, Long> {
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("select count(m) from DebateMemberEntity m where m.debate = :debate")
     fun countByDebateForUpdate(debate: DebateEntity): Int
+
+    fun findAllByDebateOrderByCreatedAtAsc(debate: DebateEntity): List<DebateMemberEntity>
 }

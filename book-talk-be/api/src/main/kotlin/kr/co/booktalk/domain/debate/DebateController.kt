@@ -21,7 +21,7 @@ class DebateController(
         debateService.create(request, authAccount)
     }
 
-    /** 토론 조회 */
+    /** 토론 단건 조회 */
     @GetMapping("/debates/{id}")
     fun findOne(@PathVariable id: String, authAccount: AuthAccount): ApiResult<FindOneResponse> {
         return debateService.findOne(id).toResult()

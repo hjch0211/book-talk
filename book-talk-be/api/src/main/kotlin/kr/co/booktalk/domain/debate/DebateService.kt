@@ -14,6 +14,7 @@ class DebateService(
     private val debateRepository: DebateRepository,
     private val debateMemberRepository: DebateMemberRepository,
     private val appConfigService: AppConfigService,
+    private val presentationRepository: PresentationRepository,
 ) {
     @Transactional
     fun create(request: CreateRequest, authAccount: AuthAccount) {
@@ -29,8 +30,11 @@ class DebateService(
     }
 
     fun findOne(id: String): FindOneResponse {
-        return debateRepository.findByIdOrNull(id)?.toResponse()
-            ?: httpBadRequest("존재하지 않는 토론방입니다.")
+        val debate = debateRepository.findByIdOrNull(id) ?: httpBadRequest("존재하지 않는 토론방입니다.")
+        val members = debateMemberRepository.findAllByDebateOrderByCreatedAtAsc(debate)
+        val presentations = presentationRepository.findAllByDebateOrderByCreatedAtAsc(debate)
+
+        return debate.toResponse(members, presentations)
     }
 
     fun join(request: JoinRequest, authAccount: AuthAccount) {

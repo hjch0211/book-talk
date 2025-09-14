@@ -18,6 +18,12 @@ fun JoinRequest.validate() {
 fun DebateEntity.validateJoinable(joinDebateDeadlineSeconds: Long): DebateEntity {
     val now = Instant.now()
     require(now.isBefore(startedAt.minusSeconds(joinDebateDeadlineSeconds))) { "토론 참여 가능 시간이 아닙니다." }
+    this.validateActive()
+
+    return this
+}
+
+fun DebateEntity.validateActive(): DebateEntity {
     require(closedAt == null) { "종료된 토론입니다." }
 
     return this
