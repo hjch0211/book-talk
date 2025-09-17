@@ -10,7 +10,10 @@ class AccountService(
     private val accountRepository: AccountRepository,
 ) {
     fun create(request: CreateRequest): AccountEntity {
-        accountRepository.findByName(request.name) ?: httpBadRequest("이미 존재하는 계정입니다.")
+        if (accountRepository.existsByName(request.name)) {
+            httpBadRequest("이미 존재하는 계정입니다.")
+        }
+        
         return accountRepository.save(
             AccountEntity(
                 name = request.name

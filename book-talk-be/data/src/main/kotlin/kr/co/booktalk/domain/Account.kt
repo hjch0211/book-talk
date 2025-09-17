@@ -21,5 +21,6 @@ class AccountEntity(
 @Transactional(readOnly = true)
 @Repository
 interface AccountRepository : JpaRepository<AccountEntity, String> {
+    fun existsByName(name: String): Boolean
     fun findByName(name: String): AccountEntity?
 }
