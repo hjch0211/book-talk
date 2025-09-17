@@ -35,12 +35,19 @@ abstract class AuditableLongIdEntity : AuditableEntity, Persistable<Long> {
     override fun isNew(): Boolean = !::createdAt.isInitialized
 }
 
+@Converter(autoApply = true)
+class UuidToStringConverter : AttributeConverter<UUID, String> {
+    override fun convertToDatabaseColumn(attribute: UUID?): String? = attribute?.toString()
+    override fun convertToEntityAttribute(dbData: String?): UUID? = dbData?.let { UUID.fromString(it) }
+}
+
 @MappedSuperclass
 abstract class AuditableUuidEntity : AuditableEntity, Persistable<String> {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", columnDefinition = "uuid")
-    private var id: UUID? = null
+    @Convert(converter = UuidToStringConverter::class)
+    private var id: String? = null
 
     @CreatedDate
     @Column(name = "created_at")
@@ -53,6 +60,6 @@ abstract class AuditableUuidEntity : AuditableEntity, Persistable<String> {
     @Column(name = "archived_at")
     override var archivedAt: Instant? = null
 
-    override fun getId(): String? = id?.toString()
+    override fun getId(): String? = id
     override fun isNew(): Boolean = id == null
 }
