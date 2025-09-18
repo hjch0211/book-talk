@@ -28,3 +28,25 @@ fun DebateEntity.validateActive(): DebateEntity {
 
     return this
 }
+
+fun CreateRoundRequest.validate() {
+    require(debateId.isNotBlank()) { "debateId는 필수입니다." }
+    require(nextSpeakerId.isNotBlank()) { "nextSpeakerId는 필수입니다." }
+}
+
+fun PatchRoundRequest.validate() {
+    require(debateRoundId > 0) { "debateRoundId는 필수입니다." }
+}
+
+fun CloseRoundRequest.validate() {
+    require(debateId.isNotBlank()) { "debateId는 필수입니다." }
+}
+
+fun CreateRoundSpeakerRequest.validate() {
+    require(debateRoundId > 0) { "debateRoundId는 필수입니다." }
+    require(nextSpeakerId.isNotBlank()) { "nextSpeakerId는 필수입니다." }
+}
+
+fun PatchRoundSpeakerRequest.validate() {
+    require(debateRoundSpeakerId > 0) { "debateRoundSpeakerId는 필수입니다." }
+}

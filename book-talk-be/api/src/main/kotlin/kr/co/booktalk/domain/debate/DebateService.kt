@@ -7,14 +7,17 @@ import kr.co.booktalk.httpBadRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 
 @Service
 class DebateService(
     private val accountRepository: AccountRepository,
     private val debateRepository: DebateRepository,
     private val debateMemberRepository: DebateMemberRepository,
+    private val debateRoundRepository: DebateRoundRepository,
     private val appConfigService: AppConfigService,
     private val presentationRepository: PresentationRepository,
+    private val debateRoundSpeakerRepository: DebateRoundSpeakerRepository,
 ) {
     @Transactional
     fun create(request: CreateRequest, authAccount: AuthAccount) {
@@ -30,11 +33,16 @@ class DebateService(
     }
 
     fun findOne(id: String): FindOneResponse {
-        val debate = debateRepository.findByIdOrNull(id) ?: httpBadRequest("존재하지 않는 토론방입니다.")
+        val debate = debateRepository.findByIdOrNull(id)
+            ?: httpBadRequest("존재하지 않는 토론방입니다.")
         val members = debateMemberRepository.findAllByDebateOrderByCreatedAtAsc(debate)
         val presentations = presentationRepository.findAllByDebateOrderByCreatedAtAsc(debate)
+        val currentRound = debateRoundRepository.findByDebateAndEndedAtIsNull(debate)
+        val currentSpeakerId = currentRound
+            ?.let { debateRoundSpeakerRepository.findByDebateRoundAndEndedAtIsAfter(it, Instant.now()) }
+            ?.account?.id
 
-        return debate.toResponse(members, presentations)
+        return debate.toResponse(members, presentations, currentRound, currentSpeakerId)
     }
 
     fun join(request: JoinRequest, authAccount: AuthAccount) {

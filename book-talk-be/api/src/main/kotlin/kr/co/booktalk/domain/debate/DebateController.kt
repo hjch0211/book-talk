@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.*
 @RestController
 class DebateController(
     private val debateService: DebateService,
-    private val appConfigService: AppConfigService
+    private val debateRoundService: DebateRoundService,
+    private val appConfigService: AppConfigService,
+    private val debateRoundSpeakerService: DebateRoundSpeakerService
 ) {
     /** 토론 생성 */
     @PostMapping("/debates")
@@ -32,5 +34,33 @@ class DebateController(
     fun join(@RequestBody request: JoinRequest, authAccount: AuthAccount) {
         request.validate()
         debateService.join(request, authAccount)
+    }
+
+    /** 방장: 토론 라운드 생성(시작) */
+    @PostMapping("/debates/round")
+    fun createRound(@RequestBody request: CreateRoundRequest, authAccount: AuthAccount) {
+        request.validate()
+        debateRoundService.create(request, authAccount)
+    }
+
+    /** 방장: 토론 라운드 변경 */
+    @PatchMapping("/debates/round")
+    fun patchRound(@RequestBody request: PatchRoundRequest, authAccount: AuthAccount) {
+        request.validate()
+        debateRoundService.patch(request, authAccount)
+    }
+
+    /** 발언자 생성 */
+    @PostMapping("/debates/round/speakers")
+    fun createRoundSpeaker(@RequestBody request: CreateRoundSpeakerRequest, authAccount: AuthAccount) {
+        request.validate()
+        debateRoundSpeakerService.create(request)
+    }
+
+    /** 발언자 업데이트 */
+    @PatchMapping("/debates/round/speakers")
+    fun patchRoundSpeaker(@RequestBody request: PatchRoundSpeakerRequest, authAccount: AuthAccount) {
+        request.validate()
+        debateRoundSpeakerService.patch(request)
     }
 }

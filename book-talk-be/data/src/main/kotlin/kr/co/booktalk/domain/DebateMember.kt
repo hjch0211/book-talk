@@ -38,4 +38,10 @@ interface DebateMemberRepository : JpaRepository<DebateMemberEntity, Long> {
     fun countByDebateForUpdate(debate: DebateEntity): Int
 
     fun findAllByDebateOrderByCreatedAtAsc(debate: DebateEntity): List<DebateMemberEntity>
+    fun existsByDebateAndAccount(debate: DebateEntity, account: AccountEntity): Boolean
+    fun existsByDebateIdAndAccountIdAndRole(
+        debateId: String,
+        accountId: String,
+        role: DebateMemberRole
+    ): Boolean
 }
