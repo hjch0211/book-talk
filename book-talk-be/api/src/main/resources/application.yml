@@ -13,3 +13,8 @@ spring:
     import:
       - classpath:application-data.yml
       - classpath:application-lib.yml
+
+app:
+  cors:
+    allowed-origins:
+      - ${APP_CORS_ALLOWED_ORIGINS}
