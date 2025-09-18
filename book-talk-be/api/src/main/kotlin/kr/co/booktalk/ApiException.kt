@@ -71,6 +71,14 @@ fun httpUnauthenticated(message: String, cause: Throwable? = null, errorCode: Er
         errorCode = errorCode?.name
     )
 
+fun httpForbidden(message: String, cause: Throwable? = null, errorCode: ErrorCode? = null): Nothing =
+    throw HttpException(
+        status = HttpStatus.FORBIDDEN,
+        responseMessage = message,
+        cause = cause,
+        errorCode = errorCode?.name
+    )
+
 fun httpInternalServerError(cause: Throwable? = null, errorCode: ErrorCode? = null): Nothing =
     throw HttpException(
         status = HttpStatus.INTERNAL_SERVER_ERROR,

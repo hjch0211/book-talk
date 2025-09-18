@@ -1,9 +1,6 @@
 package kr.co.booktalk.domain.debate
 
-import kr.co.booktalk.domain.AccountEntity
-import kr.co.booktalk.domain.DebateEntity
-import kr.co.booktalk.domain.DebateMemberEntity
-import kr.co.booktalk.domain.PresentationEntity
+import kr.co.booktalk.domain.*
 
 fun CreateRequest.toEntity(host: AccountEntity): DebateEntity {
     return DebateEntity(
@@ -18,12 +15,15 @@ fun CreateRequest.toEntity(host: AccountEntity): DebateEntity {
 
 fun DebateEntity.toResponse(
     members: List<DebateMemberEntity>,
-    presentations: List<PresentationEntity>
+    presentations: List<PresentationEntity>,
+    currentRound: DebateRoundEntity? = null,
+    currentSpeakerId: String? = null
 ): FindOneResponse {
     return FindOneResponse(
         id = id.toString(),
         members = members.map { FindOneResponse.MemberInfo(it.account.id!!, it.role) },
         presentations = presentations.map { FindOneResponse.PresentationInfo(it.id!!, it.account.id!!) },
+        currentRound = if (currentRound != null && currentSpeakerId != null) currentRound.toRoundInfo(currentSpeakerId) else null,
         bookImageUrl = bookImageUrl,
         topic = topic,
         description = description,
@@ -33,5 +33,24 @@ fun DebateEntity.toResponse(
         createdAt = createdAt,
         updatedAt = updatedAt,
         archivedAt = archivedAt
+    )
+}
+
+fun DebateRoundEntity.toRoundInfo(currentSpeakerId: String): FindOneResponse.RoundInfo {
+    return FindOneResponse.RoundInfo(
+        id = id,
+        type = type,
+        currentSpeakerId = currentSpeakerId,
+        nextSpeakerId = nextSpeaker?.id,
+        createdAt = createdAt,
+        endedAt = endedAt,
+    )
+}
+
+fun CreateRoundRequest.toEntity(debate: DebateEntity, speaker: AccountEntity): DebateRoundEntity {
+    return DebateRoundEntity(
+        type = type,
+        debate = debate,
+        nextSpeaker = speaker
     )
 }

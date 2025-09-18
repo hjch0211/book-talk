@@ -26,6 +26,11 @@ class AppConfigService(
         return findByKey("maxDebateMemberCnt").toLong()
     }
 
+    /** 토론 라운드 발언자 발언 시간(초) */
+    fun debateRoundSpeakerSeconds(): Long {
+        return findByKey("debateRoundSpeakerSeconds").toLong()
+    }
+
     fun findByKey(key: String): String {
         val now = Instant.now()
         val cachedEntry = cache[key]
