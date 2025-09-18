@@ -1,0 +1,11 @@
+.main-page {
+    min-height: 100vh;
+    background: #FFFFFF;
+    overflow-y: auto;
+}
+
+.main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 120px;
+}
