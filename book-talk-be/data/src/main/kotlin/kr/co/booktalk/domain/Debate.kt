@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
+import java.util.*
 
 @Entity
 @Table(name = "debate")
@@ -37,4 +38,4 @@ class DebateEntity(
 
 @Transactional(readOnly = true)
 @Repository
-interface DebateRepository : JpaRepository<DebateEntity, String>
+interface DebateRepository : JpaRepository<DebateEntity, UUID>

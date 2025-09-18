@@ -21,8 +21,13 @@ fun DebateEntity.toResponse(
 ): FindOneResponse {
     return FindOneResponse(
         id = id.toString(),
-        members = members.map { FindOneResponse.MemberInfo(it.account.id!!, it.role) },
-        presentations = presentations.map { FindOneResponse.PresentationInfo(it.id!!, it.account.id!!) },
+        members = members.map { FindOneResponse.MemberInfo(it.account.id.toString(), it.role) },
+        presentations = presentations.map {
+            FindOneResponse.PresentationInfo(
+                it.id.toString(),
+                it.account.id.toString()
+            )
+        },
         currentRound = if (currentRound != null && currentSpeakerId != null) currentRound.toRoundInfo(currentSpeakerId) else null,
         bookImageUrl = bookImageUrl,
         topic = topic,
@@ -41,7 +46,7 @@ fun DebateRoundEntity.toRoundInfo(currentSpeakerId: String): FindOneResponse.Rou
         id = id,
         type = type,
         currentSpeakerId = currentSpeakerId,
-        nextSpeakerId = nextSpeaker?.id,
+        nextSpeakerId = nextSpeaker?.id.toString(),
         createdAt = createdAt,
         endedAt = endedAt,
     )

@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 @Entity
 @Table(name = "debate_member")
@@ -40,8 +41,8 @@ interface DebateMemberRepository : JpaRepository<DebateMemberEntity, Long> {
     fun findAllByDebateOrderByCreatedAtAsc(debate: DebateEntity): List<DebateMemberEntity>
     fun existsByDebateAndAccount(debate: DebateEntity, account: AccountEntity): Boolean
     fun existsByDebateIdAndAccountIdAndRole(
-        debateId: String,
-        accountId: String,
+        debateId: UUID,
+        accountId: UUID,
         role: DebateMemberRole
     ): Boolean
 }

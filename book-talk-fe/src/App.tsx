@@ -1,10 +1,12 @@
 import {AppRoutes} from "./routes";
-import {MuiThemeProvider} from "./providers/MuiThemeProvider.tsx";
+import {MuiThemeProvider, TanStackQueryProvider} from "./providers";
 
 function App() {
     return (
         <MuiThemeProvider>
-            <AppRoutes/>
+            <TanStackQueryProvider>
+                <AppRoutes/>
+            </TanStackQueryProvider>
         </MuiThemeProvider>
     )
 }

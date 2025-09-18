@@ -10,6 +10,7 @@ import kr.co.booktalk.domain.PresentationRepository
 import kr.co.booktalk.domain.auth.AuthAccount
 import kr.co.booktalk.domain.debate.validateActive
 import kr.co.booktalk.httpBadRequest
+import kr.co.booktalk.toUUID
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -22,13 +23,13 @@ class PresentationService(
     private val objectMapper: ObjectMapper
 ) {
     fun findOne(id: String): FindOneResponse {
-        return presentationRepository.findByIdOrNull(id)?.toResponse() ?: httpBadRequest("존재하지 않는 프레젠테이션입니다.")
+        return presentationRepository.findByIdOrNull(id.toUUID())?.toResponse() ?: httpBadRequest("존재하지 않는 프레젠테이션입니다.")
     }
 
     fun init(request: CreateRequest, authAccount: AuthAccount) {
-        val account = accountRepository.findByIdOrNull(authAccount.id)
+        val account = accountRepository.findByIdOrNull(authAccount.id.toUUID())
             ?: httpBadRequest("존재하지 않는 사용자입니다.")
-        val debate = debateRepository.findByIdOrNull(request.debateId)
+        val debate = debateRepository.findByIdOrNull(request.debateId.toUUID())
             ?.validateActive()
             ?: httpBadRequest("존재하지 않는 토론입니다.")
 
@@ -37,9 +38,9 @@ class PresentationService(
 
     @Transactional
     fun patchContent(id: String, patch: JsonPatch, authAccount: AuthAccount) {
-        accountRepository.findByIdOrNull(authAccount.id)
+        accountRepository.findByIdOrNull(authAccount.id.toUUID())
             ?: httpBadRequest("존재하지 않는 사용자입니다.")
-        val presentation = presentationRepository.findByIdOrNull(id)
+        val presentation = presentationRepository.findByIdOrNull(id.toUUID())
             ?.validateUpdatable(authAccount)
             ?: httpBadRequest("존재하지 않는 프레젠테이션입니다.")
 
