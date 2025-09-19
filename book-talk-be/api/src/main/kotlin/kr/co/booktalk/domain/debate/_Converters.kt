@@ -8,8 +8,6 @@ fun CreateRequest.toEntity(host: AccountEntity): DebateEntity {
         bookImageUrl = bookImageUrl,
         topic = topic,
         description = description,
-        headCount = headCount,
-        startedAt = startedAt
     )
 }
 
@@ -32,8 +30,6 @@ fun DebateEntity.toResponse(
         bookImageUrl = bookImageUrl,
         topic = topic,
         description = description,
-        headCount = headCount,
-        startedAt = startedAt,
         closedAt = closedAt,
         createdAt = createdAt,
         updatedAt = updatedAt,

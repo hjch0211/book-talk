@@ -16,10 +16,7 @@ class DebateController(
     /** 토론 생성 */
     @PostMapping("/debates")
     fun create(@RequestBody request: CreateRequest, authAccount: AuthAccount) {
-        request.validate(
-            appConfigService.joinDebateDeadlineSeconds(),
-            appConfigService.maxDebateMemberCnt()
-        )
+        request.validate()
         debateService.create(request, authAccount)
     }
 

@@ -49,7 +49,7 @@ class DebateService(
     fun join(request: JoinRequest, authAccount: AuthAccount) {
         val account = accountRepository.findByIdOrNull(authAccount.id.toUUID()) ?: httpBadRequest("존재하지 않는 사용자입니다.")
         val debate = debateRepository.findByIdOrNull(request.debateId.toUUID())
-            ?.validateJoinable(appConfigService.joinDebateDeadlineSeconds())
+            ?.validateJoinable()
             ?: httpBadRequest("존재하지 않는 토론입니다.")
         if (debateMemberRepository.countByDebateForUpdate(debate) >= appConfigService.maxDebateMemberCnt()) {
             httpBadRequest("토론방의 최대 정원(${appConfigService.maxDebateMemberCnt()}명)을 초과했습니다.")

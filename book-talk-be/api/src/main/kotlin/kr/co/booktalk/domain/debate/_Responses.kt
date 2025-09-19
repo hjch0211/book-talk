@@ -12,8 +12,6 @@ data class FindOneResponse(
     val bookImageUrl: String,
     val topic: String,
     val description: String? = null,
-    val headCount: Int,
-    val startedAt: Instant,
     val closedAt: Instant? = null,
     val createdAt: Instant,
     val updatedAt: Instant,
