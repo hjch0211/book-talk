@@ -4,9 +4,9 @@ import kr.co.booktalk.domain.PresentationEntity
 
 fun PresentationEntity.toResponse(): FindOneResponse {
     return FindOneResponse(
-        id = id!!,
-        accountId = account.id!!,
-        debateId = debate.id!!,
+        id = id.toString(),
+        accountId = account.id.toString(),
+        debateId = debate.id.toString(),
         content = content
     )
 }

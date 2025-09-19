@@ -3,6 +3,7 @@ package kr.co.booktalk.domain.debate
 import kr.co.booktalk.cache.AppConfigService
 import kr.co.booktalk.domain.*
 import kr.co.booktalk.httpBadRequest
+import kr.co.booktalk.toUUID
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -19,7 +20,7 @@ class DebateRoundSpeakerService(
     fun create(request: CreateRoundSpeakerRequest) {
         val debateRound = debateRoundRepository.findByIdOrNull(request.debateRoundId)
             ?: httpBadRequest("존재하지 않는 토론 라운드입니다.")
-        val speaker = accountRepository.findByIdOrNull(request.nextSpeakerId)
+        val speaker = accountRepository.findByIdOrNull(request.nextSpeakerId.toUUID())
             ?: httpBadRequest("존재하지 않는 계정입니다.")
         if (!debateMemberRepository.existsByDebateAndAccount(debateRound.debate, speaker))
             httpBadRequest("발언자가 토론 멤버가 아닙니다.")

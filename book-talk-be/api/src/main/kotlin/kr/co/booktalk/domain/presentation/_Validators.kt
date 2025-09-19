@@ -8,7 +8,7 @@ fun CreateRequest.validate() {
 }
 
 fun PresentationEntity.validateUpdatable(authAccount: AuthAccount): PresentationEntity {
-    require(account.id == authAccount.id) { "자신의 프로젠테이션만 수정 가능합니다." }
+    require(account.id.toString() == authAccount.id) { "자신의 프로젠테이션만 수정 가능합니다." }
 
     return this
 }

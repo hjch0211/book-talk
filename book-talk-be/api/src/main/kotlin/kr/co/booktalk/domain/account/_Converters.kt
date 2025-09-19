@@ -4,7 +4,7 @@ import kr.co.booktalk.domain.AccountEntity
 
 fun AccountEntity.toResponse(): FindMyResponse {
     return FindMyResponse(
-        id = id!!,
+        id = id.toString(),
         name = name,
         createdAt = createdAt
     )

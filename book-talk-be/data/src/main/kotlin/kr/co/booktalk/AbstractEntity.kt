@@ -36,10 +36,11 @@ abstract class AuditableLongIdEntity : AuditableEntity, Persistable<Long> {
 }
 
 @MappedSuperclass
-abstract class AuditableUuidEntity : AuditableEntity, Persistable<String> {
+abstract class AuditableUuidEntity : AuditableEntity, Persistable<UUID> {
     @Id
-    @Column(name = "id", columnDefinition = "uuid")
-    private var id: String? = UUID.randomUUID().toString()
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id")
+    private var id: UUID? = null
 
     @CreatedDate
     @Column(name = "created_at")
@@ -52,6 +53,10 @@ abstract class AuditableUuidEntity : AuditableEntity, Persistable<String> {
     @Column(name = "archived_at")
     override var archivedAt: Instant? = null
 
-    override fun getId(): String? = id
-    override fun isNew(): Boolean = !::createdAt.isInitialized
+    override fun getId(): UUID? = id
+    override fun isNew(): Boolean = id == null
+}
+
+fun String.toUUID(): UUID {
+    return UUID.fromString(this)
 }

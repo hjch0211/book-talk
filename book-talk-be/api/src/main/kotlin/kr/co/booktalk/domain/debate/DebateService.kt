@@ -4,6 +4,7 @@ import kr.co.booktalk.cache.AppConfigService
 import kr.co.booktalk.domain.*
 import kr.co.booktalk.domain.auth.AuthAccount
 import kr.co.booktalk.httpBadRequest
+import kr.co.booktalk.toUUID
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -21,7 +22,7 @@ class DebateService(
 ) {
     @Transactional
     fun create(request: CreateRequest, authAccount: AuthAccount) {
-        val host = accountRepository.findByIdOrNull(authAccount.id) ?: httpBadRequest("존재하지 않는 사용자입니다.")
+        val host = accountRepository.findByIdOrNull(authAccount.id.toUUID()) ?: httpBadRequest("존재하지 않는 사용자입니다.")
         val debate = debateRepository.saveAndFlush(request.toEntity(host))
         debateMemberRepository.save(
             DebateMemberEntity(
@@ -33,21 +34,21 @@ class DebateService(
     }
 
     fun findOne(id: String): FindOneResponse {
-        val debate = debateRepository.findByIdOrNull(id)
+        val debate = debateRepository.findByIdOrNull(id.toUUID())
             ?: httpBadRequest("존재하지 않는 토론방입니다.")
         val members = debateMemberRepository.findAllByDebateOrderByCreatedAtAsc(debate)
         val presentations = presentationRepository.findAllByDebateOrderByCreatedAtAsc(debate)
         val currentRound = debateRoundRepository.findByDebateAndEndedAtIsNull(debate)
         val currentSpeakerId = currentRound
             ?.let { debateRoundSpeakerRepository.findByDebateRoundAndEndedAtIsAfter(it, Instant.now()) }
-            ?.account?.id
+            ?.account?.id.toString()
 
         return debate.toResponse(members, presentations, currentRound, currentSpeakerId)
     }
 
     fun join(request: JoinRequest, authAccount: AuthAccount) {
-        val account = accountRepository.findByIdOrNull(authAccount.id) ?: httpBadRequest("존재하지 않는 사용자입니다.")
-        val debate = debateRepository.findByIdOrNull(request.debateId)
+        val account = accountRepository.findByIdOrNull(authAccount.id.toUUID()) ?: httpBadRequest("존재하지 않는 사용자입니다.")
+        val debate = debateRepository.findByIdOrNull(request.debateId.toUUID())
             ?.validateJoinable(appConfigService.joinDebateDeadlineSeconds())
             ?: httpBadRequest("존재하지 않는 토론입니다.")
         if (debateMemberRepository.countByDebateForUpdate(debate) >= appConfigService.maxDebateMemberCnt()) {

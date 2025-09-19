@@ -4,6 +4,7 @@ import kr.co.booktalk.domain.AccountEntity
 import kr.co.booktalk.domain.AccountRepository
 import kr.co.booktalk.domain.auth.AuthAccount
 import kr.co.booktalk.httpBadRequest
+import kr.co.booktalk.toUUID
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 
@@ -28,6 +29,7 @@ class AccountService(
     }
 
     fun findMy(authAccount: AuthAccount): FindMyResponse {
-        return accountRepository.findByIdOrNull(authAccount.id)?.toResponse() ?: httpBadRequest("존재하지 않는 계정입니다.")
+        return accountRepository.findByIdOrNull(authAccount.id.toUUID())?.toResponse()
+            ?: httpBadRequest("존재하지 않는 계정입니다.")
     }
 }

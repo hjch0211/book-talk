@@ -6,6 +6,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
+import java.util.*
 
 @Entity
 @Table(name = "presentation")
@@ -25,6 +26,6 @@ class PresentationEntity(
 
 @Transactional(readOnly = true)
 @Repository
-interface PresentationRepository : JpaRepository<PresentationEntity, String> {
+interface PresentationRepository : JpaRepository<PresentationEntity, UUID> {
     fun findAllByDebateOrderByCreatedAtAsc(debate: DebateEntity): List<PresentationEntity>
 }
