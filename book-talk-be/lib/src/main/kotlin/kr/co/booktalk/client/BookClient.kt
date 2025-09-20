@@ -3,9 +3,8 @@ package kr.co.booktalk.client
 import io.github.oshai.kotlinlogging.KotlinLogging
 import io.ktor.client.*
 import io.ktor.client.call.*
-import io.ktor.client.request.get
+import io.ktor.client.request.*
 import io.ktor.http.*
-import io.ktor.http.headers
 import kr.co.booktalk.config.LibProperties
 import java.net.URLEncoder
 
@@ -50,11 +49,9 @@ class NaverBookClient(
         val url = "https://openapi.naver.com/v1/search/book.json?query=$query&display=${request.size}&start=$start"
 
         val response = httpClient.get(url) {
-            headers {
-                append("X-Naver-Client-Id", properties.clientId)
-                append("X-Naver-Client-Secret", properties.clientSecret)
-                append(HttpHeaders.Accept, ContentType.Application.Json.toString())
-            }
+            header("X-Naver-Client-Id", properties.clientId)
+            header("X-Naver-Client-Secret", properties.clientSecret)
+            header(HttpHeaders.Accept, ContentType.Application.Json.toString())
         }.also { if (!it.status.isSuccess()) throw RuntimeException("Naver API 호출 실패: ${it.status}") }
 
         val apiResponse = response.body<NaverBookApiResponse>()

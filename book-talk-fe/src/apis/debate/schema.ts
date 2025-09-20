@@ -13,10 +13,6 @@ export const CreateDebateRequestSchema = z.object({
         .optional(),
 });
 
-export const CreateDebateResponseSchema = z.object({
-    debateId: z.string(),
-});
-
 export const JoinDebateRequestSchema = z.object({
     debateId: z.string()
         .min(1, '토론 ID를 입력해주세요'),
@@ -82,7 +78,6 @@ export const PatchRoundSpeakerRequestSchema = z.object({
 });
 
 export type CreateDebateRequest = z.infer<typeof CreateDebateRequestSchema>;
-export type CreateDebateResponse = z.infer<typeof CreateDebateResponseSchema>;
 export type JoinDebateRequest = z.infer<typeof JoinDebateRequestSchema>;
 export type FindOneDebateResponse = z.infer<typeof FindOneDebateResponseSchema>;
 export type MemberInfo = z.infer<typeof MemberInfoSchema>;
