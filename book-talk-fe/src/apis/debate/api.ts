@@ -17,9 +17,10 @@ import {
 } from './schema';
 
 /** 토론 생성 */
-export const createDebate = async (request: CreateDebateRequest): Promise<void> => {
+export const createDebate = async (request: CreateDebateRequest): Promise<{ id: string }> => {
     const validatedData = CreateDebateRequestSchema.parse(request);
-    await authApiClient.post('/debates', validatedData);
+    const response = await authApiClient.post('/debates', validatedData)
+    return response.data.data
 };
 
 /** 토론 단건 조회 */

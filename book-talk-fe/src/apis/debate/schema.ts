@@ -20,6 +20,7 @@ export const JoinDebateRequestSchema = z.object({
 
 export const MemberInfoSchema = z.object({
     id: z.string(),
+    name: z.string(),
     role: z.enum(['HOST', 'MEMBER']),
 });
 

@@ -19,7 +19,7 @@ fun DebateEntity.toResponse(
 ): FindOneResponse {
     return FindOneResponse(
         id = id.toString(),
-        members = members.map { FindOneResponse.MemberInfo(it.account.id.toString(), it.role) },
+        members = members.map { FindOneResponse.MemberInfo(it.account.id.toString(), it.account.name, it.role) },
         presentations = presentations.map {
             FindOneResponse.PresentationInfo(
                 it.id.toString(),

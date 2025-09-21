@@ -2,10 +2,18 @@ import {Suspense} from 'react';
 import MainContainer from '../../components/MainContainer/MainContainer';
 import NicknameModal from './_components/NickNameModal/NicknameModal.tsx';
 import {useModal} from '../../hooks/useModal';
-import {ButtonContainer, MainButton, MainButtonText, MainText, MainTextContainer, MainTextWrapper} from './Main.style';
+import {
+    ButtonContainer,
+    MainButton,
+    MainButtonText,
+    MainText,
+    MainTextContainer,
+    MainTextWrapper
+} from './Main.style.tsx';
 import MainHeader from "../../components/MainHeader/MainHeader.tsx";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {meQueryOption} from "../../apis/account";
+import CreateDebateModal from "./_components/CreateDebateModal/CreateDebateModal.tsx";
 
 const ButtonSection = () => {
     const {data: me} = useSuspenseQuery(meQueryOption);
@@ -15,13 +23,17 @@ const ButtonSection = () => {
         openModal(NicknameModal);
     };
 
+    const handleCreateDebate = () => {
+        openModal(CreateDebateModal);
+    };
+
     return (
         <>
             {!me && <MainButton onClick={handleLogin}>
                 <MainButtonText>닉네임 입력하기</MainButtonText>
             </MainButton>}
 
-            <MainButton disabled={!me}>
+            <MainButton disabled={!me} onClick={me ? handleCreateDebate : undefined}>
                 <MainButtonText disabled={!me}>토론방 생성하기</MainButtonText>
             </MainButton>
         </>

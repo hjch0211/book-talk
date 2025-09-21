@@ -7,6 +7,7 @@ fun PresentationEntity.toResponse(): FindOneResponse {
         id = id.toString(),
         accountId = account.id.toString(),
         debateId = debate.id.toString(),
-        content = content
+        content = content,
+        lastUpdatedAt = updatedAt
     )
 }

@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {CircularProgress} from '@mui/material';
-import {useMutation} from '@tanstack/react-query';
+import {useMutation, useQueryClient} from '@tanstack/react-query';
 import Modal from '../../../../components/Modal';
 import {signIn, signUp} from '../../../../apis/auth';
 import {useToast} from '../../../../hooks/useToast';
@@ -24,12 +24,13 @@ interface NicknameModalProps {
 const NicknameModal = ({open, onClose}: NicknameModalProps) => {
     const [nickname, setNickname] = useState('');
     const {toast} = useToast();
+    const queryClient = useQueryClient();
 
     const signInMutation = useMutation({
         mutationFn: (name: string) => signIn({name}),
-        onSuccess: () => {
+        onSuccess: async () => {
+            await queryClient.invalidateQueries();
             handleClose();
-            window.location.reload();
         },
         onError: (error: ApiError) => {
             if (error?.status === 400 && error?.message === '존재하지 않는 계정입니다.') {
@@ -42,9 +43,10 @@ const NicknameModal = ({open, onClose}: NicknameModalProps) => {
 
     const signUpMutation = useMutation({
         mutationFn: (name: string) => signUp({name}),
-        onSuccess: () => {
+        onSuccess: async () => {
+            // 회원가입 성공 시에도 동일하게 쿼리 무효화
+            await queryClient.invalidateQueries();
             handleClose();
-            window.location.reload();
         },
         onError: () => {
             toast.error('회원가입 중 오류가 발생했습니다.');

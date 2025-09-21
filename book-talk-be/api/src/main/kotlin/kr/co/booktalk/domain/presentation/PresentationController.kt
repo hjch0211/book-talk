@@ -16,13 +16,6 @@ class PresentationController(
         return presentationService.findOne(id).toResult()
     }
 
-    /** 발표 페이지 최초 생성 */
-    @PostMapping("/presentations")
-    fun init(@RequestBody request: CreateRequest, authAccount: AuthAccount) {
-        request.validate()
-        presentationService.init(request, authAccount)
-    }
-
     /** 발표 페이지 내용 수정 */
     @PatchMapping(value = ["/presentations/{id}/content"], consumes = ["application/json-patch+json"])
     fun patchContent(@PathVariable id: String, @RequestBody patch: JsonPatch, authAccount: AuthAccount) {

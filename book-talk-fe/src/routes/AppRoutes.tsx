@@ -1,12 +1,16 @@
 import {BrowserRouter, Route, Routes} from 'react-router-dom';
-import {MainPage} from './index.ts';
+import {DebatePage, MainPage} from './index.ts';
+import {ModalProvider} from '../providers';
 
 export function AppRoutes() {
     return (
         <BrowserRouter>
-            <Routes>
-                <Route path="/" element={<MainPage/>}/>
-            </Routes>
+            <ModalProvider>
+                <Routes>
+                    <Route path="/" element={<MainPage/>}/>
+                    <Route path="/debate/:debateId" element={<DebatePage/>}/>
+                </Routes>
+            </ModalProvider>
         </BrowserRouter>
     );
 }

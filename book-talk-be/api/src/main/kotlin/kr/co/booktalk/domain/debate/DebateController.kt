@@ -15,9 +15,9 @@ class DebateController(
 ) {
     /** 토론 생성 */
     @PostMapping("/debates")
-    fun create(@RequestBody request: CreateRequest, authAccount: AuthAccount) {
+    fun create(@RequestBody request: CreateRequest, authAccount: AuthAccount): ApiResult<CreateResponse> {
         request.validate()
-        debateService.create(request, authAccount)
+        return debateService.create(request, authAccount).toResult()
     }
 
     /** 토론 단건 조회 */
