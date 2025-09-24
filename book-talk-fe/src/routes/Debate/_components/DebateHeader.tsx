@@ -2,6 +2,7 @@ import {DebateTitle, NavButton, NavButtonGroup, NavContent, NavigationBar} from 
 import leaveIconSvg from "../../../assets/leave.svg";
 import userAddIconSvg from "../../../assets/user-add.svg";
 import {useToast} from "../../../hooks/useToast.tsx";
+import {useNavigate} from "react-router-dom";
 
 interface Props {
     topic: string;
@@ -9,10 +10,15 @@ interface Props {
 
 export function DebateHeader({topic}: Props) {
     const {toast} = useToast()
+    const navigate = useNavigate()
 
     const handleShareLink = async () => {
         await navigator.clipboard.writeText(window.location.href);
         toast.info("클립보드에 복사되었습니다.")
+    }
+
+    const handleLeave = () => {
+        navigate("/")
     }
 
     return (
@@ -28,7 +34,9 @@ export function DebateHeader({topic}: Props) {
                     >
                         링크 공유
                     </NavButton>
-                    <NavButton startIcon={<img src={leaveIconSvg} alt="Leave Icon" width={24} height={24}/>}>
+                    <NavButton
+                        onClick={handleLeave}
+                        startIcon={<img src={leaveIconSvg} alt="Leave Icon" width={24} height={24}/>}>
                         나가기
                     </NavButton>
                 </NavButtonGroup>
