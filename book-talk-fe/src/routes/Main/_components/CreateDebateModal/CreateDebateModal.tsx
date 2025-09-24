@@ -173,7 +173,7 @@ const CreateDebateModal = ({open, onClose}: CreateDebateModalProps) => {
                     disabled={!isFormValid || createDebateMutation.isPending}
                     isValid={!!isFormValid}
                 >
-                    {createDebateMutation.isPending ? '생성 중...' : '토론방 생성하기'}
+                    {createDebateMutation.isPending ? '생성 중...' : '토론방 생성'}
                 </SubmitButton>
             </ModalContainer>
         </Modal>

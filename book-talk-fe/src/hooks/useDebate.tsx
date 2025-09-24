@@ -1,7 +1,7 @@
-import {useSuspenseQuery} from "@tanstack/react-query";
-import {findOneDebateQueryOptions} from "../apis/debate";
+import {useMutation, useQueryClient, useSuspenseQuery} from "@tanstack/react-query";
+import {findOneDebateQueryOptions, joinDebate} from "../apis/debate";
 import {meQueryOption} from "../apis/account";
-import {useMemo} from "react";
+import {useEffect, useMemo, useRef} from "react";
 
 interface Props {
     debateId?: string;
@@ -10,7 +10,7 @@ interface Props {
 export interface CurrentRoundInfo {
     id: number | null;
     type: "PRESENTATION" | "FREE" | "PREPARATION";
-    currentPresentationId: string | null;
+    currentPresentationId?: string;
     currentSpeakerId: string | null;
     createdAt: string | null;
     nextSpeakerId?: string | null | undefined;
@@ -19,11 +19,39 @@ export interface CurrentRoundInfo {
 }
 
 export const useDebate = ({debateId}: Props) => {
+    const queryClient = useQueryClient();
     const {data: debate} = useSuspenseQuery(findOneDebateQueryOptions(debateId));
     const {data: _me} = useSuspenseQuery(meQueryOption);
+    const joinAttempted = useRef<Set<string>>(new Set());
+
+    const myMember = debate.members.find((m) => m.id === _me?.id);
+    const isAlreadyMember = !!myMember;
+
+    const joinDebateMutation = useMutation({
+        mutationFn: (debateId: string) => joinDebate({debateId}),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({queryKey: ['debates', debateId]});
+        }
+    });
+
+    // 멤버가 아니면 자동으로 가입 시도 (한 번만)
+    useEffect(() => {
+        if (
+            debateId &&
+            _me?.id &&
+            !isAlreadyMember &&
+            !joinDebateMutation.isPending &&
+            !joinAttempted.current.has(`${debateId}-${_me.id}`)
+        ) {
+            joinAttempted.current.add(`${debateId}-${_me.id}`);
+            joinDebateMutation.mutate(debateId);
+        }
+        // joinDebateMutation은 의도적으로 의존성에서 제외 (무한 리렌더링 방지)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [debateId, _me?.id, isAlreadyMember]);
 
     const myMemberData = {
-        role: debate.members.find((m) => m.id === _me?.id)?.role
+        role: myMember?.role
     }
 
     /** 라운드 시작 전 상태를 포함한 라운드 정보 */
@@ -32,7 +60,7 @@ export const useDebate = ({debateId}: Props) => {
         if (debate.currentRound) {
             const currentSpeakerPresentationId = debate.presentations.find(p =>
                 p.accountId === debate.currentRound?.currentSpeakerId
-            )?.id || null;
+            )?.id;
             return {
                 ...debate.currentRound,
                 currentPresentationId: currentSpeakerPresentationId,
@@ -45,7 +73,7 @@ export const useDebate = ({debateId}: Props) => {
         return {
             id: null,
             type: 'PREPARATION' as const,
-            currentPresentationId: myPresentation?.id || null,
+            currentPresentationId: myPresentation?.id,
             currentSpeakerId: null,
             createdAt: null,
             isEditable: true,

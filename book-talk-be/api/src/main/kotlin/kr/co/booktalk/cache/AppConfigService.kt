@@ -5,16 +5,19 @@ import kr.co.booktalk.domain.AppConfigRepository
 import kr.co.booktalk.httpInternalServerError
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
-import java.time.Instant
-import java.util.concurrent.ConcurrentHashMap
+import java.time.Duration
 
-/** 메모리 캐시를 이용한 AppConfig */
+/** Redis 캐시를 이용한 AppConfig */
 @Service
 class AppConfigService(
-    private val repository: AppConfigRepository
+    private val repository: AppConfigRepository,
+    private val cacheClient: CacheClient
 ) {
     private val logger = KotlinLogging.logger {}
-    private val cache = ConcurrentHashMap<String, CacheEntry>()
+
+    companion object {
+        private const val CACHE_PREFIX = "app_config:"
+    }
 
     /** 토론 참여 가능 시간 (startedAt - joinDebateDeadlineSeconds) */
     fun joinDebateDeadlineSeconds(): Long {
@@ -32,31 +35,21 @@ class AppConfigService(
     }
 
     fun findByKey(key: String): String {
-        val now = Instant.now()
-        val cachedEntry = cache[key]
+        val cacheKey = CACHE_PREFIX + key
 
-        if (cachedEntry != null && !cachedEntry.isExpired(now)) {
-            return cachedEntry.value
+        // Redis에서 캐시 조회
+        cacheClient.get(cacheKey)?.let { cachedValue ->
+            return cachedValue
         }
 
+        // 캐시 미스시 DB에서 조회
         return repository.findByIdOrNull(key)?.let { entity ->
-            cache[key] = CacheEntry(entity.value, now, entity.cacheSeconds)
+            val ttl = entity.cacheSeconds?.let { Duration.ofSeconds(it) }
+            cacheClient.set(cacheKey, entity.value, ttl)
             entity.value
         } ?: run {
             logger.error { "유효하지 않은 app config key입니다. - key: $key" }
             httpInternalServerError()
         }
-    }
-}
-
-private data class CacheEntry(
-    val value: String,
-    val cachedAt: Instant,
-    val cacheSeconds: Long?
-) {
-    fun isExpired(now: Instant): Boolean {
-        return cacheSeconds?.let {
-            now.isAfter(cachedAt.plusSeconds(it))
-        } ?: false
     }
 }

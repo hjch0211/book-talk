@@ -515,6 +515,18 @@ export const AvatarContainer = styled.div`
     position: relative;
 `;
 
+export const OnlineIndicator = styled.div`
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: #4CAF50;
+    border: 2px solid #FFFFFF;
+    border-radius: 50%;
+    top: -2px;
+    right: -2px;
+    z-index: 2;
+`;
+
 export const BookCrownIcon = styled.div`
     display: flex;
     flex-direction: column;

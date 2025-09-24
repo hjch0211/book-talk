@@ -1,4 +1,4 @@
-import {Suspense} from 'react';
+import {Suspense, useMemo} from 'react';
 import {useParams} from 'react-router-dom';
 import MainContainer from '../../components/MainContainer/MainContainer';
 import {DebateHeader} from './_components/DebateHeader';
@@ -6,6 +6,7 @@ import {DebatePresentation} from './_components/DebatePresentation';
 import {DebateMemberList} from './_components/DebateMemberList';
 import {ActionButton, DebateContainer} from './Debate.style';
 import {useDebate} from "../../hooks/useDebate.tsx";
+import {useDebateOnlineUsers} from "../../hooks/usePresence.tsx";
 
 interface Props {
     debateId?: string
@@ -13,6 +14,11 @@ interface Props {
 
 function DebatePageContent({debateId}: Props) {
     const {debate, myMemberData, currentRoundInfo} = useDebate({debateId});
+    const {isUserOnline} = useDebateOnlineUsers(debateId || null);
+
+    const membersWithPresence = useMemo(() => {
+        return debate.members.filter(member => isUserOnline(member.id));
+    }, [debate.members, isUserOnline]);
 
     if (!debateId) {
         return <div>Invalid debate ID</div>;
@@ -28,7 +34,7 @@ function DebatePageContent({debateId}: Props) {
                     currentRoundInfo={currentRoundInfo}
                 />
                 <DebateMemberList
-                    members={debate.members}
+                    members={membersWithPresence}
                 />
                 {
                     myMemberData.role === 'HOST' &&

@@ -1,4 +1,4 @@
-import {useMutation, useQueryClient, useSuspenseQuery} from '@tanstack/react-query';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {
     findOnePresentation,
     findOnePresentationQueryOptions,
@@ -9,10 +9,13 @@ import {useCallback, useMemo, useRef, useState} from 'react';
 import {useJsonPatch} from "./useJsonPatch.tsx";
 
 export const usePresentation = (
-    presentationId: string | null,
+    presentationId?: string,
 ) => {
     const queryClient = useQueryClient();
-    const suspenseResult = useSuspenseQuery(findOnePresentationQueryOptions(presentationId ?? undefined));
+    const queryResult = useQuery({
+        ...findOnePresentationQueryOptions(presentationId),
+        enabled: !!presentationId
+    });
     const debounceTimerRef = useRef<number | null>(null);
     const [isDebouncing, setIsDebouncing] = useState(false);
     const {compare} = useJsonPatch()
@@ -50,7 +53,7 @@ export const usePresentation = (
             try {
                 await patchPresentation.mutateAsync({
                     id: presentationId,
-                    patches: compare(JSON.parse(suspenseResult.data.content), editorJsonData)
+                    patches: compare(JSON.parse(queryResult.data?.content || '{}'), editorJsonData)
                 });
             } catch (error) {
                 console.error('Auto save failed:', error);
@@ -58,20 +61,21 @@ export const usePresentation = (
                 setIsDebouncing(false);
             }
         }, 1000);
-    }, [compare, patchPresentation, presentationId, suspenseResult.data.content]);
+    }, [compare, patchPresentation, presentationId, queryResult.data?.content]);
 
     const lastSavedAt = useMemo(() => {
-        if (suspenseResult.data?.lastUpdatedAt) {
-            return new Date(suspenseResult.data.lastUpdatedAt);
+        if (queryResult.data?.lastUpdatedAt) {
+            return new Date(queryResult.data.lastUpdatedAt);
         }
         return null;
-    }, [suspenseResult.data?.lastUpdatedAt]);
+    }, [queryResult.data?.lastUpdatedAt]);
 
     return {
-        currentPresentation: suspenseResult.data,
+        currentPresentation: queryResult.data,
         fetchPresentation,
         autoSave,
         lastSavedAt,
-        isSaving: patchPresentation.isPending || isDebouncing
+        isSaving: patchPresentation.isPending || isDebouncing,
+        isLoading: queryResult.isLoading
     };
 };
