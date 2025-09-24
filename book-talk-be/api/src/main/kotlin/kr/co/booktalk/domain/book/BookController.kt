@@ -12,7 +12,7 @@ class BookController(
     private val bookService: BookService
 ) {
     /** 책 검색  */
-    @GetMapping("/books?query={query}&page={page}&size={size}")
+    @GetMapping("/books")
     fun searchBook(
         @ModelAttribute request: SearchBookRequest,
         authAccount: AuthAccount

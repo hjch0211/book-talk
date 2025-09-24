@@ -21,7 +21,7 @@ class DebateService(
     private val debateRoundSpeakerRepository: DebateRoundSpeakerRepository,
 ) {
     @Transactional
-    fun create(request: CreateRequest, authAccount: AuthAccount) {
+    fun create(request: CreateRequest, authAccount: AuthAccount): CreateResponse {
         val host = accountRepository.findByIdOrNull(authAccount.id.toUUID()) ?: httpBadRequest("존재하지 않는 사용자입니다.")
         val debate = debateRepository.saveAndFlush(request.toEntity(host))
         debateMemberRepository.save(
@@ -31,6 +31,8 @@ class DebateService(
                 role = DebateMemberRole.HOST
             )
         )
+        presentationRepository.save(PresentationEntity(debate, host, "{}"))
+        return CreateResponse(debate.id.toString())
     }
 
     fun findOne(id: String): FindOneResponse {
@@ -46,10 +48,11 @@ class DebateService(
         return debate.toResponse(members, presentations, currentRound, currentSpeakerId)
     }
 
+    @Transactional
     fun join(request: JoinRequest, authAccount: AuthAccount) {
         val account = accountRepository.findByIdOrNull(authAccount.id.toUUID()) ?: httpBadRequest("존재하지 않는 사용자입니다.")
         val debate = debateRepository.findByIdOrNull(request.debateId.toUUID())
-            ?.validateJoinable(appConfigService.joinDebateDeadlineSeconds())
+            ?.validateJoinable()
             ?: httpBadRequest("존재하지 않는 토론입니다.")
         if (debateMemberRepository.countByDebateForUpdate(debate) >= appConfigService.maxDebateMemberCnt()) {
             httpBadRequest("토론방의 최대 정원(${appConfigService.maxDebateMemberCnt()}명)을 초과했습니다.")
@@ -62,5 +65,7 @@ class DebateService(
                 role = DebateMemberRole.MEMBER
             )
         )
+
+        presentationRepository.save(PresentationEntity(debate, account, "{}"))
     }
 }

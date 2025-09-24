@@ -26,12 +26,6 @@ class DebateEntity(
     @Column(length = 300)
     val description: String? = null,
 
-    @Column(nullable = false)
-    val headCount: Int,
-
-    @Column(nullable = false)
-    val startedAt: Instant,
-
     @Column
     val closedAt: Instant? = null,
 ) : AuditableUuidEntity()

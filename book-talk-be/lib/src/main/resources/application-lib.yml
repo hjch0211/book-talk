@@ -12,3 +12,6 @@ lib:
       audience: ${JWT_REFRESH_AUDIENCE}
       issuer: ${JWT_REFRESH_ISSUER}
       expiring-time: ${JWT_REFRESH_EXPIRING_TIME}
+  naver:
+    client-id: ${NAVER_CLIENT_ID}
+    client-secret: ${NAVER_CLIENT_SECRET}

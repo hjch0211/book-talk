@@ -1,7 +1,6 @@
 package kr.co.booktalk.domain.auth
 
 import com.auth0.jwt.JWT
-import com.auth0.jwt.exceptions.JWTDecodeException
 import com.auth0.jwt.interfaces.DecodedJWT
 import com.auth0.jwt.interfaces.JWTVerifier
 import kr.co.booktalk.config.JWTAlgorithmFactory
@@ -58,7 +57,7 @@ class JwtService(
             .build()
         return try {
             verifier.verify(token)
-        } catch (e: JWTDecodeException) {
+        } catch (e: Exception) {
             httpUnauthenticated("유효하지 않는 토큰입니다.")
         }
     }
@@ -69,7 +68,7 @@ class JwtService(
             .build()
         return try {
             verifier.verify(token)
-        } catch (e: JWTDecodeException) {
+        } catch (e: Exception) {
             httpUnauthenticated("유효하지 않는 토큰입니다.")
         }
     }

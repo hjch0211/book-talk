@@ -8,8 +8,6 @@ fun CreateRequest.toEntity(host: AccountEntity): DebateEntity {
         bookImageUrl = bookImageUrl,
         topic = topic,
         description = description,
-        headCount = headCount,
-        startedAt = startedAt
     )
 }
 
@@ -21,7 +19,7 @@ fun DebateEntity.toResponse(
 ): FindOneResponse {
     return FindOneResponse(
         id = id.toString(),
-        members = members.map { FindOneResponse.MemberInfo(it.account.id.toString(), it.role) },
+        members = members.map { FindOneResponse.MemberInfo(it.account.id.toString(), it.account.name, it.role) },
         presentations = presentations.map {
             FindOneResponse.PresentationInfo(
                 it.id.toString(),
@@ -32,8 +30,6 @@ fun DebateEntity.toResponse(
         bookImageUrl = bookImageUrl,
         topic = topic,
         description = description,
-        headCount = headCount,
-        startedAt = startedAt,
         closedAt = closedAt,
         createdAt = createdAt,
         updatedAt = updatedAt,
