@@ -22,7 +22,7 @@ export function DebatePresentation({currentRoundInfo}: Props) {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     // 발표 페이지 데이터 및 자동 저장 함수
-    const {currentPresentation, autoSave, lastSavedAt} = usePresentation(currentRoundInfo.currentPresentationId);
+    const {currentPresentation, autoSave, lastSavedAt, isSaving} = usePresentation(currentRoundInfo.currentPresentationId);
 
     // 에디터 콜백들
     const addImage = useCallback(() => {
@@ -136,6 +136,7 @@ export function DebatePresentation({currentRoundInfo}: Props) {
                 <LastModified
                     lastSavedAt={lastSavedAt}
                     isEditable={currentRoundInfo.isEditable}
+                    isSaving={isSaving}
                 />
 
                 {/* YouTube 추가 다이얼로그 */}

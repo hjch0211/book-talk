@@ -68,6 +68,7 @@ export const usePresentation = (
         currentPresentation: suspenseResult.data,
         fetchPresentation,
         autoSave,
-        lastSavedAt
+        lastSavedAt,
+        isSaving: patchPresentation.isPending
     };
 };

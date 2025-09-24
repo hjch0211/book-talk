@@ -30,7 +30,10 @@ function DebatePageContent({debateId}: Props) {
                 <DebateMemberList
                     members={debate.members}
                 />
-                <ActionButton>토론 시작하기</ActionButton>
+                {
+                    myMemberData.role === 'HOST' &&
+                    <ActionButton>토론 시작하기</ActionButton>
+                }
             </DebateContainer>
         </MainContainer>
     );
