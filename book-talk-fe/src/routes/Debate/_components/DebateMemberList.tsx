@@ -40,8 +40,8 @@ export function DebateMemberList({members}: Props) {
             <MemberList>
                 {members.map((member, index) => (
                     <MemberItem key={member.id}>
-                        <MemberOrder>{index + 1}</MemberOrder>
                         <MemberProfile>
+                            <MemberOrder>{index + 1}</MemberOrder>
                             <MemberProfileBox>
                                 <AvatarContainer>
                                     <Avatar sx={{width: 40, height: 40, bgcolor: '#BDBDBD', borderRadius: '100px'}}>

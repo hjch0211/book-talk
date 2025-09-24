@@ -416,28 +416,29 @@ export const MemberItem = styled(ListItem)`
 `;
 
 export const MemberOrder = styled.div`
-    width: 7px;
-    height: 13px;
+    width: 42px;
+    height: 100%;
     font-family: 'S-Core Dream', sans-serif;
     font-weight: 300;
     font-size: 11px;
     line-height: 13px;
     color: #434343;
-    flex: none;
-    order: 0;
-    flex-grow: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: start;
 `;
 
 export const MemberProfile = styled.div`
     box-sizing: border-box;
     display: flex;
-    flex-direction: column;
-    justify-content: center;
+    flex-direction: row;
+    justify-content: flex-start;
     align-items: flex-start;
-    padding: 16px 24px;
+    padding: 16px 24px 16px 2px;
     gap: 10px;
     isolation: isolate;
-    width: 245px;
+    width: 252px;
     height: 76px;
     background: #FFFFFF;
     border-width: 6px 18px 6px 0px;
@@ -448,6 +449,12 @@ export const MemberProfile = styled.div`
     order: 1;
     flex-grow: 0;
     position: relative;
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
 `;
 
 export const MemberProfileBox = styled.div`
