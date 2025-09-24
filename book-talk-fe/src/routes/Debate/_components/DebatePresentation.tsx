@@ -1,5 +1,5 @@
 import {EditorContent, useEditor} from '@tiptap/react';
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
@@ -19,16 +19,15 @@ interface Props {
 export function DebatePresentation({currentRoundInfo}: Props) {
     const [showYoutubeDialog, setShowYoutubeDialog] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
-    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [showImageDialog, setShowImageDialog] = useState(false);
+    const [imageUrl, setImageUrl] = useState('');
 
     // 발표 페이지 데이터 및 자동 저장 함수
     const {currentPresentation, autoSave, lastSavedAt, isSaving} = usePresentation(currentRoundInfo.currentPresentationId);
 
     // 에디터 콜백들
     const addImage = useCallback(() => {
-        if (fileInputRef.current) {
-            fileInputRef.current.click();
-        }
+        setShowImageDialog(true);
     }, []);
 
     const addYoutube = useCallback(() => {
@@ -70,21 +69,13 @@ export function DebatePresentation({currentRoundInfo}: Props) {
     }, [editor, currentPresentation?.content]);
 
 
-    const handleImageUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-        const file = event.target.files?.[0];
-        if (file && editor) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const src = e.target?.result as string;
-                editor.chain().focus().setImage({src}).run();
-            };
-            reader.readAsDataURL(file);
+    const handleImageAdd = useCallback(() => {
+        if (imageUrl && editor) {
+            editor.chain().focus().setImage({src: imageUrl}).run();
         }
-        // Reset input value
-        if (fileInputRef.current) {
-            fileInputRef.current.value = '';
-        }
-    }, [editor]);
+        setImageUrl('');
+        setShowImageDialog(false);
+    }, [editor, imageUrl]);
 
     const handleYoutubeAdd = useCallback(() => {
         if (youtubeUrl && editor) {
@@ -123,21 +114,34 @@ export function DebatePresentation({currentRoundInfo}: Props) {
     return (
         <MainContent>
             <PresentationArea>
-                {/* 파일 입력 (숨김) */}
-                <input
-                    type="file"
-                    ref={fileInputRef}
-                    style={{display: 'none'}}
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                />
-
                 <EditorContent editor={editor}/>
                 <LastModified
                     lastSavedAt={lastSavedAt}
                     isEditable={currentRoundInfo.isEditable}
                     isSaving={isSaving}
                 />
+
+                {/* 이미지 추가 다이얼로그 */}
+                <Dialog open={showImageDialog} onClose={() => setShowImageDialog(false)}>
+                    <DialogTitle>이미지 추가</DialogTitle>
+                    <DialogContent>
+                        <TextField
+                            autoFocus
+                            margin="dense"
+                            label="이미지 URL"
+                            type="url"
+                            fullWidth
+                            variant="outlined"
+                            value={imageUrl}
+                            onChange={(e) => setImageUrl(e.target.value)}
+                            placeholder="https://example.com/image.jpg"
+                        />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setShowImageDialog(false)}>취소</Button>
+                        <Button onClick={handleImageAdd} variant="contained">추가</Button>
+                    </DialogActions>
+                </Dialog>
 
                 {/* YouTube 추가 다이얼로그 */}
                 <Dialog open={showYoutubeDialog} onClose={() => setShowYoutubeDialog(false)}>

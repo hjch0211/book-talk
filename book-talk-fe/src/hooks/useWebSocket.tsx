@@ -23,7 +23,7 @@ export const useWebSocket = (url: string | null, options: UseWebSocketOptions = 
 
     const wsRef = useRef<WebSocket | null>(null);
     const reconnectAttemptsRef = useRef(0);
-    const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const reconnectTimeoutRef = useRef<number | null>(null);
 
     const connect = useCallback(() => {
         if (!url || wsRef.current?.readyState === WebSocket.CONNECTING || wsRef.current?.readyState === WebSocket.OPEN) {

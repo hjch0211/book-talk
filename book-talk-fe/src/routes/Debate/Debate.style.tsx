@@ -154,10 +154,11 @@ export const PresentationArea = styled.div`
     gap: 10px;
     width: 970px;
     min-height: 224px;
+    max-height: 80vh; /* 뷰포트 높이의 80%까지만 늘어남 */
     background: #FFFFFF;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
     border-radius: 24px;
-    overflow-y: scroll;
+    overflow-y: auto;
     position: relative;
 
     .presentation-editor {
@@ -193,9 +194,10 @@ export const PresentationArea = styled.div`
         p {
             margin: 0 0 12px 0;
             font-family: 'S-Core Dream', sans-serif;
-            font-weight: 300;
-            font-size: 16px;
-            line-height: 1.6;
+            font-weight: 200;
+            font-size: 18px;
+            line-height: 180%;
+            letter-spacing: 0.3px;
             color: #262626;
 
             &:last-child {
