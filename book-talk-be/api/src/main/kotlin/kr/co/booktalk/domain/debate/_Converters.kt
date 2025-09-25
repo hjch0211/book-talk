@@ -48,10 +48,10 @@ fun DebateRoundEntity.toRoundInfo(currentSpeakerId: String): FindOneResponse.Rou
     )
 }
 
-fun CreateRoundRequest.toEntity(debate: DebateEntity, speaker: AccountEntity): DebateRoundEntity {
+fun CreateRoundRequest.toEntity(debate: DebateEntity): DebateRoundEntity {
     return DebateRoundEntity(
         type = type,
         debate = debate,
-        nextSpeaker = speaker
+        nextSpeaker = null
     )
 }

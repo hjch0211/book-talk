@@ -1,77 +1,84 @@
-import {useCallback, useMemo, useState} from 'react';
-import {useWebSocket} from './useWebSocket';
+import {useCallback, useEffect, useRef, useState} from 'react';
+import {PresenceWebSocket} from "../apis/presence";
 
 /**
  * 토론방의 실시간 온라인 사용자 추적을 위한 훅
  * WebSocket을 통해 토론방 참여자들의 온라인/오프라인 상태를 실시간으로 관리합니다.
  */
-export const useDebateOnlineUsers = (debateId: string | null) => {
-    const [onlineUserIds, setOnlineUserIds] = useState<Set<string>>(new Set());
+export const useDebateOnlineAccounts = (debateId: string | null) => {
+    const [onlineAccountIds, setOnlineAccountIds] = useState<Set<string>>(new Set());
+    const [isConnected, setIsConnected] = useState<boolean>(false);
+    const presenceWSRef = useRef<PresenceWebSocket | null>(null);
+    const heartbeatIntervalRef = useRef<number | null>(null);
 
-    const presenceWebSocketUrl = useMemo(() => {
-        if (!debateId) return null;
-        const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-        const wsBaseUrl = baseUrl.replace(/^http/, 'ws');
-        const token = localStorage.getItem('accessToken');
-        return `${wsBaseUrl}/ws/presence?debateId=${debateId}&token=${encodeURIComponent(token || '')}`;
+    // WebSocket 연결 및 관리
+    useEffect(() => {
+        if (!debateId) return;
+
+        // PresenceWebSocket 인스턴스 생성
+        const presenceWS = new PresenceWebSocket();
+        presenceWSRef.current = presenceWS;
+
+        // 연결 시작
+        presenceWS.connect(
+            debateId,
+            (onlineIds) => {
+                console.log('Received online account IDs:', onlineIds);
+                setOnlineAccountIds(onlineIds);
+            },
+            (connected) => {
+                console.log('Connection status changed:', connected);
+                setIsConnected(connected);
+            }
+        );
+
+        // 정리 함수
+        return () => {
+            if (heartbeatIntervalRef.current) {
+                clearInterval(heartbeatIntervalRef.current);
+                heartbeatIntervalRef.current = null;
+            }
+
+            if (presenceWSRef.current) {
+                presenceWSRef.current.disconnect();
+                presenceWSRef.current = null;
+            }
+        };
     }, [debateId]);
 
-    const handlePresenceMessage = useCallback((event: MessageEvent) => {
-        try {
-            const message = JSON.parse(event.data);
-            console.log('Presence message received:', message);
-
-            if (message.type === 'PRESENCE_UPDATE' && Array.isArray(message.onlineUsers)) {
-                const onlineIds = new Set<string>(
-                    message.onlineUsers.map((user: { userId: string }) => user.userId)
-                );
-                setOnlineUserIds(onlineIds);
+    // 하트비트 관리
+    useEffect(() => {
+        if (isConnected && presenceWSRef.current) {
+            // 30초마다 하트비트 전송
+            heartbeatIntervalRef.current = setInterval(() => {
+                console.log('Sending heartbeat...');
+                presenceWSRef.current?.sendHeartbeat();
+            }, 30000);
+        } else {
+            // 연결이 끊어지면 하트비트 중단
+            if (heartbeatIntervalRef.current) {
+                clearInterval(heartbeatIntervalRef.current);
+                heartbeatIntervalRef.current = null;
             }
-        } catch (error) {
-            console.error('Failed to parse presence message:', error);
         }
-    }, []);
 
-    const {sendMessage, isConnected} = useWebSocket(presenceWebSocketUrl, {
-        onOpen: () => {
-            console.log('Presence WebSocket connected, joining debate');
-            const token = localStorage.getItem('accessToken');
-            if (debateId && token) {
-                try {
-                    const payload = JSON.parse(atob(token.split('.')[1]));
-                    const joinMessage = {
-                        type: 'JOIN_DEBATE',
-                        debateId: debateId,
-                        userId: payload.sub,
-                        userName: 'User'
-                    };
-                    console.log('Sending JOIN_DEBATE message:', joinMessage);
-
-                    // 약간의 지연 후 메시지 전송
-                    setTimeout(() => {
-                        sendMessage(joinMessage);
-                    }, 100);
-                } catch (error) {
-                    console.error('JWT token parsing failed:', error);
-                }
+        return () => {
+            if (heartbeatIntervalRef.current) {
+                clearInterval(heartbeatIntervalRef.current);
+                heartbeatIntervalRef.current = null;
             }
-        },
-        onMessage: handlePresenceMessage,
-        onClose: (event) => {
-            console.log('Presence WebSocket closed:', event.code, event.reason);
-        },
-        shouldReconnect: true,
-        maxReconnectAttempts: 2,
-        reconnectDelay: 3000
-    });
+        };
+    }, [isConnected]);
 
-    const checkUserOnlineStatus = useCallback((userId: string): boolean => {
-        return onlineUserIds.has(userId);
-    }, [onlineUserIds]);
+    const checkAccountOnlineStatus = useCallback((accountId: string): boolean => {
+        const result = onlineAccountIds.has(accountId);
+        console.log(`Checking online status for ${accountId}:`, result, 'from set:', Array.from(onlineAccountIds));
+        return result;
+    }, [onlineAccountIds]);
 
     return {
-        isUserOnline: checkUserOnlineStatus,
-        onlineUserIds,
-        isPresenceConnected: isConnected()
+        isAccountOnline: checkAccountOnlineStatus,
+        onlineAccountIds,
+        isPresenceConnected: isConnected
     };
 };

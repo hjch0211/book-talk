@@ -16,102 +16,102 @@ class PresenceService(
 
     companion object {
         private const val DEBATE_PRESENCE_PREFIX = "presence:debate:"
-        private const val USER_PRESENCE_PREFIX = "presence:user:"
+        private const val ACCOUNT_PRESENCE_PREFIX = "presence:account:"
         private const val DEFAULT_PRESENCE_TTL_SECONDS = 300L // 5분
     }
 
-    fun joinDebate(debateId: String, userId: String, userName: String) {
+    fun joinDebate(debateId: String, accountId: String, accountName: String) {
         val debateKey = DEBATE_PRESENCE_PREFIX + debateId
-        val userKey = USER_PRESENCE_PREFIX + userId
+        val accountKey = ACCOUNT_PRESENCE_PREFIX + accountId
         val now = Instant.now()
 
         try {
-            val userPresence = UserPresence(
-                userId = userId,
-                userName = userName,
+            val accountPresence = AccountPresence(
+                accountId = accountId,
+                accountName = accountName,
                 debateId = debateId,
                 joinedAt = now,
                 lastHeartbeat = now,
                 status = PresenceStatus.ONLINE
             )
 
-            // 사용자 개별 상태 저장
-            val userPresenceJson = objectMapper.writeValueAsString(userPresence)
-            cacheClient.set(userKey, userPresenceJson, Duration.ofSeconds(DEFAULT_PRESENCE_TTL_SECONDS))
+            // 계정 개별 상태 저장
+            val accountPresenceJson = objectMapper.writeValueAsString(accountPresence)
+            cacheClient.set(accountKey, accountPresenceJson, Duration.ofSeconds(DEFAULT_PRESENCE_TTL_SECONDS))
 
             // 토론방 참여자 목록에 추가
-            val currentUsers = getDebateUsers(debateId).toMutableSet()
-            currentUsers.add(userPresence)
+            val currentAccounts = getDebateAccounts(debateId).toMutableSet()
+            currentAccounts.add(accountPresence)
 
-            val debatePresenceJson = objectMapper.writeValueAsString(currentUsers)
+            val debatePresenceJson = objectMapper.writeValueAsString(currentAccounts)
             cacheClient.set(debateKey, debatePresenceJson, Duration.ofSeconds(DEFAULT_PRESENCE_TTL_SECONDS))
 
-            logger.info { "사용자 토론 참여: debateId=$debateId, userId=$userId" }
+            logger.info { "계정 토론 참여: debateId=$debateId, accountId=$accountId" }
         } catch (e: Exception) {
-            logger.error(e) { "사용자 토론 참여 처리 실패: debateId=$debateId, userId=$userId" }
+            logger.error(e) { "계정 토론 참여 처리 실패: debateId=$debateId, accountId=$accountId" }
         }
     }
 
-    fun leaveDebate(debateId: String, userId: String) {
+    fun leaveDebate(debateId: String, accountId: String) {
         val debateKey = DEBATE_PRESENCE_PREFIX + debateId
-        val userKey = USER_PRESENCE_PREFIX + userId
+        val accountKey = ACCOUNT_PRESENCE_PREFIX + accountId
 
         try {
-            // 사용자 개별 상태 삭제
-            cacheClient.delete(userKey)
+            // 계정 개별 상태 삭제
+            cacheClient.delete(accountKey)
 
             // 토론방 참여자 목록에서 제거
-            val currentUsers = getDebateUsers(debateId).toMutableSet()
-            currentUsers.removeAll { it.userId == userId }
+            val currentAccounts = getDebateAccounts(debateId).toMutableSet()
+            currentAccounts.removeAll { it.accountId == accountId }
 
-            if (currentUsers.isNotEmpty()) {
-                val debatePresenceJson = objectMapper.writeValueAsString(currentUsers)
+            if (currentAccounts.isNotEmpty()) {
+                val debatePresenceJson = objectMapper.writeValueAsString(currentAccounts)
                 cacheClient.set(debateKey, debatePresenceJson, Duration.ofSeconds(DEFAULT_PRESENCE_TTL_SECONDS))
             } else {
                 cacheClient.delete(debateKey)
             }
 
-            logger.info { "사용자 토론 나감: debateId=$debateId, userId=$userId" }
+            logger.info { "계정 토론 나감: debateId=$debateId, accountId=$accountId" }
         } catch (e: Exception) {
-            logger.error(e) { "사용자 토론 나감 처리 실패: debateId=$debateId, userId=$userId" }
+            logger.error(e) { "계정 토론 나감 처리 실패: debateId=$debateId, accountId=$accountId" }
         }
     }
 
-    fun updateHeartbeat(userId: String) {
-        val userKey = USER_PRESENCE_PREFIX + userId
+    fun updateHeartbeat(accountId: String) {
+        val accountKey = ACCOUNT_PRESENCE_PREFIX + accountId
 
         try {
-            cacheClient.get(userKey)?.let { userPresenceJson ->
-                val userPresence = objectMapper.readValue(userPresenceJson, UserPresence::class.java)
-                val updatedPresence = userPresence.copy(
+            cacheClient.get(accountKey)?.let { accountPresenceJson ->
+                val accountPresence = objectMapper.readValue(accountPresenceJson, AccountPresence::class.java)
+                val updatedPresence = accountPresence.copy(
                     lastHeartbeat = Instant.now(),
                     status = PresenceStatus.ONLINE
                 )
 
                 val updatedJson = objectMapper.writeValueAsString(updatedPresence)
-                cacheClient.set(userKey, updatedJson, Duration.ofSeconds(DEFAULT_PRESENCE_TTL_SECONDS))
+                cacheClient.set(accountKey, updatedJson, Duration.ofSeconds(DEFAULT_PRESENCE_TTL_SECONDS))
 
                 // 토론방 참여자 목록도 업데이트
-                val debateKey = DEBATE_PRESENCE_PREFIX + userPresence.debateId
-                val currentUsers = getDebateUsers(userPresence.debateId).map { user ->
-                    if (user.userId == userId) updatedPresence else user
+                val debateKey = DEBATE_PRESENCE_PREFIX + accountPresence.debateId
+                val currentAccounts = getDebateAccounts(accountPresence.debateId).map { account ->
+                    if (account.accountId == accountId) updatedPresence else account
                 }.toSet()
 
-                val debatePresenceJson = objectMapper.writeValueAsString(currentUsers)
+                val debatePresenceJson = objectMapper.writeValueAsString(currentAccounts)
                 cacheClient.set(debateKey, debatePresenceJson, Duration.ofSeconds(DEFAULT_PRESENCE_TTL_SECONDS))
             }
         } catch (e: Exception) {
-            logger.error(e) { "Heartbeat 업데이트 실패: userId=$userId" }
+            logger.error(e) { "Heartbeat 업데이트 실패: accountId=$accountId" }
         }
     }
 
-    fun getDebateUsers(debateId: String): Set<UserPresence> {
+    fun getDebateAccounts(debateId: String): Set<AccountPresence> {
         val debateKey = DEBATE_PRESENCE_PREFIX + debateId
 
         return try {
             cacheClient.get(debateKey)?.let { debatePresenceJson ->
-                val typeRef = objectMapper.typeFactory.constructCollectionType(Set::class.java, UserPresence::class.java)
-                objectMapper.readValue<Set<UserPresence>>(debatePresenceJson, typeRef)
+                val typeRef = objectMapper.typeFactory.constructCollectionType(Set::class.java, AccountPresence::class.java)
+                objectMapper.readValue<Set<AccountPresence>>(debatePresenceJson, typeRef)
             } ?: emptySet()
         } catch (e: Exception) {
             logger.error(e) { "토론 참여자 목록 조회 실패: debateId=$debateId" }
@@ -119,32 +119,32 @@ class PresenceService(
         }
     }
 
-    fun getOnlineUsers(debateId: String): Set<UserPresence> {
-        return getDebateUsers(debateId).filter { user ->
-            val timeDiff = Duration.between(user.lastHeartbeat, Instant.now())
+    fun getOnlineAccounts(debateId: String): Set<AccountPresence> {
+        return getDebateAccounts(debateId).filter { account ->
+            val timeDiff = Duration.between(account.lastHeartbeat, Instant.now())
             timeDiff.seconds < 60 // 1분 이내 heartbeat가 있으면 온라인으로 간주
         }.toSet()
     }
 
-    fun isUserOnline(userId: String): Boolean {
-        val userKey = USER_PRESENCE_PREFIX + userId
+    fun isAccountOnline(accountId: String): Boolean {
+        val accountKey = ACCOUNT_PRESENCE_PREFIX + accountId
 
         return try {
-            cacheClient.get(userKey)?.let { userPresenceJson ->
-                val userPresence = objectMapper.readValue(userPresenceJson, UserPresence::class.java)
-                val timeDiff = Duration.between(userPresence.lastHeartbeat, Instant.now())
+            cacheClient.get(accountKey)?.let { accountPresenceJson ->
+                val accountPresence = objectMapper.readValue(accountPresenceJson, AccountPresence::class.java)
+                val timeDiff = Duration.between(accountPresence.lastHeartbeat, Instant.now())
                 timeDiff.seconds < 60
             } ?: false
         } catch (e: Exception) {
-            logger.error(e) { "사용자 온라인 상태 확인 실패: userId=$userId" }
+            logger.error(e) { "계정 온라인 상태 확인 실패: accountId=$accountId" }
             false
         }
     }
 }
 
-data class UserPresence(
-    val userId: String,
-    val userName: String,
+data class AccountPresence(
+    val accountId: String,
+    val accountName: String,
     val debateId: String,
     val joinedAt: Instant,
     val lastHeartbeat: Instant,

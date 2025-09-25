@@ -6,7 +6,7 @@ import {DebatePresentation} from './_components/DebatePresentation';
 import {DebateMemberList} from './_components/DebateMemberList';
 import {ActionButton, DebateContainer} from './Debate.style';
 import {useDebate} from "../../hooks/useDebate.tsx";
-import {useDebateOnlineUsers} from "../../hooks/usePresence.tsx";
+import {useDebateOnlineAccounts} from "../../hooks/usePresence.tsx";
 
 interface Props {
     debateId?: string
@@ -14,11 +14,11 @@ interface Props {
 
 function DebatePageContent({debateId}: Props) {
     const {debate, myMemberData, currentRoundInfo} = useDebate({debateId});
-    const {isUserOnline} = useDebateOnlineUsers(debateId || null);
+    const {isAccountOnline} = useDebateOnlineAccounts(debateId || null);
 
     const membersWithPresence = useMemo(() => {
-        return debate.members.filter(member => isUserOnline(member.id));
-    }, [debate.members, isUserOnline]);
+        return debate.members.filter(member => isAccountOnline(member.id));
+    }, [debate.members, isAccountOnline]);
 
     if (!debateId) {
         return <div>Invalid debate ID</div>;
@@ -37,8 +37,13 @@ function DebatePageContent({debateId}: Props) {
                     members={membersWithPresence}
                 />
                 {
+                    currentRoundInfo.type === "PREPARATION" &&
                     myMemberData.role === 'HOST' &&
                     <ActionButton>토론 시작하기</ActionButton>
+                }
+                {
+                    currentRoundInfo.type === "PRESENTATION" &&
+                    <ActionButton>발표 끝내기</ActionButton>
                 }
             </DebateContainer>
         </MainContainer>

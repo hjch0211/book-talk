@@ -1,5 +1,6 @@
 package kr.co.booktalk.domain.debate
 
+import kr.co.booktalk.cache.AppConfigService
 import kr.co.booktalk.domain.*
 import kr.co.booktalk.domain.auth.AuthAccount
 import kr.co.booktalk.httpBadRequest
@@ -16,7 +17,10 @@ class DebateRoundService(
     private val debateMemberRepository: DebateMemberRepository,
     private val accountRepository: AccountRepository,
     private val debateRoundRepository: DebateRoundRepository,
+    private val debateRoundSpeakerRepository: DebateRoundSpeakerRepository,
+    private val appConfigService: AppConfigService,
 ) {
+    @Transactional
     fun create(request: CreateRoundRequest, authAccount: AuthAccount) {
         if (!isHost(request.debateId, authAccount.id)) httpForbidden("토론 방장이 아닙니다.")
         val debate = debateRepository.findByIdOrNull(request.debateId.toUUID())
@@ -25,7 +29,19 @@ class DebateRoundService(
             ?: httpBadRequest("존재하지 않는 계정입니다.")
         if (!debateMemberRepository.existsByDebateAndAccount(debate, nextSpeaker)) httpBadRequest("발언자가 토론 멤버가 아닙니다.")
 
-        debateRoundRepository.save(request.toEntity(debate, nextSpeaker))
+        // 이전 라운드가 있다면 종료 처리
+        debateRoundRepository.findByDebateAndEndedAtIsNull(debate)?.let { existingRound ->
+            existingRound.endedAt = Instant.now()
+        }
+
+        val debateRound = debateRoundRepository.saveAndFlush(request.toEntity(debate))
+        debateRoundSpeakerRepository.save(
+            DebateRoundSpeakerEntity(
+                account = nextSpeaker,
+                debateRound = debateRound,
+                endedAt = Instant.now().plusSeconds(appConfigService.debateRoundSpeakerSeconds())
+            )
+        )
     }
 
     @Transactional

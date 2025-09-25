@@ -36,13 +36,13 @@ class JwtHandshakeInterceptor(
 
             // JWT 토큰 검증
             val claims = jwtService.validateAccess(token)
-            val userId = claims.subject
+            val accountId = claims.subject
 
-            // WebSocket 세션 속성에 사용자 정보 저장
-            attributes["userId"] = userId
+            // WebSocket 세션 속성에 계정 정보 저장
+            attributes["accountId"] = accountId
             attributes["token"] = token
 
-            logger.info { "WebSocket 인증 성공: userId=$userId" }
+            logger.info { "WebSocket 인증 성공: accountId=$accountId" }
             true
 
         } catch (e: Exception) {
