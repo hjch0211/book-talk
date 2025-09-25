@@ -3,7 +3,7 @@ import {Search} from '@mui/icons-material';
 import {Typography} from '@mui/material';
 import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {useNavigate} from 'react-router-dom';
-import {createDebate, type CreateDebateRequest} from '../../../../apis/debate';
+import {createDebate, type CreateDebateRequest, findOneDebateQueryOptions} from '../../../../apis/debate';
 import {type BookData, searchBooksQueryOptions} from '../../../../apis/book';
 import Modal from "../../../../components/Modal.tsx";
 import {
@@ -59,7 +59,7 @@ const CreateDebateModal = ({open, onClose}: CreateDebateModalProps) => {
     const createDebateMutation = useMutation({
         mutationFn: createDebate,
         onSuccess: async (data) => {
-            await queryClient.invalidateQueries({queryKey: ['debate', data.id]});
+            await queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
             // Reset form
             setBookImageUrl('');
             setTopic('');

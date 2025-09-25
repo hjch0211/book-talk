@@ -8,6 +8,7 @@ import org.springframework.stereotype.Component
 import org.springframework.web.socket.WebSocketHandler
 import org.springframework.web.socket.server.HandshakeInterceptor
 
+// TODO 추 후 AuthArgumentResolver로 통일하기
 @Component
 class JwtHandshakeInterceptor(
     private val jwtService: JwtService

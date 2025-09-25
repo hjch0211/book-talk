@@ -1,4 +1,4 @@
-package kr.co.booktalk.presence
+package kr.co.booktalk.domain.presence
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
@@ -22,6 +22,7 @@ class PresenceWebSocketHandler(
 ) : TextWebSocketHandler() {
 
     private val logger = KotlinLogging.logger {}
+
     // 로컬 세션은 WebSocketSession 객체 관리용으로만 사용
     private val localSessions = ConcurrentHashMap<String, WebSocketSession>()
 
@@ -31,7 +32,6 @@ class PresenceWebSocketHandler(
         const val SESSION_DEBATE_KEY = "ws:session:debate:"
         const val ACCOUNT_SESSION_KEY = "ws:account:session:"
         const val DEBATE_SESSIONS_KEY = "ws:debate:sessions:"
-        const val PRESENCE_CHANNEL = "presence:updates"
         const val SESSION_TTL_SECONDS = 3600L // 1시간
     }
 
@@ -187,7 +187,7 @@ class PresenceWebSocketHandler(
 
         } catch (e: Exception) {
             logger.error(e) { "토론 참여 처리 실패: debateId=$debateId, accountId=$accountId" }
-            sendJoinSuccessResponse(session, debateId, accountId) // 실패 시에도 기본 응답
+            sendJoinErrorResponse(session, debateId, accountId, e.message ?: "UNKNOWN_ERROR")
         }
     }
 
@@ -253,6 +253,18 @@ class PresenceWebSocketHandler(
         )
     }
 
+    /** 토론 참여 실패 응답을 클라이언트에게 전송합니다. */
+    private fun sendJoinErrorResponse(session: WebSocketSession, debateId: String, accountId: String, reason: String) {
+        sendMessage(
+            session, mapOf(
+                "type" to "JOIN_ERROR",
+                "debateId" to debateId,
+                "accountId" to accountId,
+                "reason" to reason
+            )
+        )
+    }
+
     /** 하트비트 응답을 클라이언트에게 전송합니다. */
     private fun sendHeartbeatResponse(session: WebSocketSession) {
         sendMessage(
@@ -274,7 +286,7 @@ class PresenceWebSocketHandler(
         redisTemplate.expire("$DEBATE_SESSIONS_KEY$debateId", Duration.ofSeconds(SESSION_TTL_SECONDS))
     }
 
-    /** Redis Pub/Sub을 통해 presence 업데이트를 발행합니다. */
+    /** 해당 토론방의 모든 WebSocket 세션에 presence 업데이트를 직접 브로드캐스트합니다. */
     private fun publishPresenceUpdate(debateId: String) {
         val onlineAccounts = presenceService.getOnlineAccounts(debateId)
         val message = mapOf(
@@ -290,29 +302,9 @@ class PresenceWebSocketHandler(
             }
         )
 
-        // Redis Pub/Sub으로 메시지 발행
+        // 해당 토론방의 모든 WebSocket 세션에 직접 브로드캐스트
         val messageJson = objectMapper.writeValueAsString(message)
-        redisTemplate.convertAndSend(PRESENCE_CHANNEL, messageJson)
-    }
-
-    /** Redis Pub/Sub 메시지를 수신하여 로컬 세션에 브로드캐스트합니다. */
-    fun handlePresenceMessage(messageJson: String) {
-        try {
-            val message = objectMapper.readTree(messageJson)
-            val debateId = message.get("debateId")?.asText() ?: return
-
-            // Redis에서 해당 토론방의 세션 목록 조회
-            val sessionIds = redisTemplate.opsForSet().members("$DEBATE_SESSIONS_KEY$debateId") ?: emptySet()
-
-            // 로컬에 있는 세션에만 메시지 전송
-            sessionIds.forEach { sessionId ->
-                localSessions[sessionId]?.let { session ->
-                    sendMessage(session, message)
-                }
-            }
-        } catch (e: Exception) {
-            logger.error(e) { "Presence 메시지 처리 실패: $messageJson" }
-        }
+        broadcastToDebateRoom(debateId, messageJson)
     }
 
     /** WebSocket 세션을 통해 클라이언트에게 메시지를 전송합니다. */
@@ -332,35 +324,25 @@ class PresenceWebSocketHandler(
         }
     }
 
-    /** Redis에서 직접 실시간 연결 상태를 확인합니다. */
-    fun isAccountOnline(accountId: String): Boolean {
-        // 계정의 현재 세션이 Redis에 존재하는지 확인
-        val sessionId = cacheClient.get("$ACCOUNT_SESSION_KEY$accountId")
-        return sessionId != null
+    /** 특정 토론방의 모든 WebSocket 세션에게 메시지를 직접 브로드캐스트합니다. */
+    fun broadcastToDebateRoom(debateId: String, messageJson: String) {
+        try {
+            val message = objectMapper.readTree(messageJson)
+
+            // Redis에서 해당 토론방의 세션 목록 조회
+            val sessionIds = redisTemplate.opsForSet().members("$DEBATE_SESSIONS_KEY$debateId") ?: emptySet()
+
+            // 로컬에 있는 세션에만 메시지 전송
+            sessionIds.forEach { sessionId ->
+                localSessions[sessionId]?.let { session ->
+                    sendMessage(session, message)
+                }
+            }
+
+            logger.debug { "토론방 브로드캐스트 완료: debateId=$debateId, sessions=${sessionIds.size}" }
+        } catch (e: Exception) {
+            logger.error(e) { "토론방 브로드캐스트 실패: debateId=$debateId, messageJson=$messageJson" }
+        }
     }
 
-    /** 특정 토론방에 현재 연결된 계정 목록을 Redis에서 직접 조회합니다. */
-    fun getOnlineAccountsInDebate(debateId: String): Set<String> {
-        val sessionIds = redisTemplate.opsForSet().members("$DEBATE_SESSIONS_KEY$debateId") ?: emptySet()
-        return sessionIds.mapNotNull { sessionId ->
-            cacheClient.get("$SESSION_ACCOUNT_KEY$sessionId")
-        }.toSet()
-    }
-
-    /** 계정이 특정 토론방에 연결되어 있는지 확인합니다. */
-    fun isAccountInDebate(accountId: String, debateId: String): Boolean {
-        val sessionId = cacheClient.get("$ACCOUNT_SESSION_KEY$accountId") ?: return false
-        val accountDebateId = cacheClient.get("$SESSION_DEBATE_KEY$sessionId")
-        return accountDebateId == debateId
-    }
-
-    /** 현재 서버의 활성 WebSocket 연결 수를 반환합니다. */
-    fun getActiveConnectionCount(): Int {
-        return localSessions.size
-    }
-
-    /** 토론방의 실시간 참여자 수를 반환합니다. */
-    fun getDebateParticipantCount(debateId: String): Int {
-        return redisTemplate.opsForSet().size("$DEBATE_SESSIONS_KEY$debateId")?.toInt() ?: 0
-    }
 }

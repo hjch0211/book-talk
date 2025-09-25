@@ -1,4 +1,4 @@
-package kr.co.booktalk.presence
+package kr.co.booktalk.domain.presence
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
@@ -110,7 +110,8 @@ class PresenceService(
 
         return try {
             cacheClient.get(debateKey)?.let { debatePresenceJson ->
-                val typeRef = objectMapper.typeFactory.constructCollectionType(Set::class.java, AccountPresence::class.java)
+                val typeRef =
+                    objectMapper.typeFactory.constructCollectionType(Set::class.java, AccountPresence::class.java)
                 objectMapper.readValue<Set<AccountPresence>>(debatePresenceJson, typeRef)
             } ?: emptySet()
         } catch (e: Exception) {

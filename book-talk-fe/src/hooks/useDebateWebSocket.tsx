@@ -1,36 +1,42 @@
-import {useCallback, useEffect, useRef, useState} from 'react';
-import {PresenceWebSocket} from "../apis/presence";
+import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {DebateWebSocketClient, type WebSocketHandlers} from "../apis/websocket";
 
 /**
- * 토론방의 실시간 온라인 사용자 추적을 위한 훅
- * WebSocket을 통해 토론방 참여자들의 온라인/오프라인 상태를 실시간으로 관리합니다.
+ * 토론방의 실시간 WebSocket 연결을 관리하는 훅
+ * WebSocket을 통해 토론방의 모든 실시간 이벤트를 처리합니다.
  */
-export const useDebateOnlineAccounts = (debateId: string | null) => {
+export const useDebateWebSocket = (debateId: string | null, handlers: WebSocketHandlers) => {
     const [onlineAccountIds, setOnlineAccountIds] = useState<Set<string>>(new Set());
     const [isConnected, setIsConnected] = useState<boolean>(false);
-    const presenceWSRef = useRef<PresenceWebSocket | null>(null);
+    const wsClientRef = useRef<DebateWebSocketClient | null>(null);
     const heartbeatIntervalRef = useRef<number | null>(null);
+
+    // 핸들러와 내부 상태 관리를 결합 (메모이제이션)
+    const combinedHandlers = useMemo(() => ({
+        onPresenceUpdate: (onlineIds: Set<string>) => {
+            console.log('Received online account IDs:', onlineIds);
+            setOnlineAccountIds(onlineIds);
+            handlers.onPresenceUpdate?.(onlineIds);
+        },
+        onConnectionStatus: (connected: boolean) => {
+            console.log('Connection status changed:', connected);
+            setIsConnected(connected);
+            handlers.onConnectionStatus?.(connected);
+        },
+        onSpeakerUpdate: handlers.onSpeakerUpdate,
+        onDebateRoundUpdate: handlers.onDebateRoundUpdate
+    }), [handlers]);
 
     // WebSocket 연결 및 관리
     useEffect(() => {
         if (!debateId) return;
 
-        // PresenceWebSocket 인스턴스 생성
-        const presenceWS = new PresenceWebSocket();
-        presenceWSRef.current = presenceWS;
+        // DebateWebSocketClient 인스턴스 생성
+        const wsClient = new DebateWebSocketClient();
+        wsClientRef.current = wsClient;
 
         // 연결 시작
-        presenceWS.connect(
-            debateId,
-            (onlineIds) => {
-                console.log('Received online account IDs:', onlineIds);
-                setOnlineAccountIds(onlineIds);
-            },
-            (connected) => {
-                console.log('Connection status changed:', connected);
-                setIsConnected(connected);
-            }
-        );
+        wsClient.connect(debateId, combinedHandlers);
 
         // 정리 함수
         return () => {
@@ -39,20 +45,20 @@ export const useDebateOnlineAccounts = (debateId: string | null) => {
                 heartbeatIntervalRef.current = null;
             }
 
-            if (presenceWSRef.current) {
-                presenceWSRef.current.disconnect();
-                presenceWSRef.current = null;
+            if (wsClientRef.current) {
+                wsClientRef.current.disconnect();
+                wsClientRef.current = null;
             }
         };
-    }, [debateId]);
+    }, [debateId, combinedHandlers]);
 
     // 하트비트 관리
     useEffect(() => {
-        if (isConnected && presenceWSRef.current) {
+        if (isConnected && wsClientRef.current) {
             // 30초마다 하트비트 전송
             heartbeatIntervalRef.current = setInterval(() => {
                 console.log('Sending heartbeat...');
-                presenceWSRef.current?.sendHeartbeat();
+                wsClientRef.current?.sendHeartbeat();
             }, 30000);
         } else {
             // 연결이 끊어지면 하트비트 중단
@@ -79,6 +85,7 @@ export const useDebateOnlineAccounts = (debateId: string | null) => {
     return {
         isAccountOnline: checkAccountOnlineStatus,
         onlineAccountIds,
-        isPresenceConnected: isConnected
+        isConnected,
+        wsClient: wsClientRef.current
     };
 };

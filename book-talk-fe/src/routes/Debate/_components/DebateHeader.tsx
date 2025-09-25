@@ -13,8 +13,17 @@ export function DebateHeader({topic}: Props) {
     const navigate = useNavigate()
 
     const handleShareLink = async () => {
-        await navigator.clipboard.writeText(window.location.href);
-        toast.info("클립보드에 복사되었습니다.")
+        if (!navigator.clipboard) {
+            toast.error("클립보드 API를 지원하지 않는 환경입니다.");
+            return;
+        }
+
+        try {
+            await navigator.clipboard.writeText(window.location.href);
+            toast.info("클립보드에 복사되었습니다.");
+        } catch {
+            toast.error("클립보드 복사에 실패했습니다. 다시 시도해주세요.");
+        }
     }
 
     const handleLeave = () => {

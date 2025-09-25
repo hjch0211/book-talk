@@ -1,6 +1,6 @@
 package kr.co.booktalk.config
 
-import kr.co.booktalk.presence.PresenceWebSocketHandler
+import kr.co.booktalk.domain.presence.PresenceWebSocketHandler
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.socket.config.annotation.EnableWebSocket
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer

@@ -1,5 +1,5 @@
 import {useMutation, useQueryClient, useSuspenseQuery} from "@tanstack/react-query";
-import {findOneDebateQueryOptions, joinDebate} from "../apis/debate";
+import {createRound, createRoundSpeaker, findOneDebateQueryOptions, joinDebate, patchRoundSpeaker} from "../apis/debate";
 import {meQueryOption} from "../apis/account";
 import {useEffect, useMemo, useRef} from "react";
 
@@ -31,6 +31,29 @@ export const useDebate = ({debateId}: Props) => {
         mutationFn: (debateId: string) => joinDebate({debateId}),
         onSuccess: () => {
             void queryClient.invalidateQueries({queryKey: ['debates', debateId]});
+            window.location.reload();
+        }
+    });
+
+    const createRoundMutation = useMutation({
+        mutationFn: ({debateId, nextSpeakerId}: { debateId: string; nextSpeakerId: string }) =>
+            createRound({debateId, type: 'PRESENTATION', nextSpeakerId}),
+        onSuccess: () => {
+            void queryClient.invalidateQueries({queryKey: ['debates', debateId]});
+        }
+    });
+
+    const patchRoundSpeakerMutation = useMutation({
+        mutationFn: patchRoundSpeaker,
+        onSuccess: () => {
+            void queryClient.invalidateQueries({queryKey: ['debates', debateId]});
+        }
+    });
+
+    const createRoundSpeakerMutation = useMutation({
+        mutationFn: createRoundSpeaker,
+        onSuccess: () => {
+            void queryClient.invalidateQueries({queryKey: ['debates', debateId]});
         }
     });
 
@@ -51,6 +74,7 @@ export const useDebate = ({debateId}: Props) => {
     }, [debateId, _me?.id, isAlreadyMember]);
 
     const myMemberData = {
+        id: myMember?.id,
         role: myMember?.role
     }
 
@@ -83,6 +107,8 @@ export const useDebate = ({debateId}: Props) => {
     return {
         debate,
         myMemberData,
-        currentRoundInfo
+        currentRoundInfo,
+        createRoundMutation,
+        createRoundSpeakerMutation
     }
 }

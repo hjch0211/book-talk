@@ -434,13 +434,13 @@ export const MemberOrder = styled.div`
 export const MemberProfile = styled.div`
     box-sizing: border-box;
     display: flex;
-    flex-direction: row;
-    justify-content: flex-start;
+    flex-direction: column;
+    justify-content: center;
     align-items: flex-start;
-    padding: 16px 24px 16px 2px;
+    padding: 16px 24px;
     gap: 10px;
     isolation: isolate;
-    width: 252px;
+    width: 245px;
     height: 76px;
     background: #FFFFFF;
     border-width: 6px 18px 6px 0px;
@@ -463,9 +463,9 @@ export const MemberProfileBox = styled.div`
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 0px;
+    padding: 0;
     gap: 14px;
-    width: auto;
+    width: 100%;
     height: 40px;
     flex: none;
     order: 0;
@@ -482,8 +482,6 @@ export const MemberInfo = styled.div`
     gap: 2px;
     height: 20px;
     flex: none;
-    order: 1;
-    flex-grow: 0;
 `;
 
 export const MemberName = styled.div`
@@ -515,18 +513,6 @@ export const AvatarContainer = styled.div`
     order: 0;
     flex-grow: 0;
     position: relative;
-`;
-
-export const OnlineIndicator = styled.div`
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    background: #4CAF50;
-    border: 2px solid #FFFFFF;
-    border-radius: 50%;
-    top: -2px;
-    right: -2px;
-    z-index: 2;
 `;
 
 export const BookCrownIcon = styled.div`
@@ -571,6 +557,15 @@ export const MemberMenuButton = styled.div`
     order: 1;
     flex-grow: 0;
     z-index: 1;
+`;
+
+export const SpeakerTimer = styled.div`
+    font-family: 'S-Core Dream', sans-serif;
+    font-weight: 300;
+    font-size: 11px;
+    line-height: 13px;
+    color: #7B7B7B;
+    margin-left: auto;
 `;
 
 export const ActionButton = styled(Button)`
@@ -632,7 +627,7 @@ export const ActionButton = styled(Button)`
         display: none;
     }
 
-    &:hover {
+    &:hover:not(:disabled) {
         &::after {
             background: #EAECFF;
         }
@@ -650,6 +645,29 @@ export const ActionButton = styled(Button)`
 
     &.Mui-focusVisible {
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Disabled state */
+    &:disabled,
+    &.Mui-disabled {
+        background: #C4C4C4;
+        border: 1px solid #C4C4C4;
+        color: #9D9D9D;
+        cursor: not-allowed;
+        box-shadow: none;
+
+        &::before {
+            display: none;
+        }
+
+        &::after {
+            background: #C4C4C4;
+        }
+
+        &:hover {
+            background: #C4C4C4;
+            box-shadow: none;
+        }
     }
 `;
 

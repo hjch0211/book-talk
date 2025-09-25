@@ -41,11 +41,12 @@ class DebateService(
         val members = debateMemberRepository.findAllByDebateOrderByCreatedAtAsc(debate)
         val presentations = presentationRepository.findAllByDebateOrderByCreatedAtAsc(debate)
         val currentRound = debateRoundRepository.findByDebateAndEndedAtIsNull(debate)
-        val currentSpeakerId = currentRound
+        val currentSpeaker = currentRound
             ?.let { debateRoundSpeakerRepository.findByDebateRoundAndEndedAtIsAfter(it, Instant.now()) }
-            ?.account?.id.toString()
+        val currentSpeakerId = currentSpeaker?.account?.id?.toString()
+        val currentSpeakerEndedAt = currentSpeaker?.endedAt
 
-        return debate.toResponse(members, presentations, currentRound, currentSpeakerId)
+        return debate.toResponse(members, presentations, currentRound, currentSpeakerId, currentSpeakerEndedAt)
     }
 
     @Transactional
