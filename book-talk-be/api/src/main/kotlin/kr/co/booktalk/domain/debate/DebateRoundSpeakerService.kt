@@ -1,7 +1,10 @@
 package kr.co.booktalk.domain.debate
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import io.github.oshai.kotlinlogging.KotlinLogging
 import kr.co.booktalk.cache.AppConfigService
 import kr.co.booktalk.domain.*
+import kr.co.booktalk.domain.presence.PresenceWebSocketHandler
 import kr.co.booktalk.httpBadRequest
 import kr.co.booktalk.toUUID
 import org.springframework.data.repository.findByIdOrNull
@@ -9,14 +12,42 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 
+/**
+ * 토론 발표자 관리 서비스
+ *
+ * 주요 기능:
+ * - 발표자 생성/수정 시 해당 토론방의 모든 WebSocket 클라이언트에게 실시간 브로드캐스트
+ * - 현재 발표자 정보 조회 (endedAt > now() 조건으로 유효한 발표자만)
+ * - 단일 서버 환경에서 동작 (분산 환경 지원 없음)
+ *
+ * WebSocket 메시지 구조:
+ * {
+ *   "type": "SPEAKER_UPDATE",
+ *   "debateId": "토론방ID",
+ *   "currentSpeaker": {
+ *     "accountId": "발표자ID",
+ *     "accountName": "발표자명",
+ *     "endedAt": 종료시간(timestamp)
+ *   },
+ *   "nextSpeaker": {
+ *     "accountId": "다음발표자ID",
+ *     "accountName": "다음발표자명"
+ *   }
+ * }
+ */
 @Service
 class DebateRoundSpeakerService(
     private val accountRepository: AccountRepository,
     private val debateRoundSpeakerRepository: DebateRoundSpeakerRepository,
     private val debateRoundRepository: DebateRoundRepository,
     private val appConfigService: AppConfigService,
-    private val debateMemberRepository: DebateMemberRepository
+    private val debateMemberRepository: DebateMemberRepository,
+    private val objectMapper: ObjectMapper,
+    private val presenceWebSocketHandler: PresenceWebSocketHandler
 ) {
+    private val logger = KotlinLogging.logger {}
+
+    @Transactional
     fun create(request: CreateRoundSpeakerRequest) {
         val debateRound = debateRoundRepository.findByIdOrNull(request.debateRoundId)
             ?: httpBadRequest("존재하지 않는 토론 라운드입니다.")
@@ -25,6 +56,16 @@ class DebateRoundSpeakerService(
         if (!debateMemberRepository.existsByDebateAndAccount(debateRound.debate, speaker))
             httpBadRequest("발언자가 토론 멤버가 아닙니다.")
 
+        // 현재 활성 발언자가 있다면 종료 처리
+        val currentSpeaker = debateRoundSpeakerRepository.findByDebateRoundAndEndedAtIsAfter(
+            debateRound, Instant.now()
+        )
+        currentSpeaker?.let {
+            it.endedAt = Instant.now()
+            debateRoundSpeakerRepository.save(it)
+        }
+
+        // 새로운 발언자 생성
         debateRoundSpeakerRepository.save(
             DebateRoundSpeakerEntity(
                 account = speaker,
@@ -32,6 +73,11 @@ class DebateRoundSpeakerService(
                 endedAt = Instant.now().plusSeconds(appConfigService.debateRoundSpeakerSeconds())
             )
         )
+        logger.info { "새 발언자 생성: accountId=${speaker.id}, debateRoundId=${debateRound.id}" }
+
+        // WebSocket으로 발표자 정보 브로드캐스트
+        val debateId = debateRound.debate.id.toString()
+        broadcastSpeakerUpdate(debateId)
     }
 
     @Transactional
@@ -39,11 +85,78 @@ class DebateRoundSpeakerService(
         val speaker = debateRoundSpeakerRepository.findByIdOrNull(request.debateRoundSpeakerId)
             ?: httpBadRequest("존재하지 않는 토론 발언자입니다.")
 
+        var updated = false
+
         request.extension?.takeIf { it }?.let {
             speaker.endedAt = speaker.endedAt.plusSeconds(appConfigService.debateRoundSpeakerSeconds())
+            updated = true
         }
         request.ended?.takeIf { it }?.let {
             speaker.endedAt = Instant.now()
+            updated = true
+        }
+
+        // 변경사항이 있을 때만 WebSocket 브로드캐스트
+        if (updated) {
+            val debateId = speaker.debateRound.debate.id.toString()
+            broadcastSpeakerUpdate(debateId)
+        }
+    }
+
+    /**
+     * 현재 발표자 정보를 조회합니다
+     */
+    fun getCurrentSpeaker(debateId: String): Map<String, Any?>? {
+        return try {
+            val debateUUID = java.util.UUID.fromString(debateId)
+            val currentRound = debateRoundRepository.findByDebateIdAndEndedAtIsNull(debateUUID)
+                ?: return null
+
+            val currentSpeaker = debateRoundSpeakerRepository.findByDebateRoundAndEndedAtIsAfter(
+                currentRound, Instant.now()
+            ) ?: return null
+
+            mapOf(
+                "debateId" to debateId,
+                "currentSpeaker" to mapOf(
+                    "accountId" to currentSpeaker.account.id.toString(),
+                    "accountName" to currentSpeaker.account.name,
+                    "endedAt" to currentSpeaker.endedAt.toEpochMilli()
+                ),
+                "nextSpeaker" to if (currentRound.nextSpeaker != null) {
+                    mapOf(
+                        "accountId" to currentRound.nextSpeaker!!.id.toString(),
+                        "accountName" to currentRound.nextSpeaker!!.name
+                    )
+                } else null
+            )
+        } catch (e: Exception) {
+            logger.error(e) { "현재 발표자 정보 조회 실패: debateId=$debateId" }
+            null
+        }
+    }
+
+    /**
+     * 발표자 정보 변경을 해당 토론방의 모든 WebSocket 클라이언트에게 직접 브로드캐스트합니다
+     */
+    private fun broadcastSpeakerUpdate(debateId: String) {
+        try {
+            val speakerInfo = getCurrentSpeaker(debateId)
+
+            val message = mapOf(
+                "type" to "SPEAKER_UPDATE",
+                "debateId" to debateId,
+                "currentSpeaker" to speakerInfo?.get("currentSpeaker"),
+                "nextSpeaker" to speakerInfo?.get("nextSpeaker")
+            )
+
+            // 해당 토론방의 모든 WebSocket 세션에 직접 브로드캐스트
+            val messageJson = objectMapper.writeValueAsString(message)
+            presenceWebSocketHandler.broadcastToDebateRoom(debateId, messageJson)
+
+            logger.info { "발표자 정보 브로드캐스트 완료: debateId=$debateId" }
+        } catch (e: Exception) {
+            logger.error(e) { "발표자 정보 브로드캐스트 실패: debateId=$debateId" }
         }
     }
 }

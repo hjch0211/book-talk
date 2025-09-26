@@ -4,9 +4,10 @@ import { SavedTimeIndicator } from '../Debate.style';
 interface LastModifiedProps {
     lastSavedAt: Date | null;
     isEditable: boolean;
+    isSaving: boolean;
 }
 
-export const LastModified = ({ lastSavedAt, isEditable }: LastModifiedProps) => {
+export const LastModified = ({ lastSavedAt, isEditable, isSaving }: LastModifiedProps) => {
     const [currentTime, setCurrentTime] = useState(new Date());
 
     // 1분마다 현재 시간 업데이트
@@ -53,7 +54,15 @@ export const LastModified = ({ lastSavedAt, isEditable }: LastModifiedProps) => 
         }
     }, [lastSavedAt, currentTime]);
 
-    if (!isEditable || !lastSaved) {
+    if (!isEditable) {
+        return null;
+    }
+
+    if (isSaving) {
+        return <SavedTimeIndicator>저장중...</SavedTimeIndicator>;
+    }
+
+    if (!lastSaved) {
         return null;
     }
 

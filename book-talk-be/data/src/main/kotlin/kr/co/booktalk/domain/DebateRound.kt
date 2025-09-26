@@ -34,4 +34,5 @@ enum class DebateRoundType {
 @Repository
 interface DebateRoundRepository : JpaRepository<DebateRoundEntity, Long> {
     fun findByDebateAndEndedAtIsNull(debate: DebateEntity): DebateRoundEntity?
+    fun findByDebateIdAndEndedAtIsNull(debateId: java.util.UUID): DebateRoundEntity?
 }

@@ -154,10 +154,11 @@ export const PresentationArea = styled.div`
     gap: 10px;
     width: 970px;
     min-height: 224px;
+    max-height: 80vh; /* 뷰포트 높이의 80%까지만 늘어남 */
     background: #FFFFFF;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
     border-radius: 24px;
-    overflow-y: scroll;
+    overflow-y: auto;
     position: relative;
 
     .presentation-editor {
@@ -193,9 +194,10 @@ export const PresentationArea = styled.div`
         p {
             margin: 0 0 12px 0;
             font-family: 'S-Core Dream', sans-serif;
-            font-weight: 300;
-            font-size: 16px;
-            line-height: 1.6;
+            font-weight: 200;
+            font-size: 18px;
+            line-height: 180%;
+            letter-spacing: 0.3px;
             color: #262626;
 
             &:last-child {
@@ -416,16 +418,17 @@ export const MemberItem = styled(ListItem)`
 `;
 
 export const MemberOrder = styled.div`
-    width: 7px;
-    height: 13px;
+    width: 42px;
+    height: 100%;
     font-family: 'S-Core Dream', sans-serif;
     font-weight: 300;
     font-size: 11px;
     line-height: 13px;
     color: #434343;
-    flex: none;
-    order: 0;
-    flex-grow: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: start;
 `;
 
 export const MemberProfile = styled.div`
@@ -448,15 +451,21 @@ export const MemberProfile = styled.div`
     order: 1;
     flex-grow: 0;
     position: relative;
+
+    &:hover {
+        background-color: rgba(0, 0, 0, 0.04);
+        cursor: pointer;
+        transition: background-color 0.2s ease;
+    }
 `;
 
 export const MemberProfileBox = styled.div`
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 0px;
+    padding: 0;
     gap: 14px;
-    width: auto;
+    width: 100%;
     height: 40px;
     flex: none;
     order: 0;
@@ -473,8 +482,6 @@ export const MemberInfo = styled.div`
     gap: 2px;
     height: 20px;
     flex: none;
-    order: 1;
-    flex-grow: 0;
 `;
 
 export const MemberName = styled.div`
@@ -552,6 +559,15 @@ export const MemberMenuButton = styled.div`
     z-index: 1;
 `;
 
+export const SpeakerTimer = styled.div`
+    font-family: 'S-Core Dream', sans-serif;
+    font-weight: 300;
+    font-size: 11px;
+    line-height: 13px;
+    color: #7B7B7B;
+    margin-left: auto;
+`;
+
 export const ActionButton = styled(Button)`
     box-sizing: border-box;
     display: flex;
@@ -611,7 +627,7 @@ export const ActionButton = styled(Button)`
         display: none;
     }
 
-    &:hover {
+    &:hover:not(:disabled) {
         &::after {
             background: #EAECFF;
         }
@@ -629,6 +645,29 @@ export const ActionButton = styled(Button)`
 
     &.Mui-focusVisible {
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Disabled state */
+    &:disabled,
+    &.Mui-disabled {
+        background: #C4C4C4;
+        border: 1px solid #C4C4C4;
+        color: #9D9D9D;
+        cursor: not-allowed;
+        box-shadow: none;
+
+        &::before {
+            display: none;
+        }
+
+        &::after {
+            background: #C4C4C4;
+        }
+
+        &:hover {
+            background: #C4C4C4;
+            box-shadow: none;
+        }
     }
 `;
 

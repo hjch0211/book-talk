@@ -1,7 +1,10 @@
 package kr.co.booktalk.domain.debate
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import kr.co.booktalk.cache.AppConfigService
 import kr.co.booktalk.domain.*
 import kr.co.booktalk.domain.auth.AuthAccount
+import kr.co.booktalk.domain.presence.PresenceWebSocketHandler
 import kr.co.booktalk.httpBadRequest
 import kr.co.booktalk.httpForbidden
 import kr.co.booktalk.toUUID
@@ -16,7 +19,12 @@ class DebateRoundService(
     private val debateMemberRepository: DebateMemberRepository,
     private val accountRepository: AccountRepository,
     private val debateRoundRepository: DebateRoundRepository,
+    private val debateRoundSpeakerRepository: DebateRoundSpeakerRepository,
+    private val appConfigService: AppConfigService,
+    private val presenceWebSocketHandler: PresenceWebSocketHandler,
+    private val objectMapper: ObjectMapper,
 ) {
+    @Transactional
     fun create(request: CreateRoundRequest, authAccount: AuthAccount) {
         if (!isHost(request.debateId, authAccount.id)) httpForbidden("토론 방장이 아닙니다.")
         val debate = debateRepository.findByIdOrNull(request.debateId.toUUID())
@@ -25,7 +33,22 @@ class DebateRoundService(
             ?: httpBadRequest("존재하지 않는 계정입니다.")
         if (!debateMemberRepository.existsByDebateAndAccount(debate, nextSpeaker)) httpBadRequest("발언자가 토론 멤버가 아닙니다.")
 
-        debateRoundRepository.save(request.toEntity(debate, nextSpeaker))
+        // 이전 라운드가 있다면 종료 처리
+        debateRoundRepository.findByDebateAndEndedAtIsNull(debate)?.let { existingRound ->
+            existingRound.endedAt = Instant.now()
+        }
+
+        val debateRound = debateRoundRepository.saveAndFlush(request.toEntity(debate))
+        debateRoundSpeakerRepository.save(
+            DebateRoundSpeakerEntity(
+                account = nextSpeaker,
+                debateRound = debateRound,
+                endedAt = Instant.now().plusSeconds(appConfigService.debateRoundSpeakerSeconds())
+            )
+        )
+
+        // WebSocket을 통해 토론 라운드 업데이트 브로드캐스트
+        broadcastDebateRoundUpdate(request.debateId, debateRound, nextSpeaker)
     }
 
     @Transactional
@@ -46,6 +69,40 @@ class DebateRoundService(
             accountId.toUUID(),
             DebateMemberRole.HOST
         )
+    }
+
+    /** WebSocket을 통해 토론 라운드 업데이트를 브로드캐스트합니다. */
+    private fun broadcastDebateRoundUpdate(
+        debateId: String,
+        debateRound: DebateRoundEntity,
+        nextSpeaker: AccountEntity
+    ) {
+        try {
+            val message = mapOf(
+                "type" to "DEBATE_ROUND_UPDATE",
+                "debateId" to debateId,
+                "round" to mapOf(
+                    "id" to debateRound.id,
+                    "type" to debateRound.type.name,
+                    "nextSpeakerId" to nextSpeaker.id.toString(),
+                    "nextSpeakerName" to nextSpeaker.name,
+                    "createdAt" to debateRound.createdAt.toEpochMilli(),
+                    "endedAt" to debateRound.endedAt?.toEpochMilli()
+                ),
+                // SPEAKER_UPDATE 형태로도 함께 전송하여 currentSpeaker 설정
+                "currentSpeaker" to mapOf(
+                    "accountId" to nextSpeaker.id.toString(),
+                    "accountName" to nextSpeaker.name,
+                    "endedAt" to (System.currentTimeMillis() + appConfigService.debateRoundSpeakerSeconds() * 1000)
+                )
+            )
+
+            val messageJson = objectMapper.writeValueAsString(message)
+            presenceWebSocketHandler.broadcastToDebateRoom(debateId, messageJson)
+        } catch (e: Exception) {
+            // 브로드캐스트 실패는 로그만 남기고 메인 로직에는 영향 없도록 처리
+            println("토론 라운드 브로드캐스트 실패: debateId=$debateId, error=${e.message}")
+        }
     }
 
 

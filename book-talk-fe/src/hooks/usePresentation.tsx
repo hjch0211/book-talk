@@ -1,19 +1,23 @@
-import {useMutation, useQueryClient, useSuspenseQuery} from '@tanstack/react-query';
+import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {
     findOnePresentation,
     findOnePresentationQueryOptions,
     type PatchContentRequest,
     patchPresentationContent
 } from '../apis/presentation';
-import {useCallback, useMemo, useRef} from 'react';
+import {useCallback, useMemo, useRef, useState} from 'react';
 import {useJsonPatch} from "./useJsonPatch.tsx";
 
 export const usePresentation = (
-    presentationId: string | null,
+    presentationId?: string,
 ) => {
     const queryClient = useQueryClient();
-    const suspenseResult = useSuspenseQuery(findOnePresentationQueryOptions(presentationId ?? undefined));
+    const queryResult = useQuery({
+        ...findOnePresentationQueryOptions(presentationId),
+        enabled: !!presentationId
+    });
     const debounceTimerRef = useRef<number | null>(null);
+    const [isDebouncing, setIsDebouncing] = useState(false);
     const {compare} = useJsonPatch()
 
     const fetchPresentation = useCallback(async (id: string) => {
@@ -36,6 +40,9 @@ export const usePresentation = (
     const autoSave = useCallback((editorJsonData: any) => {
         if (!editorJsonData || !presentationId) return;
 
+        // 디바운스 시작 플래그 설정
+        setIsDebouncing(true);
+
         // 기존 타이머 클리어
         if (debounceTimerRef.current) {
             clearTimeout(debounceTimerRef.current);
@@ -43,31 +50,32 @@ export const usePresentation = (
 
         // 1초 후 자동 저장
         debounceTimerRef.current = window.setTimeout(async () => {
-            const res = compare(JSON.parse(suspenseResult.data.content), editorJsonData);
-            console.log(suspenseResult.data.content, editorJsonData, res)
-
             try {
                 await patchPresentation.mutateAsync({
                     id: presentationId,
-                    patches: compare(JSON.parse(suspenseResult.data.content), editorJsonData)
+                    patches: compare(JSON.parse(queryResult.data?.content || '{}'), editorJsonData)
                 });
             } catch (error) {
                 console.error('Auto save failed:', error);
+            } finally {
+                setIsDebouncing(false);
             }
         }, 1000);
-    }, [compare, patchPresentation, presentationId, suspenseResult.data.content]);
+    }, [compare, patchPresentation, presentationId, queryResult.data?.content]);
 
     const lastSavedAt = useMemo(() => {
-        if (suspenseResult.data?.lastUpdatedAt) {
-            return new Date(suspenseResult.data.lastUpdatedAt);
+        if (queryResult.data?.lastUpdatedAt) {
+            return new Date(queryResult.data.lastUpdatedAt);
         }
         return null;
-    }, [suspenseResult.data?.lastUpdatedAt]);
+    }, [queryResult.data?.lastUpdatedAt]);
 
     return {
-        currentPresentation: suspenseResult.data,
+        currentPresentation: queryResult.data,
         fetchPresentation,
         autoSave,
-        lastSavedAt
+        lastSavedAt,
+        isSaving: patchPresentation.isPending || isDebouncing,
+        isLoading: queryResult.isLoading
     };
 };

@@ -16,8 +16,20 @@ import {
     MemberName,
     MemberOrder,
     MemberProfile,
-    MemberProfileBox
+    MemberProfileBox,
+    SpeakerTimer
 } from '../Debate.style';
+
+interface CurrentSpeaker {
+    accountId: string;
+    accountName: string;
+    endedAt?: number;
+}
+
+interface NextSpeaker {
+    accountId: string;
+    accountName: string;
+}
 
 interface Props {
     members: Array<{
@@ -26,9 +38,20 @@ interface Props {
         role: 'HOST' | 'MEMBER';
         isCurrentUser?: boolean;
     }>;
+    currentSpeaker?: CurrentSpeaker | null;
+    nextSpeaker?: NextSpeaker | null;
+    realTimeRemainingSeconds: number;
 }
 
-export function DebateMemberList({members}: Props) {
+function formatTime(seconds: number): string {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}
+
+export function DebateMemberList({members, currentSpeaker, nextSpeaker, realTimeRemainingSeconds}: Props) {
+    const isCurrentSpeaker = (memberId: string) => currentSpeaker?.accountId === memberId;
+    const isNextSpeaker = (memberId: string) => nextSpeaker?.accountId === memberId;
     return (
         <MemberListContainer>
             <MemberListHeader>
@@ -38,36 +61,70 @@ export function DebateMemberList({members}: Props) {
             </MemberListHeader>
 
             <MemberList>
-                {members.map((member, index) => (
-                    <MemberItem key={member.id}>
-                        <MemberOrder>{index + 1}</MemberOrder>
-                        <MemberProfile>
-                            <MemberProfileBox>
-                                <AvatarContainer>
-                                    <Avatar sx={{width: 40, height: 40, bgcolor: '#BDBDBD', borderRadius: '100px'}}>
-                                        <Person sx={{color: '#FFFFFF'}}/>
-                                    </Avatar>
-                                    {member.role === 'HOST' && (
-                                        <BookCrownIcon>
-                                            <img src={hostIconSvg} alt="Host Icon" width={40} height={26}/>
-                                        </BookCrownIcon>
-                                    )}
-                                </AvatarContainer>
-                                <MemberInfo>
-                                    <MemberName>
-                                        {member.name}
-                                        {member.isCurrentUser && (
-                                            <CurrentUserIndicator>(나)</CurrentUserIndicator>
+                {members.map((member, index) => {
+                    const isCurrent = isCurrentSpeaker(member.id);
+                    const isNext = isNextSpeaker(member.id);
+                    const profileBackgroundColor = isCurrent ? '#F5F5F5' : '#FFFFFF';
+
+                    return (
+                        <MemberItem key={member.id}>
+                            <MemberOrder>{index + 1}</MemberOrder>
+                            <MemberProfile style={{backgroundColor: profileBackgroundColor}}>
+                                <MemberProfileBox>
+                                    <AvatarContainer>
+                                        <Avatar sx={{width: 40, height: 40, bgcolor: '#BDBDBD', borderRadius: '100px'}}>
+                                            <Person sx={{color: '#FFFFFF'}}/>
+                                        </Avatar>
+                                        {member.role === 'HOST' && (
+                                            <BookCrownIcon>
+                                                <img src={hostIconSvg} alt="Host Icon" width={40} height={26}/>
+                                            </BookCrownIcon>
                                         )}
-                                    </MemberName>
-                                </MemberInfo>
-                            </MemberProfileBox>
-                            <MemberMenuButton>
-                                <MoreVert/>
-                            </MemberMenuButton>
-                        </MemberProfile>
-                    </MemberItem>
-                ))}
+                                    </AvatarContainer>
+                                    <MemberInfo>
+                                        <MemberName>
+                                            {member.name}
+                                            {member.isCurrentUser && (
+                                                <CurrentUserIndicator>(나)</CurrentUserIndicator>
+                                            )}
+                                        </MemberName>
+                                        {isCurrent && (
+                                            <div style={{
+                                                fontSize: '12px',
+                                                lineHeight: '150%',
+                                                letterSpacing: '0.3px',
+                                                color: '#7B7B7B',
+                                                fontWeight: 200
+                                            }}>
+                                                발표중...
+                                            </div>
+                                        )}
+                                        {isNext && (
+                                            <div style={{
+                                                fontSize: '12px',
+                                                lineHeight: '150%',
+                                                letterSpacing: '0.3px',
+                                                color: '#7B7B7B',
+                                                fontWeight: 200
+                                            }}>
+                                                다음 발표자
+                                            </div>
+                                        )}
+                                    </MemberInfo>
+                                    {isCurrent && realTimeRemainingSeconds > 0 && (
+                                        <SpeakerTimer>
+                                            {formatTime(realTimeRemainingSeconds)}
+                                        </SpeakerTimer>
+                                    )}
+                                </MemberProfileBox>
+
+                                <MemberMenuButton style={{display: 'none'}}>
+                                    <MoreVert/>
+                                </MemberMenuButton>
+                            </MemberProfile>
+                        </MemberItem>
+                    );
+                })}
             </MemberList>
             <MemberListGradient/>
         </MemberListContainer>
