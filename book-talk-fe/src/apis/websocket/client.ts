@@ -68,6 +68,16 @@ export class DebateWebSocketClient {
         return this.ws?.readyState === WebSocket.OPEN;
     }
 
+    sendVoiceMessage(message: Omit<WebSocketMessage, 'debateId'>): void {
+        if (this.ws?.readyState === WebSocket.OPEN && this.debateId) {
+            const voiceMessage = {
+                ...message,
+                debateId: this.debateId
+            };
+            this.ws.send(JSON.stringify(voiceMessage));
+        }
+    }
+
     private establishConnection() {
         if (!this.debateId) return;
 
@@ -186,6 +196,16 @@ export class DebateWebSocketClient {
                 // TODO: 추 후 새로고침말고 다른 방법 찾기
                 window.location.reload();
                 break;
+            case 'VOICE_JOIN':
+            case 'VOICE_LEAVE':
+            case 'VOICE_OFFER':
+            case 'VOICE_ANSWER':
+            case 'VOICE_ICE':
+            case 'VOICE_STATE':
+                if (this.handlers.onVoiceSignaling) {
+                    this.handlers.onVoiceSignaling(message);
+                }
+                break;
             default:
                 console.log('Unknown message type:', message.type);
         }
@@ -206,7 +226,7 @@ export class DebateWebSocketClient {
 }
 
 export interface WebSocketMessage {
-    type: 'JOIN_DEBATE' | 'LEAVE_DEBATE' | 'PRESENCE_UPDATE' | 'JOIN_SUCCESS' | 'HEARTBEAT' | 'HEARTBEAT_ACK' | 'SPEAKER_UPDATE' | 'SPEAKER_TIME_UPDATE' | 'SPEAKER_ENDED' | 'DEBATE_ROUND_UPDATE';
+    type: 'JOIN_DEBATE' | 'LEAVE_DEBATE' | 'PRESENCE_UPDATE' | 'JOIN_SUCCESS' | 'HEARTBEAT' | 'HEARTBEAT_ACK' | 'SPEAKER_UPDATE' | 'SPEAKER_TIME_UPDATE' | 'SPEAKER_ENDED' | 'DEBATE_ROUND_UPDATE' | 'VOICE_JOIN' | 'VOICE_LEAVE' | 'VOICE_OFFER' | 'VOICE_ANSWER' | 'VOICE_ICE' | 'VOICE_STATE';
     debateId?: string;
     accountId?: string;
     accountName?: string;
@@ -239,11 +259,19 @@ export interface WebSocketMessage {
         createdAt: number;
         endedAt?: number;
     };
+    // Voice 관련 필드
+    fromId?: string;
+    toId?: string;
+    offer?: RTCSessionDescriptionInit;
+    answer?: RTCSessionDescriptionInit;
+    iceCandidate?: RTCIceCandidateInit;
+    isMuted?: boolean;
 }
 
 export interface WebSocketHandlers {
     onPresenceUpdate?: (onlineAccountIds: Set<string>) => void;
     onConnectionStatus?: (connected: boolean) => void;
-    onSpeakerUpdate?: (speakerInfo: any) => void;
-    onDebateRoundUpdate?: (roundInfo: any) => void;
+    onSpeakerUpdate?: (speakerInfo: unknown) => void;
+    onDebateRoundUpdate?: (roundInfo: unknown) => void;
+    onVoiceSignaling?: (message: WebSocketMessage) => void;
 }

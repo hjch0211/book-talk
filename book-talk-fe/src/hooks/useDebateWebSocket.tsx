@@ -24,7 +24,8 @@ export const useDebateWebSocket = (debateId: string | null, handlers: WebSocketH
             handlers.onConnectionStatus?.(connected);
         },
         onSpeakerUpdate: handlers.onSpeakerUpdate,
-        onDebateRoundUpdate: handlers.onDebateRoundUpdate
+        onDebateRoundUpdate: handlers.onDebateRoundUpdate,
+        onVoiceSignaling: handlers.onVoiceSignaling
     }), [handlers]);
 
     // WebSocket 연결 및 관리

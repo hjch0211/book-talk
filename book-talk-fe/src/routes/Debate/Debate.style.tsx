@@ -568,14 +568,13 @@ export const SpeakerTimer = styled.div`
     margin-left: auto;
 `;
 
-export const ActionButton = styled(Button)`
+export const ActionButton = styled(Button)<{ borderColor?: string, backgroundColor?: string }>`
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
     padding: 16px 32px;
-    position: absolute;
     width: 193px;
     height: 64px;
     left: 1167px;
@@ -600,7 +599,7 @@ export const ActionButton = styled(Button)`
         inset: 0;
         border-radius: 24px;
         padding: 2px;
-        background: linear-gradient(110deg, #1A00E2 28.5%, #FF7544 86.82%);
+        background: ${({borderColor}) => borderColor || "linear-gradient(110deg, #1A00E2 28.5%, #FF7544 86.82%)"};
         mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
         mask-composite: exclude;
         -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -614,7 +613,7 @@ export const ActionButton = styled(Button)`
         content: '';
         position: absolute;
         inset: 2px;
-        background: #F7F8FF;
+        background: ${({backgroundColor}) => backgroundColor || "#F7F8FF"};
         border-radius: 22px;
         z-index: -1;
     }
@@ -629,7 +628,8 @@ export const ActionButton = styled(Button)`
 
     &:hover:not(:disabled) {
         &::after {
-            background: #EAECFF;
+            background: ${({borderColor}) => borderColor || "#EAECFF"};
+            opacity: 0.6;
         }
 
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -648,6 +648,7 @@ export const ActionButton = styled(Button)`
     }
 
     /* Disabled state */
+
     &:disabled,
     &.Mui-disabled {
         background: #C4C4C4;

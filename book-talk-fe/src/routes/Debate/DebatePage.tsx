@@ -1,6 +1,7 @@
-import {Suspense, useCallback, useEffect, useMemo, useState} from 'react';
+import {Suspense, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {useQueryClient} from "@tanstack/react-query";
+import {Stack} from '@mui/material';
 import MainContainer from '../../components/MainContainer/MainContainer';
 import {DebateHeader} from './_components/DebateHeader';
 import {DebatePresentation} from './_components/DebatePresentation';
@@ -10,9 +11,65 @@ import {useDebate} from "../../hooks/useDebate.tsx";
 import {useDebateWebSocket} from "../../hooks/useDebateWebSocket.tsx";
 import {useDebateRoundSpeaker} from "../../hooks/useDebateRoundSpeaker";
 import StartDebateModal from "./_components/StartDebateModal.tsx";
+import {VoiceChatProvider} from "../../contexts/VoiceChatContext";
+import {useVoiceChat} from "../../hooks/useVoiceChat";
+import type {WebSocketMessage} from "../../apis/websocket";
+import micOffSvg from "../../assets/mic-off.svg";
+import micOnSvg from "../../assets/mic-on.svg";
 
 interface Props {
-    debateId?: string
+    debateId: string | undefined;
+}
+
+function MicrophoneControl() {
+    const {isJoined, isMuted, toggleMute, joinVoiceChat, isConnecting} = useVoiceChat();
+
+    const handleClick = async () => {
+        try {
+            if (!isJoined) {
+                await joinVoiceChat();
+            } else {
+                toggleMute();
+            }
+        } catch (error) {
+            // 마이크 권한이 거부된 경우
+            if (error instanceof Error) {
+                if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+                    alert('마이크 권한이 필요합니다. 브라우저 설정에서 마이크 권한을 허용해주세요.');
+                } else {
+                    console.error('Failed to join voice chat:', error);
+                    alert('음성 채팅 연결에 실패했습니다.');
+                }
+            }
+        }
+    };
+
+
+    const getMicIcon = () => {
+        if (!isJoined) {
+            // 미참여 상태: 회색 마이크 오프
+            return <img src={micOffSvg} alt="음성 채팅 참여" width={14} height={19}/>;
+        } else if (isMuted) {
+            // 참여 중 + 음소거: 회색 마이크 오프
+            return <img src={micOffSvg} alt="마이크 켜기" width={14} height={19}/>;
+        } else {
+            // 참여 중 + 마이크 켜짐: 흰색 마이크 온
+            return <img src={micOnSvg} alt="마이크 끄기" width={14} height={19}
+                        style={{filter: 'brightness(0) invert(1)'}}/>;
+        }
+    };
+
+    return (
+        <ActionButton
+            onClick={handleClick}
+            disabled={isConnecting}
+            title={!isJoined ? "음성 채팅 참여" : (isMuted ? "마이크 켜기" : "마이크 끄기")}
+            borderColor={'#FF8E66'}
+            backgroundColor={"#FFFFFF"}
+        >
+            {getMicIcon()}
+        </ActionButton>
+    );
 }
 
 function DebatePageContent({debateId}: Props) {
@@ -45,12 +102,39 @@ function DebatePageContent({debateId}: Props) {
         }
     }, [queryClient, debateId]);
 
+    // Voice chat signaling handler reference
+    const voiceSignalingHandlerRef = useRef<((message: WebSocketMessage) => void) | null>(null);
+    const wsClientRef = useRef<{
+        isConnected: () => boolean;
+        sendVoiceMessage: (message: WebSocketMessage) => void
+    } | null>(null);
+
+    const handleVoiceSignaling = useCallback((message: WebSocketMessage) => {
+        console.log('Voice signaling message received:', message);
+        if (voiceSignalingHandlerRef.current) {
+            voiceSignalingHandlerRef.current(message);
+        }
+    }, []);
+
     const handlers = useMemo(() => ({
         onSpeakerUpdate: handleSpeakerUpdate,
-        onDebateRoundUpdate: handleDebateRoundUpdate
-    }), [handleSpeakerUpdate, handleDebateRoundUpdate]);
+        onDebateRoundUpdate: handleDebateRoundUpdate,
+        onVoiceSignaling: handleVoiceSignaling
+    }), [handleSpeakerUpdate, handleDebateRoundUpdate, handleVoiceSignaling]);
 
-    const {isAccountOnline} = useDebateWebSocket(debateId || null, handlers);
+    const {isAccountOnline, wsClient} = useDebateWebSocket(debateId || null, handlers);
+
+    // Store wsClient reference for use in voice chat
+    useEffect(() => {
+        wsClientRef.current = wsClient;
+    }, [wsClient]);
+
+    // Voice chat WebSocket message sender
+    const sendVoiceMessage = useCallback((message: WebSocketMessage) => {
+        if (wsClientRef.current?.isConnected()) {
+            wsClientRef.current.sendVoiceMessage(message);
+        }
+    }, []);
 
     const membersWithPresence = useMemo(() => {
         return debate.members.filter(member => isAccountOnline(member.id));
@@ -138,42 +222,57 @@ function DebatePageContent({debateId}: Props) {
 
     return (
         <MainContainer isAuthPage>
-            <DebateContainer>
-                <DebateHeader
-                    topic={debate.topic}
-                />
-                <DebatePresentation
-                    currentRoundInfo={currentRoundInfo}
-                    currentSpeaker={currentSpeaker}
-                />
-                <DebateMemberList
-                    members={membersWithPresence}
-                    currentSpeaker={currentSpeaker}
-                    nextSpeaker={nextSpeaker}
-                    realTimeRemainingSeconds={realTimeRemainingSeconds}
-                />
-                {
-                    currentRoundInfo.type === "PREPARATION" &&
-                    myMemberData.role === 'HOST' &&
-                    <ActionButton onClick={() => setShowStartModal(true)}>토론 시작하기</ActionButton>
-                }
-                {
-                    currentRoundInfo.type === "PRESENTATION" &&
-                    <ActionButton
-                        disabled={currentSpeaker?.accountId !== myMemberData.id}
-                        onClick={handleEndPresentation}
-                    >
-                        발표 끝내기
-                    </ActionButton>
-                }
+            <VoiceChatProvider
+                debateId={debateId!}
+                myAccountId={myMemberData.id!}
+                onSignalingMessage={sendVoiceMessage}
+                participantsList={debate.members.map(member => ({
+                    id: member.id,
+                    name: member.name
+                }))}
+                voiceSignalingHandlerRef={voiceSignalingHandlerRef}
+            >
+                <DebateContainer>
+                    <DebateHeader topic={debate.topic}/>
+                    <DebatePresentation
+                        currentRoundInfo={currentRoundInfo}
+                        currentSpeaker={currentSpeaker}
+                    />
+                    <DebateMemberList
+                        members={membersWithPresence}
+                        currentSpeaker={currentSpeaker}
+                        nextSpeaker={nextSpeaker}
+                        realTimeRemainingSeconds={realTimeRemainingSeconds}
+                    />
+                    <Stack spacing={2}>
+                        {
+                            currentRoundInfo.type === "PREPARATION" &&
+                            myMemberData.role === 'HOST' &&
+                            <ActionButton onClick={() => setShowStartModal(true)}>토론 시작하기</ActionButton>
+                        }
+                        {
+                            currentRoundInfo.type === "PRESENTATION" &&
+                            <ActionButton
+                                disabled={currentSpeaker?.accountId !== myMemberData.id}
+                                onClick={handleEndPresentation}
+                            >
+                                발표 끝내기
+                            </ActionButton>
+                        }
+                        {
+                            currentRoundInfo.type !== "PREPARATION" &&
+                            <MicrophoneControl/>
+                        }
+                    </Stack>
 
-                <StartDebateModal
-                    open={showStartModal}
-                    onClose={() => setShowStartModal(false)}
-                    onConfirm={handleStartDebate}
-                    isLoading={createRoundMutation.isPending}
-                />
-            </DebateContainer>
+                    <StartDebateModal
+                        open={showStartModal}
+                        onClose={() => setShowStartModal(false)}
+                        onConfirm={handleStartDebate}
+                        isLoading={createRoundMutation.isPending}
+                    />
+                </DebateContainer>
+            </VoiceChatProvider>
         </MainContainer>
     );
 }
