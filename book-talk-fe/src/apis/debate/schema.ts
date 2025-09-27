@@ -32,7 +32,7 @@ export const PresentationInfoSchema = z.object({
 export const RoundInfoSchema = z.object({
     id: z.number(),
     type: z.enum(['PRESENTATION', 'FREE']),
-    currentSpeakerId: z.string(),
+    currentSpeakerId: z.string().nullable().optional(),
     nextSpeakerId: z.string().nullable().optional(),
     currentSpeakerEndedAt: z.string().nullable().optional(),
     createdAt: z.string(),
