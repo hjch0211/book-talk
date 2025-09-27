@@ -6,7 +6,6 @@ import kr.co.booktalk.domain.*
 import kr.co.booktalk.domain.auth.AuthAccount
 import kr.co.booktalk.domain.presence.PresenceWebSocketHandler
 import kr.co.booktalk.httpBadRequest
-import kr.co.booktalk.httpForbidden
 import kr.co.booktalk.toUUID
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -26,7 +25,6 @@ class DebateRoundService(
 ) {
     @Transactional
     fun create(request: CreateRoundRequest, authAccount: AuthAccount) {
-        if (!isHost(request.debateId, authAccount.id)) httpForbidden("토론 방장이 아닙니다.")
         val debate = debateRepository.findByIdOrNull(request.debateId.toUUID())
             ?: httpBadRequest("존재하지 않는 토론입니다.")
         val nextSpeaker = accountRepository.findByIdOrNull(request.nextSpeakerId.toUUID())
@@ -55,20 +53,10 @@ class DebateRoundService(
     fun patch(request: PatchRoundRequest, authAccount: AuthAccount) {
         val debateRound = debateRoundRepository.findByIdOrNull(request.debateRoundId)
             ?: httpBadRequest("존재하지 않는 톡서 토론 라운드입니다.")
-        if (!isHost(debateRound.debate.id.toString(), authAccount.id)) httpForbidden("토론 방장이 아닙니다.")
         request.nextSpeakerId?.let {
             debateRound.nextSpeaker = accountRepository.findByIdOrNull(it.toUUID()) ?: httpBadRequest("존재하지 않는 계정입니다.")
         }
         request.ended?.takeIf { it }?.let { debateRound.endedAt = Instant.now() }
-    }
-
-    /** 토론 방장 검증 */
-    private fun isHost(debateId: String, accountId: String): Boolean {
-        return debateMemberRepository.existsByDebateIdAndAccountIdAndRole(
-            debateId.toUUID(),
-            accountId.toUUID(),
-            DebateMemberRole.HOST
-        )
     }
 
     /** WebSocket을 통해 토론 라운드 업데이트를 브로드캐스트합니다. */

@@ -6,6 +6,7 @@ import MainContainer from '../../components/MainContainer/MainContainer';
 import {DebateHeader} from './_components/DebateHeader';
 import {DebatePresentation} from './_components/DebatePresentation';
 import {DebateMemberList} from './_components/DebateMemberList';
+import {RoundStartBackdrop} from './_components/RoundStartBackdrop';
 import {ActionButton, DebateContainer} from './Debate.style';
 import {useDebate} from "../../hooks/useDebate.tsx";
 import {useDebateWebSocket} from "../../hooks/useDebateWebSocket.tsx";
@@ -16,6 +17,8 @@ import {useVoiceChat} from "../../hooks/useVoiceChat";
 import type {WebSocketMessage} from "../../apis/websocket";
 import micOffSvg from "../../assets/mic-off.svg";
 import micOnSvg from "../../assets/mic-on.svg";
+import {findOneDebateQueryOptions} from "../../apis/debate";
+import type {DebateRoundInfo} from "../../apis/websocket/client.ts";
 
 interface Props {
     debateId: string | undefined;
@@ -83,22 +86,39 @@ function DebatePageContent({debateId}: Props) {
     } = useDebate({debateId});
     const {currentSpeaker, nextSpeaker, realTimeRemainingSeconds} = useDebateRoundSpeaker(debateId || '');
     const [showStartModal, setShowStartModal] = useState(false);
+    const [showRound1StartBackdrop, setShowRound1StartBackdrop] = useState(false);
+    const [showRound2StartBackdrop, setShowRound2StartBackdrop] = useState(false);
 
     // WebSocket을 통해 발표자 업데이트를 받았을 때 쿼리 무효화
     const handleSpeakerUpdate = useCallback((speakerInfo: unknown) => {
         console.log('Speaker updated via WebSocket:', speakerInfo);
         // 토론 데이터를 다시 가져오도록 쿼리 무효화
         if (debateId) {
-            void queryClient.invalidateQueries({queryKey: ['debates', debateId]});
+            void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
         }
     }, [queryClient, debateId]);
 
     // WebSocket을 통해 토론 라운드 업데이트를 받았을 때 쿼리 무효화
-    const handleDebateRoundUpdate = useCallback((roundInfo: unknown) => {
+    const handleDebateRoundUpdate = useCallback((roundInfo: DebateRoundInfo) => {
         console.log('Debate round updated via WebSocket:', roundInfo);
+
+        if (roundInfo.round.type === "PRESENTATION") {
+            setShowRound1StartBackdrop(true);
+
+            setTimeout(() => {
+                setShowRound1StartBackdrop(false);
+            }, 5000);
+        } else if (roundInfo.round.type === "FREE") {
+            setShowRound2StartBackdrop(true);
+
+            setTimeout(() => {
+                setShowRound2StartBackdrop(false);
+            }, 5000);
+        }
+
         // 토론 데이터를 다시 가져오도록 쿼리 무효화
         if (debateId) {
-            void queryClient.invalidateQueries({queryKey: ['debates', debateId]});
+            void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
         }
     }, [queryClient, debateId]);
 
@@ -166,16 +186,27 @@ function DebatePageContent({debateId}: Props) {
                 if (currentIndex !== -1 && currentIndex < debate.members.length - 1) {
                     nextSpeakerId = debate.members[currentIndex + 1].id;
                 } else {
-                    console.log('No more members for presentation');
-                    await queryClient.invalidateQueries({queryKey: ['debates', debateId]});
-                    return;
+                    // PRESENTATION 라운드가 끝났을 때 FREE 라운드 생성
+                    try {
+                        await createRoundMutation.mutateAsync({
+                            debateId,
+                            nextSpeakerId: debate.members.find(m => m.role === "HOST")?.id || ""
+                        });
+                        console.log('Successfully created FREE round');
+                        await queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
+                        return;
+                    } catch (error) {
+                        console.error('Failed to create FREE round:', error);
+                        await queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
+                        return;
+                    }
                 }
             } else {
                 // 다른 타입일 때: nextSpeakerId 사용
                 nextSpeakerId = currentRoundInfo.nextSpeakerId || null;
                 if (!nextSpeakerId) {
                     console.log('No next speaker specified');
-                    await queryClient.invalidateQueries({queryKey: ['debates', debateId]});
+                    await queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
                     return;
                 }
             }
@@ -190,9 +221,9 @@ function DebatePageContent({debateId}: Props) {
             console.log('Successfully created next speaker');
         } catch (error) {
             console.error('Failed to create next speaker:', error);
-            void queryClient.invalidateQueries({queryKey: ['debates', debateId]});
+            void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
         }
-    }, [debateId, currentSpeaker, currentRoundInfo, debate.members, createRoundSpeakerMutation, queryClient]);
+    }, [debateId, currentSpeaker, currentRoundInfo, debate.members, createRoundSpeakerMutation, createRoundMutation, queryClient]);
 
     // 발표 시간 만료시 자동 다음 발표자 처리
     useEffect(() => {
@@ -271,6 +302,28 @@ function DebatePageContent({debateId}: Props) {
                         onConfirm={handleStartDebate}
                         isLoading={createRoundMutation.isPending}
                     />
+
+                    <RoundStartBackdrop
+                        open={showRound1StartBackdrop}
+                        onClose={() => setShowRound1StartBackdrop(false)}
+                    >
+                        <RoundStartBackdrop.Title>1 라운드 시작</RoundStartBackdrop.Title>
+                        <RoundStartBackdrop.Subtitle>발표지를 활용해 자신의 생각이나 의견을 말해주세요!</RoundStartBackdrop.Subtitle>
+                        <RoundStartBackdrop.Description>
+                            우측 프로필의 순서대로 발표가 진행됩니다.<br/>시간 내 발표가 끝나면 발표끝내기 버튼을 눌러 다음사람에게 넘겨주세요.
+                        </RoundStartBackdrop.Description>
+                    </RoundStartBackdrop>
+
+                    <RoundStartBackdrop
+                        open={showRound2StartBackdrop}
+                        onClose={() => setShowRound2StartBackdrop(false)}
+                    >
+                        <RoundStartBackdrop.Title>2 라운드 시작</RoundStartBackdrop.Title>
+                        <RoundStartBackdrop.Subtitle>다양한 자료를 공유하며 자유롭게 토론해주세요!</RoundStartBackdrop.Subtitle>
+                        <RoundStartBackdrop.Description>
+                            프로필 메뉴기능을 통해 다른 사람의 발표지를 확인하거나 발언권을 넘겨줄 수 있어요.<br/>손들기 버튼으로 발언권을 주장하고 발표자를 넘겨받으세요.
+                        </RoundStartBackdrop.Description>
+                    </RoundStartBackdrop>
                 </DebateContainer>
             </VoiceChatProvider>
         </MainContainer>

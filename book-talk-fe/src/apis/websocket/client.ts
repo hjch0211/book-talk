@@ -165,8 +165,6 @@ export class DebateWebSocketClient {
                         nextSpeaker: message.nextSpeaker
                     });
                 }
-                // TODO: 추 후 새로고침말고 다른 방법 찾기
-                window.location.reload();
                 break;
             case 'JOIN_SUCCESS':
                 console.log('Successfully joined debate:', message);
@@ -193,8 +191,6 @@ export class DebateWebSocketClient {
                         });
                     }
                 }
-                // TODO: 추 후 새로고침말고 다른 방법 찾기
-                window.location.reload();
                 break;
             case 'VOICE_JOIN':
             case 'VOICE_LEAVE':
@@ -268,10 +264,28 @@ export interface WebSocketMessage {
     isMuted?: boolean;
 }
 
+export interface DebateRoundInfo {
+    type: string;
+    debateId: string;
+    round: {
+        id: string;
+        type: string;
+        nextSpeakerId: string;
+        nextSpeakerName: string;
+        createdAt: string;
+        endedAt: string;
+    }
+    currentSpeaker: {
+        accountId: string;
+        accountName: string;
+        endedAt: string;
+    }
+}
+
 export interface WebSocketHandlers {
     onPresenceUpdate?: (onlineAccountIds: Set<string>) => void;
     onConnectionStatus?: (connected: boolean) => void;
     onSpeakerUpdate?: (speakerInfo: unknown) => void;
-    onDebateRoundUpdate?: (roundInfo: unknown) => void;
+    onDebateRoundUpdate?: (roundInfo: DebateRoundInfo) => void;
     onVoiceSignaling?: (message: WebSocketMessage) => void;
 }
