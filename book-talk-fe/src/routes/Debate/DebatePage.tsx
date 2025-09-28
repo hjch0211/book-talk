@@ -17,6 +17,7 @@ import {VoiceChatProvider} from "../../contexts/VoiceChatContext";
 import type {WebSocketMessage} from "../../apis/websocket";
 import {findOneDebateQueryOptions} from "../../apis/debate";
 import type {DebateRoundInfo} from "../../apis/websocket/client.ts";
+import raiseHandSvg from "../../assets/raise-hand.svg";
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
@@ -30,10 +31,20 @@ interface RoundActionsProps {
     isCurrentSpeaker: boolean;
     onStartDebate: () => void;
     onEndPresentation: () => void;
+    onToggleHand: () => void;
+    isMyHandRaised: boolean;
 }
 
 /** 라운드별 Action button */
-function RoundActions({roundType, myRole, isCurrentSpeaker, onStartDebate, onEndPresentation}: RoundActionsProps) {
+function RoundActions({
+                          roundType,
+                          myRole,
+                          isCurrentSpeaker,
+                          onStartDebate,
+                          onEndPresentation,
+                          onToggleHand,
+                          isMyHandRaised
+                      }: RoundActionsProps) {
     return (
         <>
             {roundType === "PREPARATION" && myRole === 'HOST' && (
@@ -48,6 +59,27 @@ function RoundActions({roundType, myRole, isCurrentSpeaker, onStartDebate, onEnd
                 </ActionButton>
             )}
             {roundType !== "PREPARATION" && <MicrophoneControl/>}
+            {
+                roundType === "FREE" && (
+                    <ActionButton
+                        onClick={onToggleHand}
+                        style={{
+                            backgroundColor: isMyHandRaised ? '#1976d2' : undefined,
+                            color: isMyHandRaised ? 'black' : undefined
+                        }}
+                    >
+                        <img
+                            src={raiseHandSvg}
+                            alt={isMyHandRaised ? "손내리기" : "손들기"}
+                            width={16.5}
+                            height={24}
+                            style={{
+                                filter: isMyHandRaised ? 'black' : undefined
+                            }}
+                        />
+                    </ActionButton>
+                )
+            }
         </>
     );
 }
@@ -165,7 +197,13 @@ function DebatePageContent({debateId}: Props) {
         onVoiceSignaling: handleVoiceSignaling
     }), [handleSpeakerUpdate, handleDebateRoundUpdate, handleVoiceSignaling]);
 
-    const {isAccountOnline, wsClient} = useDebateWebSocket(debateId || null, handlers);
+    const {
+        isAccountOnline,
+        wsClient,
+        toggleHand,
+        isHandRaised,
+        raisedHands
+    } = useDebateWebSocket(debateId || null, handlers);
 
     // Store wsClient reference for use in voice chat
     useEffect(() => {
@@ -305,6 +343,7 @@ function DebatePageContent({debateId}: Props) {
                         currentSpeaker={currentSpeaker}
                         nextSpeaker={nextSpeaker}
                         realTimeRemainingSeconds={realTimeRemainingSeconds}
+                        raisedHands={raisedHands}
                     />
                     <Stack spacing={2}>
                         <RoundActions
@@ -313,6 +352,8 @@ function DebatePageContent({debateId}: Props) {
                             isCurrentSpeaker={currentSpeaker?.accountId === myMemberData.id}
                             onStartDebate={() => setShowStartModal(true)}
                             onEndPresentation={handleEndPresentation}
+                            onToggleHand={toggleHand}
+                            isMyHandRaised={myMemberData.id ? isHandRaised(myMemberData.id) : false}
                         />
                     </Stack>
 

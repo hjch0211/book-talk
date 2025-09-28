@@ -418,7 +418,7 @@ export const MemberItem = styled(ListItem)`
 `;
 
 export const MemberOrder = styled.div`
-    width: 42px;
+    width: 21px;
     height: 100%;
     font-family: 'S-Core Dream', sans-serif;
     font-weight: 300;
@@ -428,7 +428,8 @@ export const MemberOrder = styled.div`
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-content: start;
+    align-content: center;
+    text-align: center;
 `;
 
 export const MemberProfile = styled.div`
@@ -628,7 +629,7 @@ export const ActionButton = styled(Button)<{ borderColor?: string, backgroundCol
 
     &:hover:not(:disabled) {
         &::after {
-            background: ${({borderColor}) => borderColor || "#EAECFF"};
+            background: ${({borderColor}) => borderColor || "#BEC3F5"};
             opacity: 0.6;
         }
 

@@ -8,6 +8,11 @@ import {DebateWebSocketClient, type WebSocketHandlers} from "../apis/websocket";
 export const useDebateWebSocket = (debateId: string | null, handlers: WebSocketHandlers) => {
     const [onlineAccountIds, setOnlineAccountIds] = useState<Set<string>>(new Set());
     const [isConnected, setIsConnected] = useState<boolean>(false);
+    const [raisedHands, setRaisedHands] = useState<Array<{
+        accountId: string;
+        accountName: string;
+        raisedAt: number;
+    }>>([]);
     const wsClientRef = useRef<DebateWebSocketClient | null>(null);
     const heartbeatIntervalRef = useRef<number | null>(null);
 
@@ -22,6 +27,11 @@ export const useDebateWebSocket = (debateId: string | null, handlers: WebSocketH
             console.log('Connection status changed:', connected);
             setIsConnected(connected);
             handlers.onConnectionStatus?.(connected);
+        },
+        onHandRaiseUpdate: (hands: Array<{accountId: string; accountName: string; raisedAt: number}>) => {
+            console.log('Received raised hands update:', hands);
+            setRaisedHands(hands);
+            handlers.onHandRaiseUpdate?.(hands);
         },
         onSpeakerUpdate: handlers.onSpeakerUpdate,
         onDebateRoundUpdate: handlers.onDebateRoundUpdate,
@@ -83,10 +93,21 @@ export const useDebateWebSocket = (debateId: string | null, handlers: WebSocketH
         return result;
     }, [onlineAccountIds]);
 
+    const toggleHand = useCallback(() => {
+        wsClientRef.current?.toggleHand();
+    }, []);
+
+    const isHandRaised = useCallback((accountId: string): boolean => {
+        return raisedHands.some(hand => hand.accountId === accountId);
+    }, [raisedHands]);
+
     return {
         isAccountOnline: checkAccountOnlineStatus,
         onlineAccountIds,
         isConnected,
-        wsClient: wsClientRef.current
+        wsClient: wsClientRef.current,
+        raisedHands,
+        toggleHand,
+        isHandRaised
     };
 };

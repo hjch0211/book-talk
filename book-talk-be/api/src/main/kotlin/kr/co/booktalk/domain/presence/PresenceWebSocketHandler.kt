@@ -32,6 +32,7 @@ class PresenceWebSocketHandler(
         const val SESSION_DEBATE_KEY = "ws:session:debate:"
         const val ACCOUNT_SESSION_KEY = "ws:account:session:"
         const val DEBATE_SESSIONS_KEY = "ws:debate:sessions:"
+        const val DEBATE_RAISED_HANDS_KEY = "ws:debate:raised_hands:"
         const val SESSION_TTL_SECONDS = 3600L // 1시간
     }
 
@@ -69,6 +70,7 @@ class PresenceWebSocketHandler(
                 "JOIN_DEBATE" -> handleJoinDebate(session, payload)
                 "LEAVE_DEBATE" -> handleLeaveDebate(session, payload)
                 "HEARTBEAT" -> handleHeartbeat(session, payload)
+                "TOGGLE_HAND" -> handleToggleHand(session, payload)
                 else -> logger.warn { "알 수 없는 메시지 타입: $messageType" }
             }
         } catch (e: Exception) {
@@ -342,6 +344,76 @@ class PresenceWebSocketHandler(
             logger.debug { "토론방 브로드캐스트 완료: debateId=$debateId, sessions=${sessionIds.size}" }
         } catch (e: Exception) {
             logger.error(e) { "토론방 브로드캐스트 실패: debateId=$debateId, messageJson=$messageJson" }
+        }
+    }
+
+    /** 손들기 토글 요청을 처리합니다. */
+    private fun handleToggleHand(session: WebSocketSession, payload: JsonNode) {
+        val debateId = extractDebateId(payload) ?: return
+        val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
+        val accountName = payload.get("accountName")?.asText() ?: "Unknown Account"
+
+        if (!validateAccountIdMatch(authenticatedAccountId, payload)) {
+            return
+        }
+
+        try {
+            val handKey = "$DEBATE_RAISED_HANDS_KEY$debateId:$authenticatedAccountId"
+            val isHandRaised = redisTemplate.hasKey(handKey)
+
+            if (isHandRaised) {
+                // 손 내리기: Redis에서 삭제
+                redisTemplate.delete(handKey)
+                logger.info { "손내리기 처리 완료: debateId=$debateId, accountId=$authenticatedAccountId" }
+            } else {
+                // 손들기: Redis에 저장
+                val handRaisedData = mapOf(
+                    "accountId" to authenticatedAccountId,
+                    "accountName" to accountName,
+                    "raisedAt" to System.currentTimeMillis().toString()
+                )
+
+                redisTemplate.opsForHash<String, String>().putAll(handKey, handRaisedData)
+                redisTemplate.expire(handKey, Duration.ofSeconds(SESSION_TTL_SECONDS))
+                logger.info { "손들기 처리 완료: debateId=$debateId, accountId=$authenticatedAccountId" }
+            }
+
+            // 손들기 상태 브로드캐스트
+            publishHandRaiseUpdate(debateId)
+
+        } catch (e: Exception) {
+            logger.error(e) { "손들기 토글 처리 실패: debateId=$debateId, accountId=$authenticatedAccountId" }
+        }
+    }
+
+    /** 손들기 상태 업데이트를 토론방 모든 참가자에게 브로드캐스트합니다. */
+    private fun publishHandRaiseUpdate(debateId: String) {
+        try {
+            // Redis에서 현재 손든 사용자 목록 조회
+            val raisedHandsPattern = "$DEBATE_RAISED_HANDS_KEY$debateId:*"
+            val raisedHandKeys = redisTemplate.keys(raisedHandsPattern)
+
+            val raisedHands = raisedHandKeys.map { key ->
+                val handData = redisTemplate.opsForHash<String, String>().entries(key)
+                mapOf(
+                    "accountId" to handData["accountId"],
+                    "accountName" to handData["accountName"],
+                    "raisedAt" to handData["raisedAt"]?.toLongOrNull()
+                )
+            }.filterNotNull()
+
+            val message = mapOf(
+                "type" to "HAND_RAISE_UPDATE",
+                "debateId" to debateId,
+                "raisedHands" to raisedHands
+            )
+
+            val messageJson = objectMapper.writeValueAsString(message)
+            broadcastToDebateRoom(debateId, messageJson)
+
+            logger.debug { "손들기 상태 브로드캐스트 완료: debateId=$debateId, raisedHands=${raisedHands.size}" }
+        } catch (e: Exception) {
+            logger.error(e) { "손들기 상태 브로드캐스트 실패: debateId=$debateId" }
         }
     }
 
