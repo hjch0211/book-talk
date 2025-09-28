@@ -1,5 +1,11 @@
 import {useMutation, useQueryClient, useSuspenseQuery} from "@tanstack/react-query";
-import {createRound, createRoundSpeaker, findOneDebateQueryOptions, joinDebate, patchRoundSpeaker} from "../apis/debate";
+import {
+    createRound,
+    createRoundSpeaker,
+    findOneDebateQueryOptions,
+    joinDebate,
+    patchRoundSpeaker
+} from "../apis/debate";
 import {meQueryOption} from "../apis/account";
 import {useEffect, useMemo, useRef} from "react";
 
@@ -11,7 +17,7 @@ export interface CurrentRoundInfo {
     id: number | null;
     type: "PRESENTATION" | "FREE" | "PREPARATION";
     currentPresentationId?: string;
-    currentSpeakerId: string | null;
+    currentSpeakerId?: string | null;
     createdAt: string | null;
     nextSpeakerId?: string | null | undefined;
     endedAt?: string | null | undefined;
