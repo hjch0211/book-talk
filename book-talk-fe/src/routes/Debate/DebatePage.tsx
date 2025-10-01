@@ -44,8 +44,13 @@ function DebatePageContent({debateId}: Props) {
     });
 
     const membersWithPresence = useMemo(() => {
-        return debate.members.filter(member => isAccountOnline(member.id));
-    }, [debate.members, isAccountOnline]);
+        return debate.members
+            .filter(member => isAccountOnline(member.id))
+            .map(member => ({
+                ...member,
+                isCurrentUser: member.id === myMemberData.id
+            }));
+    }, [debate.members, isAccountOnline, myMemberData.id]);
 
     const handleStartDebate = () => {
         if (!debateId) return;
