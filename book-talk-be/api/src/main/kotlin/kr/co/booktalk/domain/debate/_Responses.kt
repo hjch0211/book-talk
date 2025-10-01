@@ -42,3 +42,21 @@ data class FindOneResponse(
         val endedAt: Instant? = null,
     )
 }
+
+data class CreateChatResponse(
+    val id: Long,
+    val debateId: String,
+    val accountId: String,
+    val accountName: String,
+    val content: String,
+    val createdAt: Instant
+)
+
+data class ChatResponse(
+    val id: Long,
+    val debateId: String,
+    val accountId: String,
+    val accountName: String,
+    val content: String,
+    val createdAt: Instant
+)

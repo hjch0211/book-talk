@@ -11,7 +11,8 @@ class DebateController(
     private val debateService: DebateService,
     private val debateRoundService: DebateRoundService,
     private val appConfigService: AppConfigService,
-    private val debateRoundSpeakerService: DebateRoundSpeakerService
+    private val debateRoundSpeakerService: DebateRoundSpeakerService,
+    private val debateChatService: DebateChatService
 ) {
     /** 토론 생성 */
     @PostMapping("/debates")
@@ -59,5 +60,18 @@ class DebateController(
     fun patchRoundSpeaker(@RequestBody request: PatchRoundSpeakerRequest, authAccount: AuthAccount) {
         request.validate()
         debateRoundSpeakerService.patch(request)
+    }
+
+    /** 채팅 생성 */
+    @PostMapping("/debates/round/chats")
+    fun createChat(@RequestBody request: CreateChatRequest, authAccount: AuthAccount): ApiResult<CreateChatResponse> {
+        request.validate()
+        return debateChatService.create(request, authAccount).toResult()
+    }
+
+    /** 토론 채팅 조회 */
+    @GetMapping("/debates/{debateId}/chats")
+    fun getChats(@PathVariable debateId: String, authAccount: AuthAccount): ApiResult<List<ChatResponse>> {
+        return debateChatService.findByDebateId(debateId, authAccount).toResult()
     }
 }

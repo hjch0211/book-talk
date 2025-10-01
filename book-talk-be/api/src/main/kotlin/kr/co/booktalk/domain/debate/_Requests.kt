@@ -42,3 +42,8 @@ data class PatchRoundSpeakerRequest(
     /** 발언 종료 */
     val ended: Boolean? = null,
 )
+
+data class CreateChatRequest(
+    val debateId: String,
+    val content: String
+)
