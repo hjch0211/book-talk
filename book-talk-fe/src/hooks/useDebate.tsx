@@ -1,16 +1,16 @@
 import {useMutation, useQueryClient, useSuspenseQuery} from "@tanstack/react-query";
-import {
-    createRound,
-    createRoundSpeaker,
-    findOneDebateQueryOptions,
-    joinDebate,
-    patchRoundSpeaker
-} from "../apis/debate";
+import {findOneDebateQueryOptions, type FindOneDebateResponse, joinDebate} from "../apis/debate";
 import {meQueryOption} from "../apis/account";
-import {useEffect, useMemo, useRef} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useDebateRound, type UseDebateRoundReturn} from "./useDebateRound";
+import {useDebateWebSocket} from "./useDebateWebSocket";
+import type {WebSocketMessage} from "../apis/websocket";
+
+type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
 interface Props {
     debateId?: string;
+    onVoiceSignaling?: (message: WebSocketMessage) => void;
 }
 
 export interface CurrentRoundInfo {
@@ -24,7 +24,38 @@ export interface CurrentRoundInfo {
     isEditable: boolean;
 }
 
-export const useDebate = ({debateId}: Props) => {
+export interface UseDebateReturn {
+    // 토론 기본 정보
+    debate: FindOneDebateResponse;
+    myMemberData: {
+        id: string | undefined;
+        role: string | undefined;
+    };
+    currentRoundInfo: CurrentRoundInfo;
+
+    // 라운드 & 발언자 정보
+    round: UseDebateRoundReturn;
+
+    // WebSocket 정보
+    websocket: ReturnType<typeof useDebateWebSocket>;
+
+    // UI 상태
+    showRoundStartBackdrop: {
+        show: boolean;
+        type: RoundType | null;
+    };
+    closeRoundStartBackdrop: () => void;
+}
+
+/**
+ * 토론 참여 및 전체 관리
+ * - 토론 기본 정보 제공
+ * - 라운드/발언자 관리 (useDebateRound)
+ * - WebSocket 연결 관리 (useDebateWebSocket)
+ * - 자동 참여 처리
+ * - UI 상태 관리 (백드롭)
+ */
+export const useDebate = ({debateId, onVoiceSignaling}: Props): UseDebateReturn => {
     const queryClient = useQueryClient();
     const {data: debate} = useSuspenseQuery(findOneDebateQueryOptions(debateId));
     const {data: _me} = useSuspenseQuery(meQueryOption);
@@ -33,6 +64,24 @@ export const useDebate = ({debateId}: Props) => {
     const myMember = debate.members.find((m) => m.id === _me?.id);
     const isAlreadyMember = !!myMember;
 
+    /** RoundStartBackdrop UI 상태 */
+    const [showRoundStartBackdrop, setShowRoundStartBackdrop] = useState<{
+        show: boolean;
+        type: RoundType | null;
+    }>({show: false, type: null});
+
+    const handleRoundStartBackdrop = useCallback((roundType: RoundType) => {
+        setShowRoundStartBackdrop({show: true, type: roundType});
+        setTimeout(() => {
+            setShowRoundStartBackdrop({show: false, type: null});
+        }, 5000);
+    }, []);
+
+    const closeRoundStartBackdrop = useCallback(() => {
+        setShowRoundStartBackdrop({show: false, type: null});
+    }, []);
+
+    /** 토론 참여 */
     const joinDebateMutation = useMutation({
         mutationFn: (debateId: string) => joinDebate({debateId}),
         onSuccess: () => {
@@ -41,29 +90,7 @@ export const useDebate = ({debateId}: Props) => {
         }
     });
 
-    const createRoundMutation = useMutation({
-        mutationFn: ({debateId, nextSpeakerId}: { debateId: string; nextSpeakerId: string }) =>
-            createRound({debateId, type: 'PRESENTATION', nextSpeakerId}),
-        onSuccess: () => {
-            void queryClient.invalidateQueries({queryKey: ['debates', debateId]});
-        }
-    });
-
-    const patchRoundSpeakerMutation = useMutation({
-        mutationFn: patchRoundSpeaker,
-        onSuccess: () => {
-            void queryClient.invalidateQueries({queryKey: ['debates', debateId]});
-        }
-    });
-
-    const createRoundSpeakerMutation = useMutation({
-        mutationFn: createRoundSpeaker,
-        onSuccess: () => {
-            void queryClient.invalidateQueries({queryKey: ['debates', debateId]});
-        }
-    });
-
-    // 멤버가 아니면 자동으로 가입 시도 (한 번만)
+    /** 멤버가 아니면 자동으로 가입 시도 (한 번만) */
     useEffect(() => {
         if (
             debateId &&
@@ -110,11 +137,19 @@ export const useDebate = ({debateId}: Props) => {
         };
     }, [debate.currentRound, debate.presentations, _me?.id]);
 
+    const round = useDebateRound(debate, debateId, currentRoundInfo, myMemberData.id);
+    const websocket = useDebateWebSocket(debateId || null, {
+        onRoundStartBackdrop: handleRoundStartBackdrop,
+        onVoiceSignaling
+    });
+
     return {
         debate,
         myMemberData,
         currentRoundInfo,
-        createRoundMutation,
-        createRoundSpeakerMutation
+        round,
+        websocket,
+        showRoundStartBackdrop,
+        closeRoundStartBackdrop
     }
 }

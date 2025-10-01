@@ -1,8 +1,8 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useQueryClient} from "@tanstack/react-query";
-import {DebateWebSocketClient, type WebSocketHandlers, type WebSocketMessage} from "../apis/websocket";
-import {findOneDebateQueryOptions} from "../apis/debate";
+import {DebateWebSocketClient, type WebSocketMessage} from "../apis/websocket";
 import type {DebateRoundInfo} from "../apis/websocket/client.ts";
+import {findOneDebateQueryOptions} from "../apis/debate";
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
@@ -12,8 +12,13 @@ interface UseDebateWebSocketOptions {
 }
 
 /**
- * 토론방의 실시간 WebSocket 연결을 관리하는 훅
- * WebSocket을 통해 토론방의 모든 실시간 이벤트를 처리합니다.
+ * WebSocket 연결 및 실시간 통신 관리
+ * - WebSocket 연결/해제
+ * - 메시지 송수신
+ * - 상태 관리 (온라인, 손들기)
+ * - 비즈니스 로직 (Query 갱신, UI 이벤트)
+ *
+ * @internal useDebate 내부에서만 사용
  */
 export const useDebateWebSocket = (
     debateId: string | null,
@@ -30,7 +35,13 @@ export const useDebateWebSocket = (
     const wsClientRef = useRef<DebateWebSocketClient | null>(null);
     const heartbeatIntervalRef = useRef<number | null>(null);
 
-    /** 발언자 업데이트 콜백 */
+    // options를 ref로 관리하여 재생성 방지
+    const optionsRef = useRef(options);
+    useEffect(() => {
+        optionsRef.current = options;
+    }, [options]);
+
+    /** 발언자 업데이트 콜백*/
     const handleSpeakerUpdate = useCallback((speakerInfo: unknown) => {
         console.log('Speaker updated via WebSocket:', speakerInfo);
         if (debateId) {
@@ -38,23 +49,24 @@ export const useDebateWebSocket = (
         }
     }, [debateId, queryClient]);
 
-    /** 토론 업데이트 콜백 */
+    /** 토론 라운드 업데이트 콜백*/
     const handleDebateRoundUpdate = useCallback((roundInfo: DebateRoundInfo) => {
         console.log('Debate round updated via WebSocket:', roundInfo);
-        const roundType = roundInfo.round.type as RoundType;
-        if (roundType === "PRESENTATION" || roundType === "FREE") {
-            options?.onRoundStartBackdrop?.(roundType);
-        }
         if (debateId) {
             void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
         }
-    }, [debateId, options, queryClient]);
 
-    /** 음성 시그널링 콜백 */
+        const roundType = roundInfo.round.type as RoundType;
+        if (roundType === "PRESENTATION" || roundType === "FREE") {
+            optionsRef.current?.onRoundStartBackdrop?.(roundType);
+        }
+    }, [debateId, queryClient]);
+
+    /** 음성 시그널링 - 상위로 이벤트 전달만 */
     const handleVoiceSignaling = useCallback((message: WebSocketMessage) => {
         console.log('Voice signaling message received:', message);
-        options?.onVoiceSignaling?.(message);
-    }, [options]);
+        optionsRef.current?.onVoiceSignaling?.(message);
+    }, []);
 
     const combinedHandlers = useMemo(() => ({
         onPresenceUpdate: (onlineIds: Set<string>) => {
