@@ -127,13 +127,13 @@ export function DebatePresentation({currentRoundInfo, currentSpeaker}: Props) {
 
     return (
         <MainContent>
+            <LastModified
+                lastSavedAt={lastSavedAt}
+                isEditable={currentRoundInfo.isEditable}
+                isSaving={isSaving}
+            />
             <PresentationArea>
                 <EditorContent editor={editor}/>
-                <LastModified
-                    lastSavedAt={lastSavedAt}
-                    isEditable={currentRoundInfo.isEditable}
-                    isSaving={isSaving}
-                />
 
                 {/* 이미지 추가 다이얼로그 */}
                 <Dialog open={showImageDialog} onClose={() => setShowImageDialog(false)}>

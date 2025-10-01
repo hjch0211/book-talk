@@ -138,8 +138,7 @@ export const NavButton = styled(Button)`
 
 export const MainContent = styled.div`
     display: flex;
-    flex-direction: row;
-    gap: 10px;
+    flex-direction: column;
     position: absolute;
     width: 970px;
     left: 120px;
@@ -282,12 +281,11 @@ export const PresentationArea = styled.div`
 `;
 
 export const SavedTimeIndicator = styled.div`
-    position: absolute;
-    right: 0;
-    bottom: 20px;
+    position: relative;
+    bottom: 8px;
     display: flex;
     justify-content: flex-end;
-    padding: 20px 30px 0 0;
+    font-family: 'S-Core Dream', sans-serif;
     font-style: normal;
     font-weight: 200;
     font-size: 14px;
