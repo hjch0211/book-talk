@@ -99,20 +99,6 @@ function DebatePageContent({debateId}: Props) {
         type: RoundType | null;
     }>({show: false, type: null});
 
-    // Voice chat signaling handler reference
-    const voiceSignalingHandlerRef = useRef<((message: WebSocketMessage) => void) | null>(null);
-    const wsClientRef = useRef<{
-        isConnected: () => boolean;
-        sendVoiceMessage: (message: WebSocketMessage) => void
-    } | null>(null);
-
-    const handleVoiceSignaling = useCallback((message: WebSocketMessage) => {
-        console.log('Voice signaling message received:', message);
-        if (voiceSignalingHandlerRef.current) {
-            voiceSignalingHandlerRef.current(message);
-        }
-    }, []);
-
     const handleRoundStartBackdrop = useCallback((roundType: RoundType) => {
         setShowRoundStartBackdrop({show: true, type: roundType});
         setTimeout(() => {
@@ -120,31 +106,24 @@ function DebatePageContent({debateId}: Props) {
         }, 5000);
     }, []);
 
-    const handlers = useMemo(() => ({
-        onVoiceSignaling: handleVoiceSignaling
-    }), [handleVoiceSignaling]);
+    // VoiceChat 메시지 핸들러를 ref로 저장
+    const voiceChatHandlerRef = useRef<((message: WebSocketMessage) => void) | null>(null);
+
+    const handleVoiceSignalingWrapper = useCallback((message: WebSocketMessage) => {
+        console.log('Voice signaling received in DebatePage:', message);
+        voiceChatHandlerRef.current?.(message);
+    }, []);
 
     const {
         isAccountOnline,
-        wsClient,
         toggleHand,
         isHandRaised,
-        raisedHands
-    } = useDebateWebSocket(debateId || null, handlers, {
-        onRoundStartBackdrop: handleRoundStartBackdrop
+        raisedHands,
+        sendVoiceMessage
+    } = useDebateWebSocket(debateId || null, {
+        onRoundStartBackdrop: handleRoundStartBackdrop,
+        onVoiceSignaling: handleVoiceSignalingWrapper
     });
-
-    // Store wsClient reference for use in voice chat
-    useEffect(() => {
-        wsClientRef.current = wsClient;
-    }, [wsClient]);
-
-    // Voice chat WebSocket message sender
-    const sendVoiceMessage = useCallback((message: WebSocketMessage) => {
-        if (wsClientRef.current?.isConnected()) {
-            wsClientRef.current.sendVoiceMessage(message);
-        }
-    }, []);
 
     const membersWithPresence = useMemo(() => {
         return debate.members.filter(member => isAccountOnline(member.id));
@@ -255,11 +234,11 @@ function DebatePageContent({debateId}: Props) {
                 debateId={debateId!}
                 myAccountId={myMemberData.id!}
                 onSignalingMessage={sendVoiceMessage}
+                voiceChatHandlerRef={voiceChatHandlerRef}
                 participantsList={debate.members.map(member => ({
                     id: member.id,
                     name: member.name
                 }))}
-                voiceSignalingHandlerRef={voiceSignalingHandlerRef}
             >
                 <DebateContainer>
                     <DebateHeader topic={debate.topic}/>

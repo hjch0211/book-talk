@@ -23,8 +23,8 @@ interface VoiceChatProviderProps {
     debateId: string;
     myAccountId: string;
     onSignalingMessage: (message: WebSocketMessage) => void;
+    voiceChatHandlerRef: React.MutableRefObject<((message: WebSocketMessage) => void) | null>;
     participantsList: Array<{ id: string; name: string }>;
-    voiceSignalingHandlerRef?: { current: ((message: WebSocketMessage) => void) | null };
 }
 
 export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
@@ -32,8 +32,8 @@ export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
                                                                         debateId,
                                                                         myAccountId,
                                                                         onSignalingMessage,
-                                                                        participantsList,
-                                                                        voiceSignalingHandlerRef
+                                                                        voiceChatHandlerRef,
+                                                                        participantsList
                                                                     }) => {
     const [participants, setParticipants] = useState<VoiceChatParticipant[]>([]);
     const [isJoined, setIsJoined] = useState(false);
@@ -43,7 +43,7 @@ export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
 
     const voiceChatManagerRef = useRef<VoiceChatManager | null>(null);
 
-    // Define handleIncomingSignalingMessage first with useCallback
+    // Define handleIncomingSignalingMessage - participants를 직접 참조하지 않도록 수정
     const handleIncomingSignalingMessage = React.useCallback((message: WebSocketMessage) => {
         const manager = voiceChatManagerRef.current;
         if (!manager || !message.fromId) return;
@@ -79,15 +79,28 @@ export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
                 break;
             }
             case 'VOICE_STATE': {
-                const targetParticipant = participants.find(p => p.accountId === message.fromId);
-                if (targetParticipant && message.isMuted !== undefined) {
-                    targetParticipant.isMuted = message.isMuted;
-                    setParticipants([...participants]);
+                // participants 상태를 함수형 업데이트로 변경하여 의존성 제거
+                if (message.isMuted !== undefined) {
+                    setParticipants(prev => {
+                        const targetParticipant = prev.find(p => p.accountId === message.fromId);
+                        if (targetParticipant) {
+                            targetParticipant.isMuted = message.isMuted!;
+                            return [...prev];
+                        }
+                        return prev;
+                    });
                 }
                 break;
             }
         }
-    }, [myAccountId, participantsList, participants]);
+    }, [myAccountId, participantsList]);
+
+    // VoiceChatManager 초기화 - onSignalingMessage를 ref로 관리하여 재생성 방지
+    const onSignalingMessageRef = useRef(onSignalingMessage);
+
+    useEffect(() => {
+        onSignalingMessageRef.current = onSignalingMessage;
+    }, [onSignalingMessage]);
 
     useEffect(() => {
         const handleParticipantUpdate = (updatedParticipants: VoiceChatParticipant[]) => {
@@ -107,7 +120,7 @@ export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
         };
 
         const handleSignalingMessage = (message: WebSocketMessage) => {
-            onSignalingMessage(message);
+            onSignalingMessageRef.current(message);
         };
 
         voiceChatManagerRef.current = new VoiceChatManager(
@@ -121,16 +134,15 @@ export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
         return () => {
             if (voiceChatManagerRef.current) {
                 void voiceChatManagerRef.current.leaveVoiceChat();
+                voiceChatManagerRef.current = null;
             }
         };
-    }, [debateId, myAccountId, onSignalingMessage]);
+    }, [debateId, myAccountId]);
 
-    // Set up voice signaling handler reference
+    // Set up voice chat handler ref - WebSocket에서 받은 음성 메시지를 처리하도록 등록
     useEffect(() => {
-        if (voiceSignalingHandlerRef) {
-            voiceSignalingHandlerRef.current = handleIncomingSignalingMessage;
-        }
-    }, [handleIncomingSignalingMessage, voiceSignalingHandlerRef]);
+        voiceChatHandlerRef.current = handleIncomingSignalingMessage;
+    }, [handleIncomingSignalingMessage, voiceChatHandlerRef]);
 
     const joinVoiceChat = async () => {
         if (!voiceChatManagerRef.current || isConnecting) return;
@@ -188,15 +200,6 @@ export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
     const getLocalStream = (): MediaStream | null => {
         return voiceChatManagerRef.current?.getLocalStream() || null;
     };
-
-
-    useEffect(() => {
-        return () => {
-            if (voiceChatManagerRef.current) {
-                voiceChatManagerRef.current.leaveVoiceChat();
-            }
-        };
-    }, []);
 
     const contextValue: VoiceChatContextValue = {
         participants,

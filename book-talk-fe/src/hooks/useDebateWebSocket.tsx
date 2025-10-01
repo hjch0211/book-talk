@@ -1,6 +1,6 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useQueryClient} from "@tanstack/react-query";
-import {DebateWebSocketClient, type WebSocketHandlers} from "../apis/websocket";
+import {DebateWebSocketClient, type WebSocketHandlers, type WebSocketMessage} from "../apis/websocket";
 import {findOneDebateQueryOptions} from "../apis/debate";
 import type {DebateRoundInfo} from "../apis/websocket/client.ts";
 
@@ -8,6 +8,7 @@ type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
 interface UseDebateWebSocketOptions {
     onRoundStartBackdrop?: (roundType: RoundType) => void;
+    onVoiceSignaling?: (message: WebSocketMessage) => void;
 }
 
 /**
@@ -16,7 +17,6 @@ interface UseDebateWebSocketOptions {
  */
 export const useDebateWebSocket = (
     debateId: string | null,
-    handlers: WebSocketHandlers,
     options?: UseDebateWebSocketOptions
 ) => {
     const queryClient = useQueryClient();
@@ -36,8 +36,7 @@ export const useDebateWebSocket = (
         if (debateId) {
             void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
         }
-        handlers.onSpeakerUpdate?.(speakerInfo);
-    }, [debateId, handlers, queryClient]);
+    }, [debateId, queryClient]);
 
     /** 토론 업데이트 콜백 */
     const handleDebateRoundUpdate = useCallback((roundInfo: DebateRoundInfo) => {
@@ -49,29 +48,31 @@ export const useDebateWebSocket = (
         if (debateId) {
             void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
         }
-        handlers.onDebateRoundUpdate?.(roundInfo);
-    }, [debateId, handlers, options, queryClient]);
+    }, [debateId, options, queryClient]);
+
+    /** 음성 시그널링 콜백 */
+    const handleVoiceSignaling = useCallback((message: WebSocketMessage) => {
+        console.log('Voice signaling message received:', message);
+        options?.onVoiceSignaling?.(message);
+    }, [options]);
 
     const combinedHandlers = useMemo(() => ({
         onPresenceUpdate: (onlineIds: Set<string>) => {
             console.log('Received online account IDs:', onlineIds);
             setOnlineAccountIds(onlineIds);
-            handlers.onPresenceUpdate?.(onlineIds);
         },
         onConnectionStatus: (connected: boolean) => {
             console.log('Connection status changed:', connected);
             setIsConnected(connected);
-            handlers.onConnectionStatus?.(connected);
         },
         onHandRaiseUpdate: (hands: Array<{ accountId: string; accountName: string; raisedAt: number }>) => {
             console.log('Received raised hands update:', hands);
             setRaisedHands(hands);
-            handlers.onHandRaiseUpdate?.(hands);
         },
         onSpeakerUpdate: handleSpeakerUpdate,
         onDebateRoundUpdate: handleDebateRoundUpdate,
-        onVoiceSignaling: handlers.onVoiceSignaling
-    }), [handlers, handleSpeakerUpdate, handleDebateRoundUpdate]);
+        onVoiceSignaling: handleVoiceSignaling
+    }), [handleSpeakerUpdate, handleDebateRoundUpdate, handleVoiceSignaling]);
 
     /** WebSocket 연결 및 관리 */
     useEffect(() => {
@@ -133,6 +134,13 @@ export const useDebateWebSocket = (
         return raisedHands.some(hand => hand.accountId === accountId);
     }, [raisedHands]);
 
+    /** 음성 메시지 전송 */
+    const sendVoiceMessage = useCallback((message: WebSocketMessage) => {
+        if (wsClientRef.current?.isConnected()) {
+            wsClientRef.current.sendVoiceMessage(message);
+        }
+    }, []);
+
     return {
         isAccountOnline: checkAccountOnlineStatus,
         onlineAccountIds,
@@ -140,6 +148,8 @@ export const useDebateWebSocket = (
         wsClient: wsClientRef.current,
         raisedHands,
         toggleHand,
-        isHandRaised
+        isHandRaised,
+        handleVoiceSignaling,
+        sendVoiceMessage
     };
 };
