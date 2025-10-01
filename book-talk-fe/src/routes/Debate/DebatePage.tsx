@@ -16,7 +16,6 @@ import StartDebateModal from "./_components/StartDebateModal.tsx";
 import {VoiceChatProvider} from "../../contexts/VoiceChatContext";
 import type {WebSocketMessage} from "../../apis/websocket";
 import {findOneDebateQueryOptions} from "../../apis/debate";
-import type {DebateRoundInfo} from "../../apis/websocket/client.ts";
 import raiseHandSvg from "../../assets/raise-hand.svg";
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
@@ -100,34 +99,6 @@ function DebatePageContent({debateId}: Props) {
         type: RoundType | null;
     }>({show: false, type: null});
 
-    // WebSocket을 통해 발표자 업데이트를 받았을 때 쿼리 무효화
-    const handleSpeakerUpdate = useCallback((speakerInfo: unknown) => {
-        console.log('Speaker updated via WebSocket:', speakerInfo);
-        // 토론 데이터를 다시 가져오도록 쿼리 무효화
-        if (debateId) {
-            void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
-        }
-    }, [queryClient, debateId]);
-
-    // WebSocket을 통해 토론 라운드 업데이트를 받았을 때 쿼리 무효화
-    const handleDebateRoundUpdate = useCallback((roundInfo: DebateRoundInfo) => {
-        console.log('Debate round updated via WebSocket:', roundInfo);
-
-        const roundType = roundInfo.round.type as RoundType;
-        if (roundType === "PRESENTATION" || roundType === "FREE") {
-            setShowRoundStartBackdrop({show: true, type: roundType});
-
-            setTimeout(() => {
-                setShowRoundStartBackdrop({show: false, type: null});
-            }, 5000);
-        }
-
-        // 토론 데이터를 다시 가져오도록 쿼리 무효화
-        if (debateId) {
-            void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
-        }
-    }, [queryClient, debateId]);
-
     // Voice chat signaling handler reference
     const voiceSignalingHandlerRef = useRef<((message: WebSocketMessage) => void) | null>(null);
     const wsClientRef = useRef<{
@@ -142,11 +113,16 @@ function DebatePageContent({debateId}: Props) {
         }
     }, []);
 
+    const handleRoundStartBackdrop = useCallback((roundType: RoundType) => {
+        setShowRoundStartBackdrop({show: true, type: roundType});
+        setTimeout(() => {
+            setShowRoundStartBackdrop({show: false, type: null});
+        }, 5000);
+    }, []);
+
     const handlers = useMemo(() => ({
-        onSpeakerUpdate: handleSpeakerUpdate,
-        onDebateRoundUpdate: handleDebateRoundUpdate,
         onVoiceSignaling: handleVoiceSignaling
-    }), [handleSpeakerUpdate, handleDebateRoundUpdate, handleVoiceSignaling]);
+    }), [handleVoiceSignaling]);
 
     const {
         isAccountOnline,
@@ -154,7 +130,9 @@ function DebatePageContent({debateId}: Props) {
         toggleHand,
         isHandRaised,
         raisedHands
-    } = useDebateWebSocket(debateId || null, handlers);
+    } = useDebateWebSocket(debateId || null, handlers, {
+        onRoundStartBackdrop: handleRoundStartBackdrop
+    });
 
     // Store wsClient reference for use in voice chat
     useEffect(() => {
