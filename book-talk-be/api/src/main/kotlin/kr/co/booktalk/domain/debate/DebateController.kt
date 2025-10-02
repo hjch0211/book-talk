@@ -34,14 +34,17 @@ class DebateController(
         debateService.join(request, authAccount)
     }
 
-    /** 방장: 토론 라운드 생성(시작) */
+    /** 토론 라운드 생성(시작) */
     @PostMapping("/debates/round")
-    fun createRound(@RequestBody request: CreateRoundRequest, authAccount: AuthAccount) {
+    fun createRound(
+        @RequestBody request: CreateRoundRequest,
+        authAccount: AuthAccount
+    ): ApiResult<CreateRoundResponse> {
         request.validate()
-        debateRoundService.create(request, authAccount)
+        return debateRoundService.create(request, authAccount).toResult()
     }
 
-    /** 방장: 토론 라운드 변경 */
+    /** 토론 라운드 변경 */
     @PatchMapping("/debates/round")
     fun patchRound(@RequestBody request: PatchRoundRequest, authAccount: AuthAccount) {
         request.validate()

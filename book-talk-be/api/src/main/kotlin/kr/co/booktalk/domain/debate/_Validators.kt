@@ -27,7 +27,6 @@ fun DebateEntity.validateActive(): DebateEntity {
 
 fun CreateRoundRequest.validate() {
     require(debateId.isNotBlank()) { "debateId는 필수입니다." }
-    require(nextSpeakerId.isNotBlank()) { "nextSpeakerId는 필수입니다." }
 }
 
 fun PatchRoundRequest.validate() {

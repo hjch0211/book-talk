@@ -8,6 +8,10 @@ data class CreateResponse(
     val id: String,
 )
 
+data class CreateRoundResponse(
+    val id: Long,
+)
+
 data class FindOneResponse(
     val id: String,
     val members: List<MemberInfo>,

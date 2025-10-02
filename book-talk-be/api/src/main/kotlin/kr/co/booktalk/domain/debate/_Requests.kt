@@ -15,7 +15,6 @@ data class JoinRequest(
 data class CreateRoundRequest(
     val debateId: String,
     val type: DebateRoundType,
-    val nextSpeakerId: String,
 )
 
 data class PatchRoundRequest(

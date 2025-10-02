@@ -2,7 +2,10 @@ package kr.co.booktalk.domain.debate
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import kr.co.booktalk.cache.AppConfigService
-import kr.co.booktalk.domain.*
+import kr.co.booktalk.domain.AccountRepository
+import kr.co.booktalk.domain.DebateRepository
+import kr.co.booktalk.domain.DebateRoundEntity
+import kr.co.booktalk.domain.DebateRoundRepository
 import kr.co.booktalk.domain.auth.AuthAccount
 import kr.co.booktalk.domain.presence.PresenceWebSocketHandler
 import kr.co.booktalk.httpBadRequest
@@ -15,21 +18,16 @@ import java.time.Instant
 @Service
 class DebateRoundService(
     private val debateRepository: DebateRepository,
-    private val debateMemberRepository: DebateMemberRepository,
     private val accountRepository: AccountRepository,
     private val debateRoundRepository: DebateRoundRepository,
-    private val debateRoundSpeakerRepository: DebateRoundSpeakerRepository,
     private val appConfigService: AppConfigService,
     private val presenceWebSocketHandler: PresenceWebSocketHandler,
     private val objectMapper: ObjectMapper,
 ) {
     @Transactional
-    fun create(request: CreateRoundRequest, authAccount: AuthAccount) {
+    fun create(request: CreateRoundRequest, authAccount: AuthAccount): CreateRoundResponse {
         val debate = debateRepository.findByIdOrNull(request.debateId.toUUID())
             ?: httpBadRequest("존재하지 않는 토론입니다.")
-        val nextSpeaker = accountRepository.findByIdOrNull(request.nextSpeakerId.toUUID())
-            ?: httpBadRequest("존재하지 않는 계정입니다.")
-        if (!debateMemberRepository.existsByDebateAndAccount(debate, nextSpeaker)) httpBadRequest("발언자가 토론 멤버가 아닙니다.")
 
         // 이전 라운드가 있다면 종료 처리
         debateRoundRepository.findByDebateAndEndedAtIsNull(debate)?.let { existingRound ->
@@ -37,16 +35,11 @@ class DebateRoundService(
         }
 
         val debateRound = debateRoundRepository.saveAndFlush(request.toEntity(debate))
-        debateRoundSpeakerRepository.save(
-            DebateRoundSpeakerEntity(
-                account = nextSpeaker,
-                debateRound = debateRound,
-                endedAt = Instant.now().plusSeconds(appConfigService.debateRoundSpeakerSeconds())
-            )
-        )
 
         // WebSocket을 통해 토론 라운드 업데이트 브로드캐스트
-        broadcastDebateRoundUpdate(request.debateId, debateRound, nextSpeaker)
+        broadcastDebateRoundUpdate(request.debateId, debateRound)
+
+        return CreateRoundResponse(debateRound.id)
     }
 
     @Transactional
@@ -63,7 +56,6 @@ class DebateRoundService(
     private fun broadcastDebateRoundUpdate(
         debateId: String,
         debateRound: DebateRoundEntity,
-        nextSpeaker: AccountEntity
     ) {
         try {
             val message = mapOf(
@@ -72,15 +64,15 @@ class DebateRoundService(
                 "round" to mapOf(
                     "id" to debateRound.id,
                     "type" to debateRound.type.name,
-                    "nextSpeakerId" to nextSpeaker.id.toString(),
-                    "nextSpeakerName" to nextSpeaker.name,
+                    "nextSpeakerId" to null,
+                    "nextSpeakerName" to null,
                     "createdAt" to debateRound.createdAt.toEpochMilli(),
                     "endedAt" to debateRound.endedAt?.toEpochMilli()
                 ),
                 // SPEAKER_UPDATE 형태로도 함께 전송하여 currentSpeaker 설정
                 "currentSpeaker" to mapOf(
-                    "accountId" to nextSpeaker.id.toString(),
-                    "accountName" to nextSpeaker.name,
+                    "accountId" to null,
+                    "accountName" to null,
                     "endedAt" to (System.currentTimeMillis() + appConfigService.debateRoundSpeakerSeconds() * 1000)
                 )
             )
