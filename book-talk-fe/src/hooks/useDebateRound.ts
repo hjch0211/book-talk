@@ -1,12 +1,16 @@
 import {useCallback, useEffect, useMemo, useState} from 'react';
-import {useMutation, useQueryClient} from "@tanstack/react-query";
+import {useMutation, type UseMutationResult, useQueryClient} from "@tanstack/react-query";
 import {
     createRound,
+    type CreateRoundRequest,
+    type CreateRoundResponse,
     createRoundSpeaker,
+    type CreateRoundSpeakerRequest,
     findOneDebateQueryOptions,
     type FindOneDebateResponse,
     patchRound,
-    patchRoundSpeaker
+    patchRoundSpeaker,
+    type PatchRoundSpeakerRequest
 } from "../apis/debate";
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
@@ -32,13 +36,10 @@ export interface UseDebateRoundReturn {
     currentSpeaker: CurrentSpeaker | null;
     nextSpeaker: NextSpeaker | null;
     realTimeRemainingSeconds: number;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    createRoundMutation: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    createRoundSpeakerMutation: any;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    patchRoundSpeakerMutation: any;
-    createNextSpeaker: () => Promise<void>;
+    createRoundMutation: UseMutationResult<CreateRoundResponse, Error, CreateRoundRequest>;
+    createRoundSpeakerMutation: UseMutationResult<void, Error, CreateRoundSpeakerRequest>;
+    patchRoundSpeakerMutation: UseMutationResult<void, Error, PatchRoundSpeakerRequest>;
+    handlePresentationRound: () => Promise<void>;
 }
 
 /**
@@ -69,8 +70,7 @@ export const useDebateRound = (
     }, []);
 
     const createRoundMutation = useMutation({
-        mutationFn: ({debateId, nextSpeakerId}: { debateId: string; nextSpeakerId: string }) =>
-            createRound({debateId, type: 'PRESENTATION', nextSpeakerId}),
+        mutationFn: (request: CreateRoundRequest) => createRound(request),
         onSuccess: () => {
             void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions(debateId).queryKey});
         }
@@ -133,84 +133,94 @@ export const useDebateRound = (
         return Math.max(0, Math.floor((currentSpeaker.endedAt - currentTime.getTime()) / 1000));
     }, [currentSpeaker?.endedAt, currentTime]);
 
-    /** 라운드 타입별 다음 발표자 생성 로직 */
-    const roundHandlers = useMemo(() => ({
-        PRESENTATION: {
-            async createNextSpeaker() {
-                if (!debateId || !currentSpeaker || !currentRoundInfo?.id) return;
+    /** PRESENTATION 라운드: 순차적 발표자 진행 */
+    const handlePresentationRound = useCallback(async () => {
+        if (!debateId) return;
 
-                const currentIndex = debate.members.findIndex(m => m.id === currentSpeaker.accountId);
+        // PREPARATION 상태 (라운드가 아직 없음) - 라운드 생성 및 첫 발언자 지정
+        if (!currentRoundInfo?.id) {
+            // 1. PRESENTATION 라운드 생성
+            const roundResponse = await createRoundMutation.mutateAsync({debateId, type: "PRESENTATION"});
 
-                if (currentIndex !== -1 && currentIndex < debate.members.length - 1) {
-                    // 다음 발표자로 넘기기
-                    const nextSpeakerId = debate.members[currentIndex + 1].id;
-                    await createRoundSpeakerMutation.mutateAsync({
-                        debateRoundId: currentRoundInfo.id,
-                        nextSpeakerId
-                    });
-                } else {
-                    // PRESENTATION 라운드 끝 -> FREE 라운드 생성
-                    const hostId = debate.members.find(m => m.role === "HOST")?.id || "";
-                    await createRoundMutation.mutateAsync({debateId, nextSpeakerId: hostId});
-                }
-            },
-            shouldAutoProgress: true
-        },
-        FREE: {
-            async createNextSpeaker() {
-                if (!debateId || !currentRoundInfo?.id || !currentRoundInfo.nextSpeakerId) return;
-
+            if (roundResponse?.id && debate.members.length > 0) {
+                // 2. 첫 번째 발언자 생성
+                const firstSpeakerId = debate.members[0].id;
                 await createRoundSpeakerMutation.mutateAsync({
-                    debateRoundId: currentRoundInfo.id,
-                    nextSpeakerId: currentRoundInfo.nextSpeakerId
+                    debateRoundId: roundResponse.id,
+                    nextSpeakerId: firstSpeakerId
                 });
-            },
-            shouldAutoProgress: false
-        },
-        PREPARATION: {
-            async createNextSpeaker() {
-                // PREPARATION에서는 다음 발표자 생성 불가
-            },
-            shouldAutoProgress: false
+
+                // 3. 두 번째 발언자 예약 (있는 경우)
+                if (debate.members.length > 1) {
+                    const secondSpeakerId = debate.members[1].id;
+                    await patchRoundMutation.mutateAsync({
+                        debateRoundId: roundResponse.id,
+                        nextSpeakerId: secondSpeakerId
+                    });
+                }
+            }
+
+            await queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions(debateId).queryKey});
+            return;
         }
-    }), [debateId, currentSpeaker, currentRoundInfo, debate.members, createRoundSpeakerMutation, createRoundMutation]);
 
-    /** 다음 발언자 생성 */
-    const createNextSpeaker = useCallback(async () => {
-        if (!currentRoundInfo) return;
+        // 현재 발언자가 있는 경우 - 다음 발언자로 진행
+        if (!currentSpeaker) return;
 
-        const handler = roundHandlers[currentRoundInfo.type as RoundType];
-        if (!handler) return;
+        const currentIndex = debate.members.findIndex(m => m.id === currentSpeaker.accountId);
 
-        try {
-            await handler.createNextSpeaker();
-            console.log('Successfully processed next speaker');
-        } catch (error) {
-            console.error('Failed to create next speaker:', error);
-        } finally {
-            void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
+        if (currentIndex !== -1 && currentIndex < debate.members.length - 1) {
+            // 다음 발표자로 넘기기
+            const nextSpeakerId = debate.members[currentIndex + 1].id;
+            await createRoundSpeakerMutation.mutateAsync({
+                debateRoundId: currentRoundInfo.id,
+                nextSpeakerId
+            });
+            // 다음 예정 발표자 지정
+            if (debate.currentRound?.id && currentIndex < debate.members.length - 2) {
+                const nextWaitingSpeakerId = debate.members[currentIndex + 2].id;
+                await patchRoundMutation.mutateAsync({
+                    debateRoundId: debate.currentRound.id,
+                    nextSpeakerId: nextWaitingSpeakerId
+                });
+            }
+        } else {
+            // PRESENTATION 라운드 끝 -> FREE 라운드 생성
+            await createRoundMutation.mutateAsync({debateId, type: "FREE"});
         }
-    }, [roundHandlers, currentRoundInfo, queryClient]);
+    }, [debateId, currentSpeaker, currentRoundInfo?.id, debate.members, debate.currentRound?.id, createRoundSpeakerMutation, patchRoundMutation, createRoundMutation, queryClient]);
 
     /** 발표 시간 만료시 자동 다음 발표자 처리 */
     useEffect(() => {
         if (!debateId || !currentSpeaker || !currentRoundInfo?.id) return;
 
-        const handler = roundHandlers[currentRoundInfo.type as RoundType];
-        const shouldAutoProgress = handler?.shouldAutoProgress && realTimeRemainingSeconds === 0 && currentSpeaker.accountId === myAccountId;
+        // PRESENTATION 라운드만 자동 진행
+        const shouldAutoProgress = currentRoundInfo.type === 'PRESENTATION' &&
+            realTimeRemainingSeconds === 0 &&
+            currentSpeaker.accountId === myAccountId;
 
         if (shouldAutoProgress) {
             console.log('Speaker time expired, auto-creating next speaker');
-            void createNextSpeaker();
+
+            (async () => {
+                try {
+                    await handlePresentationRound();
+                    console.log('Successfully processed next speaker');
+                } catch (error) {
+                    console.error('Failed to create next speaker:', error);
+                } finally {
+                    void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
+                }
+            })();
         }
     }, [
         realTimeRemainingSeconds,
         currentSpeaker,
         myAccountId,
-        createNextSpeaker,
+        handlePresentationRound,
         debateId,
         currentRoundInfo,
-        roundHandlers
+        queryClient
     ]);
 
     return {
@@ -220,6 +230,6 @@ export const useDebateRound = (
         createRoundMutation,
         createRoundSpeakerMutation,
         patchRoundSpeakerMutation,
-        createNextSpeaker
+        handlePresentationRound
     };
 };

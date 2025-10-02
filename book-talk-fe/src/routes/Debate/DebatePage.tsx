@@ -1,4 +1,4 @@
-import {Suspense, useCallback, useMemo, useRef, useState} from 'react';
+import {Suspense, useCallback, useRef, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {Stack} from '@mui/material';
 import MainContainer from '../../components/MainContainer/MainContainer';
@@ -34,8 +34,8 @@ function DebatePageContent({debateId}: Props) {
         debate,
         myMemberData,
         currentRoundInfo,
-        round: {currentSpeaker, nextSpeaker, realTimeRemainingSeconds, createRoundMutation, createNextSpeaker},
-        websocket: {isAccountOnline, toggleHand, isHandRaised, raisedHands, sendVoiceMessage},
+        round: {currentSpeaker, nextSpeaker, realTimeRemainingSeconds, createRoundMutation, handlePresentationRound},
+        websocket: {toggleHand, isHandRaised, raisedHands, sendVoiceMessage, membersWithPresence},
         showRoundStartBackdrop,
         closeRoundStartBackdrop
     } = useDebate({
@@ -43,30 +43,15 @@ function DebatePageContent({debateId}: Props) {
         onVoiceSignaling: handleVoiceSignalingWrapper
     });
 
-    const membersWithPresence = useMemo(() => {
-        return debate.members
-            .filter(member => isAccountOnline(member.id))
-            .map(member => ({
-                ...member,
-                isCurrentUser: member.id === myMemberData.id
-            }));
-    }, [debate.members, isAccountOnline, myMemberData.id]);
-
-    const handleStartDebate = () => {
+    const handleStartDebate = async () => {
         if (!debateId) return;
 
-        const host = debate.members.find(m => m.role === "HOST")
-        if (host) {
-            createRoundMutation.mutate({
-                debateId,
-                nextSpeakerId: host.id
-            });
-            setShowStartModal(false);
-        }
+        await handlePresentationRound();
+        setShowStartModal(false);
     };
 
     const handleEndPresentation = () => {
-        void createNextSpeaker();
+        void handlePresentationRound();
     };
 
     if (!debateId) {

@@ -2,7 +2,7 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useQueryClient} from "@tanstack/react-query";
 import {DebateWebSocketClient, type WebSocketMessage} from "../apis/websocket";
 import type {DebateRoundInfo} from "../apis/websocket/client.ts";
-import {findOneDebateQueryOptions} from "../apis/debate";
+import {findOneDebateQueryOptions, type MemberInfo} from "../apis/debate";
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
@@ -11,17 +11,24 @@ interface UseDebateWebSocketOptions {
     onVoiceSignaling?: (message: WebSocketMessage) => void;
 }
 
+export interface MemberWithPresence extends MemberInfo {
+    isCurrentUser: boolean;
+}
+
 /**
  * WebSocket 연결 및 실시간 통신 관리
  * - WebSocket 연결/해제
  * - 메시지 송수신
  * - 상태 관리 (온라인, 손들기)
  * - 비즈니스 로직 (Query 갱신, UI 이벤트)
+ * - 온라인 멤버 목록 계산
  *
  * @internal useDebate 내부에서만 사용
  */
 export const useDebateWebSocket = (
     debateId: string | null,
+    members: MemberInfo[],
+    myAccountId: string | undefined,
     options?: UseDebateWebSocketOptions
 ) => {
     const queryClient = useQueryClient();
@@ -137,6 +144,16 @@ export const useDebateWebSocket = (
         return result;
     }, [onlineAccountIds]);
 
+    /** 온라인 멤버 목록 계산 */
+    const membersWithPresence = useMemo((): MemberWithPresence[] => {
+        return members
+            .filter(member => onlineAccountIds.has(member.id))
+            .map(member => ({
+                ...member,
+                isCurrentUser: member.id === myAccountId
+            }));
+    }, [members, onlineAccountIds, myAccountId]);
+
     /** 손들기 기능 */
     const toggleHand = useCallback(() => {
         wsClientRef.current?.toggleHand();
@@ -162,6 +179,7 @@ export const useDebateWebSocket = (
         toggleHand,
         isHandRaised,
         handleVoiceSignaling,
-        sendVoiceMessage
+        sendVoiceMessage,
+        membersWithPresence
     };
 };

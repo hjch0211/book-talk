@@ -4,6 +4,8 @@ import {
     CreateDebateRequestSchema,
     type CreateRoundRequest,
     CreateRoundRequestSchema,
+    type CreateRoundResponse,
+    CreateRoundResponseSchema,
     type CreateRoundSpeakerRequest,
     CreateRoundSpeakerRequestSchema,
     type FindOneDebateResponse,
@@ -36,9 +38,10 @@ export const joinDebate = async (request: JoinDebateRequest): Promise<void> => {
 };
 
 /** 토론 라운드 생성(시작) */
-export const createRound = async (request: CreateRoundRequest): Promise<void> => {
+export const createRound = async (request: CreateRoundRequest): Promise<CreateRoundResponse> => {
     const validatedData = CreateRoundRequestSchema.parse(request);
-    await authApiClient.post('/debates/round', validatedData);
+    const response = await authApiClient.post('/debates/round', validatedData);
+    return CreateRoundResponseSchema.parse(response.data.data);
 };
 
 /** 토론 라운드 변경 */

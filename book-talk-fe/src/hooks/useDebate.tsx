@@ -141,10 +141,15 @@ export const useDebate = ({debateId, onVoiceSignaling}: Props): UseDebateReturn 
     }, [debate.currentRound, debate.presentations, _me?.id]);
 
     const round = useDebateRound(debate, debateId, currentRoundInfo, myMemberData.id);
-    const websocket = useDebateWebSocket(debateId || null, {
-        onRoundStartBackdrop: handleRoundStartBackdrop,
-        onVoiceSignaling
-    });
+    const websocket = useDebateWebSocket(
+        debateId || null,
+        debate.members,
+        myMemberData.id,
+        {
+            onRoundStartBackdrop: handleRoundStartBackdrop,
+            onVoiceSignaling
+        }
+    );
 
     return {
         debate,

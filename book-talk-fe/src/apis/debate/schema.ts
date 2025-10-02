@@ -57,8 +57,10 @@ export const CreateRoundRequestSchema = z.object({
     debateId: z.string()
         .min(1, '토론 ID를 입력해주세요'),
     type: z.enum(['PRESENTATION', 'FREE']),
-    nextSpeakerId: z.string()
-        .min(1, '다음 발언자 ID를 입력해주세요'),
+});
+
+export const CreateRoundResponseSchema = z.object({
+    id: z.number(),
 });
 
 export const PatchRoundRequestSchema = z.object({
@@ -86,6 +88,7 @@ export type MemberInfo = z.infer<typeof MemberInfoSchema>;
 export type PresentationInfo = z.infer<typeof PresentationInfoSchema>;
 export type RoundInfo = z.infer<typeof RoundInfoSchema>;
 export type CreateRoundRequest = z.infer<typeof CreateRoundRequestSchema>;
+export type CreateRoundResponse = z.infer<typeof CreateRoundResponseSchema>;
 export type PatchRoundRequest = z.infer<typeof PatchRoundRequestSchema>;
 export type CreateRoundSpeakerRequest = z.infer<typeof CreateRoundSpeakerRequestSchema>;
 export type PatchRoundSpeakerRequest = z.infer<typeof PatchRoundSpeakerRequestSchema>;
