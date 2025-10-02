@@ -25,7 +25,15 @@ function DebatePageContent({debateId}: Props) {
         debate,
         myMemberData,
         currentRoundInfo,
-        round: {currentSpeaker, nextSpeaker, realTimeRemainingSeconds, createRoundMutation, handlePresentationRound},
+        round: {
+            currentSpeaker,
+            nextSpeaker,
+            realTimeRemainingSeconds,
+            createRoundMutation,
+            handlePresentationRound,
+            handleFreeRound,
+            createRoundSpeakerMutation
+        },
         websocket: {toggleHand, isHandRaised, raisedHands, sendVoiceMessage, membersWithPresence},
         showRoundStartBackdrop,
         closeRoundStartBackdrop,
@@ -37,12 +45,34 @@ function DebatePageContent({debateId}: Props) {
     const handleStartDebate = async () => {
         if (!debateId) return;
 
-        await handlePresentationRound();
         setShowStartModal(false);
+        await handlePresentationRound();
     };
 
     const handleEndPresentation = () => {
-        void handlePresentationRound();
+        if (currentRoundInfo.type === 'PRESENTATION') {
+            void handlePresentationRound();
+        } else if (currentRoundInfo.type === 'FREE') {
+            void handleFreeRound();
+        }
+    };
+
+    const handlePassSpeaker = async (memberId: string) => {
+        if (!currentRoundInfo.id) return;
+
+        try {
+            await createRoundSpeakerMutation.mutateAsync({
+                debateRoundId: currentRoundInfo.id,
+                nextSpeakerId: memberId
+            });
+        } catch (error) {
+            console.error('Failed to pass speaker:', error);
+        }
+    };
+
+    const handleViewPresentation = (memberId: string) => {
+        // TODO: 실제 발표페이지 모달 구현
+        alert(`${memberId}의 발표페이지를 보여줄 예정입니다.`);
     };
 
     if (!debateId) {
@@ -73,6 +103,10 @@ function DebatePageContent({debateId}: Props) {
                         nextSpeaker={nextSpeaker}
                         realTimeRemainingSeconds={realTimeRemainingSeconds}
                         raisedHands={raisedHands}
+                        currentRoundType={currentRoundInfo.type}
+                        myAccountId={myMemberData.id}
+                        onPassSpeaker={handlePassSpeaker}
+                        onViewPresentation={handleViewPresentation}
                     />
                     <Stack spacing={2}>
                         <RoundActions

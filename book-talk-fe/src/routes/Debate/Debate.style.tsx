@@ -294,23 +294,6 @@ export const SavedTimeIndicator = styled.div`
     color: #9D9D9D;
 `;
 
-export const PresentationPlaceholder = styled.div`
-    width: 820px;
-    height: 64px;
-    font-family: 'S-Core Dream', sans-serif;
-    font-weight: 200;
-    font-size: 18px;
-    line-height: 180%;
-    letter-spacing: 0.3px;
-    color: #9D9D9D;
-    cursor: pointer;
-    transition: color 0.2s ease;
-
-    &:hover {
-        color: #7B7B7B;
-    }
-`;
-
 export const MemberListContainer = styled(Box)`
     box-sizing: border-box;
     display: flex;
@@ -430,7 +413,7 @@ export const MemberOrder = styled.div`
     text-align: center;
 `;
 
-export const MemberProfile = styled.div`
+export const MemberProfile = styled.div<{ $isCurrentSpeaker?: boolean }>`
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -441,10 +424,10 @@ export const MemberProfile = styled.div`
     isolation: isolate;
     width: 245px;
     height: 76px;
-    background: #FFFFFF;
+    background: ${props => props.$isCurrentSpeaker ? '#F5F5F5' : '#FFFFFF'};
     border-width: 6px 18px 6px 0px;
     border-style: solid;
-    border-color: #FFFFFF;
+    border-color: ${props => props.$isCurrentSpeaker ? '#F5F5F5' : '#FFFFFF'};
     border-radius: 2px 50px 50px 2px;
     flex: none;
     order: 1;
@@ -545,10 +528,12 @@ export const CurrentUserIndicator = styled.span`
 
 export const MemberMenuButton = styled.div`
     position: absolute;
-    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 24px;
     height: 24px;
-    left: 213px;
+    left: 200px;
     top: calc(50% - 24px / 2);
     cursor: pointer;
     color: #7B7B7B;
@@ -556,6 +541,10 @@ export const MemberMenuButton = styled.div`
     order: 1;
     flex-grow: 0;
     z-index: 1;
+
+    &:hover {
+        color: #262626;
+    }
 `;
 
 export const SpeakerTimer = styled.div`
@@ -565,6 +554,26 @@ export const SpeakerTimer = styled.div`
     line-height: 13px;
     color: #7B7B7B;
     margin-left: auto;
+`;
+
+export const MemberOrderContainer = styled(Box)`
+    position: relative;
+`;
+
+export const RaisedHandIcon = styled(Box)`
+    position: absolute;
+    top: -30px;
+    left: 2px;
+    transition: opacity 0.3s ease-in-out;
+    pointer-events: none;
+`;
+
+export const MemberStatus = styled.div`
+    font-size: 12px;
+    line-height: 150%;
+    letter-spacing: 0.3px;
+    color: #7B7B7B;
+    font-weight: 200;
 `;
 
 export const ActionButton = styled(Button)<{ borderColor?: string, backgroundColor?: string }>`

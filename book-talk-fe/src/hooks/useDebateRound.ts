@@ -40,6 +40,7 @@ export interface UseDebateRoundReturn {
     createRoundSpeakerMutation: UseMutationResult<void, Error, CreateRoundSpeakerRequest>;
     patchRoundSpeakerMutation: UseMutationResult<void, Error, PatchRoundSpeakerRequest>;
     handlePresentationRound: () => Promise<void>;
+    handleFreeRound: () => Promise<void>;
 }
 
 /**
@@ -201,15 +202,32 @@ export const useDebateRound = (
             }
         } else {
             // PRESENTATION 라운드 끝 -> FREE 라운드 생성
-            await createRoundMutation.mutateAsync({debateId, type: "FREE"});
+            // 1. FREE 라운드 생성
+            const roundResponse = await createRoundMutation.mutateAsync({debateId, type: "FREE"});
+            if (roundResponse?.id && debate.members.length > 0) {
+                // 2. 첫 번째 발언자 생성
+                const firstSpeakerId = debate.members[0].id;
+                await createRoundSpeakerMutation.mutateAsync({
+                    debateRoundId: roundResponse.id,
+                    nextSpeakerId: firstSpeakerId
+                });
+            }
         }
     }, [debateId, currentSpeaker, currentRoundInfo?.id, debate.members, debate.currentRound?.id, createRoundSpeakerMutation, patchRoundMutation, createRoundMutation, queryClient]);
+
+    /** FREE 라운드: 툴팁을 통해서만 발표자 전환 (자동 진행 없음) */
+    const handleFreeRound = useCallback(async () => {
+        // FREE 라운드에서는 nextSpeakerId가 항상 null이므로 이 함수는 사용되지 않음
+        // 발표자 전환은 오직 툴팁의 "발표 넘겨주기"를 통해서만 이루어짐
+        console.log('handleFreeRound called, but FREE round does not support auto-progression');
+    }, []);
 
     /** 발표 시간 만료시 자동 다음 발표자 처리 */
     useEffect(() => {
         if (!debateId || !currentSpeaker || !currentRoundInfo?.id) return;
 
-        // PRESENTATION 라운드만 자동 진행
+        // PRESENTATION 라운드에서만 시간 만료시 자동 진행
+        // FREE 라운드는 툴팁을 통해서만 발표자 전환 가능
         const shouldAutoProgress = currentRoundInfo.type === 'PRESENTATION' &&
             realTimeRemainingSeconds === 0 &&
             currentSpeaker.accountId === myAccountId;
@@ -245,6 +263,7 @@ export const useDebateRound = (
         createRoundMutation,
         createRoundSpeakerMutation,
         patchRoundSpeakerMutation,
-        handlePresentationRound
+        handlePresentationRound,
+        handleFreeRound
     };
 };

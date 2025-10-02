@@ -81,6 +81,31 @@ export const PatchRoundSpeakerRequestSchema = z.object({
     ended: z.boolean().nullable().optional(),
 });
 
+export const CreateChatRequestSchema = z.object({
+    debateId: z.string()
+        .min(1, '토론 ID를 입력해주세요'),
+    content: z.string()
+        .min(1, '채팅 내용을 입력해주세요'),
+});
+
+export const CreateChatResponseSchema = z.object({
+    id: z.number(),
+    debateId: z.string(),
+    accountId: z.string(),
+    accountName: z.string(),
+    content: z.string(),
+    createdAt: z.string(),
+});
+
+export const ChatResponseSchema = z.object({
+    id: z.number(),
+    debateId: z.string(),
+    accountId: z.string(),
+    accountName: z.string(),
+    content: z.string(),
+    createdAt: z.string(),
+});
+
 export type CreateDebateRequest = z.infer<typeof CreateDebateRequestSchema>;
 export type JoinDebateRequest = z.infer<typeof JoinDebateRequestSchema>;
 export type FindOneDebateResponse = z.infer<typeof FindOneDebateResponseSchema>;
@@ -92,3 +117,6 @@ export type CreateRoundResponse = z.infer<typeof CreateRoundResponseSchema>;
 export type PatchRoundRequest = z.infer<typeof PatchRoundRequestSchema>;
 export type CreateRoundSpeakerRequest = z.infer<typeof CreateRoundSpeakerRequestSchema>;
 export type PatchRoundSpeakerRequest = z.infer<typeof PatchRoundSpeakerRequestSchema>;
+export type CreateChatRequest = z.infer<typeof CreateChatRequestSchema>;
+export type CreateChatResponse = z.infer<typeof CreateChatResponseSchema>;
+export type ChatResponse = z.infer<typeof ChatResponseSchema>;

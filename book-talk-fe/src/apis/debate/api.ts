@@ -1,5 +1,12 @@
+import {z} from 'zod';
 import {authApiClient} from '../client';
 import {
+    type ChatResponse,
+    ChatResponseSchema,
+    type CreateChatRequest,
+    type CreateChatResponse,
+    CreateChatRequestSchema,
+    CreateChatResponseSchema,
     type CreateDebateRequest,
     CreateDebateRequestSchema,
     type CreateRoundRequest,
@@ -60,4 +67,17 @@ export const createRoundSpeaker = async (request: CreateRoundSpeakerRequest): Pr
 export const patchRoundSpeaker = async (request: PatchRoundSpeakerRequest): Promise<void> => {
     const validatedData = PatchRoundSpeakerRequestSchema.parse(request);
     await authApiClient.patch('/debates/round/speakers', validatedData);
+};
+
+/** 채팅 생성 */
+export const createChat = async (request: CreateChatRequest): Promise<CreateChatResponse> => {
+    const validatedData = CreateChatRequestSchema.parse(request);
+    const response = await authApiClient.post('/debates/round/chats', validatedData);
+    return CreateChatResponseSchema.parse(response.data.data);
+};
+
+/** 토론 채팅 조회 */
+export const getChats = async (debateId: string): Promise<ChatResponse[]> => {
+    const response = await authApiClient.get(`/debates/${debateId}/chats`);
+    return z.array(ChatResponseSchema).parse(response.data.data);
 };
