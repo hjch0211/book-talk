@@ -72,8 +72,6 @@ export const useDebate = ({debateId, onVoiceSignaling}: Props): UseDebateReturn 
 
     const closeRoundStartBackdrop = useCallback(() => {
         setShowRoundStartBackdrop({show: false, type: null});
-        // [Todo] 새로고침 걷어내고 websocket 상태 전파 부분 확인하기
-        window.location.reload()
     }, []);
 
     const handleRoundStartBackdrop = useCallback((roundType: RoundType) => {

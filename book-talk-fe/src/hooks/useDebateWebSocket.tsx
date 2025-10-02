@@ -12,7 +12,7 @@ interface UseDebateWebSocketOptions {
 }
 
 export interface MemberWithPresence extends MemberInfo {
-    isCurrentUser: boolean;
+    isMe: boolean;
 }
 
 /**
@@ -52,7 +52,7 @@ export const useDebateWebSocket = (
     const handleSpeakerUpdate = useCallback((speakerInfo: unknown) => {
         console.log('Speaker updated via WebSocket:', speakerInfo);
         if (debateId) {
-            void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
+            void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions(debateId).queryKey});
         }
     }, [debateId, queryClient]);
 
@@ -60,7 +60,7 @@ export const useDebateWebSocket = (
     const handleDebateRoundUpdate = useCallback((roundInfo: DebateRoundInfo) => {
         console.log('Debate round updated via WebSocket:', roundInfo);
         if (debateId) {
-            void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
+            void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions(debateId).queryKey});
         }
 
         const roundType = roundInfo.round.type as RoundType;
@@ -138,19 +138,13 @@ export const useDebateWebSocket = (
         };
     }, [isConnected]);
 
-    const checkAccountOnlineStatus = useCallback((accountId: string): boolean => {
-        const result = onlineAccountIds.has(accountId);
-        console.log(`Checking online status for ${accountId}:`, result, 'from set:', Array.from(onlineAccountIds));
-        return result;
-    }, [onlineAccountIds]);
-
     /** 온라인 멤버 목록 계산 */
     const membersWithPresence = useMemo((): MemberWithPresence[] => {
         return members
             .filter(member => onlineAccountIds.has(member.id))
             .map(member => ({
                 ...member,
-                isCurrentUser: member.id === myAccountId
+                isMe: member.id === myAccountId
             }));
     }, [members, onlineAccountIds, myAccountId]);
 
@@ -171,7 +165,6 @@ export const useDebateWebSocket = (
     }, []);
 
     return {
-        isAccountOnline: checkAccountOnlineStatus,
         onlineAccountIds,
         isConnected,
         wsClient: wsClientRef.current,
