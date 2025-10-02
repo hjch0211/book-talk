@@ -23,7 +23,7 @@ interface VoiceChatProviderProps {
     debateId: string;
     myAccountId: string;
     onSignalingMessage: (message: WebSocketMessage) => void;
-    voiceChatHandlerRef: React.MutableRefObject<((message: WebSocketMessage) => void) | null>;
+    voiceChatHandlerRef: React.RefObject<((message: WebSocketMessage) => void) | null | undefined>
     participantsList: Array<{ id: string; name: string }>;
 }
 

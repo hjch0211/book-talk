@@ -1,4 +1,4 @@
-import {Suspense, useCallback, useRef, useState} from 'react';
+import {Suspense, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {Stack} from '@mui/material';
 import MainContainer from '../../components/MainContainer/MainContainer';
@@ -11,7 +11,6 @@ import {DebateContainer} from './Debate.style';
 import {useDebate} from "../../hooks/useDebate.tsx";
 import StartDebateModal from "./_components/StartDebateModal.tsx";
 import {VoiceChatProvider} from "../../contexts/VoiceChatContext";
-import type {WebSocketMessage} from "../../apis/websocket";
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
@@ -22,14 +21,6 @@ interface Props {
 function DebatePageContent({debateId}: Props) {
     const [showStartModal, setShowStartModal] = useState(false);
 
-    // VoiceChat 메시지 핸들러를 ref로 저장
-    const voiceChatHandlerRef = useRef<((message: WebSocketMessage) => void) | null>(null);
-
-    const handleVoiceSignalingWrapper = useCallback((message: WebSocketMessage) => {
-        console.log('Voice signaling received in DebatePage:', message);
-        voiceChatHandlerRef.current?.(message);
-    }, []);
-
     const {
         debate,
         myMemberData,
@@ -37,10 +28,10 @@ function DebatePageContent({debateId}: Props) {
         round: {currentSpeaker, nextSpeaker, realTimeRemainingSeconds, createRoundMutation, handlePresentationRound},
         websocket: {toggleHand, isHandRaised, raisedHands, sendVoiceMessage, membersWithPresence},
         showRoundStartBackdrop,
-        closeRoundStartBackdrop
+        closeRoundStartBackdrop,
+        voiceChatHandlerRef
     } = useDebate({
-        debateId,
-        onVoiceSignaling: handleVoiceSignalingWrapper
+        debateId
     });
 
     const handleStartDebate = async () => {

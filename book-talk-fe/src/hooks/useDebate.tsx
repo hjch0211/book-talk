@@ -10,7 +10,6 @@ type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
 interface Props {
     debateId?: string;
-    onVoiceSignaling?: (message: WebSocketMessage) => void;
 }
 
 export interface CurrentRoundInfo {
@@ -45,6 +44,9 @@ export interface UseDebateReturn {
         type: RoundType | null;
     };
     closeRoundStartBackdrop: () => void;
+
+    // VoiceChat 핸들러
+    voiceChatHandlerRef: ReturnType<typeof useRef<((message: WebSocketMessage) => void) | null>>;
 }
 
 /**
@@ -54,8 +56,9 @@ export interface UseDebateReturn {
  * - WebSocket 연결 관리 (useDebateWebSocket)
  * - 자동 참여 처리
  * - UI 상태 관리 (백드롭)
+ * - VoiceChat 핸들러 관리
  */
-export const useDebate = ({debateId, onVoiceSignaling}: Props): UseDebateReturn => {
+export const useDebate = ({debateId}: Props): UseDebateReturn => {
     const queryClient = useQueryClient();
     const {data: debate} = useSuspenseQuery(findOneDebateQueryOptions(debateId));
     const {data: _me} = useSuspenseQuery(meQueryOption);
@@ -63,6 +66,14 @@ export const useDebate = ({debateId, onVoiceSignaling}: Props): UseDebateReturn 
 
     const myMember = debate.members.find((m) => m.id === _me?.id);
     const isAlreadyMember = !!myMember;
+
+    /** VoiceChat 메시지 핸들러를 ref로 저장 */
+    const voiceChatHandlerRef = useRef(null) as React.MutableRefObject<((message: WebSocketMessage) => void) | null>;
+
+    const handleVoiceSignalingWrapper = useCallback((message: WebSocketMessage) => {
+        console.log('Voice signaling received in useDebate:', message);
+        voiceChatHandlerRef.current?.(message);
+    }, []);
 
     /** RoundStartBackdrop UI 상태 */
     const [showRoundStartBackdrop, setShowRoundStartBackdrop] = useState<{
@@ -145,7 +156,7 @@ export const useDebate = ({debateId, onVoiceSignaling}: Props): UseDebateReturn 
         myMemberData.id,
         {
             onRoundStartBackdrop: handleRoundStartBackdrop,
-            onVoiceSignaling
+            onVoiceSignaling: handleVoiceSignalingWrapper
         }
     );
 
@@ -156,6 +167,7 @@ export const useDebate = ({debateId, onVoiceSignaling}: Props): UseDebateReturn 
         round,
         websocket,
         showRoundStartBackdrop,
-        closeRoundStartBackdrop
+        closeRoundStartBackdrop,
+        voiceChatHandlerRef
     }
 }
