@@ -150,12 +150,18 @@ export const useDebateRound = (
                     nextSpeakerId: firstSpeakerId
                 });
 
-                // 3. 두 번째 발언자 예약 (있는 경우)
+                // 3. 두 번째 발언자 예약
                 if (debate.members.length > 1) {
                     const secondSpeakerId = debate.members[1].id;
                     await patchRoundMutation.mutateAsync({
                         debateRoundId: roundResponse.id,
                         nextSpeakerId: secondSpeakerId
+                    });
+                } else {
+                    // 멤버가 1명만 있는 경우 nextSpeakerId를 null로 설정
+                    await patchRoundMutation.mutateAsync({
+                        debateRoundId: roundResponse.id,
+                        nextSpeakerId: null
                     });
                 }
             }
@@ -176,13 +182,22 @@ export const useDebateRound = (
                 debateRoundId: currentRoundInfo.id,
                 nextSpeakerId
             });
+
             // 다음 예정 발표자 지정
-            if (debate.currentRound?.id && currentIndex < debate.members.length - 2) {
-                const nextWaitingSpeakerId = debate.members[currentIndex + 2].id;
-                await patchRoundMutation.mutateAsync({
-                    debateRoundId: debate.currentRound.id,
-                    nextSpeakerId: nextWaitingSpeakerId
-                });
+            if (debate.currentRound?.id) {
+                if (currentIndex < debate.members.length - 2) {
+                    const nextWaitingSpeakerId = debate.members[currentIndex + 2].id;
+                    await patchRoundMutation.mutateAsync({
+                        debateRoundId: debate.currentRound.id,
+                        nextSpeakerId: nextWaitingSpeakerId
+                    });
+                } else {
+                    // 다음 다음 발언자가 없는 경우 null로 설정
+                    await patchRoundMutation.mutateAsync({
+                        debateRoundId: debate.currentRound.id,
+                        nextSpeakerId: null
+                    });
+                }
             }
         } else {
             // PRESENTATION 라운드 끝 -> FREE 라운드 생성

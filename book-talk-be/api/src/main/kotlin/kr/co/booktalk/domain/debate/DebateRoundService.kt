@@ -46,10 +46,17 @@ class DebateRoundService(
     fun patch(request: PatchRoundRequest, authAccount: AuthAccount) {
         val debateRound = debateRoundRepository.findByIdOrNull(request.debateRoundId)
             ?: httpBadRequest("존재하지 않는 톡서 토론 라운드입니다.")
-        request.nextSpeakerId?.let {
-            debateRound.nextSpeaker = accountRepository.findByIdOrNull(it.toUUID()) ?: httpBadRequest("존재하지 않는 계정입니다.")
+
+        if (request.nextSpeakerId.isPresent) {
+            debateRound.nextSpeaker = request.nextSpeakerId.value?.let { accountId ->
+                accountRepository.findByIdOrNull(accountId.toUUID())
+                    ?: httpBadRequest("존재하지 않는 계정입니다.")
+            }
         }
-        request.ended?.takeIf { it }?.let { debateRound.endedAt = Instant.now() }
+
+        if (request.ended.isPresent && request.ended.value == true) {
+            debateRound.endedAt = Instant.now()
+        }
     }
 
     /** WebSocket을 통해 토론 라운드 업데이트를 브로드캐스트합니다. */
