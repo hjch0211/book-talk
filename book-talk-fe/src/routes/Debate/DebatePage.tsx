@@ -70,11 +70,6 @@ function DebatePageContent({debateId}: Props) {
         }
     };
 
-    const handleViewPresentation = (memberId: string) => {
-        // TODO: 실제 발표페이지 모달 구현
-        alert(`${memberId}의 발표페이지를 보여줄 예정입니다.`);
-    };
-
     if (!debateId) {
         return <div>Invalid debate ID</div>;
     }
@@ -106,7 +101,7 @@ function DebatePageContent({debateId}: Props) {
                         currentRoundType={currentRoundInfo.type}
                         myAccountId={myMemberData.id}
                         onPassSpeaker={handlePassSpeaker}
-                        onViewPresentation={handleViewPresentation}
+                        presentations={debate.presentations}
                     />
                     <Stack spacing={2}>
                         <RoundActions

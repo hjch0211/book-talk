@@ -24,6 +24,7 @@ import {
     SpeakerTimer
 } from '../Debate.style';
 import raiseHandSvg from "../../../assets/raise-hand.svg";
+import {PresentationViewModal} from "./PresentationViewModal.tsx";
 
 interface CurrentSpeaker {
     accountId: string;
@@ -54,7 +55,10 @@ interface Props {
     currentRoundType?: 'PREPARATION' | 'PRESENTATION' | 'FREE';
     myAccountId?: string;
     onPassSpeaker?: (memberId: string) => void;
-    onViewPresentation?: (memberId: string) => void;
+    presentations: Array<{
+        id: string;
+        accountId: string;
+    }>;
 }
 
 function formatTime(seconds: number): string {
@@ -72,9 +76,13 @@ export function DebateMemberList({
                                      currentRoundType,
                                      myAccountId,
                                      onPassSpeaker,
-                                     onViewPresentation
+                                     presentations
                                  }: Props) {
     const [menuAnchorEl, setMenuAnchorEl] = useState<{ [key: string]: HTMLElement | null }>({});
+    const [viewPresentationMember, setViewPresentationMember] = useState<{
+        memberId: string;
+        memberName: string;
+    } | null>(null);
 
     const isCurrentSpeaker = (memberId: string) => currentSpeaker?.accountId === memberId;
     const isNextSpeaker = (memberId: string) => nextSpeaker?.accountId === memberId;
@@ -94,7 +102,13 @@ export function DebateMemberList({
     };
 
     const handleViewPresentation = (memberId: string) => () => {
-        onViewPresentation?.(memberId);
+        const member = members.find(m => m.id === memberId);
+        if (member) {
+            setViewPresentationMember({
+                memberId: member.id,
+                memberName: member.name
+            });
+        }
         handleMenuClose(memberId)();
     };
 
@@ -227,6 +241,15 @@ export function DebateMemberList({
                 })}
             </MemberList>
             <MemberListGradient/>
+
+            {viewPresentationMember && (
+                <PresentationViewModal
+                    open={!!viewPresentationMember}
+                    onClose={() => setViewPresentationMember(null)}
+                    memberName={viewPresentationMember.memberName}
+                    presentationId={presentations.find(p => p.accountId === viewPresentationMember.memberId)?.id}
+                />
+            )}
         </MemberListContainer>
     );
 }

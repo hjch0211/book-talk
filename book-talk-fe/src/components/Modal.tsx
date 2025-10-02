@@ -23,11 +23,6 @@ const Modal = ({
         <MuiModal
             open={open}
             onClose={onClose}
-            slotProps={{
-                backdrop: {
-                    invisible: true
-                }
-            }}
             sx={{
                 display: 'flex',
                 alignItems: 'center',

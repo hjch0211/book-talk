@@ -108,7 +108,7 @@ export function DebatePresentation({currentRoundInfo, currentSpeaker}: Props) {
         return (
             <MainContent>
                 <PresentationArea>
-                    <div>현재 라운드에서는 발표 페이지를 편집할 수 없습니다.</div>
+                    <div>{`발표페이지가 없습니다.`}</div>
                 </PresentationArea>
             </MainContent>
         );
