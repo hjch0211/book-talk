@@ -78,6 +78,17 @@ export class DebateWebSocketClient {
         }
     }
 
+    sendChatMessage(chatId: number): void {
+        if (this.ws?.readyState === WebSocket.OPEN && this.debateId) {
+            const chatMessage = {
+                type: 'CHAT_MESSAGE',
+                debateId: this.debateId,
+                chatId: chatId
+            };
+            this.ws.send(JSON.stringify(chatMessage));
+        }
+    }
+
     toggleHand(): void {
         if (this.ws?.readyState === WebSocket.OPEN && this.debateId) {
             const token = localStorage.getItem('accessToken');
@@ -227,6 +238,12 @@ export class DebateWebSocketClient {
                     this.handlers.onHandRaiseUpdate(message.raisedHands);
                 }
                 break;
+            case 'CHAT_MESSAGE':
+                if (this.handlers.onChatMessage && message.chatId) {
+                    console.log('Chat message received:', message.chatId);
+                    this.handlers.onChatMessage(message.chatId);
+                }
+                break;
             default:
                 console.log('Unknown message type:', message.type);
         }
@@ -247,11 +264,12 @@ export class DebateWebSocketClient {
 }
 
 export interface WebSocketMessage {
-    type: 'JOIN_DEBATE' | 'LEAVE_DEBATE' | 'PRESENCE_UPDATE' | 'JOIN_SUCCESS' | 'HEARTBEAT' | 'HEARTBEAT_ACK' | 'SPEAKER_UPDATE' | 'SPEAKER_TIME_UPDATE' | 'SPEAKER_ENDED' | 'DEBATE_ROUND_UPDATE' | 'VOICE_JOIN' | 'VOICE_LEAVE' | 'VOICE_OFFER' | 'VOICE_ANSWER' | 'VOICE_ICE' | 'VOICE_STATE' | 'TOGGLE_HAND' | 'HAND_RAISE_UPDATE';
+    type: 'JOIN_DEBATE' | 'LEAVE_DEBATE' | 'PRESENCE_UPDATE' | 'JOIN_SUCCESS' | 'HEARTBEAT' | 'HEARTBEAT_ACK' | 'SPEAKER_UPDATE' | 'SPEAKER_TIME_UPDATE' | 'SPEAKER_ENDED' | 'DEBATE_ROUND_UPDATE' | 'VOICE_JOIN' | 'VOICE_LEAVE' | 'VOICE_OFFER' | 'VOICE_ANSWER' | 'VOICE_ICE' | 'VOICE_STATE' | 'TOGGLE_HAND' | 'HAND_RAISE_UPDATE' | 'CHAT_MESSAGE';
     debateId?: string;
     accountId?: string;
     accountName?: string;
     timestamp?: number;
+    chatId?: number;
     onlineAccounts?: Array<{
         accountId: string;
         accountName: string;
@@ -324,4 +342,5 @@ export interface WebSocketHandlers {
         accountName: string;
         raisedAt: number;
     }>) => void;
+    onChatMessage?: (chatId: number) => void;
 }

@@ -57,11 +57,10 @@ class DebateRoundSpeakerService(
             httpBadRequest("발언자가 토론 멤버가 아닙니다.")
 
         // 현재 활성 발언자가 있다면 종료 처리
-        val currentSpeaker = debateRoundSpeakerRepository.findByDebateRoundAndEndedAtIsAfter(
-            debateRound, Instant.now()
-        )
+        val currentSpeaker = debateRoundSpeakerRepository.findByDebateRoundAndIsActive(debateRound, true)
         currentSpeaker?.let {
             it.endedAt = Instant.now()
+            it.isActive = false
             debateRoundSpeakerRepository.save(it)
         }
 
@@ -70,7 +69,8 @@ class DebateRoundSpeakerService(
             DebateRoundSpeakerEntity(
                 account = speaker,
                 debateRound = debateRound,
-                endedAt = Instant.now().plusSeconds(appConfigService.debateRoundSpeakerSeconds())
+                endedAt = Instant.now().plusSeconds(appConfigService.debateRoundSpeakerSeconds()),
+                isActive = true
             )
         )
         logger.info { "새 발언자 생성: accountId=${speaker.id}, debateRoundId=${debateRound.id}" }
@@ -93,6 +93,7 @@ class DebateRoundSpeakerService(
         }
         request.ended?.takeIf { it }?.let {
             speaker.endedAt = Instant.now()
+            speaker.isActive = false
             updated = true
         }
 
@@ -112,9 +113,8 @@ class DebateRoundSpeakerService(
             val currentRound = debateRoundRepository.findByDebateIdAndEndedAtIsNull(debateUUID)
                 ?: return null
 
-            val currentSpeaker = debateRoundSpeakerRepository.findByDebateRoundAndEndedAtIsAfter(
-                currentRound, Instant.now()
-            ) ?: return null
+            val currentSpeaker = debateRoundSpeakerRepository.findByDebateRoundAndIsActive(currentRound, true)
+                ?: return null
 
             mapOf(
                 "debateId" to debateId,

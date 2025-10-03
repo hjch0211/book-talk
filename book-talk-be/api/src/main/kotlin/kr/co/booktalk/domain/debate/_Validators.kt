@@ -49,5 +49,5 @@ fun PatchRoundSpeakerRequest.validate() {
 fun CreateChatRequest.validate() {
     require(debateId.isNotBlank()) { "토론 ID는 필수입니다." }
     require(content.isNotBlank()) { "채팅 내용은 필수입니다." }
-    require(content.length <= 1000) { "채팅 내용은 1000자를 초과할 수 없습니다." }
+    require(content.length <= 100000) { "채팅 내용은 100000자를 초과할 수 없습니다." }
 }

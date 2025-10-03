@@ -22,10 +22,13 @@ class DebateRoundSpeakerEntity(
 
     @Column(nullable = false)
     var endedAt: Instant,
+
+    @Column(nullable = false)
+    var isActive: Boolean,
 ) : AuditableLongIdEntity()
 
 @Transactional(readOnly = true)
 @Repository
 interface DebateRoundSpeakerRepository : JpaRepository<DebateRoundSpeakerEntity, Long> {
-    fun findByDebateRoundAndEndedAtIsAfter(currentRound: DebateRoundEntity, now: Instant): DebateRoundSpeakerEntity?
+    fun findByDebateRoundAndIsActive(currentRound: DebateRoundEntity, isActive: Boolean): DebateRoundSpeakerEntity?
 }

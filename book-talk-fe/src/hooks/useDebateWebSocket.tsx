@@ -90,8 +90,16 @@ export const useDebateWebSocket = (
         },
         onSpeakerUpdate: handleSpeakerUpdate,
         onDebateRoundUpdate: handleDebateRoundUpdate,
-        onVoiceSignaling: handleVoiceSignaling
-    }), [handleSpeakerUpdate, handleDebateRoundUpdate, handleVoiceSignaling]);
+        onVoiceSignaling: handleVoiceSignaling,
+        onChatMessage: (chatId: number) => {
+            console.log('Received chat message:', chatId);
+            if (debateId) {
+                void queryClient.invalidateQueries({
+                    queryKey: ['debates', debateId, 'chats']
+                });
+            }
+        }
+    }), [handleSpeakerUpdate, handleDebateRoundUpdate, handleVoiceSignaling, debateId, queryClient]);
 
     /** WebSocket 연결 및 관리 */
     useEffect(() => {
@@ -164,6 +172,13 @@ export const useDebateWebSocket = (
         }
     }, []);
 
+    /** 채팅 메시지 전송 */
+    const sendChatMessage = useCallback((chatId: number) => {
+        if (wsClientRef.current?.isConnected()) {
+            wsClientRef.current.sendChatMessage(chatId);
+        }
+    }, []);
+
     return {
         onlineAccountIds,
         isConnected,
@@ -173,6 +188,7 @@ export const useDebateWebSocket = (
         isHandRaised,
         handleVoiceSignaling,
         sendVoiceMessage,
+        sendChatMessage,
         membersWithPresence
     };
 };

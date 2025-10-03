@@ -34,7 +34,8 @@ function DebatePageContent({debateId}: Props) {
             handleFreeRound,
             createRoundSpeakerMutation
         },
-        websocket: {toggleHand, isHandRaised, raisedHands, sendVoiceMessage, membersWithPresence},
+        websocket: {toggleHand, isHandRaised, raisedHands, sendVoiceMessage, sendChatMessage, membersWithPresence},
+        chat,
         showRoundStartBackdrop,
         closeRoundStartBackdrop,
         voiceChatHandlerRef
@@ -91,6 +92,10 @@ function DebatePageContent({debateId}: Props) {
                     <DebatePresentation
                         currentRoundInfo={currentRoundInfo}
                         currentSpeaker={currentSpeaker}
+                        debateId={debateId}
+                        myAccountId={myMemberData.id}
+                        onChatMessage={sendChatMessage}
+                        chat={chat}
                     />
                     <DebateMemberList
                         members={membersWithPresence}

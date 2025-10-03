@@ -71,6 +71,7 @@ class PresenceWebSocketHandler(
                 "LEAVE_DEBATE" -> handleLeaveDebate(session, payload)
                 "HEARTBEAT" -> handleHeartbeat(session, payload)
                 "TOGGLE_HAND" -> handleToggleHand(session, payload)
+                "CHAT_MESSAGE" -> handleChatMessage(session, payload)
                 else -> logger.warn { "알 수 없는 메시지 타입: $messageType" }
             }
         } catch (e: Exception) {
@@ -415,6 +416,34 @@ class PresenceWebSocketHandler(
         } catch (e: Exception) {
             logger.error(e) { "손들기 상태 브로드캐스트 실패: debateId=$debateId" }
         }
+    }
+
+    /** 채팅 메시지를 토론방 모든 참가자에게 브로드캐스트합니다. */
+    private fun handleChatMessage(session: WebSocketSession, payload: JsonNode) {
+        val debateId = extractDebateId(payload) ?: return
+        val chatId = payload.get("chatId")?.asLong() ?: return
+
+        logger.info { "채팅 메시지 수신: debateId=$debateId, chatId=$chatId" }
+
+        try {
+            publishChatMessage(debateId, chatId)
+        } catch (e: Exception) {
+            logger.error(e) { "채팅 메시지 브로드캐스트 실패: debateId=$debateId, chatId=$chatId" }
+        }
+    }
+
+    /** 채팅 메시지 업데이트를 토론방 모든 참가자에게 브로드캐스트합니다. */
+    private fun publishChatMessage(debateId: String, chatId: Long) {
+        val message = mapOf(
+            "type" to "CHAT_MESSAGE",
+            "debateId" to debateId,
+            "chatId" to chatId
+        )
+
+        val messageJson = objectMapper.writeValueAsString(message)
+        broadcastToDebateRoom(debateId, messageJson)
+
+        logger.debug { "채팅 메시지 브로드캐스트 완료: debateId=$debateId, chatId=$chatId" }
     }
 
 }

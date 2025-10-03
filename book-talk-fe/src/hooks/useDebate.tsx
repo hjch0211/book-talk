@@ -4,6 +4,7 @@ import {meQueryOption} from "../apis/account";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useDebateRound, type UseDebateRoundReturn} from "./useDebateRound";
 import {useDebateWebSocket} from "./useDebateWebSocket";
+import {useDebateChat} from "./useDebateChat";
 import type {WebSocketMessage} from "../apis/websocket";
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
@@ -37,6 +38,13 @@ export interface UseDebateReturn {
 
     // WebSocket 정보
     websocket: ReturnType<typeof useDebateWebSocket>;
+
+    // 채팅 기능
+    chat: {
+        chats: any[];
+        sendChat: (content: string) => void;
+        isSending: boolean;
+    };
 
     // UI 상태
     showRoundStartBackdrop: {
@@ -97,8 +105,7 @@ export const useDebate = ({debateId}: Props): UseDebateReturn => {
     const joinDebateMutation = useMutation({
         mutationFn: (debateId: string) => joinDebate({debateId}),
         onSuccess: () => {
-            void queryClient.invalidateQueries({queryKey: ['debates', debateId]});
-            window.location.reload();
+            void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions(debateId).queryKey});
         }
     });
 
@@ -160,12 +167,20 @@ export const useDebate = ({debateId}: Props): UseDebateReturn => {
         }
     );
 
+    /** 채팅 기능 (FREE 라운드에서만 동작) */
+    const chat = useDebateChat(
+        debateId,
+        websocket.sendChatMessage,
+        currentRoundInfo.type === 'FREE'
+    );
+
     return {
         debate,
         myMemberData,
         currentRoundInfo,
         round,
         websocket,
+        chat,
         showRoundStartBackdrop,
         closeRoundStartBackdrop,
         voiceChatHandlerRef

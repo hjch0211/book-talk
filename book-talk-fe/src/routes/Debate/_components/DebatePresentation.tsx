@@ -11,6 +11,8 @@ import {createSlashCommandExtension} from './SlashCommandExtension';
 import {usePresentation} from "../../../hooks/usePresentation.tsx";
 import type {CurrentRoundInfo} from '../../../hooks/useDebate';
 import {LastModified} from './LastModified';
+import {ChatMessageList} from './ChatMessageList';
+import {ChatInput} from './ChatInput';
 
 interface CurrentSpeaker {
     accountId: string;
@@ -21,9 +23,17 @@ interface CurrentSpeaker {
 interface Props {
     currentRoundInfo: CurrentRoundInfo;
     currentSpeaker?: CurrentSpeaker | null;
+    debateId?: string;
+    myAccountId?: string;
+    onChatMessage?: (chatId: number) => void;
+    chat: {
+        chats: any[];
+        sendChat: (content: string) => void;
+        isSending: boolean;
+    };
 }
 
-export function DebatePresentation({currentRoundInfo, currentSpeaker}: Props) {
+export function DebatePresentation({currentRoundInfo, currentSpeaker, debateId, myAccountId, onChatMessage, chat}: Props) {
     const [showYoutubeDialog, setShowYoutubeDialog] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
     const [showImageDialog, setShowImageDialog] = useState(false);
@@ -102,6 +112,34 @@ export function DebatePresentation({currentRoundInfo, currentSpeaker}: Props) {
         setYoutubeUrl('');
         setShowYoutubeDialog(false);
     }, [editor, youtubeUrl]);
+
+    // 채팅 기능 - props에서 받음
+    const {chats, sendChat, isSending} = chat;
+
+    // FREE 라운드 && 발표자 존재 → 채팅 모드
+    const isChatMode = currentRoundInfo.type === 'FREE' && currentSpeaker && debateId && myAccountId && onChatMessage;
+
+    if (isChatMode) {
+        const canSend = currentSpeaker!.accountId === myAccountId;
+
+        return (
+            <>
+                <MainContent>
+                    <PresentationArea>
+                        <ChatMessageList
+                            chats={chats}
+                            myAccountId={myAccountId!}
+                        />
+                    </PresentationArea>
+                </MainContent>
+                <ChatInput
+                    canSend={canSend}
+                    isSending={isSending}
+                    onSend={sendChat}
+                />
+            </>
+        );
+    }
 
     // 편집할 수 없는 라운드이거나 현재 발표자가 있으면 메시지 표시
     if (!currentRoundInfo.isEditable && !currentSpeaker) {

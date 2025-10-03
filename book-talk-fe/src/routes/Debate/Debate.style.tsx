@@ -280,6 +280,97 @@ export const PresentationArea = styled.div`
     }
 `;
 
+export const ChatInputContainer = styled(Box)`
+    position: absolute;
+    width: 1440px;
+    min-height: 138px;
+    max-height: 400px;
+    left: calc(50% - 1440px / 2);
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    padding: 22px 120px 36px;
+    background: linear-gradient(360deg, #FFFFFF 89.9%, rgba(255, 255, 255, 0) 100%);
+`;
+
+export const ChatInputBox = styled(Box)`
+    flex: 1;
+    background-color: #E9E9E9;
+    border-radius: 16px;
+    padding: 13px 23px;
+    width: 100%;
+    min-height: 45px;
+    max-height: 300px;
+    display: flex;
+    align-items: center;
+    outline: none;
+
+    &:focus,
+    &:focus-within {
+        outline: none;
+    }
+
+    .chat-input-editor {
+        font-family: 'S-Core Dream', sans-serif;
+        font-size: 18px;
+        line-height: 180%;
+        width: 1080px;
+        min-height: 32px;
+        max-height: 274px;
+        overflow-y: auto;
+        color: #262626;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+
+        .ProseMirror {
+            min-height: 32px;
+            outline: none;
+        }
+
+        p {
+            margin: 0;
+            font-family: 'S-Core Dream', sans-serif;
+            font-weight: 200;
+            font-size: 18px;
+            line-height: 180%;
+            letter-spacing: 0.3px;
+            color: #262626;
+        }
+
+        .chat-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .chat-video {
+            margin: 8px 0;
+            border-radius: 8px;
+        }
+
+        .tiptap p.is-editor-empty:first-of-type::before {
+            color: #9D9D9D;
+            content: attr(data-placeholder);
+            float: left;
+            height: 0;
+            pointer-events: none;
+            font-family: 'S-Core Dream', sans-serif;
+            font-weight: 200;
+            font-size: 18px;
+            line-height: 180%;
+            letter-spacing: 0.3px;
+        }
+    }
+`;
+
 export const SavedTimeIndicator = styled.div`
     position: relative;
     bottom: 8px;
