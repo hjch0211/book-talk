@@ -27,7 +27,6 @@ fun DebateEntity.validateActive(): DebateEntity {
 
 fun CreateRoundRequest.validate() {
     require(debateId.isNotBlank()) { "debateId는 필수입니다." }
-    require(nextSpeakerId.isNotBlank()) { "nextSpeakerId는 필수입니다." }
 }
 
 fun PatchRoundRequest.validate() {
@@ -45,4 +44,10 @@ fun CreateRoundSpeakerRequest.validate() {
 
 fun PatchRoundSpeakerRequest.validate() {
     require(debateRoundSpeakerId > 0) { "debateRoundSpeakerId는 필수입니다." }
+}
+
+fun CreateChatRequest.validate() {
+    require(debateId.isNotBlank()) { "토론 ID는 필수입니다." }
+    require(content.isNotBlank()) { "채팅 내용은 필수입니다." }
+    require(content.length <= 100000) { "채팅 내용은 100000자를 초과할 수 없습니다." }
 }

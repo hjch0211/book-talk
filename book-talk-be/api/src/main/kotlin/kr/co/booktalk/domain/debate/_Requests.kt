@@ -1,5 +1,6 @@
 package kr.co.booktalk.domain.debate
 
+import kr.co.booktalk.Nullable
 import kr.co.booktalk.domain.DebateRoundType
 
 data class CreateRequest(
@@ -15,15 +16,14 @@ data class JoinRequest(
 data class CreateRoundRequest(
     val debateId: String,
     val type: DebateRoundType,
-    val nextSpeakerId: String,
 )
 
 data class PatchRoundRequest(
     val debateRoundId: Long,
     /** 다음 발언자 예약 */
-    val nextSpeakerId: String? = null,
+    val nextSpeakerId: Nullable<String> = Nullable.absent(),
     /** 토론 라운드 종료 */
-    val ended: Boolean? = null,
+    val ended: Nullable<Boolean> = Nullable.absent(),
 )
 
 data class CloseRoundRequest(
@@ -41,4 +41,9 @@ data class PatchRoundSpeakerRequest(
     val extension: Boolean? = null,
     /** 발언 종료 */
     val ended: Boolean? = null,
+)
+
+data class CreateChatRequest(
+    val debateId: String,
+    val content: String
 )

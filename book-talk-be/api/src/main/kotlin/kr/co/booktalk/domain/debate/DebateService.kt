@@ -8,7 +8,6 @@ import kr.co.booktalk.toUUID
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
-import java.time.Instant
 
 @Service
 class DebateService(
@@ -42,7 +41,7 @@ class DebateService(
         val presentations = presentationRepository.findAllByDebateOrderByCreatedAtAsc(debate)
         val currentRound = debateRoundRepository.findByDebateAndEndedAtIsNull(debate)
         val currentSpeaker = currentRound
-            ?.let { debateRoundSpeakerRepository.findByDebateRoundAndEndedAtIsAfter(it, Instant.now()) }
+            ?.let { debateRoundSpeakerRepository.findByDebateRoundAndIsActive(it, true) }
         val currentSpeakerId = currentSpeaker?.account?.id?.toString()
         val currentSpeakerEndedAt = currentSpeaker?.endedAt
 

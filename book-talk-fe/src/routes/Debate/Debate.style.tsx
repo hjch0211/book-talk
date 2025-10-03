@@ -138,8 +138,7 @@ export const NavButton = styled(Button)`
 
 export const MainContent = styled.div`
     display: flex;
-    flex-direction: row;
-    gap: 10px;
+    flex-direction: column;
     position: absolute;
     width: 970px;
     left: 120px;
@@ -281,36 +280,109 @@ export const PresentationArea = styled.div`
     }
 `;
 
-export const SavedTimeIndicator = styled.div`
+export const ChatInputContainer = styled(Box)`
     position: absolute;
-    right: 0;
-    bottom: 20px;
+    width: 1440px;
+    min-height: 138px;
+    max-height: 400px;
+    left: calc(50% - 1440px / 2);
+    bottom: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: stretch;
+    padding: 22px 120px 36px;
+    background: linear-gradient(360deg, #FFFFFF 89.9%, rgba(255, 255, 255, 0) 100%);
+`;
+
+export const ChatInputBox = styled(Box)`
+    flex: 1;
+    background-color: #E9E9E9;
+    border-radius: 16px;
+    padding: 13px 23px;
+    width: 100%;
+    min-height: 45px;
+    max-height: 300px;
+    display: flex;
+    align-items: center;
+    outline: none;
+
+    &:focus,
+    &:focus-within {
+        outline: none;
+    }
+
+    .chat-input-editor {
+        font-family: 'S-Core Dream', sans-serif;
+        font-size: 18px;
+        line-height: 180%;
+        width: 1080px;
+        min-height: 32px;
+        max-height: 274px;
+        overflow-y: auto;
+        color: #262626;
+
+        &::-webkit-scrollbar {
+            display: none;
+        }
+
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+
+        .ProseMirror {
+            min-height: 32px;
+            outline: none;
+        }
+
+        p {
+            margin: 0;
+            font-family: 'S-Core Dream', sans-serif;
+            font-weight: 200;
+            font-size: 18px;
+            line-height: 180%;
+            letter-spacing: 0.3px;
+            color: #262626;
+        }
+
+        .chat-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        .chat-video {
+            margin: 8px 0;
+            border-radius: 8px;
+        }
+
+        .tiptap p.is-editor-empty:first-of-type::before {
+            color: #9D9D9D;
+            content: attr(data-placeholder);
+            float: left;
+            height: 0;
+            pointer-events: none;
+            font-family: 'S-Core Dream', sans-serif;
+            font-weight: 200;
+            font-size: 18px;
+            line-height: 180%;
+            letter-spacing: 0.3px;
+        }
+    }
+`;
+
+export const SavedTimeIndicator = styled.div`
+    position: relative;
+    bottom: 8px;
     display: flex;
     justify-content: flex-end;
-    padding: 20px 30px 0 0;
+    font-family: 'S-Core Dream', sans-serif;
     font-style: normal;
     font-weight: 200;
     font-size: 14px;
     line-height: 20px;
     letter-spacing: 0.3px;
     color: #9D9D9D;
-`;
-
-export const PresentationPlaceholder = styled.div`
-    width: 820px;
-    height: 64px;
-    font-family: 'S-Core Dream', sans-serif;
-    font-weight: 200;
-    font-size: 18px;
-    line-height: 180%;
-    letter-spacing: 0.3px;
-    color: #9D9D9D;
-    cursor: pointer;
-    transition: color 0.2s ease;
-
-    &:hover {
-        color: #7B7B7B;
-    }
 `;
 
 export const MemberListContainer = styled(Box)`
@@ -418,7 +490,7 @@ export const MemberItem = styled(ListItem)`
 `;
 
 export const MemberOrder = styled.div`
-    width: 42px;
+    width: 21px;
     height: 100%;
     font-family: 'S-Core Dream', sans-serif;
     font-weight: 300;
@@ -428,10 +500,11 @@ export const MemberOrder = styled.div`
     display: flex;
     flex-direction: column;
     justify-content: center;
-    align-content: start;
+    align-content: center;
+    text-align: center;
 `;
 
-export const MemberProfile = styled.div`
+export const MemberProfile = styled.div<{ $isCurrentSpeaker?: boolean }>`
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -442,10 +515,10 @@ export const MemberProfile = styled.div`
     isolation: isolate;
     width: 245px;
     height: 76px;
-    background: #FFFFFF;
+    background: ${props => props.$isCurrentSpeaker ? '#F5F5F5' : '#FFFFFF'};
     border-width: 6px 18px 6px 0px;
     border-style: solid;
-    border-color: #FFFFFF;
+    border-color: ${props => props.$isCurrentSpeaker ? '#F5F5F5' : '#FFFFFF'};
     border-radius: 2px 50px 50px 2px;
     flex: none;
     order: 1;
@@ -546,10 +619,12 @@ export const CurrentUserIndicator = styled.span`
 
 export const MemberMenuButton = styled.div`
     position: absolute;
-    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     width: 24px;
     height: 24px;
-    left: 213px;
+    left: 200px;
     top: calc(50% - 24px / 2);
     cursor: pointer;
     color: #7B7B7B;
@@ -557,6 +632,10 @@ export const MemberMenuButton = styled.div`
     order: 1;
     flex-grow: 0;
     z-index: 1;
+
+    &:hover {
+        color: #262626;
+    }
 `;
 
 export const SpeakerTimer = styled.div`
@@ -566,6 +645,26 @@ export const SpeakerTimer = styled.div`
     line-height: 13px;
     color: #7B7B7B;
     margin-left: auto;
+`;
+
+export const MemberOrderContainer = styled(Box)`
+    position: relative;
+`;
+
+export const RaisedHandIcon = styled(Box)`
+    position: absolute;
+    top: -30px;
+    left: 2px;
+    transition: opacity 0.3s ease-in-out;
+    pointer-events: none;
+`;
+
+export const MemberStatus = styled.div`
+    font-size: 12px;
+    line-height: 150%;
+    letter-spacing: 0.3px;
+    color: #7B7B7B;
+    font-weight: 200;
 `;
 
 export const ActionButton = styled(Button)<{ borderColor?: string, backgroundColor?: string }>`
@@ -628,7 +727,7 @@ export const ActionButton = styled(Button)<{ borderColor?: string, backgroundCol
 
     &:hover:not(:disabled) {
         &::after {
-            background: ${({borderColor}) => borderColor || "#EAECFF"};
+            background: ${({borderColor}) => borderColor || "#BEC3F5"};
             opacity: 0.6;
         }
 
