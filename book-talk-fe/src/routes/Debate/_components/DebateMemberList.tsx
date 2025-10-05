@@ -1,7 +1,7 @@
 import {Avatar, Menu, MenuItem} from '@mui/material';
 import {MoreVert, Person} from '@mui/icons-material';
 import hostIconSvg from '../../../assets/host-icon.svg';
-import {useState} from 'react';
+import {type MouseEvent, useState} from 'react';
 import {
     AvatarContainer,
     BookCrownIcon,
@@ -88,7 +88,7 @@ export function DebateMemberList({
     const isNextSpeaker = (memberId: string) => nextSpeaker?.accountId === memberId;
     const isHandRaised = (memberId: string) => raisedHands.some(hand => hand.accountId === memberId);
 
-    const handleMenuOpen = (memberId: string) => (event: React.MouseEvent<HTMLElement>) => {
+    const handleMenuOpen = (memberId: string) => (event: MouseEvent<HTMLElement>) => {
         setMenuAnchorEl(prev => ({...prev, [memberId]: event.currentTarget}));
     };
 

@@ -1,6 +1,7 @@
 import {useCallback, useEffect, useState} from 'react';
 import {Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, TextField} from '@mui/material';
 import {EditorContent, useEditor} from '@tiptap/react';
+import type {JSONContent} from '@tiptap/core';
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import StarterKit from '@tiptap/starter-kit';
@@ -16,6 +17,22 @@ interface ChatInputProps {
     isSending: boolean;
     onSend: (content: string) => void;
 }
+
+const hasSendableContent = (doc?: JSONContent | null): boolean => {
+    if (!doc || !doc.content) return false;
+
+    return doc.content.some((node) => {
+        if (node.type === 'paragraph') {
+            return node.content?.some((child) => {
+                if (child.type !== 'text') {
+                    return true;
+                }
+                return !!child.text?.trim();
+            }) ?? false;
+        }
+        return true;
+    });
+};
 
 /**
  * 채팅 입력 컴포넌트 (TipTap 에디터)
@@ -80,9 +97,7 @@ export function ChatInput({canSend, isSending, onSend}: ChatInputProps) {
         if (!editor || !canSend || isSending) return;
 
         const json = editor.getJSON();
-        // 빈 에디터 체크 (텍스트가 비어있는지)
-        const text = editor.getText().trim();
-        if (!text) return;
+        if (!hasSendableContent(json)) return;
 
         // JSON을 문자열로 변환하여 전송
         onSend(JSON.stringify(json));
@@ -148,21 +163,21 @@ export function ChatInput({canSend, isSending, onSend}: ChatInputProps) {
 
                     <IconButton
                         onClick={handleSend}
-                        disabled={!canSend || isSending || !editor?.getText().trim()}
+                        disabled={!canSend || isSending || !hasSendableContent(editor?.getJSON())}
                         sx={{
                             width: '72px',
                             height: '45px',
-                            bgcolor: canSend && editor?.getText().trim() ? '#6366F1' : '#C4C4C4',
+                            bgcolor: canSend && hasSendableContent(editor?.getJSON()) ? '#6366F1' : '#C4C4C4',
                             borderRadius: '24px',
                             '&:hover': {
-                                bgcolor: canSend && editor?.getText().trim() ? '#4F46E5' : '#C4C4C4'
+                                bgcolor: canSend && hasSendableContent(editor?.getJSON()) ? '#4F46E5' : '#C4C4C4'
                             },
                             '&:disabled': {
                                 bgcolor: '#C4C4C4'
                             }
                         }}
                     >
-                        <SendIcon sx={{color: canSend && editor?.getText().trim() ? '#FFFFFF' : '#9D9D9D'}}/>
+                        <SendIcon sx={{color: canSend && hasSendableContent(editor?.getJSON()) ? '#FFFFFF' : '#9D9D9D'}}/>
                     </IconButton>
                 </Stack>
             </ChatInputContainer>

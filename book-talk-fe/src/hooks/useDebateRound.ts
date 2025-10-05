@@ -242,7 +242,7 @@ export const useDebateRound = (
                 } catch (error) {
                     console.error('Failed to create next speaker:', error);
                 } finally {
-                    void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
+                    void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions(debateId).queryKey});
                 }
             })();
         }

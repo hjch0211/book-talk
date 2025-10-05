@@ -34,6 +34,7 @@ class PresenceWebSocketHandler(
         const val DEBATE_SESSIONS_KEY = "ws:debate:sessions:"
         const val DEBATE_RAISED_HANDS_KEY = "ws:debate:raised_hands:"
         const val SESSION_TTL_SECONDS = 3600L // 1시간
+        const val RAISED_HAND_TTL_SECONDS = 5L // 5초
     }
 
     /** WebSocket 연결 수립 시 세션을 등록하고 로그를 기록합니다. */
@@ -375,7 +376,7 @@ class PresenceWebSocketHandler(
                 )
 
                 redisTemplate.opsForHash<String, String>().putAll(handKey, handRaisedData)
-                redisTemplate.expire(handKey, Duration.ofSeconds(SESSION_TTL_SECONDS))
+                redisTemplate.expire(handKey, Duration.ofSeconds(RAISED_HAND_TTL_SECONDS))
                 logger.info { "손들기 처리 완료: debateId=$debateId, accountId=$authenticatedAccountId" }
             }
 

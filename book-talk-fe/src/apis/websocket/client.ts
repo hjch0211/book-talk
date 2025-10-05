@@ -317,18 +317,18 @@ export interface DebateRoundInfo {
     type: string;
     debateId: string;
     round: {
-        id: string;
+        id: number;
         type: string;
         nextSpeakerId: string;
         nextSpeakerName: string;
-        createdAt: string;
-        endedAt: string;
-    }
-    currentSpeaker: {
+        createdAt: number;
+        endedAt?: number;
+    };
+    currentSpeaker?: {
         accountId: string;
         accountName: string;
-        endedAt: string;
-    }
+        endedAt?: number;
+    };
 }
 
 export interface WebSocketHandlers {

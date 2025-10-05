@@ -76,7 +76,7 @@ export const useDebate = ({debateId}: Props): UseDebateReturn => {
     const isAlreadyMember = !!myMember;
 
     /** VoiceChat 메시지 핸들러를 ref로 저장 */
-    const voiceChatHandlerRef = useRef(null) as React.MutableRefObject<((message: WebSocketMessage) => void) | null>;
+    const voiceChatHandlerRef = useRef<((message: WebSocketMessage) => void) | null>(null);
 
     const handleVoiceSignalingWrapper = useCallback((message: WebSocketMessage) => {
         console.log('Voice signaling received in useDebate:', message);
