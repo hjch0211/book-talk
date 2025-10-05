@@ -11,7 +11,8 @@ class DebateController(
     private val debateService: DebateService,
     private val debateRoundService: DebateRoundService,
     private val appConfigService: AppConfigService,
-    private val debateRoundSpeakerService: DebateRoundSpeakerService
+    private val debateRoundSpeakerService: DebateRoundSpeakerService,
+    private val debateChatService: DebateChatService
 ) {
     /** 토론 생성 */
     @PostMapping("/debates")
@@ -33,14 +34,17 @@ class DebateController(
         debateService.join(request, authAccount)
     }
 
-    /** 방장: 토론 라운드 생성(시작) */
+    /** 토론 라운드 생성(시작) */
     @PostMapping("/debates/round")
-    fun createRound(@RequestBody request: CreateRoundRequest, authAccount: AuthAccount) {
+    fun createRound(
+        @RequestBody request: CreateRoundRequest,
+        authAccount: AuthAccount
+    ): ApiResult<CreateRoundResponse> {
         request.validate()
-        debateRoundService.create(request, authAccount)
+        return debateRoundService.create(request, authAccount).toResult()
     }
 
-    /** 방장: 토론 라운드 변경 */
+    /** 토론 라운드 변경 */
     @PatchMapping("/debates/round")
     fun patchRound(@RequestBody request: PatchRoundRequest, authAccount: AuthAccount) {
         request.validate()
@@ -59,5 +63,18 @@ class DebateController(
     fun patchRoundSpeaker(@RequestBody request: PatchRoundSpeakerRequest, authAccount: AuthAccount) {
         request.validate()
         debateRoundSpeakerService.patch(request)
+    }
+
+    /** 채팅 생성 */
+    @PostMapping("/debates/round/chats")
+    fun createChat(@RequestBody request: CreateChatRequest, authAccount: AuthAccount): ApiResult<CreateChatResponse> {
+        request.validate()
+        return debateChatService.create(request, authAccount).toResult()
+    }
+
+    /** 토론 채팅 조회 */
+    @GetMapping("/debates/{debateId}/chats")
+    fun getChats(@PathVariable debateId: String, authAccount: AuthAccount): ApiResult<List<ChatResponse>> {
+        return debateChatService.findByDebateId(debateId, authAccount).toResult()
     }
 }

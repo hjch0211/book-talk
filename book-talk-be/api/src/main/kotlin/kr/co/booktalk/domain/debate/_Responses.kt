@@ -8,6 +8,10 @@ data class CreateResponse(
     val id: String,
 )
 
+data class CreateRoundResponse(
+    val id: Long,
+)
+
 data class FindOneResponse(
     val id: String,
     val members: List<MemberInfo>,
@@ -42,3 +46,21 @@ data class FindOneResponse(
         val endedAt: Instant? = null,
     )
 }
+
+data class CreateChatResponse(
+    val id: Long,
+    val debateId: String,
+    val accountId: String,
+    val accountName: String,
+    val content: String,
+    val createdAt: Instant
+)
+
+data class ChatResponse(
+    val id: Long,
+    val debateId: String,
+    val accountId: String,
+    val accountName: String,
+    val content: String,
+    val createdAt: Instant
+)

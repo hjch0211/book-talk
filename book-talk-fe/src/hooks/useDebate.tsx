@@ -1,7 +1,13 @@
 import {useMutation, useQueryClient, useSuspenseQuery} from "@tanstack/react-query";
-import {createRound, createRoundSpeaker, findOneDebateQueryOptions, joinDebate, patchRoundSpeaker} from "../apis/debate";
+import {findOneDebateQueryOptions, type FindOneDebateResponse, joinDebate} from "../apis/debate";
 import {meQueryOption} from "../apis/account";
-import {useEffect, useMemo, useRef} from "react";
+import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useDebateRound, type UseDebateRoundReturn} from "./useDebateRound";
+import {useDebateWebSocket} from "./useDebateWebSocket";
+import {useDebateChat} from "./useDebateChat";
+import type {WebSocketMessage} from "../apis/websocket";
+
+type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
 interface Props {
     debateId?: string;
@@ -11,14 +17,56 @@ export interface CurrentRoundInfo {
     id: number | null;
     type: "PRESENTATION" | "FREE" | "PREPARATION";
     currentPresentationId?: string;
-    currentSpeakerId: string | null;
+    currentSpeakerId?: string | null;
     createdAt: string | null;
     nextSpeakerId?: string | null | undefined;
     endedAt?: string | null | undefined;
     isEditable: boolean;
 }
 
-export const useDebate = ({debateId}: Props) => {
+export interface UseDebateReturn {
+    // 토론 기본 정보
+    debate: FindOneDebateResponse;
+    myMemberData: {
+        id: string | undefined;
+        role: string | undefined;
+    };
+    currentRoundInfo: CurrentRoundInfo;
+
+    // 라운드 & 발언자 정보
+    round: UseDebateRoundReturn;
+
+    // WebSocket 정보
+    websocket: ReturnType<typeof useDebateWebSocket>;
+
+    // 채팅 기능
+    chat: {
+        chats: any[];
+        sendChat: (content: string) => void;
+        isSending: boolean;
+    };
+
+    // UI 상태
+    showRoundStartBackdrop: {
+        show: boolean;
+        type: RoundType | null;
+    };
+    closeRoundStartBackdrop: () => void;
+
+    // VoiceChat 핸들러
+    voiceChatHandlerRef: ReturnType<typeof useRef<((message: WebSocketMessage) => void) | null>>;
+}
+
+/**
+ * 토론 참여 및 전체 관리
+ * - 토론 기본 정보 제공
+ * - 라운드/발언자 관리 (useDebateRound)
+ * - WebSocket 연결 관리 (useDebateWebSocket)
+ * - 자동 참여 처리
+ * - UI 상태 관리 (백드롭)
+ * - VoiceChat 핸들러 관리
+ */
+export const useDebate = ({debateId}: Props): UseDebateReturn => {
     const queryClient = useQueryClient();
     const {data: debate} = useSuspenseQuery(findOneDebateQueryOptions(debateId));
     const {data: _me} = useSuspenseQuery(meQueryOption);
@@ -27,37 +75,41 @@ export const useDebate = ({debateId}: Props) => {
     const myMember = debate.members.find((m) => m.id === _me?.id);
     const isAlreadyMember = !!myMember;
 
+    /** VoiceChat 메시지 핸들러를 ref로 저장 */
+    const voiceChatHandlerRef = useRef<((message: WebSocketMessage) => void) | null>(null);
+
+    const handleVoiceSignalingWrapper = useCallback((message: WebSocketMessage) => {
+        console.log('Voice signaling received in useDebate:', message);
+        voiceChatHandlerRef.current?.(message);
+    }, []);
+
+    /** RoundStartBackdrop UI 상태 */
+    const [showRoundStartBackdrop, setShowRoundStartBackdrop] = useState<{
+        show: boolean;
+        type: RoundType | null;
+    }>({show: false, type: null});
+
+    const closeRoundStartBackdrop = useCallback(() => {
+        setShowRoundStartBackdrop({show: false, type: null});
+    }, []);
+
+    const handleRoundStartBackdrop = useCallback((roundType: RoundType) => {
+        setShowRoundStartBackdrop({show: true, type: roundType});
+        setTimeout(() => {
+            closeRoundStartBackdrop()
+        }, 5000);
+    }, [closeRoundStartBackdrop]);
+
+
+    /** 토론 참여 */
     const joinDebateMutation = useMutation({
         mutationFn: (debateId: string) => joinDebate({debateId}),
         onSuccess: () => {
-            void queryClient.invalidateQueries({queryKey: ['debates', debateId]});
-            window.location.reload();
+            void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions(debateId).queryKey});
         }
     });
 
-    const createRoundMutation = useMutation({
-        mutationFn: ({debateId, nextSpeakerId}: { debateId: string; nextSpeakerId: string }) =>
-            createRound({debateId, type: 'PRESENTATION', nextSpeakerId}),
-        onSuccess: () => {
-            void queryClient.invalidateQueries({queryKey: ['debates', debateId]});
-        }
-    });
-
-    const patchRoundSpeakerMutation = useMutation({
-        mutationFn: patchRoundSpeaker,
-        onSuccess: () => {
-            void queryClient.invalidateQueries({queryKey: ['debates', debateId]});
-        }
-    });
-
-    const createRoundSpeakerMutation = useMutation({
-        mutationFn: createRoundSpeaker,
-        onSuccess: () => {
-            void queryClient.invalidateQueries({queryKey: ['debates', debateId]});
-        }
-    });
-
-    // 멤버가 아니면 자동으로 가입 시도 (한 번만)
+    /** 멤버가 아니면 자동으로 가입 시도 (한 번만) */
     useEffect(() => {
         if (
             debateId &&
@@ -104,11 +156,33 @@ export const useDebate = ({debateId}: Props) => {
         };
     }, [debate.currentRound, debate.presentations, _me?.id]);
 
+    const round = useDebateRound(debate, debateId, currentRoundInfo, myMemberData.id);
+    const websocket = useDebateWebSocket(
+        debateId || null,
+        debate.members,
+        myMemberData.id,
+        {
+            onRoundStartBackdrop: handleRoundStartBackdrop,
+            onVoiceSignaling: handleVoiceSignalingWrapper
+        }
+    );
+
+    /** 채팅 기능 (FREE 라운드에서만 동작) */
+    const chat = useDebateChat(
+        debateId,
+        websocket.sendChatMessage,
+        currentRoundInfo.type === 'FREE'
+    );
+
     return {
         debate,
         myMemberData,
         currentRoundInfo,
-        createRoundMutation,
-        createRoundSpeakerMutation
+        round,
+        websocket,
+        chat,
+        showRoundStartBackdrop,
+        closeRoundStartBackdrop,
+        voiceChatHandlerRef
     }
 }

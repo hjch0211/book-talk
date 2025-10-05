@@ -13,7 +13,7 @@ import {
     Typography
 } from '@mui/material';
 import {Logout, Person} from '@mui/icons-material';
-import {LogoContainer, LogoText, LogoWrapper} from "./MainHeader.style.ts";
+import {LogoContainer, LogoWrapper} from "./MainHeader.style.ts";
 import logoSvg from "../../assets/logo.svg";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {meQueryOption} from "../../apis/account";
@@ -131,9 +131,8 @@ const MainHeader = () => {
             <Toolbar sx={{height: '100%', gap: '374px'}}>
                 <LogoContainer>
                     <LogoWrapper>
-                        <img src={logoSvg} alt="BookTalk Logo" width={50} height={44}/>
+                        <img src={logoSvg} alt="BookTalk Logo" width={182} height={44}/>
                     </LogoWrapper>
-                    <LogoText>BookTalk</LogoText>
                 </LogoContainer>
 
                 <Suspense fallback={<></>}>

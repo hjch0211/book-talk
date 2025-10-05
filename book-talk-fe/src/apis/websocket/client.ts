@@ -78,6 +78,37 @@ export class DebateWebSocketClient {
         }
     }
 
+    sendChatMessage(chatId: number): void {
+        if (this.ws?.readyState === WebSocket.OPEN && this.debateId) {
+            const chatMessage = {
+                type: 'CHAT_MESSAGE',
+                debateId: this.debateId,
+                chatId: chatId
+            };
+            this.ws.send(JSON.stringify(chatMessage));
+        }
+    }
+
+    toggleHand(): void {
+        if (this.ws?.readyState === WebSocket.OPEN && this.debateId) {
+            const token = localStorage.getItem('accessToken');
+            if (token) {
+                try {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    const toggleHandMessage = {
+                        type: 'TOGGLE_HAND',
+                        debateId: this.debateId,
+                        accountId: payload.sub,
+                        accountName: payload.name || 'User'
+                    };
+                    this.ws.send(JSON.stringify(toggleHandMessage));
+                } catch (error) {
+                    console.error('Failed to send toggle hand message:', error);
+                }
+            }
+        }
+    }
+
     private establishConnection() {
         if (!this.debateId) return;
 
@@ -165,8 +196,6 @@ export class DebateWebSocketClient {
                         nextSpeaker: message.nextSpeaker
                     });
                 }
-                // TODO: 추 후 새로고침말고 다른 방법 찾기
-                window.location.reload();
                 break;
             case 'JOIN_SUCCESS':
                 console.log('Successfully joined debate:', message);
@@ -193,8 +222,6 @@ export class DebateWebSocketClient {
                         });
                     }
                 }
-                // TODO: 추 후 새로고침말고 다른 방법 찾기
-                window.location.reload();
                 break;
             case 'VOICE_JOIN':
             case 'VOICE_LEAVE':
@@ -204,6 +231,17 @@ export class DebateWebSocketClient {
             case 'VOICE_STATE':
                 if (this.handlers.onVoiceSignaling) {
                     this.handlers.onVoiceSignaling(message);
+                }
+                break;
+            case 'HAND_RAISE_UPDATE':
+                if (this.handlers.onHandRaiseUpdate && Array.isArray(message.raisedHands)) {
+                    this.handlers.onHandRaiseUpdate(message.raisedHands);
+                }
+                break;
+            case 'CHAT_MESSAGE':
+                if (this.handlers.onChatMessage && message.chatId) {
+                    console.log('Chat message received:', message.chatId);
+                    this.handlers.onChatMessage(message.chatId);
                 }
                 break;
             default:
@@ -226,16 +264,23 @@ export class DebateWebSocketClient {
 }
 
 export interface WebSocketMessage {
-    type: 'JOIN_DEBATE' | 'LEAVE_DEBATE' | 'PRESENCE_UPDATE' | 'JOIN_SUCCESS' | 'HEARTBEAT' | 'HEARTBEAT_ACK' | 'SPEAKER_UPDATE' | 'SPEAKER_TIME_UPDATE' | 'SPEAKER_ENDED' | 'DEBATE_ROUND_UPDATE' | 'VOICE_JOIN' | 'VOICE_LEAVE' | 'VOICE_OFFER' | 'VOICE_ANSWER' | 'VOICE_ICE' | 'VOICE_STATE';
+    type: 'JOIN_DEBATE' | 'LEAVE_DEBATE' | 'PRESENCE_UPDATE' | 'JOIN_SUCCESS' | 'HEARTBEAT' | 'HEARTBEAT_ACK' | 'SPEAKER_UPDATE' | 'SPEAKER_TIME_UPDATE' | 'SPEAKER_ENDED' | 'DEBATE_ROUND_UPDATE' | 'VOICE_JOIN' | 'VOICE_LEAVE' | 'VOICE_OFFER' | 'VOICE_ANSWER' | 'VOICE_ICE' | 'VOICE_STATE' | 'TOGGLE_HAND' | 'HAND_RAISE_UPDATE' | 'CHAT_MESSAGE';
     debateId?: string;
     accountId?: string;
     accountName?: string;
     timestamp?: number;
+    chatId?: number;
     onlineAccounts?: Array<{
         accountId: string;
         accountName: string;
         status: string;
         lastHeartbeat: number;
+    }>;
+    // 손들기 관련 필드
+    raisedHands?: Array<{
+        accountId: string;
+        accountName: string;
+        raisedAt: number;
     }>;
     // Speaker 관련 필드
     currentSpeaker?: {
@@ -268,10 +313,34 @@ export interface WebSocketMessage {
     isMuted?: boolean;
 }
 
+export interface DebateRoundInfo {
+    type: string;
+    debateId: string;
+    round: {
+        id: number;
+        type: string;
+        nextSpeakerId: string;
+        nextSpeakerName: string;
+        createdAt: number;
+        endedAt?: number;
+    };
+    currentSpeaker?: {
+        accountId: string;
+        accountName: string;
+        endedAt?: number;
+    };
+}
+
 export interface WebSocketHandlers {
     onPresenceUpdate?: (onlineAccountIds: Set<string>) => void;
     onConnectionStatus?: (connected: boolean) => void;
     onSpeakerUpdate?: (speakerInfo: unknown) => void;
-    onDebateRoundUpdate?: (roundInfo: unknown) => void;
+    onDebateRoundUpdate?: (roundInfo: DebateRoundInfo) => void;
     onVoiceSignaling?: (message: WebSocketMessage) => void;
+    onHandRaiseUpdate?: (raisedHands: Array<{
+        accountId: string;
+        accountName: string;
+        raisedAt: number;
+    }>) => void;
+    onChatMessage?: (chatId: number) => void;
 }

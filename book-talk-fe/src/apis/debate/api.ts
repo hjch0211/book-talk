@@ -1,9 +1,18 @@
+import {z} from 'zod';
 import {authApiClient} from '../client';
 import {
+    type ChatResponse,
+    ChatResponseSchema,
+    type CreateChatRequest,
+    type CreateChatResponse,
+    CreateChatRequestSchema,
+    CreateChatResponseSchema,
     type CreateDebateRequest,
     CreateDebateRequestSchema,
     type CreateRoundRequest,
     CreateRoundRequestSchema,
+    type CreateRoundResponse,
+    CreateRoundResponseSchema,
     type CreateRoundSpeakerRequest,
     CreateRoundSpeakerRequestSchema,
     type FindOneDebateResponse,
@@ -36,9 +45,10 @@ export const joinDebate = async (request: JoinDebateRequest): Promise<void> => {
 };
 
 /** 토론 라운드 생성(시작) */
-export const createRound = async (request: CreateRoundRequest): Promise<void> => {
+export const createRound = async (request: CreateRoundRequest): Promise<CreateRoundResponse> => {
     const validatedData = CreateRoundRequestSchema.parse(request);
-    await authApiClient.post('/debates/round', validatedData);
+    const response = await authApiClient.post('/debates/round', validatedData);
+    return CreateRoundResponseSchema.parse(response.data.data);
 };
 
 /** 토론 라운드 변경 */
@@ -57,4 +67,17 @@ export const createRoundSpeaker = async (request: CreateRoundSpeakerRequest): Pr
 export const patchRoundSpeaker = async (request: PatchRoundSpeakerRequest): Promise<void> => {
     const validatedData = PatchRoundSpeakerRequestSchema.parse(request);
     await authApiClient.patch('/debates/round/speakers', validatedData);
+};
+
+/** 채팅 생성 */
+export const createChat = async (request: CreateChatRequest): Promise<CreateChatResponse> => {
+    const validatedData = CreateChatRequestSchema.parse(request);
+    const response = await authApiClient.post('/debates/round/chats', validatedData);
+    return CreateChatResponseSchema.parse(response.data.data);
+};
+
+/** 토론 채팅 조회 */
+export const getChats = async (debateId: string): Promise<ChatResponse[]> => {
+    const response = await authApiClient.get(`/debates/${debateId}/chats`);
+    return z.array(ChatResponseSchema).parse(response.data.data);
 };
