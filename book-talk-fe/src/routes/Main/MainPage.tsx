@@ -1,6 +1,6 @@
 import {Suspense} from 'react';
 import MainContainer from '../../components/MainContainer/MainContainer';
-import NicknameModal from './_components/NickNameModal/NicknameModal.tsx';
+import LoginNicknameModal from './_components/NickNameModal/LoginNicknameModal.tsx';
 import {useModal} from '../../hooks/useModal';
 import {
     ButtonContainer,
@@ -20,7 +20,7 @@ const ButtonSection = () => {
     const {openModal} = useModal();
 
     const handleLogin = () => {
-        openModal(NicknameModal);
+        openModal(LoginNicknameModal);
     };
 
     const handleCreateDebate = () => {
