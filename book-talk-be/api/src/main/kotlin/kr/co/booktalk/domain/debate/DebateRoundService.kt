@@ -30,7 +30,7 @@ class DebateRoundService(
             ?: httpBadRequest("존재하지 않는 토론입니다.")
 
         // 이전 라운드가 있다면 종료 처리
-        debateRoundRepository.findByDebateAndEndedAtIsNull(debate)?.let { existingRound ->
+        debateRoundRepository.findByDebateIdAndEndedAtIsNull(debate.id!!)?.let { existingRound ->
             existingRound.endedAt = Instant.now()
         }
 

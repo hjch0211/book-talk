@@ -31,8 +31,7 @@ export function MicrophoneControl() {
         } else if (isMuted) {
             return <img src={micOffSvg} alt="마이크 켜기" width={14} height={19}/>;
         } else {
-            return <img src={micOnSvg} alt="마이크 끄기" width={14} height={19}
-                        style={{filter: 'brightness(0) invert(1)'}}/>;
+            return <img src={micOnSvg} alt="마이크 끄기" width={14} height={19}/>;
         }
     };
 
