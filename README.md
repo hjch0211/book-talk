@@ -36,19 +36,13 @@ cd book-talk-be
 
 ```bash
 cd book-talk-fe
-npm run build
+yarn run build
 sudo cp -r dist/* /var/www/booktalk/frontend/
 ```
 
+> `.env.production` 파일이 설정되어 있어야 합니다.
+
 ---
-
-## 트러블슈팅
-
-### 백엔드 로그 확인
-
-```bash
-docker compose --env-file .env.prod logs -f backend
-```
 
 ## 기술 스택
 
