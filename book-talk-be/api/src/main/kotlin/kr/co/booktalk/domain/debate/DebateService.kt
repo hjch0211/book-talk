@@ -39,7 +39,7 @@ class DebateService(
             ?: httpBadRequest("존재하지 않는 토론방입니다.")
         val members = debateMemberRepository.findAllByDebateOrderByCreatedAtAsc(debate)
         val presentations = presentationRepository.findAllByDebateOrderByCreatedAtAsc(debate)
-        val currentRound = debateRoundRepository.findByDebateAndEndedAtIsNull(debate)
+        val currentRound = debateRoundRepository.findByDebateIdAndEndedAtIsNull(debate.id!!)
         val currentSpeaker = currentRound
             ?.let { debateRoundSpeakerRepository.findByDebateRoundAndIsActive(it, true) }
         val currentSpeakerId = currentSpeaker?.account?.id?.toString()
