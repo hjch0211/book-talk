@@ -510,25 +510,22 @@ export const MemberProfile = styled.div<{ $isCurrentSpeaker?: boolean }>`
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
-    padding: 16px 24px;
+    padding: 16px 42px 16px 24px;
     gap: 10px;
     isolation: isolate;
-    width: 245px;
-    height: 76px;
+    width: 230px;
+    height: 72px;
     background: ${props => props.$isCurrentSpeaker ? '#F5F5F5' : '#FFFFFF'};
-    border-width: 6px 18px 6px 0px;
-    border-style: solid;
-    border-color: ${props => props.$isCurrentSpeaker ? '#F5F5F5' : '#FFFFFF'};
     border-radius: 2px 50px 50px 2px;
     flex: none;
     order: 1;
     flex-grow: 0;
     position: relative;
+    transition: background-color 0.2s ease;
 
     &:hover {
         background-color: rgba(0, 0, 0, 0.04);
         cursor: pointer;
-        transition: background-color 0.2s ease;
     }
 `;
 
@@ -543,7 +540,6 @@ export const MemberProfileBox = styled.div`
     flex: none;
     order: 0;
     flex-grow: 0;
-    z-index: 0;
 `;
 
 export const MemberInfo = styled.div`
@@ -551,7 +547,6 @@ export const MemberInfo = styled.div`
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
-    padding: 0px;
     gap: 2px;
     height: 20px;
     flex: none;
