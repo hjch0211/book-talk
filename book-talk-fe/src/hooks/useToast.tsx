@@ -61,7 +61,7 @@ export const useToast = () => {
                         action={action}
                         sx={{
                             width: '100%',
-                            backgroundColor: '#666',
+                            backgroundColor: '#8E99FF',
                             color: '#fff',
                             '& .MuiAlert-icon': {
                                 color: '#fff'
