@@ -25,12 +25,23 @@
 
 ### 1. 백엔드 배포
 
+#### 초기 배포 (DB 포함)
+
 ```bash
 cd book-talk-be
-./bin/deploy-prod.sh
+./bin/deployInitProd.sh
 ```
 
 > `.env.prod` 파일이 설정되어 있어야 합니다.
+
+#### 백엔드만 재배포
+
+```bash
+cd book-talk-be
+./bin/redeployOnlyBackend.sh
+```
+
+> DB와 Redis는 유지하고 백엔드 코드만 재배포합니다.
 
 ### 2. 프론트엔드 배포
 
