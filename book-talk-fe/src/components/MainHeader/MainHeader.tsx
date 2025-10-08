@@ -18,9 +18,11 @@ import logoSvg from "../../assets/logo.svg";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {meQueryOption} from "../../apis/account";
 import {signOut} from "../../apis/auth";
+import UpdateNicknameModal from "../../routes/Main/_components/NickNameModal/UpdateNicknameModal.tsx";
 
 const ProfileSection = () => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+    const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
     const open = Boolean(anchorEl);
     const {data: me} = useSuspenseQuery(meQueryOption);
 
@@ -30,6 +32,15 @@ const ProfileSection = () => {
 
     const handleClose = () => {
         setAnchorEl(null);
+    };
+
+    const handleNicknameUpdateModalOpen = () => {
+        setAnchorEl(null);
+        setIsUpdateModalOpen(true);
+    };
+
+    const handleNicknameUpdateModalClose = () => {
+        setIsUpdateModalOpen(false);
     };
 
     const handleLogout = () => {
@@ -99,11 +110,11 @@ const ProfileSection = () => {
                     </Typography>
                 </Box>
                 <Divider sx={{my: 1}}/>
-                <MenuItem onClick={handleClose}>
+                <MenuItem onClick={handleNicknameUpdateModalOpen}>
                     <ListItemIcon>
                         <Person fontSize="small" sx={{color: '#7B7B7B'}}/>
                     </ListItemIcon>
-                    <ListItemText>닉네임변경하기</ListItemText>
+                    <ListItemText>닉네임 변경하기</ListItemText>
                 </MenuItem>
                 <MenuItem onClick={handleLogout}>
                     <ListItemIcon>
@@ -112,6 +123,11 @@ const ProfileSection = () => {
                     <ListItemText>로그아웃</ListItemText>
                 </MenuItem>
             </Menu>
+
+            <UpdateNicknameModal
+                open={isUpdateModalOpen}
+                onClose={handleNicknameUpdateModalClose}
+            />
         </Box>
     );
 };
