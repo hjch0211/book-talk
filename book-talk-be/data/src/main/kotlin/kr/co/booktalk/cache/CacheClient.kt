@@ -21,7 +21,6 @@ interface CacheClient {
     fun hashSetAll(key: String, map: Map<String, String>, ttl: Duration? = null)
     fun hashGet(key: String, field: String): String?
     fun hashGetAll(key: String): Map<String, String>
-    fun keys(pattern: String): Set<String>
 }
 
 class RedisCacheClient(
@@ -107,15 +106,6 @@ class RedisCacheClient(
             emptyMap()
         }
     }
-
-    override fun keys(pattern: String): Set<String> {
-        return try {
-            redisTemplate.keys(pattern)
-        } catch (e: Exception) {
-            logger.warn(e) { "Redis keys 실패 - pattern: $pattern" }
-            emptySet()
-        }
-    }
 }
 
 class NoOpCacheClient : CacheClient {
@@ -172,10 +162,5 @@ class NoOpCacheClient : CacheClient {
     override fun hashGetAll(key: String): Map<String, String> {
         logger.warn { "[NoOp] hashGetAll - key: $key" }
         return emptyMap()
-    }
-
-    override fun keys(pattern: String): Set<String> {
-        logger.warn { "[NoOp] keys - pattern: $pattern" }
-        return emptySet()
     }
 }

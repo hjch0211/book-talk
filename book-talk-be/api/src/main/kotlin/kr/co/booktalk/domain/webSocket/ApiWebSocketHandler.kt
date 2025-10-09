@@ -32,6 +32,7 @@ class ApiWebSocketHandler(
         const val ACCOUNT_SESSION_KEY = "ws:account:session:"
         const val DEBATE_SESSIONS_KEY = "ws:debate:sessions:"
         const val DEBATE_RAISED_HANDS_KEY = "ws:debate:raised_hands:"
+        const val DEBATE_RAISED_HANDS_SET_KEY = "ws:debate:raised_hands:set:"
         const val SESSION_TTL_SECONDS = 3600L // 1시간
         const val RAISED_HAND_TTL_SECONDS = 5L // 5초
     }
@@ -362,6 +363,12 @@ class ApiWebSocketHandler(
             return
         }
 
+        val sessionDebateId = cacheClient.get("$SESSION_DEBATE_KEY${session.id}")
+        if (sessionDebateId == null || sessionDebateId != request.debateId) {
+            logger.error { "손들기 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}" }
+            return
+        }
+
         try {
             val handKey = "$DEBATE_RAISED_HANDS_KEY${request.debateId}:$authenticatedAccountId"
             val isHandRaised = cacheClient.exists(handKey)
@@ -369,6 +376,7 @@ class ApiWebSocketHandler(
             if (isHandRaised) {
                 // 손 내리기: Redis에서 삭제
                 cacheClient.delete(handKey)
+                cacheClient.removeFromSet("$DEBATE_RAISED_HANDS_SET_KEY${request.debateId}", authenticatedAccountId)
             } else {
                 // 손들기: Redis에 저장
                 val handRaisedData = mapOf(
@@ -378,6 +386,7 @@ class ApiWebSocketHandler(
                 )
 
                 cacheClient.hashSetAll(handKey, handRaisedData, Duration.ofSeconds(RAISED_HAND_TTL_SECONDS))
+                cacheClient.addToSet("$DEBATE_RAISED_HANDS_SET_KEY${request.debateId}", authenticatedAccountId, Duration.ofSeconds(RAISED_HAND_TTL_SECONDS))
             }
 
             // 손들기 상태 브로드캐스트
@@ -391,13 +400,13 @@ class ApiWebSocketHandler(
     /** 손들기 상태 업데이트를 토론방 모든 참가자에게 브로드캐스트합니다. */
     private fun publishHandRaiseUpdate(debateId: String) {
         try {
-            // Redis에서 현재 손든 사용자 목록 조회
-            val raisedHandsPattern = "$DEBATE_RAISED_HANDS_KEY$debateId:*"
-            val raisedHandKeys = cacheClient.keys(raisedHandsPattern)
+            // Redis Set에서 현재 손든 사용자 목록 조회
+            val raisedAccountIds = cacheClient.getSetMembers("$DEBATE_RAISED_HANDS_SET_KEY$debateId")
 
-            val raisedHands = raisedHandKeys.mapNotNull { key ->
-                val handData = cacheClient.hashGetAll(key)
-                val accountId = handData["accountId"] ?: return@mapNotNull null
+            val raisedHands = raisedAccountIds.mapNotNull { accountId ->
+                val handKey = "$DEBATE_RAISED_HANDS_KEY$debateId:$accountId"
+                val handData = cacheClient.hashGetAll(handKey)
+
                 val accountName = handData["accountName"] ?: return@mapNotNull null
                 val raisedAt = handData["raisedAt"]?.toLongOrNull() ?: return@mapNotNull null
 
@@ -424,6 +433,13 @@ class ApiWebSocketHandler(
 
     /** 채팅 메시지를 토론방 모든 참가자에게 브로드캐스트합니다. */
     private fun handleChatMessage(session: WebSocketSession, request: WS_ChatMessageRequest) {
+        val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
+        val sessionDebateId = cacheClient.get("$SESSION_DEBATE_KEY${session.id}")
+        if (sessionDebateId == null || sessionDebateId != request.debateId) {
+            logger.error { "채팅 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}, account=$authenticatedAccountId" }
+            return
+        }
+
         try {
             publishChatMessage(request.debateId, request.chatId)
         } catch (e: Exception) {

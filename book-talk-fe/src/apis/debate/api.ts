@@ -1,11 +1,11 @@
-import {z} from 'zod';
+import {z} from 'zod/v4';
 import {authApiClient} from '../client';
 import {
     type ChatResponse,
     ChatResponseSchema,
     type CreateChatRequest,
-    type CreateChatResponse,
     CreateChatRequestSchema,
+    type CreateChatResponse,
     CreateChatResponseSchema,
     type CreateDebateRequest,
     CreateDebateRequestSchema,

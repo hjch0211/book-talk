@@ -19,7 +19,7 @@ class CacheConfig {
         connectionFactory: RedisConnectionFactory
     ): CacheClient {
         return try {
-            connectionFactory.connection.ping()
+            connectionFactory.connection.use { connection -> connection.ping() }
             logger.info { "Redis 연결 성공. RedisCacheClient를 생성합니다." }
             RedisCacheClient(redisTemplate)
         } catch (e: Exception) {
