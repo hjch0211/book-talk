@@ -34,9 +34,6 @@ const LoginNicknameModal = ({open, onClose}: LoginNicknameModalProps) => {
             await queryClient.invalidateQueries();
             onClose();
         },
-        onError: () => {
-            toast.error('회원가입 중 오류가 발생했습니다.');
-        }
     });
 
     const handleSubmit = (nickname: string) => {
