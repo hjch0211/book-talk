@@ -126,21 +126,6 @@ class PresenceService(
             timeDiff.seconds < 60 // 1분 이내 heartbeat가 있으면 온라인으로 간주
         }.toSet()
     }
-
-    fun isAccountOnline(accountId: String): Boolean {
-        val accountKey = ACCOUNT_PRESENCE_PREFIX + accountId
-
-        return try {
-            cacheClient.get(accountKey)?.let { accountPresenceJson ->
-                val accountPresence = objectMapper.readValue(accountPresenceJson, AccountPresence::class.java)
-                val timeDiff = Duration.between(accountPresence.lastHeartbeat, Instant.now())
-                timeDiff.seconds < 60
-            } ?: false
-        } catch (e: Exception) {
-            logger.error(e) { "계정 온라인 상태 확인 실패: accountId=$accountId" }
-            false
-        }
-    }
 }
 
 data class AccountPresence(

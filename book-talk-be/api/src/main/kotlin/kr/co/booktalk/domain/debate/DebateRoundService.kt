@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import kr.co.booktalk.cache.AppConfigService
 import kr.co.booktalk.domain.*
 import kr.co.booktalk.domain.auth.AuthAccount
-import kr.co.booktalk.domain.presence.PresenceWebSocketHandler
+import kr.co.booktalk.domain.webSocket.ApiWebSocketHandler
 import kr.co.booktalk.httpBadRequest
 import kr.co.booktalk.httpForbidden
 import kr.co.booktalk.toUUID
@@ -19,7 +19,7 @@ class DebateRoundService(
     private val accountRepository: AccountRepository,
     private val debateRoundRepository: DebateRoundRepository,
     private val appConfigService: AppConfigService,
-    private val presenceWebSocketHandler: PresenceWebSocketHandler,
+    private val apiWebSocketHandler: ApiWebSocketHandler,
     private val objectMapper: ObjectMapper,
     private val debateMemberRepository: DebateMemberRepository,
 ) {
@@ -86,7 +86,7 @@ class DebateRoundService(
             )
 
             val messageJson = objectMapper.writeValueAsString(message)
-            presenceWebSocketHandler.broadcastToDebateRoom(debateId, messageJson)
+            apiWebSocketHandler.broadcastToDebateRoom(debateId, messageJson)
         } catch (e: Exception) {
             // 브로드캐스트 실패는 로그만 남기고 메인 로직에는 영향 없도록 처리
             println("토론 라운드 브로드캐스트 실패: debateId=$debateId, error=${e.message}")

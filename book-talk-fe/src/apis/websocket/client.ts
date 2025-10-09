@@ -149,7 +149,7 @@ export class DebateWebSocketClient {
         const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
         const wsUrl = baseUrl.replace(/^http/, 'ws');
         const token = localStorage.getItem('accessToken');
-        return `${wsUrl}/ws/presence?debateId=${this.debateId}&token=${encodeURIComponent(token || '')}`;
+        return `${wsUrl}/ws?debateId=${this.debateId}&token=${encodeURIComponent(token || '')}`;
     }
 
     private sendJoinMessage() {

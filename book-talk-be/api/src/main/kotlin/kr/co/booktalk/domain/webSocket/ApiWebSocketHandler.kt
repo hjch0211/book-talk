@@ -1,9 +1,10 @@
-package kr.co.booktalk.domain.presence
+package kr.co.booktalk.domain.webSocket
 
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kr.co.booktalk.cache.CacheClient
+import kr.co.booktalk.domain.presence.PresenceService
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
@@ -12,16 +13,16 @@ import org.springframework.web.socket.handler.TextWebSocketHandler
 import java.time.Duration
 import java.util.concurrent.ConcurrentHashMap
 
+// TODO: 추 후 webSocket 모듈 제거. 도메인 단위로 모두 나누기
 @Component
-class PresenceWebSocketHandler(
+class ApiWebSocketHandler(
     private val presenceService: PresenceService,
     private val objectMapper: ObjectMapper,
     private val cacheClient: CacheClient
 ) : TextWebSocketHandler() {
-
     private val logger = KotlinLogging.logger {}
 
-    // 로컬 세션은 WebSocketSession 객체 관리용으로만 사용
+    /** WebSocketSession은 redis에서 관리하기 번거로우므로 thread-safe한 자료구조에서 in-memory로 관리 */
     private val localSessions = ConcurrentHashMap<String, WebSocketSession>()
 
     // Redis 키 패턴
