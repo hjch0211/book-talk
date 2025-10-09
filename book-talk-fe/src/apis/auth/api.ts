@@ -1,37 +1,27 @@
 import {apiClient, ApiError} from '../client';
 import {
-  type CreateTokensResponse,
-  CreateTokensResponseSchema,
-  type RefreshRequest,
-  RefreshRequestSchema,
-  type SignInRequest,
-  SignInRequestSchema,
-  type SignUpRequest,
-  SignUpRequestSchema,
+    type CreateTokensResponse,
+    CreateTokensResponseSchema,
+    type RefreshRequest,
+    RefreshRequestSchema,
+    type SignInRequest,
+    SignInRequestSchema,
+    type SignUpRequest,
+    SignUpRequestSchema,
 } from './schema';
 
 /** 회원가입 */
 export const signUp = async (request: SignUpRequest): Promise<CreateTokensResponse> => {
     const validatedData = SignUpRequestSchema.parse(request);
     const response = await apiClient.post('/auth/sign-up', validatedData);
-    const validatedTokens = CreateTokensResponseSchema.parse(response.data.data);
-
-    localStorage.setItem('accessToken', validatedTokens.accessToken);
-    localStorage.setItem('refreshToken', validatedTokens.refreshToken);
-
-    return validatedTokens;
+    return CreateTokensResponseSchema.parse(response.data.data);
 };
 
 /** 로그인 */
 export const signIn = async (request: SignInRequest): Promise<CreateTokensResponse> => {
     const validatedData = SignInRequestSchema.parse(request);
     const response = await apiClient.post('/auth/sign-in', validatedData);
-    const validatedTokens = CreateTokensResponseSchema.parse(response.data.data);
-
-    localStorage.setItem('accessToken', validatedTokens.accessToken);
-    localStorage.setItem('refreshToken', validatedTokens.refreshToken);
-
-    return validatedTokens;
+    return CreateTokensResponseSchema.parse(response.data.data);
 };
 
 /** 토큰 갱신 */
