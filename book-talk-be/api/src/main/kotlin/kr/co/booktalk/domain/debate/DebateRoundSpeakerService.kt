@@ -6,6 +6,7 @@ import kr.co.booktalk.cache.AppConfigService
 import kr.co.booktalk.domain.*
 import kr.co.booktalk.domain.presence.PresenceWebSocketHandler
 import kr.co.booktalk.httpBadRequest
+import kr.co.booktalk.httpForbidden
 import kr.co.booktalk.toUUID
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -53,8 +54,8 @@ class DebateRoundSpeakerService(
             ?: httpBadRequest("존재하지 않는 토론 라운드입니다.")
         val speaker = accountRepository.findByIdOrNull(request.nextSpeakerId.toUUID())
             ?: httpBadRequest("존재하지 않는 계정입니다.")
-        if (!debateMemberRepository.existsByDebateAndAccount(debateRound.debate, speaker))
-            httpBadRequest("발언자가 토론 멤버가 아닙니다.")
+        if (!debateMemberRepository.existsByDebateAndAccountId(debateRound.debate, speaker.id!!))
+            httpForbidden("토론 참여자만 가능합니다.")
 
         // 현재 활성 발언자가 있다면 종료 처리
         val currentSpeaker = debateRoundSpeakerRepository.findByDebateRoundAndIsActive(debateRound, true)
