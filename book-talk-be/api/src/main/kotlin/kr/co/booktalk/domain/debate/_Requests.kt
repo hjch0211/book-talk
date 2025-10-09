@@ -1,6 +1,7 @@
 package kr.co.booktalk.domain.debate
 
 import kr.co.booktalk.Nullable
+import kr.co.booktalk.WebSocketMessage
 import kr.co.booktalk.domain.DebateRoundType
 
 data class CreateRequest(
@@ -47,3 +48,44 @@ data class CreateChatRequest(
     val debateId: String,
     val content: String
 )
+
+data class WS_JoinDebateRequest(
+    val debateId: String,
+    val accountId: String,
+    val accountName: String
+) : WebSocketMessage {
+    override val type: String = "C_JOIN_DEBATE"
+    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+}
+
+data class WS_LeaveDebateRequest(
+    val debateId: String,
+    val accountId: String
+) : WebSocketMessage {
+    override val type: String = "C_LEAVE_DEBATE"
+    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+}
+
+data class WS_HeartbeatRequest(
+    val accountId: String? = null
+) : WebSocketMessage {
+    override val type: String = "C_HEARTBEAT"
+    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+}
+
+data class WS_ToggleHandRequest(
+    val debateId: String,
+    val accountId: String,
+    val accountName: String
+) : WebSocketMessage {
+    override val type: String = "C_TOGGLE_HAND"
+    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+}
+
+data class WS_ChatMessageRequest(
+    val debateId: String,
+    val chatId: Long
+) : WebSocketMessage {
+    override val type: String = "C_CHAT_MESSAGE"
+    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+}

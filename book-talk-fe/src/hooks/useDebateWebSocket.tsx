@@ -1,7 +1,12 @@
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useQueryClient} from "@tanstack/react-query";
-import {DebateWebSocketClient, type WebSocketMessage} from "../apis/websocket";
-import type {DebateRoundInfo} from "../apis/websocket/client.ts";
+import {
+    DebateWebSocketClient,
+    type WebSocketMessage,
+    type WS_SpeakerUpdateResponse,
+    type WS_DebateRoundUpdateResponse,
+    type RaisedHandInfo
+} from "../apis/websocket";
 import {findOneDebateQueryOptions, type MemberInfo} from "../apis/debate";
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
@@ -34,11 +39,7 @@ export const useDebateWebSocket = (
     const queryClient = useQueryClient();
     const [onlineAccountIds, setOnlineAccountIds] = useState<Set<string>>(new Set());
     const [isConnected, setIsConnected] = useState<boolean>(false);
-    const [raisedHands, setRaisedHands] = useState<Array<{
-        accountId: string;
-        accountName: string;
-        raisedAt: number;
-    }>>([]);
+    const [raisedHands, setRaisedHands] = useState<RaisedHandInfo[]>([]);
     const wsClientRef = useRef<DebateWebSocketClient | null>(null);
     const heartbeatIntervalRef = useRef<number | null>(null);
 
@@ -49,7 +50,7 @@ export const useDebateWebSocket = (
     }, [options]);
 
     /** 발언자 업데이트 콜백*/
-    const handleSpeakerUpdate = useCallback((speakerInfo: unknown) => {
+    const handleSpeakerUpdate = useCallback((speakerInfo: WS_SpeakerUpdateResponse) => {
         console.log('Speaker updated via WebSocket:', speakerInfo);
         if (debateId) {
             void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions(debateId).queryKey});
@@ -57,7 +58,7 @@ export const useDebateWebSocket = (
     }, [debateId, queryClient]);
 
     /** 토론 라운드 업데이트 콜백*/
-    const handleDebateRoundUpdate = useCallback((roundInfo: DebateRoundInfo) => {
+    const handleDebateRoundUpdate = useCallback((roundInfo: WS_DebateRoundUpdateResponse) => {
         console.log('Debate round updated via WebSocket:', roundInfo);
         if (debateId) {
             void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions(debateId).queryKey});
@@ -84,7 +85,7 @@ export const useDebateWebSocket = (
             console.log('Connection status changed:', connected);
             setIsConnected(connected);
         },
-        onHandRaiseUpdate: (hands: Array<{ accountId: string; accountName: string; raisedAt: number }>) => {
+        onHandRaiseUpdate: (hands: RaisedHandInfo[]) => {
             console.log('Received raised hands update:', hands);
             setRaisedHands(hands);
         },

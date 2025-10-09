@@ -66,26 +66,24 @@ class DebateRoundService(
         debateRound: DebateRoundEntity,
     ) {
         try {
-            val message = mapOf(
-                "type" to "DEBATE_ROUND_UPDATE",
-                "debateId" to debateId,
-                "round" to mapOf(
-                    "id" to debateRound.id,
-                    "type" to debateRound.type.name,
-                    "nextSpeakerId" to null,
-                    "nextSpeakerName" to null,
-                    "createdAt" to debateRound.createdAt.toEpochMilli(),
-                    "endedAt" to debateRound.endedAt?.toEpochMilli()
+            val response = WS_DebateRoundUpdateResponse(
+                debateId = debateId,
+                round = WS_DebateRoundUpdateResponse.RoundInfo(
+                    id = debateRound.id,
+                    type = debateRound.type.name,
+                    nextSpeakerId = null,
+                    nextSpeakerName = null,
+                    createdAt = debateRound.createdAt.toEpochMilli(),
+                    endedAt = debateRound.endedAt?.toEpochMilli()
                 ),
-                // SPEAKER_UPDATE 형태로도 함께 전송하여 currentSpeaker 설정
-                "currentSpeaker" to mapOf(
-                    "accountId" to null,
-                    "accountName" to null,
-                    "endedAt" to (System.currentTimeMillis() + appConfigService.debateRoundSpeakerSeconds() * 1000)
+                currentSpeaker = WS_DebateRoundUpdateResponse.CurrentSpeakerInfo(
+                    accountId = null,
+                    accountName = null,
+                    endedAt = System.currentTimeMillis() + appConfigService.debateRoundSpeakerSeconds() * 1000
                 )
             )
 
-            val messageJson = objectMapper.writeValueAsString(message)
+            val messageJson = objectMapper.writeValueAsString(response)
             apiWebSocketHandler.broadcastToDebateRoom(debateId, messageJson)
         } catch (e: Exception) {
             // 브로드캐스트 실패는 로그만 남기고 메인 로직에는 영향 없도록 처리
