@@ -1,4 +1,4 @@
-package kr.co.booktalk.config
+package kr.co.booktalk.domain.webSocket
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kr.co.booktalk.domain.auth.JwtService
@@ -7,10 +7,11 @@ import org.springframework.http.server.ServerHttpResponse
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.WebSocketHandler
 import org.springframework.web.socket.server.HandshakeInterceptor
+import java.net.URLDecoder
 
 // TODO 추 후 AuthArgumentResolver로 통일하기
 @Component
-class JwtHandshakeInterceptor(
+class WebSocketJwtHandshakeInterceptor(
     private val jwtService: JwtService
 ) : HandshakeInterceptor {
     private val logger = KotlinLogging.logger {}
@@ -27,13 +28,10 @@ class JwtHandshakeInterceptor(
             logger.info { "WebSocket 연결 시도: query=$query" }
 
             val token = extractTokenFromQuery(query)
-
             if (token == null) {
-                logger.warn { "WebSocket 연결 시도: 토큰이 없음" }
+                logger.error { "WebSocket 연결 시도: 토큰이 없음" }
                 return false
             }
-
-            logger.info { "WebSocket 토큰 추출 성공: ${token.take(20)}..." }
 
             // JWT 토큰 검증
             val claims = jwtService.validateAccess(token)
@@ -43,11 +41,10 @@ class JwtHandshakeInterceptor(
             attributes["accountId"] = accountId
             attributes["token"] = token
 
-            logger.info { "WebSocket 인증 성공: accountId=$accountId" }
             true
 
         } catch (e: Exception) {
-            logger.warn(e) { "WebSocket 인증 실패: ${e.message}" }
+            logger.error(e) { "WebSocket 인증 실패: ${e.message}" }
             false
         }
     }
@@ -67,6 +64,6 @@ class JwtHandshakeInterceptor(
         return query.split("&")
             .find { it.startsWith("token=") }
             ?.substringAfter("token=")
-            ?.let { java.net.URLDecoder.decode(it, "UTF-8") }
+            ?.let { URLDecoder.decode(it, "UTF-8") }
     }
 }

@@ -19,11 +19,6 @@ class AppConfigService(
         private const val CACHE_PREFIX = "app_config:"
     }
 
-    /** 토론 참여 가능 시간 (startedAt - joinDebateDeadlineSeconds) */
-    fun joinDebateDeadlineSeconds(): Long {
-        return findByKey("joinDebateDeadlineSeconds").toLong()
-    }
-
     /** 토론 최대 참여자수 */
     fun maxDebateMemberCnt(): Long {
         return findByKey("maxDebateMemberCnt").toLong()

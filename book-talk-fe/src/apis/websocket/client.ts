@@ -1,3 +1,11 @@
+import {
+    type RaisedHandInfo,
+    type WebSocketMessage,
+    WebSocketMessageSchema,
+    type WS_DebateRoundUpdateResponse,
+    type WS_SpeakerUpdateResponse,
+} from './schema';
+
 export class DebateWebSocketClient {
     private ws: WebSocket | null = null;
     private debateId: string | null = null;
@@ -22,10 +30,8 @@ export class DebateWebSocketClient {
                 try {
                     const payload = JSON.parse(atob(token.split('.')[1]));
                     const heartbeatMessage = {
-                        type: 'HEARTBEAT',
-                        accountId: payload.sub,
-                        debateId: this.debateId,
-                        timestamp: Date.now()
+                        type: 'C_HEARTBEAT',
+                        accountId: payload.sub
                     };
                     this.ws.send(JSON.stringify(heartbeatMessage));
                 } catch (error) {
@@ -44,9 +50,9 @@ export class DebateWebSocketClient {
                     try {
                         const payload = JSON.parse(atob(token.split('.')[1]));
                         const leaveMessage = {
-                            type: 'LEAVE_DEBATE',
+                            type: 'C_LEAVE_DEBATE',
                             accountId: payload.sub,
-                            debateId: this.debateId
+                            debateId: this.debateId!
                         };
                         this.ws.send(JSON.stringify(leaveMessage));
                     } catch (error) {
@@ -81,7 +87,7 @@ export class DebateWebSocketClient {
     sendChatMessage(chatId: number): void {
         if (this.ws?.readyState === WebSocket.OPEN && this.debateId) {
             const chatMessage = {
-                type: 'CHAT_MESSAGE',
+                type: 'C_CHAT_MESSAGE',
                 debateId: this.debateId,
                 chatId: chatId
             };
@@ -96,7 +102,7 @@ export class DebateWebSocketClient {
                 try {
                     const payload = JSON.parse(atob(token.split('.')[1]));
                     const toggleHandMessage = {
-                        type: 'TOGGLE_HAND',
+                        type: 'C_TOGGLE_HAND',
                         debateId: this.debateId,
                         accountId: payload.sub,
                         accountName: payload.name || 'User'
@@ -126,7 +132,8 @@ export class DebateWebSocketClient {
 
         this.ws.onmessage = (event) => {
             try {
-                const message = JSON.parse(event.data) as WebSocketMessage;
+                const rawMessage = JSON.parse(event.data);
+                const message = WebSocketMessageSchema.parse(rawMessage);
                 console.log('WebSocket message received:', message);
                 this.handleMessage(message);
             } catch (error) {
@@ -149,7 +156,7 @@ export class DebateWebSocketClient {
         const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
         const wsUrl = baseUrl.replace(/^http/, 'ws');
         const token = localStorage.getItem('accessToken');
-        return `${wsUrl}/ws/presence?debateId=${this.debateId}&token=${encodeURIComponent(token || '')}`;
+        return `${wsUrl}/ws?debateId=${this.debateId}&token=${encodeURIComponent(token || '')}`;
     }
 
     private sendJoinMessage() {
@@ -159,12 +166,12 @@ export class DebateWebSocketClient {
                 try {
                     const payload = JSON.parse(atob(token.split('.')[1]));
                     const joinMessage = {
-                        type: 'JOIN_DEBATE',
+                        type: 'C_JOIN_DEBATE',
                         debateId: this.debateId,
                         accountId: payload.sub,
                         accountName: payload.name || 'User'
                     };
-                    console.log('Sending JOIN_DEBATE message:', joinMessage);
+                    console.log('Sending C_JOIN_DEBATE message:', joinMessage);
 
                     // 약간의 지연 후 메시지 전송
                     setTimeout(() => {
@@ -179,47 +186,44 @@ export class DebateWebSocketClient {
 
     private handleMessage(message: WebSocketMessage) {
         switch (message.type) {
-            case 'PRESENCE_UPDATE':
-                if (Array.isArray(message.onlineAccounts) && this.handlers.onPresenceUpdate) {
+            case 'S_PRESENCE_UPDATE':
+                if (this.handlers.onPresenceUpdate) {
                     const onlineIds = new Set<string>(
-                        message.onlineAccounts.map((account: { accountId: string }) => account.accountId)
+                        message.onlineAccounts.map(account => account.accountId)
                     );
                     this.handlers.onPresenceUpdate(onlineIds);
                 }
                 break;
-            case 'SPEAKER_UPDATE':
+            case 'S_SPEAKER_UPDATE':
                 if (this.handlers.onSpeakerUpdate) {
-                    this.handlers.onSpeakerUpdate({
-                        type: message.type,
-                        debateId: message.debateId,
-                        currentSpeaker: message.currentSpeaker,
-                        nextSpeaker: message.nextSpeaker
-                    });
+                    this.handlers.onSpeakerUpdate(message);
                 }
                 break;
-            case 'JOIN_SUCCESS':
+            case 'S_JOIN_SUCCESS':
                 console.log('Successfully joined debate:', message);
                 break;
-            case 'HEARTBEAT_ACK':
+            case 'S_HEARTBEAT_ACK':
                 console.log('Heartbeat acknowledged:', message);
                 break;
-            case 'DEBATE_ROUND_UPDATE':
-                if (this.handlers.onDebateRoundUpdate && message.round) {
+            case 'S_DEBATE_ROUND_UPDATE':
+                if (this.handlers.onDebateRoundUpdate) {
                     console.log('Debate round updated:', message);
-                    this.handlers.onDebateRoundUpdate({
-                        type: message.type,
-                        debateId: message.debateId,
-                        round: message.round
-                    });
+                    this.handlers.onDebateRoundUpdate(message);
 
                     // currentSpeaker 정보가 있으면 SPEAKER_UPDATE로도 처리
                     if (this.handlers.onSpeakerUpdate && message.currentSpeaker) {
-                        console.log('Processing currentSpeaker from DEBATE_ROUND_UPDATE:', message.currentSpeaker);
-                        this.handlers.onSpeakerUpdate({
-                            type: 'SPEAKER_UPDATE',
+                        console.log('Processing currentSpeaker from S_DEBATE_ROUND_UPDATE:', message.currentSpeaker);
+                        const speakerUpdate: WS_SpeakerUpdateResponse = {
+                            type: 'S_SPEAKER_UPDATE',
                             debateId: message.debateId,
-                            currentSpeaker: message.currentSpeaker
-                        });
+                            currentSpeaker: message.currentSpeaker.accountId ? {
+                                accountId: message.currentSpeaker.accountId,
+                                accountName: message.currentSpeaker.accountName!,
+                                endedAt: message.currentSpeaker.endedAt
+                            } : null,
+                            nextSpeaker: null
+                        };
+                        this.handlers.onSpeakerUpdate(speakerUpdate);
                     }
                 }
                 break;
@@ -233,13 +237,13 @@ export class DebateWebSocketClient {
                     this.handlers.onVoiceSignaling(message);
                 }
                 break;
-            case 'HAND_RAISE_UPDATE':
-                if (this.handlers.onHandRaiseUpdate && Array.isArray(message.raisedHands)) {
+            case 'S_HAND_RAISE_UPDATE':
+                if (this.handlers.onHandRaiseUpdate) {
                     this.handlers.onHandRaiseUpdate(message.raisedHands);
                 }
                 break;
-            case 'CHAT_MESSAGE':
-                if (this.handlers.onChatMessage && message.chatId) {
+            case 'S_CHAT_MESSAGE':
+                if (this.handlers.onChatMessage) {
                     console.log('Chat message received:', message.chatId);
                     this.handlers.onChatMessage(message.chatId);
                 }
@@ -263,84 +267,12 @@ export class DebateWebSocketClient {
     }
 }
 
-export interface WebSocketMessage {
-    type: 'JOIN_DEBATE' | 'LEAVE_DEBATE' | 'PRESENCE_UPDATE' | 'JOIN_SUCCESS' | 'HEARTBEAT' | 'HEARTBEAT_ACK' | 'SPEAKER_UPDATE' | 'SPEAKER_TIME_UPDATE' | 'SPEAKER_ENDED' | 'DEBATE_ROUND_UPDATE' | 'VOICE_JOIN' | 'VOICE_LEAVE' | 'VOICE_OFFER' | 'VOICE_ANSWER' | 'VOICE_ICE' | 'VOICE_STATE' | 'TOGGLE_HAND' | 'HAND_RAISE_UPDATE' | 'CHAT_MESSAGE';
-    debateId?: string;
-    accountId?: string;
-    accountName?: string;
-    timestamp?: number;
-    chatId?: number;
-    onlineAccounts?: Array<{
-        accountId: string;
-        accountName: string;
-        status: string;
-        lastHeartbeat: number;
-    }>;
-    // 손들기 관련 필드
-    raisedHands?: Array<{
-        accountId: string;
-        accountName: string;
-        raisedAt: number;
-    }>;
-    // Speaker 관련 필드
-    currentSpeaker?: {
-        accountId: string;
-        accountName: string;
-        endedAt?: number;
-    };
-    nextSpeaker?: {
-        accountId: string;
-        accountName: string;
-    };
-    currentSpeakerId?: string;
-    remainingSeconds?: number;
-    endedSpeakerId?: string;
-    // Debate Round 관련 필드
-    round?: {
-        id: number;
-        type: string;
-        nextSpeakerId: string;
-        nextSpeakerName: string;
-        createdAt: number;
-        endedAt?: number;
-    };
-    // Voice 관련 필드
-    fromId?: string;
-    toId?: string;
-    offer?: RTCSessionDescriptionInit;
-    answer?: RTCSessionDescriptionInit;
-    iceCandidate?: RTCIceCandidateInit;
-    isMuted?: boolean;
-}
-
-export interface DebateRoundInfo {
-    type: string;
-    debateId: string;
-    round: {
-        id: number;
-        type: string;
-        nextSpeakerId: string;
-        nextSpeakerName: string;
-        createdAt: number;
-        endedAt?: number;
-    };
-    currentSpeaker?: {
-        accountId: string;
-        accountName: string;
-        endedAt?: number;
-    };
-}
-
 export interface WebSocketHandlers {
     onPresenceUpdate?: (onlineAccountIds: Set<string>) => void;
     onConnectionStatus?: (connected: boolean) => void;
-    onSpeakerUpdate?: (speakerInfo: unknown) => void;
-    onDebateRoundUpdate?: (roundInfo: DebateRoundInfo) => void;
+    onSpeakerUpdate?: (speakerInfo: WS_SpeakerUpdateResponse) => void;
+    onDebateRoundUpdate?: (roundInfo: WS_DebateRoundUpdateResponse) => void;
     onVoiceSignaling?: (message: WebSocketMessage) => void;
-    onHandRaiseUpdate?: (raisedHands: Array<{
-        accountId: string;
-        accountName: string;
-        raisedAt: number;
-    }>) => void;
+    onHandRaiseUpdate?: (raisedHands: RaisedHandInfo[]) => void;
     onChatMessage?: (chatId: number) => void;
 }

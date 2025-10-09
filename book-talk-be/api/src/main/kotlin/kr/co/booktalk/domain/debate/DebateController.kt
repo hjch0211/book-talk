@@ -1,7 +1,6 @@
 package kr.co.booktalk.domain.debate
 
 import kr.co.booktalk.ApiResult
-import kr.co.booktalk.cache.AppConfigService
 import kr.co.booktalk.domain.auth.AuthAccount
 import kr.co.booktalk.toResult
 import org.springframework.web.bind.annotation.*
@@ -10,7 +9,6 @@ import org.springframework.web.bind.annotation.*
 class DebateController(
     private val debateService: DebateService,
     private val debateRoundService: DebateRoundService,
-    private val appConfigService: AppConfigService,
     private val debateRoundSpeakerService: DebateRoundSpeakerService,
     private val debateChatService: DebateChatService
 ) {

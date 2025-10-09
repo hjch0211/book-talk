@@ -2,13 +2,11 @@ package kr.co.booktalk.domain.debate
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import kr.co.booktalk.cache.AppConfigService
-import kr.co.booktalk.domain.AccountRepository
-import kr.co.booktalk.domain.DebateRepository
-import kr.co.booktalk.domain.DebateRoundEntity
-import kr.co.booktalk.domain.DebateRoundRepository
+import kr.co.booktalk.domain.*
 import kr.co.booktalk.domain.auth.AuthAccount
-import kr.co.booktalk.domain.presence.PresenceWebSocketHandler
+import kr.co.booktalk.domain.webSocket.ApiWebSocketHandler
 import kr.co.booktalk.httpBadRequest
+import kr.co.booktalk.httpForbidden
 import kr.co.booktalk.toUUID
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
@@ -21,13 +19,16 @@ class DebateRoundService(
     private val accountRepository: AccountRepository,
     private val debateRoundRepository: DebateRoundRepository,
     private val appConfigService: AppConfigService,
-    private val presenceWebSocketHandler: PresenceWebSocketHandler,
+    private val apiWebSocketHandler: ApiWebSocketHandler,
     private val objectMapper: ObjectMapper,
+    private val debateMemberRepository: DebateMemberRepository,
 ) {
     @Transactional
     fun create(request: CreateRoundRequest, authAccount: AuthAccount): CreateRoundResponse {
         val debate = debateRepository.findByIdOrNull(request.debateId.toUUID())
             ?: httpBadRequest("존재하지 않는 토론입니다.")
+        if (!debateMemberRepository.existsByDebateAndAccountId(debate, authAccount.id.toUUID()))
+            httpForbidden("토론 참여자만 가능합니다.")
 
         // 이전 라운드가 있다면 종료 처리
         debateRoundRepository.findByDebateIdAndEndedAtIsNull(debate.id!!)?.let { existingRound ->
@@ -65,27 +66,25 @@ class DebateRoundService(
         debateRound: DebateRoundEntity,
     ) {
         try {
-            val message = mapOf(
-                "type" to "DEBATE_ROUND_UPDATE",
-                "debateId" to debateId,
-                "round" to mapOf(
-                    "id" to debateRound.id,
-                    "type" to debateRound.type.name,
-                    "nextSpeakerId" to null,
-                    "nextSpeakerName" to null,
-                    "createdAt" to debateRound.createdAt.toEpochMilli(),
-                    "endedAt" to debateRound.endedAt?.toEpochMilli()
+            val response = WS_DebateRoundUpdateResponse(
+                debateId = debateId,
+                round = WS_DebateRoundUpdateResponse.RoundInfo(
+                    id = debateRound.id,
+                    type = debateRound.type.name,
+                    nextSpeakerId = null,
+                    nextSpeakerName = null,
+                    createdAt = debateRound.createdAt.toEpochMilli(),
+                    endedAt = debateRound.endedAt?.toEpochMilli()
                 ),
-                // SPEAKER_UPDATE 형태로도 함께 전송하여 currentSpeaker 설정
-                "currentSpeaker" to mapOf(
-                    "accountId" to null,
-                    "accountName" to null,
-                    "endedAt" to (System.currentTimeMillis() + appConfigService.debateRoundSpeakerSeconds() * 1000)
+                currentSpeaker = WS_DebateRoundUpdateResponse.CurrentSpeakerInfo(
+                    accountId = null,
+                    accountName = null,
+                    endedAt = System.currentTimeMillis() + appConfigService.debateRoundSpeakerSeconds() * 1000
                 )
             )
 
-            val messageJson = objectMapper.writeValueAsString(message)
-            presenceWebSocketHandler.broadcastToDebateRoom(debateId, messageJson)
+            val messageJson = objectMapper.writeValueAsString(response)
+            apiWebSocketHandler.broadcastToDebateRoom(debateId, messageJson)
         } catch (e: Exception) {
             // 브로드캐스트 실패는 로그만 남기고 메인 로직에는 영향 없도록 처리
             println("토론 라운드 브로드캐스트 실패: debateId=$debateId, error=${e.message}")
