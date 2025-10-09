@@ -1,5 +1,5 @@
 import {useCallback} from "react";
-import {useMutation, useQueryClient, useSuspenseQuery} from "@tanstack/react-query";
+import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
 import {createChat, getChatsQueryOptions} from "../apis/debate";
 
 /**
@@ -11,41 +11,29 @@ import {createChat, getChatsQueryOptions} from "../apis/debate";
 export const useDebateChat = (
     debateId: string | undefined,
     sendChatMessage: ((chatId: number) => void) | undefined,
-    isFreeRound: boolean
+    isFreeRound: boolean,
+    isAlreadyMember: boolean
 ) => {
     const queryClient = useQueryClient();
 
-    // FREE 라운드일 때만 채팅 데이터 로드
-    const {data: chats = []} = useSuspenseQuery(
-        isFreeRound
-            ? getChatsQueryOptions(debateId || '')
-            : {
-                queryKey: ['debates', debateId, 'chats', 'disabled'],
-                queryFn: async () => []
-            }
-    );
-
+    // FREE 라운드이고 멤버일 때만 채팅 데이터 로드
+    const {data: chats = []} = useQuery(getChatsQueryOptions(debateId, isFreeRound, isAlreadyMember));
     const createChatMutation = useMutation({
         mutationFn: createChat,
         onSuccess: (newChat) => {
-            queryClient.invalidateQueries({
-                queryKey: ['debates', debateId, 'chats']
-            });
+            void queryClient.invalidateQueries({queryKey: getChatsQueryOptions(debateId, isFreeRound, isAlreadyMember).queryKey});
             sendChatMessage?.(newChat.id);
         }
     });
 
     const sendChat = useCallback((content: string) => {
-        if (!isFreeRound || !content.trim() || !debateId) return;
+        if (!isFreeRound || !content.trim() || !debateId || !isAlreadyMember) return;
 
-        createChatMutation.mutate({
-            debateId,
-            content: content.trim()
-        });
-    }, [debateId, createChatMutation, isFreeRound]);
+        createChatMutation.mutate({debateId, content: content.trim()});
+    }, [debateId, createChatMutation, isFreeRound, isAlreadyMember]);
 
     return {
-        chats: isFreeRound ? chats : [],
+        chats: isFreeRound && isAlreadyMember ? chats : [],
         sendChat,
         isSending: createChatMutation.isPending
     };

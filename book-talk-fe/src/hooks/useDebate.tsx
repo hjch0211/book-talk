@@ -171,7 +171,8 @@ export const useDebate = ({debateId}: Props): UseDebateReturn => {
     const chat = useDebateChat(
         debateId,
         websocket.sendChatMessage,
-        currentRoundInfo.type === 'FREE'
+        currentRoundInfo.type === 'FREE',
+        isAlreadyMember
     );
 
     return {
