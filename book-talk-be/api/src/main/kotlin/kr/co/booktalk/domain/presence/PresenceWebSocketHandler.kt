@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kr.co.booktalk.cache.CacheClient
-import org.springframework.data.redis.core.RedisTemplate
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
@@ -17,8 +16,7 @@ import java.util.concurrent.ConcurrentHashMap
 class PresenceWebSocketHandler(
     private val presenceService: PresenceService,
     private val objectMapper: ObjectMapper,
-    private val cacheClient: CacheClient,
-    private val redisTemplate: RedisTemplate<String, String>
+    private val cacheClient: CacheClient
 ) : TextWebSocketHandler() {
 
     private val logger = KotlinLogging.logger {}
@@ -164,8 +162,11 @@ class PresenceWebSocketHandler(
         )
 
         // 토론방별 세션 목록 관리 (Set 자료구조 사용)
-        redisTemplate.opsForSet().add("$DEBATE_SESSIONS_KEY$debateId", session.id)
-        redisTemplate.expire("$DEBATE_SESSIONS_KEY$debateId", Duration.ofSeconds(SESSION_TTL_SECONDS))
+        cacheClient.addToSet(
+            "$DEBATE_SESSIONS_KEY$debateId",
+            session.id,
+            Duration.ofSeconds(SESSION_TTL_SECONDS)
+        )
 
         // 계정별 현재 세션 정보 저장
         cacheClient.set(
@@ -217,7 +218,7 @@ class PresenceWebSocketHandler(
 
         // 토론방 세션 목록에서 제거
         debateId?.let {
-            redisTemplate.opsForSet().remove("$DEBATE_SESSIONS_KEY$it", session.id)
+            cacheClient.removeFromSet("$DEBATE_SESSIONS_KEY$it", session.id)
         }
 
         // 계정 세션 정보 삭제
@@ -284,10 +285,10 @@ class PresenceWebSocketHandler(
         val debateId = cacheClient.get("$SESSION_DEBATE_KEY${session.id}") ?: return
 
         // 모든 세션 관련 키의 TTL 갱신
-        redisTemplate.expire("$SESSION_ACCOUNT_KEY${session.id}", Duration.ofSeconds(SESSION_TTL_SECONDS))
-        redisTemplate.expire("$SESSION_DEBATE_KEY${session.id}", Duration.ofSeconds(SESSION_TTL_SECONDS))
-        redisTemplate.expire("$ACCOUNT_SESSION_KEY$accountId", Duration.ofSeconds(SESSION_TTL_SECONDS))
-        redisTemplate.expire("$DEBATE_SESSIONS_KEY$debateId", Duration.ofSeconds(SESSION_TTL_SECONDS))
+        cacheClient.expire("$SESSION_ACCOUNT_KEY${session.id}", Duration.ofSeconds(SESSION_TTL_SECONDS))
+        cacheClient.expire("$SESSION_DEBATE_KEY${session.id}", Duration.ofSeconds(SESSION_TTL_SECONDS))
+        cacheClient.expire("$ACCOUNT_SESSION_KEY$accountId", Duration.ofSeconds(SESSION_TTL_SECONDS))
+        cacheClient.expire("$DEBATE_SESSIONS_KEY$debateId", Duration.ofSeconds(SESSION_TTL_SECONDS))
     }
 
     /** 해당 토론방의 모든 WebSocket 세션에 presence 업데이트를 직접 브로드캐스트합니다. */
@@ -334,7 +335,7 @@ class PresenceWebSocketHandler(
             val message = objectMapper.readTree(messageJson)
 
             // Redis에서 해당 토론방의 세션 목록 조회
-            val sessionIds = redisTemplate.opsForSet().members("$DEBATE_SESSIONS_KEY$debateId") ?: emptySet()
+            val sessionIds = cacheClient.getSetMembers("$DEBATE_SESSIONS_KEY$debateId")
 
             // 로컬에 있는 세션에만 메시지 전송
             sessionIds.forEach { sessionId ->
@@ -361,11 +362,11 @@ class PresenceWebSocketHandler(
 
         try {
             val handKey = "$DEBATE_RAISED_HANDS_KEY$debateId:$authenticatedAccountId"
-            val isHandRaised = redisTemplate.hasKey(handKey)
+            val isHandRaised = cacheClient.exists(handKey)
 
             if (isHandRaised) {
                 // 손 내리기: Redis에서 삭제
-                redisTemplate.delete(handKey)
+                cacheClient.delete(handKey)
                 logger.info { "손내리기 처리 완료: debateId=$debateId, accountId=$authenticatedAccountId" }
             } else {
                 // 손들기: Redis에 저장
@@ -375,8 +376,7 @@ class PresenceWebSocketHandler(
                     "raisedAt" to System.currentTimeMillis().toString()
                 )
 
-                redisTemplate.opsForHash<String, String>().putAll(handKey, handRaisedData)
-                redisTemplate.expire(handKey, Duration.ofSeconds(RAISED_HAND_TTL_SECONDS))
+                cacheClient.hashSetAll(handKey, handRaisedData, Duration.ofSeconds(RAISED_HAND_TTL_SECONDS))
                 logger.info { "손들기 처리 완료: debateId=$debateId, accountId=$authenticatedAccountId" }
             }
 
@@ -393,16 +393,16 @@ class PresenceWebSocketHandler(
         try {
             // Redis에서 현재 손든 사용자 목록 조회
             val raisedHandsPattern = "$DEBATE_RAISED_HANDS_KEY$debateId:*"
-            val raisedHandKeys = redisTemplate.keys(raisedHandsPattern)
+            val raisedHandKeys = cacheClient.keys(raisedHandsPattern)
 
             val raisedHands = raisedHandKeys.map { key ->
-                val handData = redisTemplate.opsForHash<String, String>().entries(key)
+                val handData = cacheClient.hashGetAll(key)
                 mapOf(
                     "accountId" to handData["accountId"],
                     "accountName" to handData["accountName"],
                     "raisedAt" to handData["raisedAt"]?.toLongOrNull()
                 )
-            }.filterNotNull()
+            }
 
             val message = mapOf(
                 "type" to "HAND_RAISE_UPDATE",
