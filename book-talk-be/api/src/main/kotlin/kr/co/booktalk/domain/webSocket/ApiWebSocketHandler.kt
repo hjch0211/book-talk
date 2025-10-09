@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kr.co.booktalk.cache.CacheClient
-import kr.co.booktalk.domain.presence.PresenceService
+import kr.co.booktalk.domain.debate.PresenceService
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage

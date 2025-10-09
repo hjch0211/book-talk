@@ -1,4 +1,4 @@
-package kr.co.booktalk.domain.presence
+package kr.co.booktalk.domain.debate
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
