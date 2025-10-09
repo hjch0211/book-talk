@@ -15,7 +15,9 @@ const LoginNicknameModal = ({open, onClose}: LoginNicknameModalProps) => {
 
     const signInMutation = useMutation({
         mutationFn: (name: string) => signIn({name}),
-        onSuccess: async () => {
+        onSuccess: async (data) => {
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
             await queryClient.invalidateQueries();
             onClose();
         },
@@ -30,7 +32,9 @@ const LoginNicknameModal = ({open, onClose}: LoginNicknameModalProps) => {
 
     const signUpMutation = useMutation({
         mutationFn: (name: string) => signUp({name}),
-        onSuccess: async () => {
+        onSuccess: async (data) => {
+            localStorage.setItem('accessToken', data.accessToken);
+            localStorage.setItem('refreshToken', data.refreshToken);
             await queryClient.invalidateQueries();
             onClose();
         },
