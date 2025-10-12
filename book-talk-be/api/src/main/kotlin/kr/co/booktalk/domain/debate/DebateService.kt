@@ -8,6 +8,7 @@ import kr.co.booktalk.toUUID
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 
 @Service
 class DebateService(
@@ -18,6 +19,8 @@ class DebateService(
     private val appConfigService: AppConfigService,
     private val presentationRepository: PresentationRepository,
     private val debateRoundSpeakerRepository: DebateRoundSpeakerRepository,
+    private val debateRoundSpeakerService: DebateRoundSpeakerService,
+    private val debateRoundService: DebateRoundService
 ) {
     @Transactional
     fun create(request: CreateRequest, authAccount: AuthAccount): CreateResponse {
@@ -71,11 +74,7 @@ class DebateService(
 
     /** Scheduler - 만료된 발표자를 처리하여 다음 발표자로 자동 전환 */
     @Transactional
-    fun handleExpiredSpeaker(
-        speaker: DebateRoundSpeakerEntity,
-        debateRoundSpeakerService: DebateRoundSpeakerService,
-        debateRoundService: DebateRoundService
-    ) {
+    fun handleExpiredSpeaker(speaker: DebateRoundSpeakerEntity) {
         val round = speaker.debateRound
         val debate = round.debate
 
@@ -125,6 +124,22 @@ class DebateService(
                         nextSpeakerId = firstSpeakerId
                     )
                 )
+            }
+        }
+    }
+
+    /** Scheduler - 생성된 지 24시간이 지난 토론 자동 종료 */
+    @Transactional
+    fun closeExpiredDebates() {
+        val expiredDebates = debateRepository.findAllByCreatedAtBeforeAndClosedAtIsNull(
+            Instant.now().minusSeconds(24 * 60 * 60)
+        )
+        if (expiredDebates.isEmpty()) return
+
+        expiredDebates.forEach { debate ->
+            debate.closedAt = Instant.now()
+            debateRoundRepository.findByDebateIdAndEndedAtIsNull(debate.id!!)?.let { currentRound ->
+                currentRound.endedAt = Instant.now()
             }
         }
     }
