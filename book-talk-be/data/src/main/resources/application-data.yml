@@ -21,7 +21,6 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: ${JPA_SHOW_SQL}
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect

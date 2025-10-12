@@ -39,14 +39,14 @@ class DebateController(
         authAccount: AuthAccount
     ): ApiResult<CreateRoundResponse> {
         request.validate()
-        return debateRoundService.create(request, authAccount).toResult()
+        return debateRoundService.create(request).toResult()
     }
 
     /** 토론 라운드 변경 */
     @PatchMapping("/debates/round")
     fun patchRound(@RequestBody request: PatchRoundRequest, authAccount: AuthAccount) {
         request.validate()
-        debateRoundService.patch(request, authAccount)
+        debateRoundService.patch(request)
     }
 
     /** 발언자 생성 */
