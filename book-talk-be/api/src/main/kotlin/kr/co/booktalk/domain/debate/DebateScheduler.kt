@@ -16,7 +16,6 @@ class DebateScheduler(
 
     /** 1초마다 만료된 발표자 체크 및 자동 전환 */
     @Scheduled(fixedDelay = 1000)
-    @Transactional
     fun checkExpiredSpeakers() {
         val expiredSpeakers = debateRoundSpeakerRepository.findAllByIsActiveAndEndedAtBefore(true, Instant.now())
         if (expiredSpeakers.isEmpty()) return
