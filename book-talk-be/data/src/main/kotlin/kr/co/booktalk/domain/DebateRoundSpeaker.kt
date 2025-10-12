@@ -31,4 +31,5 @@ class DebateRoundSpeakerEntity(
 @Repository
 interface DebateRoundSpeakerRepository : JpaRepository<DebateRoundSpeakerEntity, Long> {
     fun findByDebateRoundAndIsActive(currentRound: DebateRoundEntity, isActive: Boolean): DebateRoundSpeakerEntity?
+    fun findAllByIsActiveAndEndedAtBefore(isActive: Boolean, endedAt: Instant): List<DebateRoundSpeakerEntity>
 }

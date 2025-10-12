@@ -31,7 +31,6 @@ function DebatePageContent({debateId}: Props) {
             realTimeRemainingSeconds,
             createRoundMutation,
             handlePresentationRound,
-            handleFreeRound,
             createRoundSpeakerMutation
         },
         websocket: {toggleHand, isHandRaised, raisedHands, sendVoiceMessage, sendChatMessage, membersWithPresence},
@@ -53,8 +52,6 @@ function DebatePageContent({debateId}: Props) {
     const handleEndPresentation = () => {
         if (currentRoundInfo.type === 'PRESENTATION') {
             void handlePresentationRound();
-        } else if (currentRoundInfo.type === 'FREE') {
-            void handleFreeRound();
         }
     };
 

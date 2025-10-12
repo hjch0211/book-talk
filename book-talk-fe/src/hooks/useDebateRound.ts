@@ -40,7 +40,6 @@ export interface UseDebateRoundReturn {
     createRoundSpeakerMutation: UseMutationResult<void, Error, CreateRoundSpeakerRequest>;
     patchRoundSpeakerMutation: UseMutationResult<void, Error, PatchRoundSpeakerRequest>;
     handlePresentationRound: () => Promise<void>;
-    handleFreeRound: () => Promise<void>;
 }
 
 /**
@@ -56,7 +55,6 @@ export const useDebateRound = (
     debate: FindOneDebateResponse,
     debateId?: string,
     currentRoundInfo?: CurrentRoundInfo,
-    myAccountId?: string
 ): UseDebateRoundReturn => {
     const queryClient = useQueryClient();
     const [currentTime, setCurrentTime] = useState(new Date());
@@ -215,47 +213,6 @@ export const useDebateRound = (
         }
     }, [debateId, currentSpeaker, currentRoundInfo?.id, debate.members, debate.currentRound?.id, createRoundSpeakerMutation, patchRoundMutation, createRoundMutation, queryClient]);
 
-    /** FREE 라운드: 툴팁을 통해서만 발표자 전환 (자동 진행 없음) */
-    const handleFreeRound = useCallback(async () => {
-        // FREE 라운드에서는 nextSpeakerId가 항상 null이므로 이 함수는 사용되지 않음
-        // 발표자 전환은 오직 툴팁의 "발표 넘겨주기"를 통해서만 이루어짐
-        console.log('handleFreeRound called, but FREE round does not support auto-progression');
-    }, []);
-
-    /** 발표 시간 만료시 자동 다음 발표자 처리 */
-    useEffect(() => {
-        if (!debateId || !currentSpeaker || !currentRoundInfo?.id) return;
-
-        // PRESENTATION 라운드에서만 시간 만료시 자동 진행
-        // FREE 라운드는 툴팁을 통해서만 발표자 전환 가능
-        const shouldAutoProgress = currentRoundInfo.type === 'PRESENTATION' &&
-            realTimeRemainingSeconds === 0 &&
-            currentSpeaker.accountId === myAccountId;
-
-        if (shouldAutoProgress) {
-            console.log('Speaker time expired, auto-creating next speaker');
-
-            (async () => {
-                try {
-                    await handlePresentationRound();
-                    console.log('Successfully processed next speaker');
-                } catch (error) {
-                    console.error('Failed to create next speaker:', error);
-                } finally {
-                    void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions(debateId).queryKey});
-                }
-            })();
-        }
-    }, [
-        realTimeRemainingSeconds,
-        currentSpeaker,
-        myAccountId,
-        handlePresentationRound,
-        debateId,
-        currentRoundInfo,
-        queryClient
-    ]);
-
     return {
         currentSpeaker,
         nextSpeaker,
@@ -264,6 +221,5 @@ export const useDebateRound = (
         createRoundSpeakerMutation,
         patchRoundSpeakerMutation,
         handlePresentationRound,
-        handleFreeRound
     };
 };

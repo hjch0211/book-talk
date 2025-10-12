@@ -156,7 +156,7 @@ export const useDebate = ({debateId}: Props): UseDebateReturn => {
         };
     }, [debate.currentRound, debate.presentations, _me?.id]);
 
-    const round = useDebateRound(debate, debateId, currentRoundInfo, myMemberData.id);
+    const round = useDebateRound(debate, debateId, currentRoundInfo);
     const websocket = useDebateWebSocket(
         debateId || null,
         debate.members,
