@@ -9,7 +9,7 @@ plugins {
 description = "book-talk data"
 
 dependencies {
-    implementation(project(":lib"))
+    implementation(project(":_lib"))
     api("org.springframework.boot:spring-boot-starter-data-jpa")
     api("org.springframework.boot:spring-boot-starter-data-redis")
     implementation("io.github.oshai:kotlin-logging-jvm:6.0.3")
