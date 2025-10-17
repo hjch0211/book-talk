@@ -29,7 +29,7 @@
 
 ```bash
 cd book-talk-be
-./bin/deployInitProd.sh
+./.bin/deployInitProd.sh
 ```
 
 > `.env.prod` 파일이 설정되어 있어야 합니다.

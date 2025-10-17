@@ -1,5 +1,5 @@
 rootProject.name = "book-talk-be"
 
-include("api")
-include("data")
-include("lib")
+include("_api")
+include("_data")
+include("_lib")

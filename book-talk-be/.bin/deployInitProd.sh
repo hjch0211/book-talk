@@ -72,7 +72,7 @@ export $(grep -v '^#' .env.prod | xargs)
 # 데이터베이스 스키마 생성
 echo ""
 echo "📊 데이터베이스 스키마 생성 중..."
-SCHEMA_DIR="data/src/main/resources/schema"
+SCHEMA_DIR="_data/src/main/resources/schema"
 if [ -d "$SCHEMA_DIR" ]; then
   for schema_file in "$SCHEMA_DIR"/*.sql; do
     if [ -f "$schema_file" ]; then

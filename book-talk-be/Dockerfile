@@ -8,9 +8,9 @@ COPY gradle gradle
 COPY gradlew ./
 
 # Copy all modules
-COPY api ./api
-COPY data ./data
-COPY lib ./lib
+COPY _api ./_api
+COPY _data ./_data
+COPY _lib ./_lib
 
 # Build the application
 RUN ./gradlew build -x test --no-daemon
@@ -20,7 +20,7 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
 # Copy the built jar from build stage
-COPY --from=build /app/api/build/libs/*.jar app.jar
+COPY --from=build /app/_api/build/libs/*.jar app.jar
 
 # Expose port
 EXPOSE 8080
