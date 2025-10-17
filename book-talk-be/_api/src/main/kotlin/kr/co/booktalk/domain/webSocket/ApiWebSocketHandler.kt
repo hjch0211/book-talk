@@ -69,6 +69,37 @@ class ApiWebSocketHandler(
                     handleChatMessage(session, request)
                 }
 
+                // WebRTC Signaling Messages
+                "VOICE_JOIN" -> {
+                    val request = objectMapper.readValue<WS_VoiceJoinRequest>(message.payload)
+                    handleVoiceJoin(session, request)
+                }
+
+                "VOICE_LEAVE" -> {
+                    val request = objectMapper.readValue<WS_VoiceLeaveRequest>(message.payload)
+                    handleVoiceLeave(session, request)
+                }
+
+                "VOICE_OFFER" -> {
+                    val request = objectMapper.readValue<WS_VoiceOfferRequest>(message.payload)
+                    handleVoiceOffer(session, request)
+                }
+
+                "VOICE_ANSWER" -> {
+                    val request = objectMapper.readValue<WS_VoiceAnswerRequest>(message.payload)
+                    handleVoiceAnswer(session, request)
+                }
+
+                "VOICE_ICE" -> {
+                    val request = objectMapper.readValue<WS_VoiceIceRequest>(message.payload)
+                    handleVoiceIce(session, request)
+                }
+
+                "VOICE_STATE" -> {
+                    val request = objectMapper.readValue<WS_VoiceStateRequest>(message.payload)
+                    handleVoiceState(session, request)
+                }
+
                 else -> logger.warn { "알 수 없는 메시지 타입: $messageType" }
             }
         } catch (e: Exception) {
@@ -367,6 +398,201 @@ class ApiWebSocketHandler(
         broadcastToDebateRoom(debateId, messageJson)
 
         logger.debug { "채팅 메시지 브로드캐스트 완료: debateId=$debateId, chatId=$chatId" }
+    }
+
+    // ============ WebRTC Signaling Handlers ============
+
+    /** 음성 채팅 참여 요청을 처리합니다. */
+    private fun handleVoiceJoin(session: WebSocketSession, request: WS_VoiceJoinRequest) {
+        val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
+        if (!validateAccountIdMatch(authenticatedAccountId, request.accountId)) {
+            return
+        }
+
+        val sessionDebateId = session.attributes["debateId"] as? String
+        if (sessionDebateId == null || sessionDebateId != request.debateId) {
+            logger.error { "음성 참여 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}" }
+            return
+        }
+
+        try {
+            logger.info { "음성 채팅 참여: debateId=${request.debateId}, accountId=${request.accountId}" }
+
+            // 같은 토론방의 다른 참가자들에게 브로드캐스트 (fromId 추가)
+            val broadcastMessage = mapOf(
+                "type" to "VOICE_JOIN",
+                "provider" to "CLIENT",
+                "debateId" to request.debateId,
+                "accountId" to request.accountId,
+                "fromId" to request.accountId
+            )
+            val messageJson = objectMapper.writeValueAsString(broadcastMessage)
+            broadcastToDebateRoom(request.debateId, messageJson)
+        } catch (e: Exception) {
+            logger.error(e) { "음성 참여 처리 실패: debateId=${request.debateId}, accountId=${request.accountId}" }
+        }
+    }
+
+    /** 음성 채팅 나가기 요청을 처리합니다. */
+    private fun handleVoiceLeave(session: WebSocketSession, request: WS_VoiceLeaveRequest) {
+        val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
+        if (!validateAccountIdMatch(authenticatedAccountId, request.accountId)) {
+            return
+        }
+
+        val sessionDebateId = session.attributes["debateId"] as? String
+        if (sessionDebateId == null || sessionDebateId != request.debateId) {
+            logger.error { "음성 나가기 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}" }
+            return
+        }
+
+        try {
+            logger.info { "음성 채팅 나가기: debateId=${request.debateId}, accountId=${request.accountId}" }
+
+            // 같은 토론방의 다른 참가자들에게 브로드캐스트 (fromId 추가)
+            val broadcastMessage = mapOf(
+                "type" to "VOICE_LEAVE",
+                "provider" to "CLIENT",
+                "debateId" to request.debateId,
+                "accountId" to request.accountId,
+                "fromId" to request.accountId
+            )
+            val messageJson = objectMapper.writeValueAsString(broadcastMessage)
+            broadcastToDebateRoom(request.debateId, messageJson)
+        } catch (e: Exception) {
+            logger.error(e) { "음성 나가기 처리 실패: debateId=${request.debateId}, accountId=${request.accountId}" }
+        }
+    }
+
+    /** WebRTC Offer를 특정 피어에게 전달합니다. */
+    private fun handleVoiceOffer(session: WebSocketSession, request: WS_VoiceOfferRequest) {
+        val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
+        if (!validateAccountIdMatch(authenticatedAccountId, request.fromId)) {
+            return
+        }
+
+        val sessionDebateId = session.attributes["debateId"] as? String
+        if (sessionDebateId == null || sessionDebateId != request.debateId) {
+            logger.error { "Offer 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}" }
+            return
+        }
+
+        try {
+            logger.debug { "Offer 전달: from=${request.fromId}, to=${request.toId}" }
+
+            // toId에 해당하는 세션에만 전달
+            val targetSession = localSessions.values.find { targetSession ->
+                targetSession.attributes["accountId"] == request.toId &&
+                targetSession.attributes["debateId"] == request.debateId
+            }
+
+            if (targetSession != null) {
+                val messageJson = objectMapper.writeValueAsString(request)
+                sendTextMessage(targetSession, messageJson)
+            } else {
+                logger.warn { "Offer 전달 실패: 대상 세션을 찾을 수 없음 toId=${request.toId}" }
+            }
+        } catch (e: Exception) {
+            logger.error(e) { "Offer 전달 실패: from=${request.fromId}, to=${request.toId}" }
+        }
+    }
+
+    /** WebRTC Answer를 특정 피어에게 전달합니다. */
+    private fun handleVoiceAnswer(session: WebSocketSession, request: WS_VoiceAnswerRequest) {
+        val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
+        if (!validateAccountIdMatch(authenticatedAccountId, request.fromId)) {
+            return
+        }
+
+        val sessionDebateId = session.attributes["debateId"] as? String
+        if (sessionDebateId == null || sessionDebateId != request.debateId) {
+            logger.error { "Answer 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}" }
+            return
+        }
+
+        try {
+            logger.debug { "Answer 전달: from=${request.fromId}, to=${request.toId}" }
+
+            // toId에 해당하는 세션에만 전달
+            val targetSession = localSessions.values.find { targetSession ->
+                targetSession.attributes["accountId"] == request.toId &&
+                targetSession.attributes["debateId"] == request.debateId
+            }
+
+            if (targetSession != null) {
+                val messageJson = objectMapper.writeValueAsString(request)
+                sendTextMessage(targetSession, messageJson)
+            } else {
+                logger.warn { "Answer 전달 실패: 대상 세션을 찾을 수 없음 toId=${request.toId}" }
+            }
+        } catch (e: Exception) {
+            logger.error(e) { "Answer 전달 실패: from=${request.fromId}, to=${request.toId}" }
+        }
+    }
+
+    /** ICE candidate를 특정 피어에게 전달합니다. */
+    private fun handleVoiceIce(session: WebSocketSession, request: WS_VoiceIceRequest) {
+        val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
+        if (!validateAccountIdMatch(authenticatedAccountId, request.fromId)) {
+            return
+        }
+
+        val sessionDebateId = session.attributes["debateId"] as? String
+        if (sessionDebateId == null || sessionDebateId != request.debateId) {
+            logger.error { "ICE 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}" }
+            return
+        }
+
+        try {
+            logger.debug { "ICE candidate 전달: from=${request.fromId}, to=${request.toId}" }
+
+            // toId에 해당하는 세션에만 전달
+            val targetSession = localSessions.values.find { targetSession ->
+                targetSession.attributes["accountId"] == request.toId &&
+                targetSession.attributes["debateId"] == request.debateId
+            }
+
+            if (targetSession != null) {
+                val messageJson = objectMapper.writeValueAsString(request)
+                sendTextMessage(targetSession, messageJson)
+            } else {
+                logger.warn { "ICE candidate 전달 실패: 대상 세션을 찾을 수 없음 toId=${request.toId}" }
+            }
+        } catch (e: Exception) {
+            logger.error(e) { "ICE candidate 전달 실패: from=${request.fromId}, to=${request.toId}" }
+        }
+    }
+
+    /** 음성 상태 변경(음소거 등)을 브로드캐스트합니다. */
+    private fun handleVoiceState(session: WebSocketSession, request: WS_VoiceStateRequest) {
+        val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
+        if (!validateAccountIdMatch(authenticatedAccountId, request.accountId)) {
+            return
+        }
+
+        val sessionDebateId = session.attributes["debateId"] as? String
+        if (sessionDebateId == null || sessionDebateId != request.debateId) {
+            logger.error { "음성 상태 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}" }
+            return
+        }
+
+        try {
+            logger.debug { "음성 상태 변경: accountId=${request.accountId}, isMuted=${request.isMuted}" }
+
+            // 같은 토론방의 다른 참가자들에게 브로드캐스트 (fromId 추가)
+            val broadcastMessage = mapOf(
+                "type" to "VOICE_STATE",
+                "provider" to "CLIENT",
+                "debateId" to request.debateId,
+                "accountId" to request.accountId,
+                "fromId" to request.accountId,
+                "isMuted" to request.isMuted
+            )
+            val messageJson = objectMapper.writeValueAsString(broadcastMessage)
+            broadcastToDebateRoom(request.debateId, messageJson)
+        } catch (e: Exception) {
+            logger.error(e) { "음성 상태 변경 처리 실패: accountId=${request.accountId}" }
+        }
     }
 
 }

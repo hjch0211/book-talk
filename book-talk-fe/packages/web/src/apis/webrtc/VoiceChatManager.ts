@@ -52,6 +52,9 @@ export class VoiceChatManager {
 
             this.onSignalingMessage({
                 type: 'VOICE_JOIN',
+                provider: 'CLIENT',
+                debateId: this.debateId,
+                accountId: this.myAccountId,
                 fromId: this.myAccountId
             });
 
@@ -66,6 +69,9 @@ export class VoiceChatManager {
 
         this.onSignalingMessage({
             type: 'VOICE_LEAVE',
+            provider: 'CLIENT',
+            debateId: this.debateId,
+            accountId: this.myAccountId,
             fromId: this.myAccountId
         });
 
@@ -102,6 +108,8 @@ export class VoiceChatManager {
 
             this.onSignalingMessage({
                 type: 'VOICE_OFFER',
+                provider: 'CLIENT',
+                debateId: this.debateId,
                 fromId: this.myAccountId,
                 toId: participantId,
                 offer: offer
@@ -145,6 +153,8 @@ export class VoiceChatManager {
 
         this.onSignalingMessage({
             type: 'VOICE_ANSWER',
+            provider: 'CLIENT',
+            debateId: this.debateId,
             fromId: this.myAccountId,
             toId: fromId,
             answer: answer
@@ -175,6 +185,9 @@ export class VoiceChatManager {
 
         this.onSignalingMessage({
             type: 'VOICE_STATE',
+            provider: 'CLIENT',
+            debateId: this.debateId,
+            accountId: this.myAccountId,
             fromId: this.myAccountId,
             isMuted: this.isMuted
         });
@@ -221,6 +234,8 @@ export class VoiceChatManager {
             if (event.candidate) {
                 this.onSignalingMessage({
                     type: 'VOICE_ICE',
+                    provider: 'CLIENT',
+                    debateId: this.debateId,
                     fromId: this.myAccountId,
                     toId: participantId,
                     iceCandidate: event.candidate.toJSON()
