@@ -421,7 +421,7 @@ class ApiWebSocketHandler(
             // 같은 토론방의 다른 참가자들에게 브로드캐스트 (fromId 추가)
             val broadcastMessage = mapOf(
                 "type" to "VOICE_JOIN",
-                "provider" to "CLIENT",
+                "provider" to "API",
                 "debateId" to request.debateId,
                 "accountId" to request.accountId,
                 "fromId" to request.accountId
@@ -452,7 +452,7 @@ class ApiWebSocketHandler(
             // 같은 토론방의 다른 참가자들에게 브로드캐스트 (fromId 추가)
             val broadcastMessage = mapOf(
                 "type" to "VOICE_LEAVE",
-                "provider" to "CLIENT",
+                "provider" to "API",
                 "debateId" to request.debateId,
                 "accountId" to request.accountId,
                 "fromId" to request.accountId
@@ -582,7 +582,7 @@ class ApiWebSocketHandler(
             // 같은 토론방의 다른 참가자들에게 브로드캐스트 (fromId 추가)
             val broadcastMessage = mapOf(
                 "type" to "VOICE_STATE",
-                "provider" to "CLIENT",
+                "provider" to "API",
                 "debateId" to request.debateId,
                 "accountId" to request.accountId,
                 "fromId" to request.accountId,

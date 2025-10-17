@@ -164,7 +164,7 @@ export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
     // 마이크 권한 요청 함수
     const requestMicPermission = async (): Promise<boolean> => {
         try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            const stream = await navigator.mediaDevices.getUserMedia({audio: true});
             // 권한 확인용이므로 즉시 스트림 정리
             stream.getTracks().forEach(track => track.stop());
             setHasMicPermission(true);
@@ -186,7 +186,7 @@ export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
             }
 
             try {
-                const permissionStatus = await navigator.permissions.query({ name: 'microphone' as PermissionName });
+                const permissionStatus = await navigator.permissions.query({name: 'microphone' as PermissionName});
                 setHasMicPermission(permissionStatus.state === 'granted');
 
                 // 권한 상태 변경 감지
@@ -228,7 +228,7 @@ export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
 
         return () => clearTimeout(timer);
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [voiceChatManagerRef.current, hasMicPermission]);
+    }, [debateId, voiceChatManagerRef.current, hasMicPermission]);
 
     const joinVoiceChat = async () => {
         if (!voiceChatManagerRef.current || isConnecting) return;
