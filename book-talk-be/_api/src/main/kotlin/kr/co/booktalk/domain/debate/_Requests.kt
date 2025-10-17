@@ -89,3 +89,59 @@ data class WS_ChatMessageRequest(
     override val type: String = "C_CHAT_MESSAGE"
     override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
 }
+
+// WebRTC Signaling Messages
+data class WS_VoiceJoinRequest(
+    val debateId: String,
+    val accountId: String
+) : WebSocketMessage {
+    override val type: String = "VOICE_JOIN"
+    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+}
+
+data class WS_VoiceLeaveRequest(
+    val debateId: String,
+    val accountId: String
+) : WebSocketMessage {
+    override val type: String = "VOICE_LEAVE"
+    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+}
+
+data class WS_VoiceOfferRequest(
+    val debateId: String,
+    val fromId: String,
+    val toId: String,
+    val offer: Map<String, Any>
+) : WebSocketMessage {
+    override val type: String = "VOICE_OFFER"
+    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+}
+
+data class WS_VoiceAnswerRequest(
+    val debateId: String,
+    val fromId: String,
+    val toId: String,
+    val answer: Map<String, Any>
+) : WebSocketMessage {
+    override val type: String = "VOICE_ANSWER"
+    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+}
+
+data class WS_VoiceIceRequest(
+    val debateId: String,
+    val fromId: String,
+    val toId: String,
+    val iceCandidate: Map<String, Any>
+) : WebSocketMessage {
+    override val type: String = "VOICE_ICE"
+    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+}
+
+data class WS_VoiceStateRequest(
+    val debateId: String,
+    val accountId: String,
+    val isMuted: Boolean
+) : WebSocketMessage {
+    override val type: String = "VOICE_STATE"
+    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+}

@@ -8,8 +8,8 @@ plugins {
 description = "book-talk API"
 
 dependencies {
-    implementation(project(":data"))
-    implementation(project(":lib"))
+    implementation(project(":_data"))
+    implementation(project(":_lib"))
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-websocket")

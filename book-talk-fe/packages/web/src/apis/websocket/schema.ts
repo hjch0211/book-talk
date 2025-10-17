@@ -129,16 +129,18 @@ export const WS_DebateRoundUpdateResponseSchema = z.object({
 
 export const WS_VoiceJoinMessageSchema = z.object({
     type: z.literal('VOICE_JOIN'),
-    provider: z.literal('CLIENT'),
-    debateId: z.string(),
+    provider: z.string().optional(),  // CLIENT when sending, API when receiving broadcast
+    debateId: z.string().optional(),
     accountId: z.string(),
+    fromId: z.string().optional(),  // Present in broadcast messages from server
 });
 
 export const WS_VoiceLeaveMessageSchema = z.object({
     type: z.literal('VOICE_LEAVE'),
-    provider: z.literal('CLIENT'),
-    debateId: z.string(),
+    provider: z.string().optional(),  // CLIENT when sending, API when receiving broadcast
+    debateId: z.string().optional(),
     accountId: z.string(),
+    fromId: z.string().optional(),  // Present in broadcast messages from server
 });
 
 export const WS_VoiceOfferMessageSchema = z.object({
@@ -170,10 +172,11 @@ export const WS_VoiceIceMessageSchema = z.object({
 
 export const WS_VoiceStateMessageSchema = z.object({
     type: z.literal('VOICE_STATE'),
-    provider: z.literal('CLIENT'),
-    debateId: z.string(),
+    provider: z.string().optional(),  // CLIENT when sending, API when receiving broadcast
+    debateId: z.string().optional(),
     accountId: z.string(),
-    isMuted: z.boolean(),
+    fromId: z.string().optional(),  // Present in broadcast messages from server
+    isMuted: z.boolean().optional(),
 });
 
 export const WebSocketMessageSchema = z.discriminatedUnion('type', [

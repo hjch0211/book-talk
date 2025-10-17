@@ -8,12 +8,14 @@ export const useVoiceChat = () => {
         isJoined: context.isJoined,
         isMuted: context.isMuted,
         isConnecting: context.isConnecting,
+        hasMicPermission: context.hasMicPermission,
         joinVoiceChat: context.joinVoiceChat,
         leaveVoiceChat: context.leaveVoiceChat,
         toggleMute: context.toggleMute,
         setParticipantVolume: context.setParticipantVolume,
         getRemoteStream: context.getRemoteStream,
         getLocalStream: context.getLocalStream,
-        handleIncomingSignalingMessage: context.handleIncomingSignalingMessage
+        handleIncomingSignalingMessage: context.handleIncomingSignalingMessage,
+        requestMicPermission: context.requestMicPermission
     };
 };
