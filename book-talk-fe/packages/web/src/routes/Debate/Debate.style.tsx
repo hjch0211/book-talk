@@ -145,11 +145,11 @@ export const MainContent = styled.div`
     top: 200px;
 `;
 
-export const PresentationArea = styled.div`
+export const PresentationArea = styled.div<{ $isChatMode?: boolean }>`
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 20px;
+    padding: ${props => props.$isChatMode ? '20px' : '60px 90px 100px 60px'};
     gap: 10px;
     width: 970px;
     min-height: 224px;
@@ -316,7 +316,7 @@ export const ChatInputBox = styled(Box)`
         font-family: 'S-Core Dream', sans-serif;
         font-size: 18px;
         line-height: 180%;
-        width: 930px;
+        width: 775px;
         min-height: 32px;
         max-height: 274px;
         overflow-y: auto;
