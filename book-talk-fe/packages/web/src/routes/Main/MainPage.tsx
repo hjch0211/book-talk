@@ -16,6 +16,28 @@ import {useSuspenseQuery} from "@tanstack/react-query";
 import {meQueryOption} from "../../apis/account";
 import CreateDebateModal from "./_components/CreateDebateModal/CreateDebateModal.tsx";
 
+const TextSection = () => {
+    const {data: me} = useSuspenseQuery(meQueryOption);
+
+    return (
+        <MainTextWrapper>
+            <MainText>
+                {me ? (
+                    <>
+                        안녕하세요 {me.name}님<br/>
+                        아래 버튼을 눌러 토론을 시작해보세요!
+                    </>
+                ) : (
+                    <>
+                        이제는 BOOKTALK과 함께<br/>
+                        온라인으로 독서토론을 즐겨요!
+                    </>
+                )}
+            </MainText>
+        </MainTextWrapper>
+    );
+};
+
 const ButtonSection = () => {
     const {data: me} = useSuspenseQuery(meQueryOption);
     const {openModal} = useModal();
@@ -47,12 +69,9 @@ export function MainPage() {
             <MainContainer>
                 <MainHeader/>
                 <MainTextContainer>
-                    <MainTextWrapper>
-                        <MainText>
-                            이제는 BOOKTALK과 함께<br/>
-                            온라인으로 독서토론을 즐겨요!
-                        </MainText>
-                    </MainTextWrapper>
+                    <Suspense fallback={<></>}>
+                        <TextSection/>
+                    </Suspense>
 
                     <ButtonContainer>
                         <Suspense fallback={<></>}>
