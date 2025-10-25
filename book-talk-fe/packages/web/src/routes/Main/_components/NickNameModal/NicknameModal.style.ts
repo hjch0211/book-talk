@@ -16,17 +16,15 @@ export const ModalContainer = styled(Box)`
 export const ContentWrapper = styled(Box)`
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 60px;
     width: 564px;
 `;
 
 export const ModalTitle = styled(Typography)`
     font-family: 'S-Core Dream', sans-serif;
-    font-weight: 600;
+    font-weight: 500;
     font-size: 28px;
     line-height: 125%;
-    text-align: center;
     letter-spacing: 0.3px;
     color: #000000;
 `;
