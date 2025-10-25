@@ -21,12 +21,12 @@ interface NicknameModalProps {
 }
 
 const NicknameModal = ({
-    open,
-    onClose,
-    onSubmit,
-    isLoading = false,
-    loadingMessage
-}: NicknameModalProps) => {
+                           open,
+                           onClose,
+                           onSubmit,
+                           isLoading = false,
+                           loadingMessage
+                       }: NicknameModalProps) => {
     const [nickname, setNickname] = useState('');
 
     const handleSubmit = () => {
@@ -51,14 +51,15 @@ const NicknameModal = ({
             <ModalContainer>
                 <ContentWrapper>
                     <ModalTitle>
-                        닉네임을 입력해주세요
+                        토론방에서 사용할 닉네임을 입력해주세요
                     </ModalTitle>
 
                     <InputWrapper>
                         <StyledTextField
                             fullWidth
                             variant="outlined"
-                            placeholder="닉네임"
+                            placeholder="최대 5글자"
+                            inputProps={{maxLength: 5}}
                             value={nickname}
                             onChange={(e) => setNickname(e.target.value)}
                             onKeyDown={(e) => {
