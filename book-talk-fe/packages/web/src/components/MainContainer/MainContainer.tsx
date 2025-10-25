@@ -15,7 +15,7 @@ const MainContainer = ({children, isAuthPage = false}: MainContainerProps) => {
 
     useEffect(() => {
         if (!isLoading && isAuthPage && !account) {
-            navigate('/');
+            navigate('/?auth=false');
         }
     }, [isAuthPage, account, isLoading, navigate])
 

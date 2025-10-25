@@ -53,7 +53,7 @@ const handleErrorResponse = (error: AxiosError): Promise<never> => {
         if (status === 401) {
             localStorage.removeItem('accessToken');
             localStorage.removeItem('refreshToken');
-            window.location.replace('/')
+            window.location.replace('/?auth=false');
         }
 
         throw new ApiError(
