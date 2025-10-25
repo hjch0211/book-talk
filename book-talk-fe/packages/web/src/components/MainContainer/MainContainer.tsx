@@ -6,7 +6,6 @@ import {StyledContainer} from "./MainContainer.style.ts";
 
 interface MainContainerProps {
     children: ReactNode;
-    bgColor?: string;
     isAuthPage?: boolean;
 }
 

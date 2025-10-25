@@ -202,7 +202,7 @@ export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
         void checkPermission();
     }, []);
 
-    // 자동으로 음성 채팅 참여 (VoiceChatManager 초기화 후, 마이크 권한 있을 때만)
+    // 토론 참여 시 자동으로 음성 채팅 참여 (마이크 권한 있을 때만)
     useEffect(() => {
         // VoiceChatManager가 초기화되고 마이크 권한이 있을 때만 자동 참여 시도
         if (!voiceChatManagerRef.current || isJoined || isConnecting || !hasMicPermission) {
@@ -210,17 +210,17 @@ export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
         }
 
         const timer = setTimeout(async () => {
-            console.log('Auto-joining voice chat...');
+            console.log('🎤 Auto-joining voice chat (debate participation detected)...');
             try {
                 await joinVoiceChat();
             } catch (error) {
-                // 마이크 권한 거부 시 조용히 무시 (사용자가 수동으로 참여 가능)
+                // 마이크 권한 거부 시 조용히 무시 (사용자가 마이크 버튼으로 권한 요청 가능)
                 if (error instanceof Error) {
                     if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
-                        console.warn('Microphone permission denied. User can join manually via mic button.');
+                        console.warn('⚠️ Microphone permission denied. User can grant permission via mic button.');
                         setHasMicPermission(false);
                     } else {
-                        console.error('Failed to auto-join voice chat:', error);
+                        console.error('❌ Failed to auto-join voice chat:', error);
                     }
                 }
             }

@@ -174,3 +174,8 @@ sequenceDiagram
 - **PREPARATION**: 토론 준비 단계 (발표 자료 작성)
 - **PRESENTATION**: 순차적 발표 단계 (자동 진행)
 - **FREE**: 자유 토론 단계 (수동 진행, 손들기 기능 활용)
+
+#### voice chat
+
+- 미디어 스트림은 WebRTC를 통해 P2P로 직접 전송
+- 시그널링 서버는 Socket.IO를 사용하여 연결 설정 및 제어 메시지 전달 담당

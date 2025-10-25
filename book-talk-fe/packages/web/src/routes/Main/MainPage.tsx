@@ -1,5 +1,6 @@
 import {Suspense} from 'react';
 import MainContainer from '../../components/MainContainer/MainContainer';
+import PageWrapper from '../../components/PageWrapper/PageWrapper';
 import LoginNicknameModal from './_components/NickNameModal/LoginNicknameModal.tsx';
 import {useModal} from '../../hooks/useModal';
 import {
@@ -42,22 +43,24 @@ const ButtonSection = () => {
 
 export function MainPage() {
     return (
-        <MainContainer>
-            <MainHeader/>
-            <MainTextContainer>
-                <MainTextWrapper>
-                    <MainText>
-                        이제는 BOOKTALK과 함께<br/>
-                        온라인으로 독서토론을 즐겨요!
-                    </MainText>
-                </MainTextWrapper>
+        <PageWrapper bgColor="linear-gradient(180deg, #FFFFFF 39.9%, #FBEAE7 100%)">
+            <MainContainer>
+                <MainHeader/>
+                <MainTextContainer>
+                    <MainTextWrapper>
+                        <MainText>
+                            이제는 BOOKTALK과 함께<br/>
+                            온라인으로 독서토론을 즐겨요!
+                        </MainText>
+                    </MainTextWrapper>
 
-                <ButtonContainer>
-                    <Suspense fallback={<></>}>
-                        <ButtonSection/>
-                    </Suspense>
-                </ButtonContainer>
-            </MainTextContainer>
-        </MainContainer>
+                    <ButtonContainer>
+                        <Suspense fallback={<></>}>
+                            <ButtonSection/>
+                        </Suspense>
+                    </ButtonContainer>
+                </MainTextContainer>
+            </MainContainer>
+        </PageWrapper>
     );
 }

@@ -11,6 +11,7 @@ import {DebateContainer} from './Debate.style';
 import {useDebate} from "../../hooks/useDebate.tsx";
 import StartDebateModal from "./_components/StartDebateModal.tsx";
 import {VoiceChatProvider} from "../../contexts/VoiceChatContext";
+import {VoiceAudioRenderer} from "./_components/VoiceAudioRenderer.tsx";
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
@@ -129,6 +130,9 @@ function DebatePageContent({debateId}: Props) {
                         roundType={showRoundStartBackdrop.type}
                         onClose={closeRoundStartBackdrop}
                     />
+
+                    {/* WebRTC 원격 오디오 재생 */}
+                    <VoiceAudioRenderer/>
                 </DebateContainer>
             </VoiceChatProvider>
         </MainContainer>

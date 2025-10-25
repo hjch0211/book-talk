@@ -33,7 +33,14 @@ interface Props {
     };
 }
 
-export function DebatePresentation({currentRoundInfo, currentSpeaker, debateId, myAccountId, onChatMessage, chat}: Props) {
+export function DebatePresentation({
+                                       currentRoundInfo,
+                                       currentSpeaker,
+                                       debateId,
+                                       myAccountId,
+                                       onChatMessage,
+                                       chat
+                                   }: Props) {
     const [showYoutubeDialog, setShowYoutubeDialog] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
     const [showImageDialog, setShowImageDialog] = useState(false);

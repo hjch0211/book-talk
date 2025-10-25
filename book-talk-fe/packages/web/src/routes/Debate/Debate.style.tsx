@@ -149,11 +149,11 @@ export const PresentationArea = styled.div`
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 60px 90px 100px 60px;
+    padding: 20px;
     gap: 10px;
     width: 970px;
     min-height: 224px;
-    max-height: 80vh; /* 뷰포트 높이의 80%까지만 늘어남 */
+    max-height: calc(100vh - 200px - 180px); /* 100vh - top(200px) - chatInput영역(180px) */
     background: #FFFFFF;
     box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
     border-radius: 24px;
@@ -282,25 +282,25 @@ export const PresentationArea = styled.div`
 
 export const ChatInputContainer = styled(Box)`
     position: absolute;
-    width: 1440px;
+    width: 970px;
+    left: 120px;
     min-height: 138px;
     max-height: 400px;
-    left: calc(50% - 1440px / 2);
     bottom: 0;
     display: flex;
-    flex-direction: column;
-    justify-content: flex-end;
-    align-items: stretch;
-    padding: 22px 120px 36px;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    padding: 22px 0;
     background: linear-gradient(360deg, #FFFFFF 89.9%, rgba(255, 255, 255, 0) 100%);
 `;
 
 export const ChatInputBox = styled(Box)`
-    flex: 1;
     background-color: #E9E9E9;
     border-radius: 16px;
     padding: 13px 23px;
-    width: 100%;
+    width: 820px;
     min-height: 45px;
     max-height: 300px;
     display: flex;
@@ -316,7 +316,7 @@ export const ChatInputBox = styled(Box)`
         font-family: 'S-Core Dream', sans-serif;
         font-size: 18px;
         line-height: 180%;
-        width: 1080px;
+        width: 930px;
         min-height: 32px;
         max-height: 274px;
         overflow-y: auto;
