@@ -132,7 +132,7 @@ export function DebatePresentation({
         return (
             <>
                 <MainContent>
-                    <PresentationArea>
+                    <PresentationArea $isChatMode={true}>
                         <ChatMessageList
                             chats={chats}
                             myAccountId={myAccountId!}
@@ -152,7 +152,7 @@ export function DebatePresentation({
     if (!currentRoundInfo.isEditable && !currentSpeaker) {
         return (
             <MainContent>
-                <PresentationArea>
+                <PresentationArea $isChatMode={false}>
                     <div>{`발표페이지가 없습니다.`}</div>
                 </PresentationArea>
             </MainContent>
@@ -163,7 +163,7 @@ export function DebatePresentation({
     if (!currentRoundInfo.currentPresentationId) {
         return (
             <MainContent>
-                <PresentationArea>
+                <PresentationArea $isChatMode={false}>
                     <div>발표 페이지를 로딩 중...</div>
                 </PresentationArea>
             </MainContent>
@@ -177,7 +177,7 @@ export function DebatePresentation({
                 isEditable={currentRoundInfo.isEditable}
                 isSaving={isSaving}
             />
-            <PresentationArea>
+            <PresentationArea $isChatMode={false}>
                 <EditorContent editor={editor}/>
 
                 {/* 이미지 추가 다이얼로그 */}
