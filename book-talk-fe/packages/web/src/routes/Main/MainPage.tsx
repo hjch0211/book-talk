@@ -1,4 +1,5 @@
-import {Suspense} from 'react';
+import {Suspense, useEffect, useState} from 'react';
+import {useSearchParams} from 'react-router-dom';
 import MainContainer from '../../components/MainContainer/MainContainer';
 import PageWrapper from '../../components/PageWrapper/PageWrapper';
 import LoginNicknameModal from './_components/NickNameModal/LoginNicknameModal.tsx';
@@ -15,6 +16,7 @@ import MainHeader from "../../components/MainHeader/MainHeader.tsx";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {meQueryOption} from "../../apis/account";
 import CreateDebateModal from "./_components/CreateDebateModal/CreateDebateModal.tsx";
+import AuthRequiredModal from "../Debate/_components/AuthRequiredModal.tsx";
 
 const TextSection = () => {
     const {data: me} = useSuspenseQuery(meQueryOption);
@@ -64,22 +66,44 @@ const ButtonSection = () => {
 };
 
 export function MainPage() {
-    return (
-        <PageWrapper bgColor="linear-gradient(180deg, #FFFFFF 39.9%, #FBEAE7 100%)">
-            <MainContainer>
-                <MainHeader/>
-                <MainTextContainer>
-                    <Suspense fallback={<></>}>
-                        <TextSection/>
-                    </Suspense>
+    const [searchParams] = useSearchParams();
+    const [showAuthModal, setShowAuthModal] = useState(false);
+    const {openModal} = useModal();
 
-                    <ButtonContainer>
+    useEffect(() => {
+        const authParam = searchParams.get('auth');
+        if (authParam === 'false') {
+            setShowAuthModal(true);
+        }
+    }, [searchParams]);
+
+    const handleLogin = () => {
+        openModal(LoginNicknameModal);
+    };
+
+    return (
+        <>
+            <AuthRequiredModal
+                open={showAuthModal}
+                onClose={() => setShowAuthModal(false)}
+                onLoginClick={handleLogin}
+            />
+            <PageWrapper bgColor="linear-gradient(180deg, #FFFFFF 39.9%, #FBEAE7 100%)">
+                <MainContainer>
+                    <MainHeader/>
+                    <MainTextContainer>
                         <Suspense fallback={<></>}>
-                            <ButtonSection/>
+                            <TextSection/>
                         </Suspense>
-                    </ButtonContainer>
-                </MainTextContainer>
-            </MainContainer>
-        </PageWrapper>
+
+                        <ButtonContainer>
+                            <Suspense fallback={<></>}>
+                                <ButtonSection/>
+                            </Suspense>
+                        </ButtonContainer>
+                    </MainTextContainer>
+                </MainContainer>
+            </PageWrapper>
+        </>
     );
 }

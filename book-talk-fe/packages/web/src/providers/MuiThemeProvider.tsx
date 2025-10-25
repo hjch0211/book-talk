@@ -10,9 +10,8 @@ import {createTheme, responsiveFontSizes, ThemeProvider} from "@mui/material/sty
 import {appColor} from "../constants/color.ts";
 import {breakPoints} from "../constants/breakPoints.ts";
 
-// TODO 폰트 등 피그마 내용 적용하기
 const muiTypographyConfig: TypographyVariantsOptions = {
-    fontFamily: ["SpoqaHanSansNeo-Regular", "sans-serif"].join(","),
+    fontFamily: ["S-Core Dream", "SpoqaHanSansNeo-Regular", "sans-serif"].join(","),
     h1: {fontSize: 80, color: appColor.primary, fontFamily: "Jua"},
     h2: {fontSize: 26, color: appColor.primary, fontFamily: "Jua"},
     body1: {fontSize: 16, letterSpacing: "2px"},
