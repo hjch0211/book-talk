@@ -2,6 +2,7 @@ import {useMutation, useQueryClient, useSuspenseQuery} from "@tanstack/react-que
 import {findOneDebateQueryOptions, type FindOneDebateResponse, joinDebate} from "../apis/debate";
 import {meQueryOption} from "../apis/account";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
+import {useNavigate} from "react-router-dom";
 import {useDebateRound, type UseDebateRoundReturn} from "./useDebateRound";
 import {useDebateWebSocket} from "./useDebateWebSocket";
 import {useDebateChat} from "./useDebateChat";
@@ -68,6 +69,7 @@ export interface UseDebateReturn {
  */
 export const useDebate = ({debateId}: Props): UseDebateReturn => {
     const queryClient = useQueryClient();
+    const navigate = useNavigate();
     const {data: debate} = useSuspenseQuery(findOneDebateQueryOptions(debateId));
     const {data: _me} = useSuspenseQuery(meQueryOption);
     const joinAttempted = useRef<Set<string>>(new Set());
@@ -106,6 +108,9 @@ export const useDebate = ({debateId}: Props): UseDebateReturn => {
         mutationFn: (debateId: string) => joinDebate({debateId}),
         onSuccess: () => {
             void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions(debateId).queryKey});
+        },
+        onError: () => {
+            navigate('/debate-full');
         }
     });
 
