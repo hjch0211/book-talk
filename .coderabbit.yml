@@ -11,8 +11,10 @@ reviews:
 
   # path 별 리뷰 지시사항
   path_instructions:
+    # ============ Backend (Kotlin/Spring Boot) ============
+
     # 전체 Kotlin 코드 리뷰
-    - path: "**/*.kt"
+    - path: "book-talk-be/**/*.kt"
       instructions: |
         "전체 코틀린 코드에 대해 다음 기준에 따라 리뷰해주세요!
 
@@ -31,7 +33,7 @@ reviews:
         또한 코틀린 관용구, null 처리, 불변성(val 사용), 확장 함수 활용 등 코틀린답게 작성되었는지도 함께 검토해주세요."
 
     # Data 모듈 - Entity & Repository
-    - path: "**/data/src/main/kotlin/kr/co/booktalk/domain/**/*.kt"
+    - path: "book-talk-be/_data/src/main/kotlin/kr/co/booktalk/domain/**/*.kt"
       instructions: |
         "엔티티는 아래 사항을 확인해주세요!
         - @Entity, @Table 설정이 적절한가요?
@@ -48,7 +50,7 @@ reviews:
         - Spring Data JPA의 기능을 잘 활용하고 있나요?"
 
     # API 모듈 - Service
-    - path: "**/api/src/main/kotlin/kr/co/booktalk/domain/**/*Service.kt"
+    - path: "book-talk-be/_api/src/main/kotlin/kr/co/booktalk/domain/**/*Service.kt"
       instructions: |
         "서비스는 아래 사항을 확인해주세요!
         - 비즈니스 로직의 책임이 명확하고 도메인 중심적인가요?
@@ -60,7 +62,7 @@ reviews:
         - 도메인 로직과 인프라 로직이 적절히 분리되어 있나요?"
 
     # API 모듈 - Controller
-    - path: "**/api/src/main/kotlin/kr/co/booktalk/domain/**/*Controller.kt"
+    - path: "book-talk-be/_api/src/main/kotlin/kr/co/booktalk/domain/**/*Controller.kt"
       instructions: |
         "컨트롤러는 아래 사항을 확인해주세요!
         - @RestController와 @RequestMapping 설정이 적절한가요?
@@ -72,7 +74,7 @@ reviews:
         - API 문서화를 위한 정보가 충분한가요?"
 
     # API 모듈 - Request/Response DTOs & Validators
-    - path: "**/api/src/main/kotlin/kr/co/booktalk/domain/**/_*.kt"
+    - path: "book-talk-be/_api/src/main/kotlin/kr/co/booktalk/domain/**/_*.kt"
       instructions: |
         "DTO 및 Validator 파일은 아래 사항을 확인해주세요!
         - Request/Response DTO가 명확하게 분리되어 있나요?
@@ -81,8 +83,21 @@ reviews:
         - 비즈니스 규칙이 명확하게 검증되고 있나요?
         - 에러 메시지가 사용자 친화적인가요?"
 
+    # API 모듈 - WebSocket Handler
+    - path: "book-talk-be/_api/src/main/kotlin/kr/co/booktalk/domain/webSocket/**/*.kt"
+      instructions: |
+        "WebSocket 핸들러는 아래 사항을 확인해주세요!
+        - WebSocket 연결/해제 시 리소스 정리가 적절한가요?
+        - 메시지 타입별 처리가 명확하게 분리되어 있나요?
+        - 인증 검증이 올바르게 이루어지나요? (accountId 매칭)
+        - 브로드캐스트 로직이 thread-safe한가요?
+        - 세션 관리가 안전한가요? (ConcurrentHashMap 사용)
+        - WebRTC signaling 메시지가 올바르게 중계되나요?
+        - 에러 처리가 적절한가요? (연결 끊김, 메시지 파싱 실패 등)
+        - 로그가 충분하고 명확한가요?"
+
     # Config 설정 파일들
-    - path: "**/src/main/kotlin/kr/co/booktalk/config/**/*.kt"
+    - path: "book-talk-be/_api/src/main/kotlin/kr/co/booktalk/config/**/*.kt"
       instructions: |
         "설정 클래스는 아래 사항을 확인해주세요!
         - @Configuration, @EnableJpaAuditing 등 설정 어노테이션이 적절한가요?
@@ -92,7 +107,7 @@ reviews:
         - DataSource, JPA 설정이 프로덕션에 적합한가요?"
 
     # Lib 모듈 - 공통 유틸리티
-    - path: "**/lib/src/main/kotlin/kr/co/booktalk/**/*.kt"
+    - path: "book-talk-be/_lib/src/main/kotlin/kr/co/booktalk/**/*.kt"
       instructions: |
         "라이브러리 모듈은 아래 사항을 확인해주세요!
         - 공통 기능이 잘 추상화되어 있나요?
@@ -104,7 +119,7 @@ reviews:
         - 에러 처리가 일관되게 되어 있나요?"
 
     # 테스트 코드
-    - path: "**/src/test/kotlin/**/*Test.kt"
+    - path: "book-talk-be/**/src/test/kotlin/**/*Test.kt"
       instructions: |
         "테스트 코드는 아래 사항을 확인해주세요!
         - @SpringBootTest, @DataJpaTest 등 테스트 어노테이션이 적절한가요?
@@ -116,7 +131,7 @@ reviews:
         - 통합 테스트와 단위 테스트가 적절히 분리되어 있나요?"
 
     # 설정 파일
-    - path: "**/src/main/resources/application*.yaml"
+    - path: "book-talk-be/_api/src/main/resources/application*.yaml"
       instructions: |
         "설정 파일은 아래 사항을 확인해주세요!
         - 프로파일 분리가 잘 되어있나요? (local, dev, prod 등)
@@ -126,17 +141,8 @@ reviews:
         - 로깅 레벨이 환경별로 적절한가요?
         - JWT 설정이 안전하게 구성되어 있나요?"
 
-    # 환경 변수 파일
-    - path: "**/.env*"
-      instructions: |
-        "환경 변수 파일은 아래 사항을 확인해주세요!
-        - 민감한 정보(비밀번호, 시크릿 키)가 안전하게 관리되나요?
-        - .gitignore에 포함되어 있나요?
-        - 예제 파일(.env.example)이 제공되나요?
-        - 변수명이 명확하고 일관성 있나요?"
-
     # SQL 스키마 파일
-    - path: "**/resources/schema/**/*.sql"
+    - path: "book-talk-be/_data/src/main/resources/schema/**/*.sql"
       instructions: |
         "SQL 스키마는 아래 사항을 확인해주세요!
         - 테이블 구조가 엔티티와 일치하나요?
@@ -146,13 +152,141 @@ reviews:
         - NOT NULL, UNIQUE 제약이 비즈니스 규칙과 일치하나요?"
 
     # Gradle 빌드 파일
-    - path: "**/build.gradle.kts"
+    - path: "book-talk-be/**/build.gradle.kts"
       instructions: |
         "Gradle 설정은 아래 사항을 확인해주세요!
         - 의존성 버전이 최신이면서 안정적인가요?
         - 불필요한 의존성은 없나요?
         - 모듈 간 의존성이 명확한가요?
         - 플러그인 설정이 적절한가요?"
+
+    # ============ Frontend (React/TypeScript) ============
+
+    # 전체 TypeScript/TSX 코드 리뷰
+    - path: "book-talk-fe/**/*.{ts,tsx}"
+      instructions: |
+        "TypeScript 코드에 대해 다음 기준에 따라 리뷰해주세요!
+
+        📌 코드 품질:
+        - 타입 안정성이 충분한가요? any 사용을 피하고 있나요?
+        - 로직 오류나 예외 상황은 없는지요?
+        - 성능 최적화 여지는 없나요? (useMemo, useCallback, React.memo)
+        - 불필요한 리렌더링은 없나요?
+
+        🔧 유지보수성:
+        - 컴포넌트 책임이 명확한가요? 너무 큰 컴포넌트는 없나요?
+        - Custom hooks로 로직을 잘 분리했나요?
+        - 에러 처리가 적절한가요?
+        - 코드 중복은 없나요?"
+
+    # React 컴포넌트
+    - path: "book-talk-fe/packages/web/src/routes/**/*.tsx"
+      instructions: |
+        "React 컴포넌트는 아래 사항을 확인해주세요!
+        - 컴포넌트가 단일 책임 원칙을 따르나요?
+        - Props 타입이 명확하게 정의되어 있나요?
+        - useEffect의 의존성 배열이 올바른가요?
+        - 조건부 렌더링 로직이 명확한가요?
+        - 접근성(a11y)을 고려했나요?
+        - 에러 바운더리가 필요한가요?
+        - Loading/Error 상태 처리가 적절한가요?"
+
+    # Custom Hooks
+    - path: "book-talk-fe/packages/web/src/hooks/**/*.ts"
+      instructions: |
+        "Custom Hooks는 아래 사항을 확인해주세요!
+        - Hook의 책임이 명확하고 재사용 가능한가요?
+        - 의존성 배열이 올바르게 설정되어 있나요?
+        - 메모리 누수 방지를 위한 cleanup이 있나요?
+        - 반환값이 명확하게 타입 정의되어 있나요?
+        - Hook 네이밍이 use로 시작하나요?
+        - 상태 업데이트가 안전한가요? (함수형 업데이트)"
+
+    # Context & Providers
+    - path: "book-talk-fe/packages/web/src/contexts/**/*.tsx"
+      instructions: |
+        "Context는 아래 사항을 확인해주세요!
+        - Context의 범위가 적절한가요? (전역 vs 지역)
+        - Provider 컴포넌트가 불필요한 리렌더링을 유발하지 않나요?
+        - Context value가 useMemo로 최적화되어 있나요?
+        - useContext hook이 Provider 외부에서 사용될 때 에러를 던지나요?
+        - 초기값이 명확하게 정의되어 있나요?"
+
+    # API 클라이언트
+    - path: "book-talk-fe/packages/web/src/apis/**/*.ts"
+      instructions: |
+        "API 클라이언트는 아래 사항을 확인해주세요!
+        - HTTP 메서드와 엔드포인트가 올바른가요?
+        - 에러 처리가 일관되게 되어 있나요?
+        - 타입 정의가 백엔드 API와 일치하나요?
+        - 인증 토큰 처리가 안전한가요?
+        - 요청/응답 타입이 명확한가요?
+        - timeout 설정이 적절한가요?"
+
+    # WebSocket 클라이언트
+    - path: "book-talk-fe/packages/web/src/apis/websocket/**/*.ts"
+      instructions: |
+        "WebSocket 클라이언트는 아래 사항을 확인해주세요!
+        - 연결/재연결 로직이 안전한가요?
+        - 메시지 타입 검증이 적절한가요? (Zod schema)
+        - 연결 끊김 시 cleanup이 올바른가요?
+        - 재연결 시 상태 복구가 되나요?
+        - 메시지 핸들러가 명확하게 분리되어 있나요?
+        - 에러 처리가 적절한가요?
+        - 하트비트 로직이 있나요?"
+
+    # WebRTC Manager
+    - path: "book-talk-fe/packages/web/src/apis/webrtc/**/*.ts"
+      instructions: |
+        "WebRTC 코드는 아래 사항을 확인해주세요!
+        - Peer connection 생성/종료가 올바른가요?
+        - ICE candidate 처리가 적절한가요?
+        - Offer/Answer 교환 로직이 올바른가요?
+        - MediaStream 관리가 안전한가요? (cleanup)
+        - 연결 상태 모니터링이 있나요? (connectionState, iceConnectionState)
+        - STUN/TURN 서버 설정이 적절한가요?
+        - 동시 offer 충돌 방지(glare prevention)가 되어 있나요?
+        - 오디오 설정이 적절한가요? (echo cancellation, noise suppression)
+        - 리소스 누수가 없나요? (AudioContext cleanup)"
+
+    # TypeScript 타입 정의
+    - path: "book-talk-fe/packages/web/src/types/**/*.ts"
+      instructions: |
+        "타입 정의는 아래 사항을 확인해주세요!
+        - 타입이 명확하고 재사용 가능한가요?
+        - any나 unknown 사용이 적절한가요?
+        - 유니온 타입과 인터섹션 타입이 올바르게 사용되었나요?
+        - 제네릭 사용이 적절한가요?
+        - 타입 가드가 필요한가요?"
+
+    # Vite/환경 설정
+    - path: "book-talk-fe/packages/web/vite.config.ts"
+      instructions: |
+        "Vite 설정은 아래 사항을 확인해주세요!
+        - 빌드 최적화 설정이 적절한가요?
+        - 환경 변수 처리가 올바른가요?
+        - 플러그인 설정이 적절한가요?
+        - 프록시 설정이 필요한가요?
+        - Production 빌드 설정이 최적화되어 있나요?"
+
+    # 환경 변수 파일
+    - path: "**/.env*"
+      instructions: |
+        "환경 변수 파일은 아래 사항을 확인해주세요!
+        - 민감한 정보(비밀번호, 시크릿 키)가 안전하게 관리되나요?
+        - .gitignore에 포함되어 있나요?
+        - 예제 파일(.env.example)이 제공되나요?
+        - 변수명이 명확하고 일관성 있나요?
+        - 프론트엔드 환경변수는 VITE_ prefix를 사용하나요?"
+
+    # Package.json
+    - path: "book-talk-fe/**/package.json"
+      instructions: |
+        "package.json은 아래 사항을 확인해주세요!
+        - 의존성 버전이 적절한가요?
+        - devDependencies와 dependencies가 올바르게 분리되어 있나요?
+        - 스크립트 명령어가 명확한가요?
+        - 불필요한 패키지는 없나요?"
 
   auto_review:
     enabled: true
