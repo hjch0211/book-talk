@@ -13,7 +13,7 @@ import {
     MainTextWrapper
 } from './Main.style.tsx';
 import MainHeader from "../../components/MainHeader/MainHeader.tsx";
-import {useSuspenseQuery} from "@tanstack/react-query";
+import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
 import {meQueryOption} from "../../apis/account";
 import CreateDebateModal from "./_components/CreateDebateModal/CreateDebateModal.tsx";
 import AuthRequiredModal from "../Debate/_components/AuthRequiredModal.tsx";
@@ -69,13 +69,14 @@ export function MainPage() {
     const [searchParams] = useSearchParams();
     const [showAuthModal, setShowAuthModal] = useState(false);
     const {openModal} = useModal();
+    const {data: me, isError} = useQuery(meQueryOption);
 
     useEffect(() => {
         const authParam = searchParams.get('auth');
-        if (authParam === 'false') {
+        if ((authParam === 'false' && isError) && !me) {
             setShowAuthModal(true);
         }
-    }, [searchParams]);
+    }, [searchParams, me, isError]);
 
     const handleLogin = () => {
         openModal(LoginNicknameModal);
