@@ -5,6 +5,7 @@ export const useVoiceChat = () => {
 
     return {
         participants: context.participants,
+        myAccountId: context.myAccountId,
         isJoined: context.isJoined,
         isMuted: context.isMuted,
         isConnecting: context.isConnecting,

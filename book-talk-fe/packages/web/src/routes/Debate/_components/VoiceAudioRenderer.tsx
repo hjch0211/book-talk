@@ -7,13 +7,17 @@ import { useVoiceChat } from '../../../hooks/useVoiceChat';
  * - remoteStream을 자동으로 재생
  */
 export function VoiceAudioRenderer() {
-    const { participants, getRemoteStream } = useVoiceChat();
+    const { participants, myAccountId, getRemoteStream } = useVoiceChat();
 
-    console.log('🎵 VoiceAudioRenderer: Current participants:', participants);
+    // 자기 자신을 제외한 원격 참가자만 렌더링
+    const remoteParticipants = participants.filter(p => p.accountId !== myAccountId);
+
+    console.log('🎵 VoiceAudioRenderer: All participants:', participants);
+    console.log('🎵 VoiceAudioRenderer: Remote participants (excluding self):', remoteParticipants);
 
     return (
         <>
-            {participants.map(participant => (
+            {remoteParticipants.map(participant => (
                 <RemoteAudio
                     key={participant.accountId}
                     participantId={participant.accountId}

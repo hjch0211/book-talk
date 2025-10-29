@@ -166,6 +166,7 @@ export const useDebate = ({debateId}: Props): UseDebateReturn => {
         debateId || null,
         debate.members,
         myMemberData.id,
+        currentRoundInfo.type === 'FREE',
         {
             onRoundStartBackdrop: handleRoundStartBackdrop,
             onVoiceSignaling: handleVoiceSignalingWrapper
