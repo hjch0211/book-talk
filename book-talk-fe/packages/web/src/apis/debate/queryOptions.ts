@@ -11,7 +11,7 @@ export const findOneDebateQueryOptions = (debateId?: string) => queryOptions({
 });
 
 export const getChatsQueryOptions = (debateId?: string, isFreeRound?: boolean, isAlreadyMember?: boolean) => queryOptions({
-    queryKey: ['debates', debateId, 'chats'],
+    queryKey: ['debates', debateId, 'chats', isFreeRound],
     queryFn: () => getChats(debateId!),
     enabled: !!debateId && isFreeRound && isAlreadyMember,
     staleTime: 1000 * 60 * 5, // 5 minutes

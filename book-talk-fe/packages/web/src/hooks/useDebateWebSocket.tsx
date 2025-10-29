@@ -2,12 +2,12 @@ import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useQueryClient} from "@tanstack/react-query";
 import {
     DebateWebSocketClient,
+    type RaisedHandInfo,
     type WebSocketMessage,
-    type WS_SpeakerUpdateResponse,
     type WS_DebateRoundUpdateResponse,
-    type RaisedHandInfo
+    type WS_SpeakerUpdateResponse
 } from "../apis/websocket";
-import {findOneDebateQueryOptions, type MemberInfo} from "../apis/debate";
+import {findOneDebateQueryOptions, getChatsQueryOptions, type MemberInfo} from "../apis/debate";
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
@@ -34,6 +34,7 @@ export const useDebateWebSocket = (
     debateId: string | null,
     members: MemberInfo[],
     myAccountId: string | undefined,
+    isFreeRound: boolean,
     options?: UseDebateWebSocketOptions
 ) => {
     const queryClient = useQueryClient();
@@ -80,6 +81,10 @@ export const useDebateWebSocket = (
         onPresenceUpdate: (onlineIds: Set<string>) => {
             console.log('Received online account IDs:', onlineIds);
             setOnlineAccountIds(onlineIds);
+
+            if (debateId) {
+                void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions(debateId).queryKey});
+            }
         },
         onConnectionStatus: (connected: boolean) => {
             console.log('Connection status changed:', connected);
@@ -96,11 +101,11 @@ export const useDebateWebSocket = (
             console.log('Received chat message:', chatId);
             if (debateId) {
                 void queryClient.invalidateQueries({
-                    queryKey: ['debates', debateId, 'chats']
+                    queryKey: getChatsQueryOptions(debateId, isFreeRound, true).queryKey
                 });
             }
         }
-    }), [handleSpeakerUpdate, handleDebateRoundUpdate, handleVoiceSignaling, debateId, queryClient]);
+    }), [handleSpeakerUpdate, handleDebateRoundUpdate, handleVoiceSignaling, debateId, isFreeRound, queryClient]);
 
     /** WebSocket 연결 및 관리 */
     useEffect(() => {
