@@ -86,6 +86,7 @@ function RemoteAudio({ participantId, participantName, getRemoteStream }: Remote
             ref={audioRef}
             autoPlay
             playsInline
+            muted={false}
             style={{ display: 'none' }}
             data-participant-id={participantId}
             data-participant-name={participantName}

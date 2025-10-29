@@ -487,7 +487,16 @@ class ApiWebSocketHandler(
             }
 
             if (targetSession != null) {
-                val messageJson = objectMapper.writeValueAsString(request)
+                // Create new message with provider: "API" and preserve all required fields
+                val relayedMessage = mapOf(
+                    "type" to "VOICE_OFFER",
+                    "provider" to "API",
+                    "debateId" to request.debateId,
+                    "fromId" to request.fromId,
+                    "toId" to request.toId,
+                    "offer" to request.offer
+                )
+                val messageJson = objectMapper.writeValueAsString(relayedMessage)
                 sendTextMessage(targetSession, messageJson)
             } else {
                 logger.warn { "Offer 전달 실패: 대상 세션을 찾을 수 없음 toId=${request.toId}" }
@@ -520,7 +529,16 @@ class ApiWebSocketHandler(
             }
 
             if (targetSession != null) {
-                val messageJson = objectMapper.writeValueAsString(request)
+                // Create new message with provider: "API" and preserve all required fields
+                val relayedMessage = mapOf(
+                    "type" to "VOICE_ANSWER",
+                    "provider" to "API",
+                    "debateId" to request.debateId,
+                    "fromId" to request.fromId,
+                    "toId" to request.toId,
+                    "answer" to request.answer
+                )
+                val messageJson = objectMapper.writeValueAsString(relayedMessage)
                 sendTextMessage(targetSession, messageJson)
             } else {
                 logger.warn { "Answer 전달 실패: 대상 세션을 찾을 수 없음 toId=${request.toId}" }
@@ -553,7 +571,16 @@ class ApiWebSocketHandler(
             }
 
             if (targetSession != null) {
-                val messageJson = objectMapper.writeValueAsString(request)
+                // Create new message with provider: "API" and preserve all required fields
+                val relayedMessage = mapOf(
+                    "type" to "VOICE_ICE",
+                    "provider" to "API",
+                    "debateId" to request.debateId,
+                    "fromId" to request.fromId,
+                    "toId" to request.toId,
+                    "iceCandidate" to request.iceCandidate
+                )
+                val messageJson = objectMapper.writeValueAsString(relayedMessage)
                 sendTextMessage(targetSession, messageJson)
             } else {
                 logger.warn { "ICE candidate 전달 실패: 대상 세션을 찾을 수 없음 toId=${request.toId}" }

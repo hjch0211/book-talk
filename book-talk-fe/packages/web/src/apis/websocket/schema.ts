@@ -145,7 +145,7 @@ export const WS_VoiceLeaveMessageSchema = z.object({
 
 export const WS_VoiceOfferMessageSchema = z.object({
     type: z.literal('VOICE_OFFER'),
-    provider: z.literal('CLIENT'),
+    provider: z.string().optional(),  // CLIENT when sending, API when receiving relay
     debateId: z.string(),
     fromId: z.string(),
     toId: z.string(),
@@ -154,7 +154,7 @@ export const WS_VoiceOfferMessageSchema = z.object({
 
 export const WS_VoiceAnswerMessageSchema = z.object({
     type: z.literal('VOICE_ANSWER'),
-    provider: z.literal('CLIENT'),
+    provider: z.string().optional(),  // CLIENT when sending, API when receiving relay
     debateId: z.string(),
     fromId: z.string(),
     toId: z.string(),
@@ -163,7 +163,7 @@ export const WS_VoiceAnswerMessageSchema = z.object({
 
 export const WS_VoiceIceMessageSchema = z.object({
     type: z.literal('VOICE_ICE'),
-    provider: z.literal('CLIENT'),
+    provider: z.string().optional(),  // CLIENT when sending, API when receiving relay
     debateId: z.string(),
     fromId: z.string(),
     toId: z.string(),
