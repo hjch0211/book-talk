@@ -15,6 +15,7 @@ export class VoiceChatManager {
     private participants: Map<string, VoiceChatParticipant> = new Map();
     private debateId: string;
     private readonly myAccountId: string;
+    private readonly myAccountName: string;
     private isJoined: boolean = false;
     private isMuted: boolean = false;
 
@@ -25,12 +26,14 @@ export class VoiceChatManager {
     constructor(
         debateId: string,
         myAccountId: string,
+        myAccountName: string,
         onSignalingMessage: (message: WebSocketMessage) => void,
         onParticipantUpdate: (participants: VoiceChatParticipant[]) => void,
         onRemoteStreamUpdate: (accountId: string, stream: MediaStream | null) => void
     ) {
         this.debateId = debateId;
         this.myAccountId = myAccountId;
+        this.myAccountName = myAccountName;
         this.onSignalingMessage = onSignalingMessage;
         this.onParticipantUpdate = onParticipantUpdate;
         this.onRemoteStreamUpdate = onRemoteStreamUpdate;
@@ -50,6 +53,18 @@ export class VoiceChatManager {
 
             this.isJoined = true;
 
+            // Add self to participants list immediately
+            const selfParticipant: VoiceChatParticipant = {
+                accountId: this.myAccountId,
+                accountName: this.myAccountName,
+                isMuted: false,
+                isSpeaking: false,
+                volume: 1.0
+            };
+            this.participants.set(this.myAccountId, selfParticipant);
+            this.updateParticipants(); // Notify Context to update UI
+
+            // Then broadcast VOICE_JOIN to others
             this.onSignalingMessage({
                 type: 'VOICE_JOIN',
                 provider: 'CLIENT',
@@ -133,7 +148,21 @@ export class VoiceChatManager {
     }
 
     async handleOffer(fromId: string, offer: RTCSessionDescriptionInit): Promise<void> {
-        if (!this.participants.has(fromId)) return;
+        if (fromId === this.myAccountId) return;
+
+        // If participant not in our list yet, add them (discovered via offer)
+        if (!this.participants.has(fromId)) {
+            console.log(`Adding participant ${fromId} discovered via VOICE_OFFER`);
+            const participant: VoiceChatParticipant = {
+                accountId: fromId,
+                accountName: fromId, // Will be updated later when we get proper name
+                isMuted: false,
+                isSpeaking: false,
+                volume: 1.0
+            };
+            this.participants.set(fromId, participant);
+            this.updateParticipants();
+        }
 
         let peerConnection = this.peerConnections.get(fromId);
         if (!peerConnection) {

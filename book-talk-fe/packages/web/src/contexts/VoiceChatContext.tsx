@@ -140,9 +140,14 @@ export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
             onSignalingMessageRef.current(message);
         };
 
+        // Find my name from participantsList
+        const myParticipant = participantsList.find(p => p.id === myAccountId);
+        const myAccountName = myParticipant?.name || 'You';
+
         voiceChatManagerRef.current = new VoiceChatManager(
             debateId,
             myAccountId,
+            myAccountName,
             handleSignalingMessage,
             handleParticipantUpdate,
             handleRemoteStreamUpdate
@@ -154,7 +159,7 @@ export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
                 voiceChatManagerRef.current = null;
             }
         };
-    }, [debateId, myAccountId]);
+    }, [debateId, myAccountId, participantsList]);
 
     // Set up voice chat handler ref - WebSocket에서 받은 음성 메시지를 처리하도록 등록
     useEffect(() => {
