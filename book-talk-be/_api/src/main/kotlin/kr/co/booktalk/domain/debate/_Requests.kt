@@ -52,7 +52,8 @@ data class CreateChatRequest(
 data class WS_JoinDebateRequest(
     val debateId: String,
     val accountId: String,
-    val accountName: String
+    val accountName: String,
+    val voiceEnabled: Boolean = true  // 기본값: voice chat 활성화
 ) : WebSocketMessage {
     override val type: String = "C_JOIN_DEBATE"
     override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT

@@ -201,6 +201,9 @@ export class DebateWebSocketClient {
                 break;
             case 'S_JOIN_SUCCESS':
                 console.log('Successfully joined debate:', message);
+                if (this.handlers.onJoinSuccess) {
+                    this.handlers.onJoinSuccess();
+                }
                 break;
             case 'S_HEARTBEAT_ACK':
                 console.log('Heartbeat acknowledged:', message);
@@ -270,6 +273,7 @@ export class DebateWebSocketClient {
 export interface WebSocketHandlers {
     onPresenceUpdate?: (onlineAccountIds: Set<string>) => void;
     onConnectionStatus?: (connected: boolean) => void;
+    onJoinSuccess?: () => void;
     onSpeakerUpdate?: (speakerInfo: WS_SpeakerUpdateResponse) => void;
     onDebateRoundUpdate?: (roundInfo: WS_DebateRoundUpdateResponse) => void;
     onVoiceSignaling?: (message: WebSocketMessage) => void;

@@ -40,6 +40,7 @@ export const useDebateWebSocket = (
     const queryClient = useQueryClient();
     const [onlineAccountIds, setOnlineAccountIds] = useState<Set<string>>(new Set());
     const [isConnected, setIsConnected] = useState<boolean>(false);
+    const [isDebateJoined, setIsDebateJoined] = useState<boolean>(false);
     const [raisedHands, setRaisedHands] = useState<RaisedHandInfo[]>([]);
     const wsClientRef = useRef<DebateWebSocketClient | null>(null);
     const heartbeatIntervalRef = useRef<number | null>(null);
@@ -89,6 +90,16 @@ export const useDebateWebSocket = (
         onConnectionStatus: (connected: boolean) => {
             console.log('Connection status changed:', connected);
             setIsConnected(connected);
+
+            // WebSocket 연결 끊김 시 debate join 상태 리셋
+            if (!connected) {
+                console.log('🔌 WebSocket disconnected - resetting debate join status');
+                setIsDebateJoined(false);
+            }
+        },
+        onJoinSuccess: () => {
+            console.log('Debate join success - ready for voice chat');
+            setIsDebateJoined(true);
         },
         onHandRaiseUpdate: (hands: RaisedHandInfo[]) => {
             console.log('Received raised hands update:', hands);
@@ -188,6 +199,7 @@ export const useDebateWebSocket = (
     return {
         onlineAccountIds,
         isConnected,
+        isDebateJoined,
         wsClient: wsClientRef.current,
         raisedHands,
         toggleHand,
