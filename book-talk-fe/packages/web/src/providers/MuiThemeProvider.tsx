@@ -12,11 +12,11 @@ import {breakPoints} from "../constants/breakPoints.ts";
 
 const muiTypographyConfig: TypographyVariantsOptions = {
     fontFamily: ["S-Core Dream", "SpoqaHanSansNeo-Regular", "sans-serif"].join(","),
-    h1: {fontSize: 80, color: appColor.primary, fontFamily: "Jua"},
-    h2: {fontSize: 26, color: appColor.primary, fontFamily: "Jua"},
+    h1: {fontSize: 80, color: appColor.primary},
+    h2: {fontSize: 26, color: appColor.primary},
     body1: {fontSize: 16, letterSpacing: "2px"},
     body2: {fontSize: 16, fontWeight: 500},
-    button: {fontFamily: "Jua", fontSize: 26, letterSpacing: "2px"},
+    button: {fontSize: 26, letterSpacing: "2px"},
 };
 
 const muiPaletteConfig: PaletteOptions = {

@@ -1,22 +1,11 @@
-import {useVoiceChatContext} from '../contexts/VoiceChatContext';
+/**
+ * useVoiceChat - 음성 채팅 훅
+ *
+ * VoiceChatContext의 기능을 컴포넌트에서 사용할 수 있도록 제공합니다.
+ */
+
+import { useVoiceChat as useVoiceChatContext } from '../contexts/VoiceChatContext';
 
 export const useVoiceChat = () => {
-    const context = useVoiceChatContext();
-
-    return {
-        participants: context.participants,
-        myAccountId: context.myAccountId,
-        isJoined: context.isJoined,
-        isMuted: context.isMuted,
-        isConnecting: context.isConnecting,
-        hasMicPermission: context.hasMicPermission,
-        joinVoiceChat: context.joinVoiceChat,
-        leaveVoiceChat: context.leaveVoiceChat,
-        toggleMute: context.toggleMute,
-        setParticipantVolume: context.setParticipantVolume,
-        getRemoteStream: context.getRemoteStream,
-        getLocalStream: context.getLocalStream,
-        handleIncomingSignalingMessage: context.handleIncomingSignalingMessage,
-        requestMicPermission: context.requestMicPermission
-    };
+    return useVoiceChatContext();
 };

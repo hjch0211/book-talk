@@ -122,7 +122,7 @@ class ApiWebSocketHandler(
         }
 
         registerAccountSession(session, authenticatedAccountId, request.debateId)
-        joinDebateWithErrorHandling(session, request.debateId, authenticatedAccountId, request.accountName)
+        joinDebateWithErrorHandling(session, request.debateId, authenticatedAccountId, request.accountName, request.voiceEnabled)
     }
 
     /** 토론방 나가기 요청을 처리합니다. 사용자를 토론방에서 제거하고 세션을 정리합니다. */
@@ -169,7 +169,8 @@ class ApiWebSocketHandler(
         session: WebSocketSession,
         debateId: String,
         accountId: String,
-        accountName: String
+        accountName: String,
+        voiceEnabled: Boolean = true
     ) {
         try {
             presenceService.joinDebate(debateId, accountId, accountName)
@@ -178,9 +179,34 @@ class ApiWebSocketHandler(
             // Redis Pub/Sub을 통해 즉시 브로드캐스트
             publishPresenceUpdate(debateId)
 
+            // voiceEnabled가 true이면 자동으로 VOICE_JOIN broadcast
+            if (voiceEnabled) {
+                autoJoinVoiceChat(debateId, accountId)
+            }
+
         } catch (e: Exception) {
             logger.error(e) { "토론 참여 처리 실패: debateId=$debateId, accountId=$accountId" }
             sendJoinErrorResponse(session, debateId, accountId, e.message ?: "UNKNOWN_ERROR")
+        }
+    }
+
+    /** 토론 참여 시 자동으로 음성 채팅에 참여시킵니다. */
+    private fun autoJoinVoiceChat(debateId: String, accountId: String) {
+        try {
+            logger.info { "자동 음성 채팅 참여: debateId=$debateId, accountId=$accountId" }
+
+            // 같은 토론방의 다른 참가자들에게 VOICE_JOIN 브로드캐스트
+            val broadcastMessage = mapOf(
+                "type" to "VOICE_JOIN",
+                "provider" to "API",
+                "debateId" to debateId,
+                "accountId" to accountId,
+                "fromId" to accountId
+            )
+            val messageJson = objectMapper.writeValueAsString(broadcastMessage)
+            broadcastToDebateRoom(debateId, messageJson)
+        } catch (e: Exception) {
+            logger.error(e) { "자동 음성 참여 실패: debateId=$debateId, accountId=$accountId" }
         }
     }
 

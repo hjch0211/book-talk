@@ -1,99 +1,81 @@
-import { useEffect, useRef } from 'react';
-import { useVoiceChat } from '../../../hooks/useVoiceChat';
-
 /**
- * WebRTC로 수신한 원격 오디오 스트림을 재생하는 컴포넌트
- * - 각 참가자마다 숨겨진 <audio> 엘리먼트를 생성
- * - remoteStream을 자동으로 재생
+ * VoiceAudioRenderer - Audio Playback Component
+ *
+ * Renders remote audio stream with autoplay handling.
  */
+
+import {useEffect, useRef, useState} from 'react';
+import {useVoiceChat} from '../../../hooks/useVoiceChat';
+
 export function VoiceAudioRenderer() {
-    const { participants, myAccountId, getRemoteStream } = useVoiceChat();
-
-    // 자기 자신을 제외한 원격 참가자만 렌더링
-    const remoteParticipants = participants.filter(p => p.accountId !== myAccountId);
-
-    console.log('🎵 VoiceAudioRenderer: All participants:', participants);
-    console.log('🎵 VoiceAudioRenderer: Remote participants (excluding self):', remoteParticipants);
-
-    return (
-        <>
-            {remoteParticipants.map(participant => (
-                <RemoteAudio
-                    key={participant.accountId}
-                    participantId={participant.accountId}
-                    participantName={participant.accountName}
-                    getRemoteStream={getRemoteStream}
-                />
-            ))}
-        </>
-    );
-}
-
-interface RemoteAudioProps {
-    participantId: string;
-    participantName: string;
-    getRemoteStream: (id: string) => MediaStream | null;
-}
-
-function RemoteAudio({ participantId, participantName, getRemoteStream }: RemoteAudioProps) {
+    const {remoteStream, requestJoinConfirmation} = useVoiceChat();
     const audioRef = useRef<HTMLAudioElement>(null);
+    const [hasPlayedSuccessfully, setHasPlayedSuccessfully] = useState(false);
 
+    // Attach remote stream and attempt autoplay
     useEffect(() => {
-        const stream = getRemoteStream(participantId);
+        const audio = audioRef.current;
+        if (!audio) return;
 
-        if (!audioRef.current) {
-            console.warn(`⚠️ Audio ref not ready for ${participantName} (${participantId})`);
-            return;
-        }
+        if (remoteStream) {
+            console.log('🎵 Attaching remote stream to audio element');
+            audio.srcObject = remoteStream;
 
-        if (stream) {
-            console.log(`🎵 Setting audio stream for ${participantName} (${participantId})`, {
-                streamId: stream.id,
-                tracks: stream.getTracks().map(t => ({
-                    kind: t.kind,
-                    enabled: t.enabled,
-                    readyState: t.readyState
-                }))
-            });
-
-            audioRef.current.srcObject = stream;
-
-            // 자동 재생 시도
-            audioRef.current.play()
+            // Attempt autoplay
+            audio.play()
                 .then(() => {
-                    console.log(`✅ Audio playing for ${participantName} (${participantId})`);
+                    console.log('✅ Audio playing automatically');
+                    setHasPlayedSuccessfully(true);
                 })
-                .catch(err => {
-                    console.error(`❌ Audio play failed for ${participantName} (${participantId}):`, err);
-                    // 사용자 인터랙션이 필요한 경우를 대비해 에러 로그
-                    if (err.name === 'NotAllowedError') {
-                        console.warn('User interaction may be required to play audio');
+                .catch((error) => {
+                    console.warn('⚠️ Audio autoplay blocked:', error.message);
+
+                    // Only show modal if we've never successfully played
+                    if (!hasPlayedSuccessfully) {
+                        requestJoinConfirmation();
                     }
                 });
         } else {
-            console.log(`ℹ️ No stream available for ${participantName} (${participantId})`);
-            audioRef.current.srcObject = null;
+            console.log('🔇 No remote stream, clearing audio');
+            audio.srcObject = null;
         }
+    }, [remoteStream, requestJoinConfirmation, hasPlayedSuccessfully]);
 
-        // Cleanup
-        return () => {
-            if (audioRef.current) {
-                console.log(`🧹 Cleaning up audio for ${participantName} (${participantId})`);
-                audioRef.current.pause();
-                audioRef.current.srcObject = null;
-            }
+    // Retry playback on user interaction (after modal)
+    useEffect(() => {
+        const audio = audioRef.current;
+        if (!audio || !remoteStream || hasPlayedSuccessfully) return;
+
+        const handleUserInteraction = () => {
+            console.log('🔄 Retrying audio playback after user interaction');
+            audio.play()
+                .then(() => {
+                    console.log('✅ Audio playing after user interaction');
+                    setHasPlayedSuccessfully(true);
+                    cleanup();
+                })
+                .catch((error) => {
+                    console.error('❌ Still failed to play:', error);
+                });
         };
-    }, [participantId, participantName, getRemoteStream]);
+
+        const cleanup = () => {
+            document.removeEventListener('click', handleUserInteraction);
+            document.removeEventListener('keydown', handleUserInteraction);
+        };
+
+        document.addEventListener('click', handleUserInteraction);
+        document.addEventListener('keydown', handleUserInteraction);
+
+        return cleanup;
+    }, [remoteStream, hasPlayedSuccessfully]);
 
     return (
         <audio
             ref={audioRef}
             autoPlay
             playsInline
-            muted={false}
-            style={{ display: 'none' }}
-            data-participant-id={participantId}
-            data-participant-name={participantName}
+            style={{display: 'none'}}
         />
     );
 }
