@@ -95,12 +95,12 @@ export function DebatePresentation({
             const currentContent = editor.getJSON();
             if (JSON.stringify(currentContent) !== JSON.stringify(currentPresentation.content)) {
                 // 현재 커서 위치 저장
-                const { from, to } = editor.state.selection;
+                const {from, to} = editor.state.selection;
 
                 editor.commands.setContent(JSON.parse(currentPresentation.content));
 
                 // 커서 위치 복원
-                editor.commands.setTextSelection({ from, to });
+                editor.commands.setTextSelection({from, to});
             }
         }
     }, [editor, currentPresentation?.content]);
@@ -210,7 +210,7 @@ export function DebatePresentation({
 
                 {/* YouTube 추가 다이얼로그 */}
                 <Dialog open={showYoutubeDialog} onClose={() => setShowYoutubeDialog(false)}>
-                    <DialogTitle>YouTube 동영상 추가</DialogTitle>
+                    <DialogTitle>YouTube 추가</DialogTitle>
                     <DialogContent>
                         <TextField
                             autoFocus
