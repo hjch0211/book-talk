@@ -1,4 +1,4 @@
-import {useCallback, useEffect, useState} from 'react';
+import {useCallback, useEffect, useMemo, useState} from 'react';
 import {Button, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, TextField} from '@mui/material';
 import {EditorContent, useEditor} from '@tiptap/react';
 import type {JSONContent} from '@tiptap/core';
@@ -10,6 +10,7 @@ import Youtube from '@tiptap/extension-youtube';
 import Heading from '@tiptap/extension-heading';
 import Placeholder from '@tiptap/extension-placeholder';
 import {createSlashCommandExtension} from './SlashCommandExtension';
+import {createEnterToSendExtension} from './EnterToSendExtension';
 import {ChatInputBox, ChatInputContainer} from '../Debate.style';
 
 interface ChatInputProps {
@@ -55,6 +56,16 @@ export function ChatInput({canSend, isSending, onSend}: ChatInputProps) {
         setShowYoutubeDialog(true);
     }, []);
 
+    // Enter 키로 전송하는 Extension 생성
+    const enterToSendExtension = useMemo(() =>
+            createEnterToSendExtension({
+                onSend,
+                canSend: () => canSend,
+                isSending: () => isSending,
+            }),
+        [onSend, canSend, isSending]
+    );
+
     const editor = useEditor({
         extensions: [
             StarterKit.configure({heading: false}),
@@ -65,20 +76,12 @@ export function ChatInput({canSend, isSending, onSend}: ChatInputProps) {
                 placeholder: canSend ? '메시지를 입력하세요... (Enter로 전송, Shift+Enter로 줄바꿈, / 를 입력하여 이미지/영상 추가)' : '발표자만 채팅할 수 있습니다'
             }),
             createSlashCommandExtension(addImage, addYoutube),
+            enterToSendExtension, // SlashCommand 이후에 추가하여 낮은 우선순위
         ],
         editable: canSend && !isSending,
         immediatelyRender: false,
         editorProps: {
             attributes: {class: 'chat-input-editor'},
-            handleKeyDown: (_view, event) => {
-                // Enter: 전송, Shift+Enter: 줄바꿈 (기본 동작)
-                if (event.key === 'Enter' && !event.shiftKey) {
-                    event.preventDefault();
-                    handleSend();
-                    return true;
-                }
-                return false;
-            }
         },
     });
 
@@ -200,7 +203,7 @@ export function ChatInput({canSend, isSending, onSend}: ChatInputProps) {
 
             {/* YouTube 추가 다이얼로그 */}
             <Dialog open={showYoutubeDialog} onClose={() => setShowYoutubeDialog(false)}>
-                <DialogTitle>YouTube 동영상 추가</DialogTitle>
+                <DialogTitle>YouTube 추가</DialogTitle>
                 <DialogContent>
                     <TextField
                         autoFocus

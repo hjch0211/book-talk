@@ -66,14 +66,6 @@ data class ChatResponse(
     val createdAt: Instant
 )
 
-data class WS_JoinSuccessResponse(
-    val debateId: String,
-    val accountId: String
-) : WebSocketMessage {
-    override val type: String = "S_JOIN_SUCCESS"
-    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.API
-}
-
 data class WS_JoinErrorResponse(
     val debateId: String,
     val accountId: String,

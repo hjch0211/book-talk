@@ -40,6 +40,7 @@ export const useDebateWebSocket = (
     const queryClient = useQueryClient();
     const [onlineAccountIds, setOnlineAccountIds] = useState<Set<string>>(new Set());
     const [isConnected, setIsConnected] = useState<boolean>(false);
+    const [isJoining, setIsJoining] = useState<boolean>(false);
     const [isDebateJoined, setIsDebateJoined] = useState<boolean>(false);
     const [raisedHands, setRaisedHands] = useState<RaisedHandInfo[]>([]);
     const wsClientRef = useRef<DebateWebSocketClient | null>(null);
@@ -83,6 +84,13 @@ export const useDebateWebSocket = (
             console.log('Received online account IDs:', onlineIds);
             setOnlineAccountIds(onlineIds);
 
+            // isJoining 상태이고 본인이 온라인 목록에 포함되면 join 완료로 간주
+            if (myAccountId && onlineIds.has(myAccountId)) {
+                setIsJoining(false);
+                setIsDebateJoined(true);
+                console.log('Debate join confirmed via presence update - ready for voice chat');
+            }
+
             if (debateId) {
                 void queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions(debateId).queryKey});
             }
@@ -94,12 +102,13 @@ export const useDebateWebSocket = (
             // WebSocket 연결 끊김 시 debate join 상태 리셋
             if (!connected) {
                 console.log('🔌 WebSocket disconnected - resetting debate join status');
+                setIsJoining(false);
                 setIsDebateJoined(false);
+            } else {
+                // 연결 성공 시 joining 상태로 설정
+                console.log('🔌 WebSocket connected - starting join process');
+                setIsJoining(true);
             }
-        },
-        onJoinSuccess: () => {
-            console.log('Debate join success - ready for voice chat');
-            setIsDebateJoined(true);
         },
         onHandRaiseUpdate: (hands: RaisedHandInfo[]) => {
             console.log('Received raised hands update:', hands);
@@ -116,7 +125,7 @@ export const useDebateWebSocket = (
                 });
             }
         }
-    }), [handleSpeakerUpdate, handleDebateRoundUpdate, handleVoiceSignaling, debateId, isFreeRound, queryClient]);
+    }), [handleSpeakerUpdate, handleDebateRoundUpdate, handleVoiceSignaling, debateId, isFreeRound, queryClient, myAccountId]);
 
     /** WebSocket 연결 및 관리 */
     useEffect(() => {
