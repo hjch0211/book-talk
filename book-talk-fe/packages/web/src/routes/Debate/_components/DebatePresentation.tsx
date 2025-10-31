@@ -94,7 +94,13 @@ export function DebatePresentation({
         if (editor && currentPresentation?.content !== undefined) {
             const currentContent = editor.getJSON();
             if (JSON.stringify(currentContent) !== JSON.stringify(currentPresentation.content)) {
+                // 현재 커서 위치 저장
+                const { from, to } = editor.state.selection;
+
                 editor.commands.setContent(JSON.parse(currentPresentation.content));
+
+                // 커서 위치 복원
+                editor.commands.setTextSelection({ from, to });
             }
         }
     }, [editor, currentPresentation?.content]);
