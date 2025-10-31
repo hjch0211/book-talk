@@ -174,9 +174,8 @@ class ApiWebSocketHandler(
     ) {
         try {
             presenceService.joinDebate(debateId, accountId, accountName)
-            sendJoinSuccessResponse(session, debateId, accountId)
 
-            // Redis Pub/Sub을 통해 즉시 브로드캐스트
+            // Redis Pub/Sub을 통해 즉시 브로드캐스트 (S_JOIN_SUCCESS 제거, PRESENCE_UPDATE로 통합)
             publishPresenceUpdate(debateId)
 
             // voiceEnabled가 true이면 자동으로 VOICE_JOIN broadcast
@@ -243,12 +242,6 @@ class ApiWebSocketHandler(
                 logger.error(e) { "연결 종료 시 정리 실패: accountId=$accountId, debateId=$debateId" }
             }
         }
-    }
-
-    /** 토론 참여 성공 응답을 클라이언트에게 전송합니다. */
-    private fun sendJoinSuccessResponse(session: WebSocketSession, debateId: String, accountId: String) {
-        val response = WS_JoinSuccessResponse(debateId = debateId, accountId = accountId)
-        sendMessage(session, response)
     }
 
     /** 토론 참여 실패 응답을 클라이언트에게 전송합니다. */

@@ -36,13 +36,6 @@ export const WS_ChatMessageRequestSchema = z.object({
     chatId: z.number(),
 });
 
-export const WS_JoinSuccessResponseSchema = z.object({
-    type: z.literal('S_JOIN_SUCCESS'),
-    provider: z.literal('API'),
-    debateId: z.string(),
-    accountId: z.string(),
-});
-
 export const WS_JoinErrorResponseSchema = z.object({
     type: z.literal('S_JOIN_ERROR'),
     provider: z.literal('API'),
@@ -187,7 +180,6 @@ export const WebSocketMessageSchema = z.discriminatedUnion('type', [
     WS_ToggleHandRequestSchema,
     WS_ChatMessageRequestSchema,
     // Server messages
-    WS_JoinSuccessResponseSchema,
     WS_JoinErrorResponseSchema,
     WS_HeartbeatAckResponseSchema,
     WS_PresenceUpdateResponseSchema,
@@ -210,7 +202,6 @@ export type WS_HeartbeatRequest = z.infer<typeof WS_HeartbeatRequestSchema>;
 export type WS_ToggleHandRequest = z.infer<typeof WS_ToggleHandRequestSchema>;
 export type WS_ChatMessageRequest = z.infer<typeof WS_ChatMessageRequestSchema>;
 
-export type WS_JoinSuccessResponse = z.infer<typeof WS_JoinSuccessResponseSchema>;
 export type WS_JoinErrorResponse = z.infer<typeof WS_JoinErrorResponseSchema>;
 export type WS_HeartbeatAckResponse = z.infer<typeof WS_HeartbeatAckResponseSchema>;
 export type WS_PresenceUpdateResponse = z.infer<typeof WS_PresenceUpdateResponseSchema>;
