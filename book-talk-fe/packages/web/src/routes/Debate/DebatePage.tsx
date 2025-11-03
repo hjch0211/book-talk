@@ -1,4 +1,4 @@
-import {Suspense, useCallback, useEffect, useRef, useState} from 'react';
+import {Suspense, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {Stack} from '@mui/material';
 import MainContainer from '../../components/MainContainer/MainContainer';
@@ -27,10 +27,11 @@ interface DebatePageInnerProps {
     sendSignalingRef: React.MutableRefObject<((message: any) => void) | null>;
     onWebSocketConnected: (connected: boolean) => void;
     onDebateJoined: (joined: boolean) => void;
-    onOnlineAccountsChange: (accountIds: Set<string>) => void;
+    onRemotePeerOnlineChange: (isOnline: boolean) => void;
+    remotePeerId: string | null;
 }
 
-function DebatePageInner({debateId, sendSignalingRef, onWebSocketConnected, onDebateJoined, onOnlineAccountsChange}: DebatePageInnerProps) {
+function DebatePageInner({debateId, sendSignalingRef, onWebSocketConnected, onDebateJoined, onRemotePeerOnlineChange, remotePeerId}: DebatePageInnerProps) {
     const [showStartModal, setShowStartModal] = useState(false);
     const {handleSignalingMessage} = useVoiceChat();
 
@@ -77,13 +78,16 @@ function DebatePageInner({debateId, sendSignalingRef, onWebSocketConnected, onDe
         onDebateJoined(isDebateJoined);
     }, [isDebateJoined, onDebateJoined]);
 
-    // 온라인 계정 상태 전달
+    // 상대방이 온라인인지 직접 계산 (membersWithPresence 기반)
+    const isRemotePeerOnline = useMemo(() => {
+        if (!remotePeerId) return false;
+        return membersWithPresence.some(m => m.id === remotePeerId);
+    }, [membersWithPresence, remotePeerId]);
+
+    // 상대방 온라인 상태 전달
     useEffect(() => {
-        const onlineIds = new Set(
-            membersWithPresence.map(m => m.id)
-        );
-        onOnlineAccountsChange(onlineIds);
-    }, [membersWithPresence, onOnlineAccountsChange]);
+        onRemotePeerOnlineChange(isRemotePeerOnline);
+    }, [isRemotePeerOnline, onRemotePeerOnlineChange]);
 
     const handleStartDebate = async () => {
         if (!debateId) return;
@@ -175,13 +179,10 @@ function DebatePageContent({debateId}: Props) {
     // WebSocket 연결 상태
     const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
     const [isDebateJoined, setIsDebateJoined] = useState(false);
-    const [onlineAccountIds, setOnlineAccountIds] = useState<Set<string>>(new Set());
+    const [isRemotePeerOnline, setIsRemotePeerOnline] = useState(false);
 
     // 상대방 ID 결정 (1:1만 지원)
     const remotePeerId = debate.members.find(m => m.id !== me?.id)?.id || null;
-
-    // 상대방이 온라인인지 확인
-    const isRemotePeerOnline = remotePeerId ? onlineAccountIds.has(remotePeerId) : false;
 
     // useCallback으로 메모이제이션하여 불필요한 리렌더링 방지
     const handleSendSignaling = useCallback((message: any) => {
@@ -209,7 +210,8 @@ function DebatePageContent({debateId}: Props) {
                     sendSignalingRef={sendSignalingRef}
                     onWebSocketConnected={setIsWebSocketConnected}
                     onDebateJoined={setIsDebateJoined}
-                    onOnlineAccountsChange={setOnlineAccountIds}
+                    onRemotePeerOnlineChange={setIsRemotePeerOnline}
+                    remotePeerId={remotePeerId}
                 />
                 <VoiceAudioRenderer/>
             </VoiceChatProvider>

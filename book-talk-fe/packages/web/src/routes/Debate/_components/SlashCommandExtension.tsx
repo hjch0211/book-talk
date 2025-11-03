@@ -1,13 +1,13 @@
-import { Extension } from '@tiptap/core';
+import {Extension} from '@tiptap/core';
 import Suggestion from '@tiptap/suggestion';
-import { ReactRenderer } from '@tiptap/react';
+import {ReactRenderer} from '@tiptap/react';
 import tippy from 'tippy.js';
-import { SlashCommands } from './SlashCommands';
+import {SlashCommands} from './SlashCommands';
 
 export interface SlashCommandItem {
     title: string;
     description: string;
-    command: ({ editor, range }: any) => void;
+    command: ({editor, range}: any) => void;
 }
 
 export const createSlashCommandExtension = (
@@ -18,27 +18,27 @@ export const createSlashCommandExtension = (
         {
             title: '/h1',
             description: '큰 제목 추가',
-            command: ({ editor, range }) => {
+            command: ({editor, range}) => {
                 editor
                     .chain()
                     .focus()
                     .deleteRange(range)
-                    .setHeading({ level: 1 })
+                    .setHeading({level: 1})
                     .run();
             },
         },
         {
             title: '/img',
             description: '이미지 추가',
-            command: ({ editor, range }) => {
+            command: ({editor, range}) => {
                 editor.chain().focus().deleteRange(range).run();
                 addImage();
             },
         },
         {
             title: '/youtube',
-            description: 'YouTube 동영상 추가',
-            command: ({ editor, range }) => {
+            description: 'YouTube 추가',
+            command: ({editor, range}) => {
                 editor.chain().focus().deleteRange(range).run();
                 addYoutube();
             },
@@ -46,7 +46,7 @@ export const createSlashCommandExtension = (
         {
             title: '/bold',
             description: '굵은 텍스트',
-            command: ({ editor, range }) => {
+            command: ({editor, range}) => {
                 editor
                     .chain()
                     .focus()
@@ -58,7 +58,7 @@ export const createSlashCommandExtension = (
         {
             title: '/italic',
             description: '기울임 텍스트',
-            command: ({ editor, range }) => {
+            command: ({editor, range}) => {
                 editor
                     .chain()
                     .focus()
@@ -72,12 +72,15 @@ export const createSlashCommandExtension = (
     return Extension.create({
         name: 'slashCommands',
 
+        // 높은 priority 설정 (기본값 100보다 높게)
+        priority: 200,
+
         addOptions() {
             return {
                 suggestion: {
                     char: '/',
-                    command: ({ editor, range, props }: any) => {
-                        props.command({ editor, range });
+                    command: ({editor, range, props}: any) => {
+                        props.command({editor, range});
                     },
                 },
             };
@@ -93,7 +96,7 @@ export const createSlashCommandExtension = (
         },
     }).configure({
         suggestion: {
-            items: ({ query }: { query: string }) => {
+            items: ({query}: { query: string }) => {
                 return items
                     .filter(item =>
                         item.title.toLowerCase().startsWith(query.toLowerCase())
