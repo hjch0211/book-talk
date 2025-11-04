@@ -1,13 +1,13 @@
 import {EditorContent, useEditor} from '@tiptap/react';
 import {useCallback, useEffect, useState} from 'react';
 import StarterKit from '@tiptap/starter-kit';
-import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
 import Heading from '@tiptap/extension-heading';
 import Placeholder from '@tiptap/extension-placeholder';
 import {Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField} from '@mui/material';
 import {MainContent, PresentationArea} from '../Debate.style';
 import {createSlashCommandExtension} from './SlashCommandExtension';
+import {ImageWithPaste} from './ImageExtension';
 import {usePresentation} from "../../../hooks/usePresentation.tsx";
 import type {CurrentRoundInfo} from '../../../hooks/useDebate';
 import {LastModified} from './LastModified';
@@ -69,8 +69,19 @@ export function DebatePresentation({
         extensions: [
             StarterKit.configure({heading: false}),
             Heading.configure({levels: [1]}),
-            Image.configure({HTMLAttributes: {class: 'presentation-image'}}),
-            Youtube.configure({HTMLAttributes: {class: 'presentation-video'}, controls: false, nocookie: true}),
+            ImageWithPaste.configure({
+                HTMLAttributes: {class: 'presentation-image'},
+                resize: {
+                    enabled: true,
+                    directions: ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
+                    minWidth: 50,
+                    minHeight: 50,
+                    alwaysPreserveAspectRatio: true,
+                },
+            }),
+            Youtube.configure({
+                HTMLAttributes: {class: 'presentation-video'}, controls: false, nocookie: true, width: 720, height: 480
+            }),
             Placeholder.configure({
                 placeholder: currentSpeaker
                     ? `${currentSpeaker.accountName}님이 발표 중입니다.`

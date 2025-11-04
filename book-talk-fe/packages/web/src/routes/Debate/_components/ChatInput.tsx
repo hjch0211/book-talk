@@ -5,12 +5,12 @@ import type {JSONContent} from '@tiptap/core';
 import SendIcon from '@mui/icons-material/Send';
 import AttachFileIcon from '@mui/icons-material/AttachFile';
 import StarterKit from '@tiptap/starter-kit';
-import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
 import Heading from '@tiptap/extension-heading';
 import Placeholder from '@tiptap/extension-placeholder';
 import {createSlashCommandExtension} from './SlashCommandExtension';
 import {createEnterToSendExtension} from './EnterToSendExtension';
+import {ImageWithPaste} from './ImageExtension';
 import {ChatInputBox, ChatInputContainer} from '../Debate.style';
 
 interface ChatInputProps {
@@ -74,8 +74,23 @@ export function ChatInput({canSend, isSending, onSend}: ChatInputProps) {
         extensions: [
             StarterKit.configure({heading: false}),
             Heading.configure({levels: [1]}),
-            Image.configure({HTMLAttributes: {class: 'chat-image'}}),
-            Youtube.configure({HTMLAttributes: {class: 'chat-video'}, controls: false, nocookie: true}),
+            ImageWithPaste.configure({
+                HTMLAttributes: {class: 'chat-image'},
+                resize: {
+                    enabled: true,
+                    directions: ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
+                    minWidth: 50,
+                    minHeight: 50,
+                    alwaysPreserveAspectRatio: false,
+                },
+            }),
+            Youtube.configure({
+                HTMLAttributes: {class: 'chat-video'},
+                controls: false,
+                nocookie: true,
+                width: 720,
+                height: 480
+            }),
             Placeholder.configure({
                 placeholder: canSend ? '메시지를 입력하세요... (Enter로 전송, Shift+Enter로 줄바꿈, / 를 입력하여 이미지/영상 추가)' : '발표자만 채팅할 수 있습니다'
             }),
