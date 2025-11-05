@@ -6,6 +6,7 @@ import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
 import Heading from '@tiptap/extension-heading';
 import type {ChatResponse} from '../../../apis/debate';
+import {LinkPreview} from "./LinkPreviewExtension.tsx";
 
 interface ChatMessageProps {
     chat: ChatResponse;
@@ -25,7 +26,8 @@ export function ChatMessage({chat, isMyMessage}: ChatMessageProps) {
             StarterKit.configure({heading: false}),
             Heading.configure({levels: [1]}),
             Image.configure({HTMLAttributes: {class: 'chat-image'}}),
-            Youtube.configure({HTMLAttributes: {class: 'chat-video'}, controls: false, nocookie: true})
+            Youtube.configure({HTMLAttributes: {class: 'chat-video'}, controls: false, nocookie: true}),
+            LinkPreview,
         ],
         editable: false,
         immediatelyRender: false,

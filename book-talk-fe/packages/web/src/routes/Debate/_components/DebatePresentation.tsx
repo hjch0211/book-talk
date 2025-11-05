@@ -8,6 +8,7 @@ import {Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField} fr
 import {MainContent, PresentationArea} from '../Debate.style';
 import {createSlashCommandExtension} from './SlashCommandExtension';
 import {ImageWithPaste} from './ImageExtension';
+import {LinkPreview} from './LinkPreviewExtension';
 import {usePresentation} from "../../../hooks/usePresentation.tsx";
 import type {CurrentRoundInfo} from '../../../hooks/useDebate';
 import {LastModified} from './LastModified';
@@ -82,6 +83,7 @@ export function DebatePresentation({
             Youtube.configure({
                 HTMLAttributes: {class: 'presentation-video'}, controls: false, nocookie: true, width: 720, height: 480
             }),
+            LinkPreview,
             Placeholder.configure({
                 placeholder: currentSpeaker
                     ? `${currentSpeaker.accountName}님이 발표 중입니다.`

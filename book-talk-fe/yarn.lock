@@ -898,6 +898,11 @@
   resolved "https://registry.yarnpkg.com/@tiptap/extension-list/-/extension-list-3.10.1.tgz#cbad33af57b63b6110c96121eb580af1aa482797"
   integrity sha512-v1TqDqNq3RXwKXyCoObv+42qrxAEtpac3BRZKWwwUcxM55oP5HxeaiEo2usheLs3+fEFkKtWKof2I9gUW0HLvA==
 
+"@tiptap/extension-mention@^3.10.1":
+  version "3.10.1"
+  resolved "https://registry.yarnpkg.com/@tiptap/extension-mention/-/extension-mention-3.10.1.tgz#eca461b125bfa3cfae89f427ba80ca3ad5e86782"
+  integrity sha512-s7zC3gBQQL99vH37/WdagfLFIDmSJz1uV6fsouckIag0nHBxKTPsZy4LR8CRZZ6RECIyj2WGm71GoVqKUUSEBw==
+
 "@tiptap/extension-ordered-list@^3.10.1":
   version "3.10.1"
   resolved "https://registry.yarnpkg.com/@tiptap/extension-ordered-list/-/extension-ordered-list-3.10.1.tgz#d368ce9f0bf8e1af099230e2ee795091204b936e"

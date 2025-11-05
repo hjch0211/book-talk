@@ -161,7 +161,7 @@ export const PresentationArea = styled.div<{ $isChatMode?: boolean }>`
     position: relative;
 
     .presentation-editor {
-        width: 100%;
+        width: 800px;
         outline: none;
         font-family: 'S-Core Dream', sans-serif;
         font-size: 16px;
