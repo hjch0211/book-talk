@@ -139,6 +139,13 @@ export function DebatePresentation({
         setShowYoutubeDialog(false);
     }, [editor, youtubeUrl]);
 
+    // PresentationArea 클릭 시 에디터에 포커스
+    const handlePresentationAreaClick = useCallback(() => {
+        if (editor && currentRoundInfo.isEditable && !currentSpeaker) {
+            editor.commands.focus();
+        }
+    }, [editor, currentRoundInfo.isEditable, currentSpeaker]);
+
     // 채팅 기능 - props에서 받음
     const {chats, sendChat, isSending} = chat;
 
@@ -196,7 +203,7 @@ export function DebatePresentation({
                 isEditable={currentRoundInfo.isEditable}
                 isSaving={isSaving}
             />
-            <PresentationArea $isChatMode={false}>
+            <PresentationArea $isChatMode={false} onClick={handlePresentationAreaClick}>
                 <EditorContent editor={editor}/>
 
                 {/* 이미지 추가 다이얼로그 */}
