@@ -161,7 +161,7 @@ export const PresentationArea = styled.div<{ $isChatMode?: boolean }>`
     position: relative;
 
     .presentation-editor {
-        width: 100%;
+        width: 800px;
         outline: none;
         font-family: 'S-Core Dream', sans-serif;
         font-size: 16px;
@@ -213,8 +213,8 @@ export const PresentationArea = styled.div<{ $isChatMode?: boolean }>`
 
         .presentation-video {
             width: 100%;
-            max-width: 560px;
-            height: 315px;
+            max-width: 720px;
+            height: 320px;
             border-radius: 8px;
             margin: 16px 0;
         }

@@ -1,5 +1,5 @@
 import {authApiClient} from '../client';
-import {type FindOnePresentationResponse, FindOnePresentationResponseSchema, type PatchContentRequest,} from './schema';
+import {type FindOnePresentationResponse, FindOnePresentationResponseSchema, type PatchContentRequest, type FetchOpenGraphResponse, FetchOpenGraphResponseSchema} from './schema';
 
 /** 발표 페이지 단건 조회 */
 export const findOnePresentation = async (id: string): Promise<FindOnePresentationResponse> => {
@@ -14,4 +14,12 @@ export const patchPresentationContent = async (id: string, patch: PatchContentRe
             'Content-Type': 'application/json-patch+json'
         }
     });
+};
+
+/** OpenGraph 메타데이터 가져오기 */
+export const fetchOpenGraph = async (url: string): Promise<FetchOpenGraphResponse> => {
+    const response = await authApiClient.get('/presentations/opengraph', {
+        params: {url}
+    });
+    return FetchOpenGraphResponseSchema.parse(response.data.data);
 };

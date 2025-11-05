@@ -27,11 +27,11 @@ interface DebatePageInnerProps {
     sendSignalingRef: React.MutableRefObject<((message: any) => void) | null>;
     onWebSocketConnected: (connected: boolean) => void;
     onDebateJoined: (joined: boolean) => void;
-    onRemotePeerOnlineChange: (isOnline: boolean) => void;
-    remotePeerId: string | null;
+    onOnlineParticipantsChange: (participants: Set<string>) => void;
+    participantIds: string[];
 }
 
-function DebatePageInner({debateId, sendSignalingRef, onWebSocketConnected, onDebateJoined, onRemotePeerOnlineChange, remotePeerId}: DebatePageInnerProps) {
+function DebatePageInner({debateId, sendSignalingRef, onWebSocketConnected, onDebateJoined, onOnlineParticipantsChange, participantIds}: DebatePageInnerProps) {
     const [showStartModal, setShowStartModal] = useState(false);
     const {handleSignalingMessage} = useVoiceChat();
 
@@ -78,16 +78,19 @@ function DebatePageInner({debateId, sendSignalingRef, onWebSocketConnected, onDe
         onDebateJoined(isDebateJoined);
     }, [isDebateJoined, onDebateJoined]);
 
-    // 상대방이 온라인인지 직접 계산 (membersWithPresence 기반)
-    const isRemotePeerOnline = useMemo(() => {
-        if (!remotePeerId) return false;
-        return membersWithPresence.some(m => m.id === remotePeerId);
-    }, [membersWithPresence, remotePeerId]);
+    // 온라인 참여자 Set 계산 (membersWithPresence 기반)
+    const onlineParticipants = useMemo(() => {
+        return new Set(
+            membersWithPresence
+                .filter(m => participantIds.includes(m.id))
+                .map(m => m.id)
+        );
+    }, [membersWithPresence, participantIds]);
 
-    // 상대방 온라인 상태 전달
+    // 온라인 참여자 상태 전달
     useEffect(() => {
-        onRemotePeerOnlineChange(isRemotePeerOnline);
-    }, [isRemotePeerOnline, onRemotePeerOnlineChange]);
+        onOnlineParticipantsChange(onlineParticipants);
+    }, [onlineParticipants, onOnlineParticipantsChange]);
 
     const handleStartDebate = async () => {
         if (!debateId) return;
@@ -179,10 +182,14 @@ function DebatePageContent({debateId}: Props) {
     // WebSocket 연결 상태
     const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
     const [isDebateJoined, setIsDebateJoined] = useState(false);
-    const [isRemotePeerOnline, setIsRemotePeerOnline] = useState(false);
+    const [onlineParticipants, setOnlineParticipants] = useState<Set<string>>(new Set());
 
-    // 상대방 ID 결정 (1:1만 지원)
-    const remotePeerId = debate.members.find(m => m.id !== me?.id)?.id || null;
+    // 모든 참여자 ID (자신 제외)
+    const participantIds = useMemo(() => {
+        return debate.members
+            .filter(m => m.id !== me?.id)
+            .map(m => m.id);
+    }, [debate.members, me?.id]);
 
     // useCallback으로 메모이제이션하여 불필요한 리렌더링 방지
     const handleSendSignaling = useCallback((message: any) => {
@@ -199,10 +206,10 @@ function DebatePageContent({debateId}: Props) {
             <VoiceChatProvider
                 debateId={debateId!}
                 myAccountId={me?.id || ''}
-                remotePeerId={remotePeerId}
+                participantIds={participantIds}
+                onlineParticipants={onlineParticipants}
                 isWebSocketConnected={isWebSocketConnected}
                 isDebateJoined={isDebateJoined}
-                isRemotePeerOnline={isRemotePeerOnline}
                 onSendSignaling={handleSendSignaling}
             >
                 <DebatePageInner
@@ -210,8 +217,8 @@ function DebatePageContent({debateId}: Props) {
                     sendSignalingRef={sendSignalingRef}
                     onWebSocketConnected={setIsWebSocketConnected}
                     onDebateJoined={setIsDebateJoined}
-                    onRemotePeerOnlineChange={setIsRemotePeerOnline}
-                    remotePeerId={remotePeerId}
+                    onOnlineParticipantsChange={setOnlineParticipants}
+                    participantIds={participantIds}
                 />
                 <VoiceAudioRenderer/>
             </VoiceChatProvider>

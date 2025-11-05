@@ -1,8 +1,8 @@
 /**
  * VoiceChatContext - Voice Chat React Context
  *
- * Presence 상태 기반으로 VoiceChatManager 생명주기 관리
- * 단일 useEffect로 모든 presence 전환을 깔끔하게 처리
+ * Multi-peer mesh topology 지원
+ * 각 참여자마다 독립적인 VoiceChatManager 생성 및 관리
  */
 
 import React, {createContext, useContext, useEffect, useRef, useState} from 'react';
@@ -11,10 +11,10 @@ import type {ConnectionState} from '../apis/webrtc/types';
 import {VoiceChatJoinModal} from '../routes/Debate/_components/VoiceChatJoinModal';
 
 interface VoiceChatContextValue {
-    connectionState: ConnectionState;
+    connectionStates: Map<string, ConnectionState>;
     isActive: boolean;
     isMuted: boolean;
-    remoteStream: MediaStream | null;
+    remoteStreams: Map<string, MediaStream>;
     toggleMute: () => void;
     handleSignalingMessage: (message: any) => void;
     requestJoinConfirmation: () => void;
@@ -26,60 +26,39 @@ interface VoiceChatProviderProps {
     children: React.ReactNode;
     debateId: string;
     myAccountId: string;
-    remotePeerId: string | null;
+    participantIds: string[];  // 모든 참여자 ID (자신 제외)
+    onlineParticipants: Set<string>;  // 온라인 참여자 ID Set
     onSendSignaling: (message: any) => void;
     isWebSocketConnected: boolean;
     isDebateJoined: boolean;
-    isRemotePeerOnline: boolean;
-}
-
-/**
- * Presence 전환 타입
- */
-type PresenceTransition =
-    | 'offline->offline'
-    | 'offline->online'
-    | 'online->offline'
-    | 'online->online';
-
-function getPresenceTransition(was: boolean, is: boolean): PresenceTransition {
-    if (!was && !is) return 'offline->offline';
-    if (!was && is) return 'offline->online';
-    if (was && !is) return 'online->offline';
-    return 'online->online';
 }
 
 export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
                                                                         children,
                                                                         debateId,
                                                                         myAccountId,
-                                                                        remotePeerId,
+                                                                        participantIds,
+                                                                        onlineParticipants,
                                                                         onSendSignaling,
                                                                         isWebSocketConnected,
-                                                                        isDebateJoined,
-                                                                        isRemotePeerOnline
+                                                                        isDebateJoined
                                                                     }) => {
     // 상태
-    const [connectionState, setConnectionState] = useState<ConnectionState>('idle');
+    const [connectionStates, setConnectionStates] = useState<Map<string, ConnectionState>>(new Map());
     const [isMuted, setIsMuted] = useState(true);
-    const [remoteStream, setRemoteStream] = useState<MediaStream | null>(null);
+    const [remoteStreams, setRemoteStreams] = useState<Map<string, MediaStream>>(new Map());
     const [showJoinModal, setShowJoinModal] = useState(false);
     const [hasShownModal, setHasShownModal] = useState(false);
 
     // 참조
-    const managerRef = useRef<VoiceChatManager | null>(null);
-    const prevRemotePeerOnlineRef = useRef(isRemotePeerOnline);
+    const managersRef = useRef<Map<string, VoiceChatManager>>(new Map());
+    const prevOnlineParticipantsRef = useRef<Set<string>>(new Set());
 
     /**
-     * 모든 presence 상태 변경을 처리하는 단일 useEffect
+     * 참여자 온라인/오프라인 상태 변화 감지 및 Manager 생명주기 관리
      */
     useEffect(() => {
         // 사전 조건 확인
-        if (!remotePeerId) {
-            console.log('⚠️ No remote peer, skipping voice chat');
-            return;
-        }
-
         if (!isWebSocketConnected) {
             console.log('⏳ Waiting for WebSocket connection...');
             return;
@@ -90,139 +69,168 @@ export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
             return;
         }
 
-        // Presence 전환 가져오기
-        const wasOnline = prevRemotePeerOnlineRef.current;
-        const isOnline = isRemotePeerOnline;
-        const transition = getPresenceTransition(wasOnline, isOnline);
+        const prevOnline = prevOnlineParticipantsRef.current;
+        const currentOnline = onlineParticipants;
 
-        console.log(`🔄 Presence transition: ${transition}`);
+        // 새로 온라인된 참여자 찾기
+        const newlyOnline = Array.from(currentOnline).filter(id =>
+            participantIds.includes(id) && !prevOnline.has(id)
+        );
 
-        // 전환 처리
-        switch (transition) {
-            case 'offline->online':
-                handlePeerOnline();
-                break;
+        // 오프라인된 참여자 찾기
+        const newlyOffline = Array.from(prevOnline).filter(id =>
+            !currentOnline.has(id)
+        );
 
-            case 'online->offline':
-                handlePeerOffline();
-                break;
+        // 새로 온라인된 참여자에 대해 Manager 생성
+        newlyOnline.forEach(peerId => {
+            console.log(`✅ Peer ${peerId} 온라인 → Manager 생성`);
+            void createManagerForPeer(peerId);
+        });
 
-            case 'offline->offline':
-            case 'online->online':
-                // 액션 필요 없음
-                break;
-        }
+        // 오프라인된 참여자의 Manager 정리
+        newlyOffline.forEach(peerId => {
+            console.log(`🔌 Peer ${peerId} 오프라인 → Manager 정리`);
+            cleanupManagerForPeer(peerId);
+        });
 
         // 이전 상태 업데이트
-        prevRemotePeerOnlineRef.current = isOnline;
+        prevOnlineParticipantsRef.current = new Set(currentOnline);
 
-    }, [remotePeerId, isWebSocketConnected, isDebateJoined, isRemotePeerOnline]);
+    }, [participantIds, onlineParticipants, isWebSocketConnected, isDebateJoined]);
 
     /**
-     * Unmount 시 정리
+     * Unmount 시 모든 Manager 정리
      */
     useEffect(() => {
         return () => {
-            if (managerRef.current) {
-                console.log('🧹 Unmount 시 voice chat 정리');
-                void managerRef.current.disconnect();
-                managerRef.current = null;
-            }
+            console.log('🧹 Unmount 시 모든 voice chat 정리');
+            managersRef.current.forEach((manager, peerId) => {
+                void manager.disconnect();
+            });
+            managersRef.current.clear();
         };
     }, []);
 
     /**
-     * Peer 온라인 전환 처리
+     * 특정 peer에 대한 Manager 생성
      */
-    const handlePeerOnline = () => {
-        console.log('✅ Remote peer가 온라인 상태');
-
-        // Manager가 존재하면 먼저 정리 (재연결 시나리오)
-        if (managerRef.current) {
-            console.log('🔄 기존 연결 정리 후 새로 시작');
-            void managerRef.current.disconnect();
-            managerRef.current = null;
-        }
-
-        // 새 연결 시작
-        void startVoiceChat();
-    };
-
-    /**
-     * Peer 오프라인 전환 처리
-     */
-    const handlePeerOffline = () => {
-        console.log('🔌 Remote peer가 오프라인 상태');
-
-        if (managerRef.current) {
-            void managerRef.current.disconnect();
-            managerRef.current = null;
-        }
-
-        setConnectionState('idle');
-        setRemoteStream(null);
-    };
-
-    /**
-     * Voice chat 시작
-     */
-    const startVoiceChat = async () => {
-        if (managerRef.current) {
-            console.log('⚠️ Voice chat already initialized');
+    const createManagerForPeer = async (peerId: string) => {
+        // 이미 존재하면 스킵
+        if (managersRef.current.has(peerId)) {
+            console.log(`⚠️ Manager for ${peerId} already exists`);
             return;
         }
 
         try {
-            console.log(`🎤 Starting voice chat with ${remotePeerId}`);
+            console.log(`🎤 Starting voice chat with ${peerId}`);
 
             const manager = new VoiceChatManager({
                 debateId,
                 myId: myAccountId,
-                remotePeerId: remotePeerId!,
+                remotePeerId: peerId,
                 onSendSignaling
             });
 
             // 이벤트 리스너 등록
             manager.on('stateChange', (state: ConnectionState) => {
-                console.log(`📊 상태 변경: ${state}`);
-                setConnectionState(state);
+                console.log(`📊 [${peerId}] 상태 변경: ${state}`);
+                setConnectionStates(prev => {
+                    const next = new Map(prev);
+                    next.set(peerId, state);
+                    return next;
+                });
             });
 
             manager.on('remoteStream', (stream: MediaStream | null) => {
-                console.log(`🎵 Remote stream 업데이트:`, stream ? '수신됨' : '제거됨');
-                setRemoteStream(stream);
+                console.log(`🎵 [${peerId}] Remote stream 업데이트:`, stream ? '수신됨' : '제거됨');
+                setRemoteStreams(prev => {
+                    const next = new Map(prev);
+                    if (stream) {
+                        next.set(peerId, stream);
+                    } else {
+                        next.delete(peerId);
+                    }
+                    return next;
+                });
             });
 
             manager.on('error', (error: Error) => {
-                console.error(`❌ Voice chat 에러:`, error);
+                console.error(`❌ [${peerId}] Voice chat 에러:`, error);
             });
 
             // 연결 (마이크 획득, 연결 생성 등)
             await manager.connect();
 
-            // 성공적으로 연결된 후에만 managerRef 설정
-            managerRef.current = manager;
-            setIsMuted(manager.isMutedState());
+            // 성공적으로 연결된 후에만 Map에 추가
+            managersRef.current.set(peerId, manager);
 
-            console.log('✅ Voice chat 시작됨');
+            // 첫 Manager가 생성될 때 음소거 상태 동기화
+            if (managersRef.current.size === 1) {
+                setIsMuted(manager.isMutedState());
+            }
+
+            console.log(`✅ Voice chat with ${peerId} 시작됨`);
 
         } catch (error) {
-            console.error('❌ Voice chat 시작 실패:', error);
-            managerRef.current = null;
-            setConnectionState('failed');
+            console.error(`❌ Voice chat with ${peerId} 시작 실패:`, error);
+            managersRef.current.delete(peerId);
+            setConnectionStates(prev => {
+                const next = new Map(prev);
+                next.set(peerId, 'failed');
+                return next;
+            });
         }
     };
 
     /**
-     * 음소거 토글
+     * 특정 peer의 Manager 정리
+     */
+    const cleanupManagerForPeer = (peerId: string) => {
+        const manager = managersRef.current.get(peerId);
+        if (manager) {
+            void manager.disconnect();
+            managersRef.current.delete(peerId);
+        }
+
+        // 상태 정리
+        setConnectionStates(prev => {
+            const next = new Map(prev);
+            next.delete(peerId);
+            return next;
+        });
+
+        setRemoteStreams(prev => {
+            const next = new Map(prev);
+            next.delete(peerId);
+            return next;
+        });
+    };
+
+    /**
+     * 음소거 토글 (모든 Manager에 적용)
      */
     const toggleMute = () => {
-        if (!managerRef.current) {
+        if (managersRef.current.size === 0) {
             console.warn('⚠️ 음소거 토글 불가: manager 없음');
             return;
         }
 
-        const muted = managerRef.current.toggleMute();
+        // 첫 번째 manager의 상태를 토글하고 나머지에도 적용
+        const firstManager = Array.from(managersRef.current.values())[0];
+        const muted = firstManager.toggleMute();
+
+        // 나머지 manager들도 동일하게 설정
+        managersRef.current.forEach((manager, peerId) => {
+            if (manager !== firstManager) {
+                if (muted && !manager.isMutedState()) {
+                    manager.toggleMute();
+                } else if (!muted && manager.isMutedState()) {
+                    manager.toggleMute();
+                }
+            }
+        });
+
         setIsMuted(muted);
     };
 
@@ -230,15 +238,18 @@ export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
      * 시그널링 메시지 처리
      */
     const handleSignalingMessage = (message: any) => {
-        if (!managerRef.current) {
-            // Manager가 준비되지 않았으면 조용히 무시 (에러 아님)
-            if (message.type !== 'VOICE_JOIN') {
-                console.warn(`⚠️ Voice chat 비활성, 무시: ${message.type}`);
+        const fromId = message.fromId;
+
+        // 해당 peer의 manager 찾기
+        const manager = managersRef.current.get(fromId);
+
+        if (!manager) {
+            // Manager가 아직 없으면 조용히 무시 (아직 연결 전이거나 오프라인)
+            if (message.type !== 'VOICE_JOIN' && message.type !== 'VOICE_LEAVE') {
+                console.warn(`⚠️ No manager for peer ${fromId}, ignoring ${message.type}`);
             }
             return;
         }
-
-        const manager = managerRef.current;
 
         switch (message.type) {
             case 'VOICE_OFFER':
@@ -260,7 +271,8 @@ export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
                 break;
 
             case 'VOICE_JOIN':
-                // 무시 - Presence 사용
+            case 'VOICE_LEAVE':
+                // Presence 기반으로 처리하므로 무시
                 break;
 
             default:
@@ -291,14 +303,16 @@ export const VoiceChatProvider: React.FC<VoiceChatProviderProps> = ({
         console.log('✅ 사용자가 join 확인');
     };
 
-    // isActive: 연결되었거나 재연결 중일 때 true
-    const isActive = connectionState === 'connected' || connectionState === 'reconnecting';
+    // isActive: 하나라도 연결되었거나 재연결 중일 때 true
+    const isActive = Array.from(connectionStates.values()).some(
+        state => state === 'connected' || state === 'reconnecting'
+    );
 
     const contextValue: VoiceChatContextValue = {
-        connectionState,
+        connectionStates,
         isActive,
         isMuted,
-        remoteStream,
+        remoteStreams,
         toggleMute,
         handleSignalingMessage,
         requestJoinConfirmation

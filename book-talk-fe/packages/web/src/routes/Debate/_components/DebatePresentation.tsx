@@ -1,13 +1,14 @@
 import {EditorContent, useEditor} from '@tiptap/react';
 import {useCallback, useEffect, useState} from 'react';
 import StarterKit from '@tiptap/starter-kit';
-import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
 import Heading from '@tiptap/extension-heading';
 import Placeholder from '@tiptap/extension-placeholder';
 import {Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField} from '@mui/material';
 import {MainContent, PresentationArea} from '../Debate.style';
 import {createSlashCommandExtension} from './SlashCommandExtension';
+import {ImageWithPaste} from './ImageExtension';
+import {LinkPreview} from './LinkPreviewExtension';
 import {usePresentation} from "../../../hooks/usePresentation.tsx";
 import type {CurrentRoundInfo} from '../../../hooks/useDebate';
 import {LastModified} from './LastModified';
@@ -65,12 +66,38 @@ export function DebatePresentation({
 
 
     // TipTap 에디터 설정
+    // IMPORTANT: Extension 순서가 paste rule 실행 순서를 결정합니다.
+    // 가장 구체적인 패턴(이미지, YouTube)을 먼저 배치해야 합니다.
     const editor = useEditor({
         extensions: [
-            StarterKit.configure({heading: false}),
+            // 1. 가장 구체적인 패턴: 이미지 URL (먼저 처리)
+            ImageWithPaste.configure({
+                HTMLAttributes: {class: 'presentation-image'},
+                resize: {
+                    enabled: true,
+                    directions: ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
+                    minWidth: 50,
+                    minHeight: 50,
+                    alwaysPreserveAspectRatio: true,
+                },
+            }),
+            // 2. YouTube URL (두 번째로 처리)
+            Youtube.configure({
+                addPasteHandler: true,  // YouTube URL 자동 감지 활성화
+                HTMLAttributes: {class: 'presentation-video'},
+                controls: false,
+                nocookie: true,
+                width: 720,
+                height: 480
+            }),
+            // 3. 일반 URL은 LinkPreview로 (마지막 fallback)
+            LinkPreview,
+            // 4. StarterKit은 Link extension을 비활성화하여 URL 가로채기 방지
+            StarterKit.configure({
+                heading: false,
+                link: false,  // Link extension 비활성화
+            }),
             Heading.configure({levels: [1]}),
-            Image.configure({HTMLAttributes: {class: 'presentation-image'}}),
-            Youtube.configure({HTMLAttributes: {class: 'presentation-video'}, controls: false, nocookie: true}),
             Placeholder.configure({
                 placeholder: currentSpeaker
                     ? `${currentSpeaker.accountName}님이 발표 중입니다.`
@@ -125,6 +152,13 @@ export function DebatePresentation({
         setYoutubeUrl('');
         setShowYoutubeDialog(false);
     }, [editor, youtubeUrl]);
+
+    // PresentationArea 클릭 시 에디터에 포커스
+    const handlePresentationAreaClick = useCallback(() => {
+        if (editor && currentRoundInfo.isEditable && !currentSpeaker) {
+            editor.commands.focus();
+        }
+    }, [editor, currentRoundInfo.isEditable, currentSpeaker]);
 
     // 채팅 기능 - props에서 받음
     const {chats, sendChat, isSending} = chat;
@@ -183,7 +217,7 @@ export function DebatePresentation({
                 isEditable={currentRoundInfo.isEditable}
                 isSaving={isSaving}
             />
-            <PresentationArea $isChatMode={false}>
+            <PresentationArea $isChatMode={false} onClick={handlePresentationAreaClick}>
                 <EditorContent editor={editor}/>
 
                 {/* 이미지 추가 다이얼로그 */}

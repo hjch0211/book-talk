@@ -15,5 +15,15 @@ export const PatchContentRequestSchema = z.object({
     from: z.string().optional(),
 });
 
+export const FetchOpenGraphResponseSchema = z.object({
+    url: z.string(),
+    title: z.string().nullable(),
+    description: z.string().nullable(),
+    image: z.string().nullable(),
+    siteName: z.string().nullable(),
+    type: z.string().nullable(),
+});
+
 export type FindOnePresentationResponse = z.infer<typeof FindOnePresentationResponseSchema>;
 export type PatchContentRequest = z.infer<typeof PatchContentRequestSchema>;
+export type FetchOpenGraphResponse = z.infer<typeof FetchOpenGraphResponseSchema>;
