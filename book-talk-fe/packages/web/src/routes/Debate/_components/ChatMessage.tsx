@@ -1,16 +1,20 @@
 import {Avatar, Box, Stack, Typography} from '@mui/material';
 import {EditorContent, useEditor} from '@tiptap/react';
-import {useEffect} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
 import Heading from '@tiptap/extension-heading';
 import type {ChatResponse} from '../../../apis/debate';
 import {LinkPreview} from "./LinkPreviewExtension.tsx";
+import {createMentionExtension} from './MentionExtension';
+import {PresentationViewModal} from './PresentationViewModal';
 
 interface ChatMessageProps {
     chat: ChatResponse;
     isMyMessage: boolean;
+    members: Array<{ id: string; name: string }>;
+    presentations: Array<{ id: string; accountId: string }>;
 }
 
 /**
@@ -20,9 +24,27 @@ interface ChatMessageProps {
  * - 다른 사람 메시지: 왼쪽 정렬
  * - 프로필 아바타 표시
  */
-export function ChatMessage({chat, isMyMessage}: ChatMessageProps) {
+export function ChatMessage({chat, isMyMessage, members, presentations}: ChatMessageProps) {
+    // 멘션 클릭 시 모달 상태
+    const [viewPresentationMember, setViewPresentationMember] = useState<{
+        memberId: string;
+        memberName: string;
+    } | null>(null);
+
+    // 멘션 클릭 핸들러
+    const handleMentionClick = useCallback((accountId: string) => {
+        const member = members.find(m => m.id === accountId);
+        if (member) {
+            setViewPresentationMember({
+                memberId: member.id,
+                memberName: member.name,
+            });
+        }
+    }, [members]);
+
     const editor = useEditor({
         extensions: [
+            createMentionExtension(members, handleMentionClick, false), // 읽기 전용, 클릭 가능
             StarterKit.configure({heading: false}),
             Heading.configure({levels: [1]}),
             Image.configure({HTMLAttributes: {class: 'chat-image'}}),
@@ -116,6 +138,12 @@ export function ChatMessage({chat, isMyMessage}: ChatMessageProps) {
                         },
                         '& .chat-video': {
                             my: 1
+                        },
+                        '& .mention': {
+                            color: '#5A67D8',
+                            fontWeight: '500',
+                            padding: '2px 4px',
+                            borderRadius: '4px'
                         }
                     }
                 }}
@@ -154,6 +182,19 @@ export function ChatMessage({chat, isMyMessage}: ChatMessageProps) {
                         {chat.accountName}
                     </Typography>
                 </Stack>
+            )}
+
+            {/* 멘션 클릭 시 발표 페이지 모달 */}
+            {viewPresentationMember && (
+                <PresentationViewModal
+                    open={!!viewPresentationMember}
+                    onClose={() => setViewPresentationMember(null)}
+                    memberName={viewPresentationMember.memberName}
+                    presentationId={presentations.find(
+                        p => p.accountId === viewPresentationMember.memberId
+                    )?.id}
+                    members={members}
+                />
             )}
         </Stack>
     );

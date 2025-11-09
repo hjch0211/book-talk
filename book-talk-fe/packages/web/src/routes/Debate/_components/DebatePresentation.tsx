@@ -32,6 +32,8 @@ interface Props {
         sendChat: (content: string) => void;
         isSending: boolean;
     };
+    members: Array<{ id: string; name: string }>;
+    presentations: Array<{ id: string; accountId: string }>;
 }
 
 export function DebatePresentation({
@@ -40,7 +42,9 @@ export function DebatePresentation({
                                        debateId,
                                        myAccountId,
                                        onChatMessage,
-                                       chat
+                                       chat,
+                                       members,
+                                       presentations
                                    }: Props) {
     const [showYoutubeDialog, setShowYoutubeDialog] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
@@ -176,6 +180,8 @@ export function DebatePresentation({
                         <ChatMessageList
                             chats={chats}
                             myAccountId={myAccountId!}
+                            members={members}
+                            presentations={presentations}
                         />
                     </PresentationArea>
                 </MainContent>
@@ -183,6 +189,8 @@ export function DebatePresentation({
                     canSend={canSend}
                     isSending={isSending}
                     onSend={sendChat}
+                    members={members}
+                    presentations={presentations}
                 />
             </>
         );
