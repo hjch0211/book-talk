@@ -248,6 +248,7 @@ export function DebateMemberList({
                     onClose={() => setViewPresentationMember(null)}
                     memberName={viewPresentationMember.memberName}
                     presentationId={presentations.find(p => p.accountId === viewPresentationMember.memberId)?.id}
+                    members={members}
                 />
             )}
         </MemberListContainer>

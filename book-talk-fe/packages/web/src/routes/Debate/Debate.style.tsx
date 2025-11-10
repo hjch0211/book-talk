@@ -277,6 +277,24 @@ export const PresentationArea = styled.div<{ $isChatMode?: boolean }>`
         .tippy-content {
             padding: 0;
         }
+
+        /* Mention 스타일 */
+
+        .mention {
+            color: #5A67D8;
+            font-weight: 500;
+            padding: 2px 4px;
+            border-radius: 4px;
+            transition: background-color 0.2s;
+
+            &[style*="cursor: pointer"] {
+                text-decoration: underline;
+
+                &:hover {
+                    background-color: #EBF4FF;
+                }
+            }
+        }
     }
 `;
 

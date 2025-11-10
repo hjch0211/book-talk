@@ -6,6 +6,8 @@ import type {ChatResponse} from '../../../apis/debate';
 interface ChatMessageListProps {
     chats: ChatResponse[];
     myAccountId: string;
+    members: Array<{ id: string; name: string }>;
+    presentations: Array<{ id: string; accountId: string }>;
 }
 
 /**
@@ -13,7 +15,7 @@ interface ChatMessageListProps {
  * - 채팅 메시지 표시
  * - 새 메시지 시 자동 스크롤
  */
-export function ChatMessageList({chats, myAccountId}: ChatMessageListProps) {
+export function ChatMessageList({chats, myAccountId, members, presentations}: ChatMessageListProps) {
     const chatEndRef = useRef<HTMLDivElement>(null);
 
     // 새 채팅 시 스크롤 하단 이동
@@ -36,6 +38,8 @@ export function ChatMessageList({chats, myAccountId}: ChatMessageListProps) {
                     key={chat.id}
                     chat={chat}
                     isMyMessage={chat.accountId === myAccountId}
+                    members={members}
+                    presentations={presentations}
                 />
             ))}
             <div ref={chatEndRef}/>

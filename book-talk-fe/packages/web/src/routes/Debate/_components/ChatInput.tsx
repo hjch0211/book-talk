@@ -10,13 +10,17 @@ import Heading from '@tiptap/extension-heading';
 import Placeholder from '@tiptap/extension-placeholder';
 import {createSlashCommandExtension} from './SlashCommandExtension';
 import {createEnterToSendExtension} from './EnterToSendExtension';
+import {createMentionExtension} from './MentionExtension';
 import {ImageWithPaste} from './ImageExtension';
 import {ChatInputBox, ChatInputContainer} from '../Debate.style';
+import {PresentationViewModal} from './PresentationViewModal';
 
 interface ChatInputProps {
     canSend: boolean;
     isSending: boolean;
     onSend: (content: string) => void;
+    members: Array<{ id: string; name: string }>;
+    presentations: Array<{ id: string; accountId: string }>;
 }
 
 const hasSendableContent = (doc?: JSONContent | null): boolean => {
@@ -39,13 +43,20 @@ const hasSendableContent = (doc?: JSONContent | null): boolean => {
  * 채팅 입력 컴포넌트 (TipTap 에디터)
  * - 리치 텍스트 입력 (이미지, 유튜브 등)
  * - SlashCommand 지원
+ * - Mention 지원 (@참여자)
  * - Enter: 전송, Shift+Enter: 줄바꿈
  */
-export function ChatInput({canSend, isSending, onSend}: ChatInputProps) {
+export function ChatInput({canSend, isSending, onSend, members, presentations}: ChatInputProps) {
     const [showYoutubeDialog, setShowYoutubeDialog] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
     const [showImageDialog, setShowImageDialog] = useState(false);
     const [imageUrl, setImageUrl] = useState('');
+
+    // 멘션 클릭 시 모달 상태
+    const [viewPresentationMember, setViewPresentationMember] = useState<{
+        memberId: string;
+        memberName: string;
+    } | null>(null);
 
     // ref로 최신 값을 참조하도록 함 (Extension이 재생성되지 않도록)
     const stateRef = useRef({canSend, isSending, onSend});
@@ -64,6 +75,17 @@ export function ChatInput({canSend, isSending, onSend}: ChatInputProps) {
         setShowYoutubeDialog(true);
     }, []);
 
+    // 멘션 클릭 핸들러
+    const handleMentionClick = useCallback((accountId: string) => {
+        const member = members.find(m => m.id === accountId);
+        if (member) {
+            setViewPresentationMember({
+                memberId: member.id,
+                memberName: member.name,
+            });
+        }
+    }, [members]);
+
     // Enter 키로 전송하는 Extension 생성 (한 번만 생성)
     const enterToSendExtension = useMemo(() =>
             createEnterToSendExtension(stateRef),
@@ -72,6 +94,8 @@ export function ChatInput({canSend, isSending, onSend}: ChatInputProps) {
 
     const editor = useEditor({
         extensions: [
+            // Mention Extension (가장 먼저 추가)
+            createMentionExtension(members, handleMentionClick, true),
             StarterKit.configure({heading: false}),
             Heading.configure({levels: [1]}),
             ImageWithPaste.configure({
@@ -92,7 +116,7 @@ export function ChatInput({canSend, isSending, onSend}: ChatInputProps) {
                 height: 480
             }),
             Placeholder.configure({
-                placeholder: canSend ? '메시지를 입력하세요... (Enter로 전송, Shift+Enter로 줄바꿈, / 를 입력하여 이미지/영상 추가)' : '발표자만 채팅할 수 있습니다'
+                placeholder: canSend ? '메시지를 입력하세요... (Enter로 전송, Shift+Enter로 줄바꿈, @로 멘션, /로 이미지/영상 추가)' : '발표자만 채팅할 수 있습니다'
             }),
             createSlashCommandExtension(addImage, addYoutube),
             enterToSendExtension, // SlashCommand 이후에 추가하여 낮은 우선순위
@@ -241,6 +265,19 @@ export function ChatInput({canSend, isSending, onSend}: ChatInputProps) {
                     <Button onClick={handleYoutubeAdd} variant="contained">추가</Button>
                 </DialogActions>
             </Dialog>
+
+            {/* 멘션 클릭 시 발표 페이지 모달 */}
+            {viewPresentationMember && (
+                <PresentationViewModal
+                    open={!!viewPresentationMember}
+                    onClose={() => setViewPresentationMember(null)}
+                    memberName={viewPresentationMember.memberName}
+                    presentationId={presentations.find(
+                        p => p.accountId === viewPresentationMember.memberId
+                    )?.id}
+                    members={members}
+                />
+            )}
         </>
     );
 }

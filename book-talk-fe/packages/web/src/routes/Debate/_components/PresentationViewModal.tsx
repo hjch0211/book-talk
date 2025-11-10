@@ -8,12 +8,14 @@ import {Box, IconButton, Modal as MuiModal, Typography} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import {usePresentation} from '../../../hooks/usePresentation';
 import {styled} from '@mui/material/styles';
+import {createMentionExtension} from './MentionExtension';
 
 interface Props {
     open: boolean;
     onClose: () => void;
     memberName: string;
     presentationId?: string;
+    members?: Array<{ id: string; name: string }>;
 }
 
 const ModalContainer = styled(Box)`
@@ -158,12 +160,15 @@ export function PresentationViewModal({
                                           open,
                                           onClose,
                                           memberName,
-                                          presentationId
+                                          presentationId,
+                                          members = []
                                       }: Props) {
     const {currentPresentation, isLoading} = usePresentation(presentationId);
 
     const editor = useEditor({
         extensions: [
+            // Mention Extension for read-only mode (no click handler, editable=false)
+            createMentionExtension(members, undefined, false),
             StarterKit.configure({heading: false}),
             Heading.configure({levels: [1]}),
             Image.configure({HTMLAttributes: {class: 'presentation-image'}}),

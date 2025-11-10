@@ -132,6 +132,8 @@ function DebatePageInner({debateId, sendSignalingRef, onWebSocketConnected, onDe
                 myAccountId={myMemberData.id}
                 onChatMessage={sendChatMessage}
                 chat={chat}
+                members={debate.members}
+                presentations={debate.presentations}
             />
             <DebateMemberList
                 members={membersWithPresence}
