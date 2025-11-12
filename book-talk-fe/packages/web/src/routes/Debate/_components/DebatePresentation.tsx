@@ -176,8 +176,6 @@ export function DebatePresentation({
     const isChatMode = currentRoundInfo.type === 'FREE' && currentSpeaker && debateId && myAccountId && onChatMessage;
 
     if (isChatMode) {
-        const canSend = currentSpeaker!.accountId === myAccountId;
-
         return (
             <>
                 <MainContent>
@@ -191,7 +189,6 @@ export function DebatePresentation({
                     </PresentationArea>
                 </MainContent>
                 <ChatInput
-                    canSend={canSend}
                     isSending={isSending}
                     onSend={sendChat}
                     members={members}

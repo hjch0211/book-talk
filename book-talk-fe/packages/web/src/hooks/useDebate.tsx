@@ -74,8 +74,7 @@ export const useDebate = ({debateId}: Props): UseDebateReturn => {
     const {data: _me} = useSuspenseQuery(meQueryOption);
     const joinAttempted = useRef<Set<string>>(new Set());
 
-    const myMember = debate.members.find((m) => m.id === _me?.id);
-    const isAlreadyMember = !!myMember;
+    const myMemberInfo = debate.members.find((m) => m.id === _me?.id);
 
     /** VoiceChat 메시지 핸들러를 ref로 저장 */
     const voiceChatHandlerRef = useRef<((message: WebSocketMessage) => void) | null>(null);
@@ -119,7 +118,7 @@ export const useDebate = ({debateId}: Props): UseDebateReturn => {
         if (
             debateId &&
             _me?.id &&
-            !isAlreadyMember &&
+            !myMemberInfo &&
             !joinDebateMutation.isPending &&
             !joinAttempted.current.has(`${debateId}-${_me.id}`)
         ) {
@@ -128,11 +127,11 @@ export const useDebate = ({debateId}: Props): UseDebateReturn => {
         }
         // joinDebateMutation은 의도적으로 의존성에서 제외 (무한 리렌더링 방지)
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [debateId, _me?.id, isAlreadyMember]);
+    }, [debateId, _me?.id, myMemberInfo]);
 
     const myMemberData = {
-        id: myMember?.id,
-        role: myMember?.role
+        id: myMemberInfo?.id,
+        role: myMemberInfo?.role
     }
 
     /** 라운드 시작 전 상태를 포함한 라운드 정보 */
@@ -178,7 +177,7 @@ export const useDebate = ({debateId}: Props): UseDebateReturn => {
         debateId,
         websocket.sendChatMessage,
         currentRoundInfo.type === 'FREE',
-        isAlreadyMember
+        !!myMemberInfo
     );
 
     return {
