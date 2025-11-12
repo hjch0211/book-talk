@@ -4,7 +4,7 @@ export const SignUpRequestSchema = z.object({
     name: z.string()
         .min(1, '이름을 입력해주세요')
         .max(50, '이름은 50자 이내로 입력해주세요')
-        .regex(/^[a-zA-Z0-9가-힣\s_-]+$/, '이름은 한글, 영문, 숫자, 공백, -, _ 만 사용 가능합니다'),
+        .regex(/^[a-zA-Z0-9가-힣ㄱ-ㅎㅏ-ㅣ\s_-]+$/, '이름은 한글, 영문, 숫자, 공백, -, _ 만 사용 가능합니다'),
 });
 
 export const SignInRequestSchema = z.object({
