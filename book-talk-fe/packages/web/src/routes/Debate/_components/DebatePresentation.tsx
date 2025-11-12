@@ -120,6 +120,11 @@ export function DebatePresentation({
         },
     });
 
+    // 에디터 편집 기능 동적 업데이트
+    useEffect(() => {
+        editor?.setEditable(currentRoundInfo.isEditable)
+    }, [currentRoundInfo.isEditable, editor]);
+
     // presentation 데이터 로드시 에디터 내용 업데이트
     useEffect(() => {
         if (editor && currentPresentation?.content !== undefined) {
