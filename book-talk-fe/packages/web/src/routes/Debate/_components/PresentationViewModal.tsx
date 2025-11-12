@@ -8,7 +8,7 @@ import {Box, IconButton, Modal as MuiModal, Typography} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
 import {usePresentation} from '../../../hooks/usePresentation';
 import {styled} from '@mui/material/styles';
-import {createMentionExtension} from './MentionExtension';
+import {createMentionExtension} from './editor/MentionExtension.tsx';
 
 interface Props {
     open: boolean;

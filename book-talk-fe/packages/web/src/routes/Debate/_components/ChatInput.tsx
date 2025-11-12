@@ -8,10 +8,10 @@ import StarterKit from '@tiptap/starter-kit';
 import Youtube from '@tiptap/extension-youtube';
 import Heading from '@tiptap/extension-heading';
 import Placeholder from '@tiptap/extension-placeholder';
-import {createSlashCommandExtension} from './SlashCommandExtension';
-import {createEnterToSendExtension} from './EnterToSendExtension';
-import {createMentionExtension} from './MentionExtension';
-import {ImageWithPaste} from './ImageExtension';
+import {createSlashCommandExtension} from './editor/SlashCommandExtension.tsx';
+import {createEnterToSendExtension} from './editor/EnterToSendExtension.ts';
+import {createMentionExtension} from './editor/MentionExtension.tsx';
+import {ImageWithPaste} from './editor/ImageExtension.ts';
 import {ChatInputBox, ChatInputContainer} from '../Debate.style';
 import {PresentationViewModal} from './PresentationViewModal';
 

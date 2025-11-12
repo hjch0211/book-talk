@@ -3,7 +3,7 @@ import {ReactRenderer} from '@tiptap/react';
 import {mergeAttributes} from '@tiptap/core';
 import type {Instance} from 'tippy.js';
 import tippy from 'tippy.js';
-import {MentionList} from './MentionList';
+import {MentionList} from './MentionList.tsx';
 
 /**
  * Tiptap Mention Extension

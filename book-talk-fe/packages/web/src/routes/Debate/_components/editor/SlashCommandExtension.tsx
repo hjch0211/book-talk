@@ -2,7 +2,7 @@ import {Extension} from '@tiptap/core';
 import Suggestion from '@tiptap/suggestion';
 import {ReactRenderer} from '@tiptap/react';
 import tippy from 'tippy.js';
-import {SlashCommands} from './SlashCommands';
+import {SlashCommands} from './SlashCommands.tsx';
 
 export interface SlashCommandItem {
     title: string;

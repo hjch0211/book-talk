@@ -6,8 +6,8 @@ import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
 import Heading from '@tiptap/extension-heading';
 import type {ChatResponse} from '../../../apis/debate';
-import {LinkPreview} from "./LinkPreviewExtension.tsx";
-import {createMentionExtension} from './MentionExtension';
+import {LinkPreview} from "./editor/LinkPreviewExtension.tsx";
+import {createMentionExtension} from './editor/MentionExtension.tsx';
 import {PresentationViewModal} from './PresentationViewModal';
 
 interface ChatMessageProps {

@@ -1,8 +1,8 @@
 import {type NodeViewProps, NodeViewWrapper} from '@tiptap/react';
 import {useEffect, useState} from 'react';
 import {Box, Card, CardContent, CardMedia, CircularProgress, Link, Typography} from '@mui/material';
-import type {FetchOpenGraphResponse} from '../../../apis/presentation';
-import {fetchOpenGraph} from '../../../apis/presentation';
+import type {FetchOpenGraphResponse} from '../../../../apis/presentation';
+import {fetchOpenGraph} from '../../../../apis/presentation';
 import LinkIcon from '@mui/icons-material/Link';
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 
