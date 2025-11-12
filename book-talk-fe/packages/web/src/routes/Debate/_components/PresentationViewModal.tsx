@@ -9,6 +9,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import {usePresentation} from '../../../hooks/usePresentation';
 import {styled} from '@mui/material/styles';
 import {createMentionExtension} from './editor/MentionExtension.tsx';
+import {LinkPreview} from "./editor/LinkPreviewExtension.tsx";
 
 interface Props {
     open: boolean;
@@ -173,10 +174,14 @@ export function PresentationViewModal({
             Heading.configure({levels: [1]}),
             Image.configure({HTMLAttributes: {class: 'presentation-image'}}),
             Youtube.configure({
+                addPasteHandler: true,  // YouTube URL 자동 감지 활성화
                 HTMLAttributes: {class: 'presentation-video'},
                 controls: false,
-                nocookie: true
+                nocookie: true,
+                width: 720,
+                height: 480
             }),
+            LinkPreview,
         ],
         editable: false,
         immediatelyRender: false,
