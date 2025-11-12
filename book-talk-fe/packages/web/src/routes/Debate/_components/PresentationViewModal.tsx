@@ -9,6 +9,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import {usePresentation} from '../../../hooks/usePresentation';
 import {styled} from '@mui/material/styles';
 import {createMentionExtension} from './editor/MentionExtension.tsx';
+import {LinkPreview} from "./editor/LinkPreviewExtension.tsx";
 
 interface Props {
     open: boolean;
@@ -83,14 +84,14 @@ const CloseButton = styled(IconButton)`
     position: absolute;
     width: 24px;
     height: 24px;
-    left: 956px;
-    top: 40px;
+    top: 20px;
+    right: 20px;
     padding: 0;
     color: #7B7B7B;
     flex: none;
     order: 1;
     flex-grow: 0;
-    z-index: 1;
+    z-index: 10;
 `;
 
 const EditorContainer = styled(Box)`
@@ -173,10 +174,14 @@ export function PresentationViewModal({
             Heading.configure({levels: [1]}),
             Image.configure({HTMLAttributes: {class: 'presentation-image'}}),
             Youtube.configure({
+                addPasteHandler: true,  // YouTube URL 자동 감지 활성화
                 HTMLAttributes: {class: 'presentation-video'},
                 controls: false,
-                nocookie: true
+                nocookie: true,
+                width: 720,
+                height: 480
             }),
+            LinkPreview,
         ],
         editable: false,
         immediatelyRender: false,

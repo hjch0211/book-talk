@@ -2,13 +2,13 @@ import {Avatar, Box, Stack, Typography} from '@mui/material';
 import {EditorContent, useEditor} from '@tiptap/react';
 import {useCallback, useEffect, useState} from 'react';
 import StarterKit from '@tiptap/starter-kit';
-import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
 import Heading from '@tiptap/extension-heading';
 import type {ChatResponse} from '../../../apis/debate';
 import {LinkPreview} from "./editor/LinkPreviewExtension.tsx";
 import {createMentionExtension} from './editor/MentionExtension.tsx';
 import {PresentationViewModal} from './PresentationViewModal';
+import {ImageWithPaste} from "./editor/ImageExtension.ts";
 
 interface ChatMessageProps {
     chat: ChatResponse;
@@ -47,8 +47,24 @@ export function ChatMessage({chat, isMyMessage, members, presentations}: ChatMes
             createMentionExtension(members, handleMentionClick, false), // 읽기 전용, 클릭 가능
             StarterKit.configure({heading: false}),
             Heading.configure({levels: [1]}),
-            Image.configure({HTMLAttributes: {class: 'chat-image'}}),
-            Youtube.configure({HTMLAttributes: {class: 'chat-video'}, controls: false, nocookie: true}),
+            ImageWithPaste.configure({
+                HTMLAttributes: {class: 'presentation-image'},
+                resize: {
+                    enabled: true,
+                    directions: ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
+                    minWidth: 50,
+                    minHeight: 50,
+                    alwaysPreserveAspectRatio: true,
+                },
+            }),
+            Youtube.configure({
+                addPasteHandler: true,  // YouTube URL 자동 감지 활성화
+                HTMLAttributes: {class: 'presentation-video'},
+                controls: false,
+                nocookie: true,
+                width: 720,
+                height: 480
+            }),
             LinkPreview,
         ],
         editable: false,

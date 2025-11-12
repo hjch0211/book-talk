@@ -14,6 +14,7 @@ import {createMentionExtension} from './editor/MentionExtension.tsx';
 import {ImageWithPaste} from './editor/ImageExtension.ts';
 import {ChatInputBox, ChatInputContainer} from '../Debate.style';
 import {PresentationViewModal} from './PresentationViewModal';
+import {LinkPreview} from "./editor/LinkPreviewExtension.tsx";
 
 interface ChatInputProps {
     isSending: boolean;
@@ -114,6 +115,7 @@ export function ChatInput({isSending, onSend, members, presentations}: ChatInput
                 width: 720,
                 height: 480
             }),
+            LinkPreview,
             Placeholder.configure({
                 placeholder: '메시지를 입력하세요... (Enter로 전송, Shift+Enter로 줄바꿈, @로 멘션, /로 이미지/영상 추가)'
             }),
