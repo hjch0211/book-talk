@@ -6,9 +6,9 @@ import Heading from '@tiptap/extension-heading';
 import Placeholder from '@tiptap/extension-placeholder';
 import {Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField} from '@mui/material';
 import {MainContent, PresentationArea} from '../Debate.style';
-import {createSlashCommandExtension} from './SlashCommandExtension';
-import {ImageWithPaste} from './ImageExtension';
-import {LinkPreview} from './LinkPreviewExtension';
+import {createSlashCommandExtension} from './editor/SlashCommandExtension.tsx';
+import {ImageWithPaste} from './editor/ImageExtension.ts';
+import {LinkPreview} from './editor/LinkPreviewExtension.tsx';
 import {usePresentation} from "../../../hooks/usePresentation.tsx";
 import type {CurrentRoundInfo} from '../../../hooks/useDebate';
 import {LastModified} from './LastModified';
@@ -111,7 +111,7 @@ export function DebatePresentation({
             }),
             createSlashCommandExtension(addImage, addYoutube),
         ],
-        editable: currentRoundInfo.isEditable && !currentSpeaker,
+        editable: currentRoundInfo.isEditable,
         immediatelyRender: false,
         editorProps: {attributes: {class: 'presentation-editor'}},
         onUpdate: ({editor: editorInstance}) => {
@@ -119,6 +119,11 @@ export function DebatePresentation({
             autoSave(editorInstance.getJSON());
         },
     });
+
+    // 에디터 편집 기능 동적 업데이트
+    useEffect(() => {
+        editor?.setEditable(currentRoundInfo.isEditable)
+    }, [currentRoundInfo.isEditable, editor]);
 
     // presentation 데이터 로드시 에디터 내용 업데이트
     useEffect(() => {
@@ -171,8 +176,6 @@ export function DebatePresentation({
     const isChatMode = currentRoundInfo.type === 'FREE' && currentSpeaker && debateId && myAccountId && onChatMessage;
 
     if (isChatMode) {
-        const canSend = currentSpeaker!.accountId === myAccountId;
-
         return (
             <>
                 <MainContent>
@@ -186,7 +189,6 @@ export function DebatePresentation({
                     </PresentationArea>
                 </MainContent>
                 <ChatInput
-                    canSend={canSend}
                     isSending={isSending}
                     onSend={sendChat}
                     members={members}

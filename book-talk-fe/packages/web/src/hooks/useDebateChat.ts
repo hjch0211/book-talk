@@ -12,28 +12,28 @@ export const useDebateChat = (
     debateId: string | undefined,
     sendChatMessage: ((chatId: number) => void) | undefined,
     isFreeRound: boolean,
-    isAlreadyMember: boolean
+    hasMyMemberInfo: boolean
 ) => {
     const queryClient = useQueryClient();
 
     // FREE 라운드이고 멤버일 때만 채팅 데이터 로드
-    const {data: chats = []} = useQuery(getChatsQueryOptions(debateId, isFreeRound, isAlreadyMember));
+    const {data: chats = []} = useQuery(getChatsQueryOptions(debateId, isFreeRound, hasMyMemberInfo));
     const createChatMutation = useMutation({
         mutationFn: createChat,
         onSuccess: (newChat) => {
-            void queryClient.invalidateQueries({queryKey: getChatsQueryOptions(debateId, isFreeRound, isAlreadyMember).queryKey});
+            void queryClient.invalidateQueries({queryKey: getChatsQueryOptions(debateId, isFreeRound, hasMyMemberInfo).queryKey});
             sendChatMessage?.(newChat.id);
         }
     });
 
     const sendChat = useCallback((content: string) => {
-        if (!isFreeRound || !content.trim() || !debateId || !isAlreadyMember) return;
+        if (!isFreeRound || !content.trim() || !debateId || !hasMyMemberInfo) return;
 
         createChatMutation.mutate({debateId, content: content.trim()});
-    }, [debateId, createChatMutation, isFreeRound, isAlreadyMember]);
+    }, [debateId, createChatMutation, isFreeRound, hasMyMemberInfo]);
 
     return {
-        chats: isFreeRound && isAlreadyMember ? chats : [],
+        chats: isFreeRound && hasMyMemberInfo ? chats : [],
         sendChat,
         isSending: createChatMutation.isPending
     };

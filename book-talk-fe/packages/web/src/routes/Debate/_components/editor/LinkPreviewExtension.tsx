@@ -1,6 +1,6 @@
 import {mergeAttributes, Node, nodePasteRule} from '@tiptap/core';
 import {ReactNodeViewRenderer} from '@tiptap/react';
-import {LinkPreviewNode} from './LinkPreviewNode';
+import {LinkPreviewNode} from './LinkPreviewNode.tsx';
 
 /**
  * URL 패턴 정규식

@@ -8,15 +8,14 @@ import StarterKit from '@tiptap/starter-kit';
 import Youtube from '@tiptap/extension-youtube';
 import Heading from '@tiptap/extension-heading';
 import Placeholder from '@tiptap/extension-placeholder';
-import {createSlashCommandExtension} from './SlashCommandExtension';
-import {createEnterToSendExtension} from './EnterToSendExtension';
-import {createMentionExtension} from './MentionExtension';
-import {ImageWithPaste} from './ImageExtension';
+import {createSlashCommandExtension} from './editor/SlashCommandExtension.tsx';
+import {createEnterToSendExtension} from './editor/EnterToSendExtension.ts';
+import {createMentionExtension} from './editor/MentionExtension.tsx';
+import {ImageWithPaste} from './editor/ImageExtension.ts';
 import {ChatInputBox, ChatInputContainer} from '../Debate.style';
 import {PresentationViewModal} from './PresentationViewModal';
 
 interface ChatInputProps {
-    canSend: boolean;
     isSending: boolean;
     onSend: (content: string) => void;
     members: Array<{ id: string; name: string }>;
@@ -46,7 +45,7 @@ const hasSendableContent = (doc?: JSONContent | null): boolean => {
  * - Mention 지원 (@참여자)
  * - Enter: 전송, Shift+Enter: 줄바꿈
  */
-export function ChatInput({canSend, isSending, onSend, members, presentations}: ChatInputProps) {
+export function ChatInput({isSending, onSend, members, presentations}: ChatInputProps) {
     const [showYoutubeDialog, setShowYoutubeDialog] = useState(false);
     const [youtubeUrl, setYoutubeUrl] = useState('');
     const [showImageDialog, setShowImageDialog] = useState(false);
@@ -59,12 +58,12 @@ export function ChatInput({canSend, isSending, onSend, members, presentations}: 
     } | null>(null);
 
     // ref로 최신 값을 참조하도록 함 (Extension이 재생성되지 않도록)
-    const stateRef = useRef({canSend, isSending, onSend});
+    const stateRef = useRef({isSending, onSend});
 
     // props가 변경될 때마다 ref 업데이트
     useEffect(() => {
-        stateRef.current = {canSend, isSending, onSend};
-    }, [canSend, isSending, onSend]);
+        stateRef.current = {isSending, onSend};
+    }, [isSending, onSend]);
 
     // 에디터 콜백들
     const addImage = useCallback(() => {
@@ -116,12 +115,12 @@ export function ChatInput({canSend, isSending, onSend, members, presentations}: 
                 height: 480
             }),
             Placeholder.configure({
-                placeholder: canSend ? '메시지를 입력하세요... (Enter로 전송, Shift+Enter로 줄바꿈, @로 멘션, /로 이미지/영상 추가)' : '발표자만 채팅할 수 있습니다'
+                placeholder: '메시지를 입력하세요... (Enter로 전송, Shift+Enter로 줄바꿈, @로 멘션, /로 이미지/영상 추가)'
             }),
             createSlashCommandExtension(addImage, addYoutube),
             enterToSendExtension, // SlashCommand 이후에 추가하여 낮은 우선순위
         ],
-        editable: canSend && !isSending,
+        editable: !isSending,
         immediatelyRender: false,
         editorProps: {
             attributes: {class: 'chat-input-editor'},
@@ -132,15 +131,13 @@ export function ChatInput({canSend, isSending, onSend, members, presentations}: 
     useEffect(() => {
         if (!editor) return;
 
-        const shouldBeEditable = canSend && !isSending;
-
-        if (editor.isEditable !== shouldBeEditable) {
-            editor.setEditable(shouldBeEditable);
+        if (editor.isEditable !== !isSending) {
+            editor.setEditable(!isSending);
         }
-    }, [editor, canSend, isSending]);
+    }, [editor, isSending]);
 
     const handleSend = useCallback(() => {
-        if (!editor || !canSend || isSending) return;
+        if (!editor || isSending) return;
 
         const json = editor.getJSON();
         if (!hasSendableContent(json)) return;
@@ -153,7 +150,7 @@ export function ChatInput({canSend, isSending, onSend, members, presentations}: 
         setTimeout(() => {
             editor.commands.focus();
         }, 100);
-    }, [editor, canSend, isSending, onSend]);
+    }, [editor, isSending, onSend]);
 
     const handleImageAdd = useCallback(() => {
         if (imageUrl && editor) {
@@ -179,7 +176,7 @@ export function ChatInput({canSend, isSending, onSend, members, presentations}: 
         <>
             <ChatInputContainer>
                 <IconButton
-                    disabled={!canSend}
+                    disabled={isSending}
                     onClick={addImage}
                     sx={{
                         width: '72px',
@@ -203,14 +200,14 @@ export function ChatInput({canSend, isSending, onSend, members, presentations}: 
 
                 <IconButton
                     onClick={handleSend}
-                    disabled={!canSend || isSending || !hasSendableContent(editor?.getJSON())}
+                    disabled={isSending || !hasSendableContent(editor?.getJSON())}
                     sx={{
                         width: '72px',
                         height: '45px',
-                        bgcolor: canSend && hasSendableContent(editor?.getJSON()) ? '#6366F1' : '#C4C4C4',
+                        bgcolor: hasSendableContent(editor?.getJSON()) ? '#6366F1' : '#C4C4C4',
                         borderRadius: '24px',
                         '&:hover': {
-                            bgcolor: canSend && hasSendableContent(editor?.getJSON()) ? '#4F46E5' : '#C4C4C4'
+                            bgcolor: hasSendableContent(editor?.getJSON()) ? '#4F46E5' : '#C4C4C4'
                         },
                         '&:disabled': {
                             bgcolor: '#C4C4C4'
@@ -218,7 +215,7 @@ export function ChatInput({canSend, isSending, onSend, members, presentations}: 
                     }}
                 >
                     <SendIcon
-                        sx={{color: canSend && hasSendableContent(editor?.getJSON()) ? '#FFFFFF' : '#9D9D9D'}}/>
+                        sx={{color: hasSendableContent(editor?.getJSON()) ? '#FFFFFF' : '#9D9D9D'}}/>
                 </IconButton>
             </ChatInputContainer>
 

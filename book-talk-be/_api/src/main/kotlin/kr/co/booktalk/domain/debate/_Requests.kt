@@ -1,8 +1,8 @@
 package kr.co.booktalk.domain.debate
 
-import kr.co.booktalk.Nullable
 import kr.co.booktalk.WebSocketMessage
 import kr.co.booktalk.domain.DebateRoundType
+import org.openapitools.jackson.nullable.JsonNullable
 
 data class CreateRequest(
     val bookImageUrl: String,
@@ -22,9 +22,9 @@ data class CreateRoundRequest(
 data class PatchRoundRequest(
     val debateRoundId: Long,
     /** 다음 발언자 예약 */
-    val nextSpeakerId: Nullable<String> = Nullable.absent(),
+    val nextSpeakerId: JsonNullable<String>? = JsonNullable.undefined(),
     /** 토론 라운드 종료 */
-    val ended: Nullable<Boolean> = Nullable.absent(),
+    val ended: JsonNullable<Boolean>? = JsonNullable.undefined(),
 )
 
 data class CloseRoundRequest(
