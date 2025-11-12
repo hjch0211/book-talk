@@ -83,14 +83,14 @@ const CloseButton = styled(IconButton)`
     position: absolute;
     width: 24px;
     height: 24px;
-    left: 956px;
-    top: 40px;
+    top: 20px;
+    right: 20px;
     padding: 0;
     color: #7B7B7B;
     flex: none;
     order: 1;
     flex-grow: 0;
-    z-index: 1;
+    z-index: 10;
 `;
 
 const EditorContainer = styled(Box)`
