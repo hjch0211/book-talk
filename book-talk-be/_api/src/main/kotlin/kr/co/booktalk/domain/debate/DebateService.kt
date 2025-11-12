@@ -5,6 +5,7 @@ import kr.co.booktalk.domain.*
 import kr.co.booktalk.domain.auth.AuthAccount
 import kr.co.booktalk.httpBadRequest
 import kr.co.booktalk.toUUID
+import org.openapitools.jackson.nullable.JsonNullable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -104,7 +105,7 @@ class DebateService(
             debateRoundService.patch(
                 PatchRoundRequest(
                     debateRoundId = round.id,
-                    nextSpeakerId = kr.co.booktalk.Nullable.of(nextWaitingSpeakerId)
+                    nextSpeakerId = JsonNullable.of(nextWaitingSpeakerId)
                 )
             )
         } else {

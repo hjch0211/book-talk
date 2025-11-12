@@ -46,14 +46,14 @@ class DebateRoundService(
         val debateRound = debateRoundRepository.findByIdOrNull(request.debateRoundId)
             ?: httpBadRequest("존재하지 않는 톡서 토론 라운드입니다.")
 
-        if (request.nextSpeakerId.isPresent) {
-            debateRound.nextSpeaker = request.nextSpeakerId.value?.let { accountId ->
+        if (request.nextSpeakerId?.isPresent == true) {
+            debateRound.nextSpeaker = request.nextSpeakerId.get()?.let { accountId ->
                 accountRepository.findByIdOrNull(accountId.toUUID())
                     ?: httpBadRequest("존재하지 않는 계정입니다.")
             }
         }
 
-        if (request.ended.isPresent && request.ended.value == true) {
+        if (request.ended?.isPresent == true && request.ended.get() == true) {
             debateRound.endedAt = Instant.now()
         }
     }

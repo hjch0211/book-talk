@@ -111,7 +111,7 @@ export function DebatePresentation({
             }),
             createSlashCommandExtension(addImage, addYoutube),
         ],
-        editable: currentRoundInfo.isEditable && !currentSpeaker,
+        editable: currentRoundInfo.isEditable,
         immediatelyRender: false,
         editorProps: {attributes: {class: 'presentation-editor'}},
         onUpdate: ({editor: editorInstance}) => {
