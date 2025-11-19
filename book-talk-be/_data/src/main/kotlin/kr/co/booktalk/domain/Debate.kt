@@ -17,8 +17,9 @@ class DebateEntity(
     @JoinColumn(name = "host_id", nullable = false)
     val host: AccountEntity,
 
-    @Column(nullable = false, length = 300)
-    val bookImageUrl: String,
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "book_id", nullable = false)
+    val book: BookEntity,
 
     @Column(nullable = false, length = 100)
     val topic: String,

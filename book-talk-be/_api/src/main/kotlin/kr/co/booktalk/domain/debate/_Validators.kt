@@ -5,7 +5,7 @@ import java.time.Instant
 
 fun CreateRequest.validate() {
     Instant.now()
-    require(bookImageUrl.isNotBlank()) { "bookImageUrl은 필수입니다." }
+    require(bookImageUrl?.isNotBlank() == true) { "bookImageUrl은 필수입니다." }
     require(topic.isNotBlank()) { "topic은 필수입니다." }
 }
 

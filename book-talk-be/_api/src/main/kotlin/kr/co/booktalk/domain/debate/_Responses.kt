@@ -18,7 +18,7 @@ data class FindOneResponse(
     val members: List<MemberInfo>,
     val presentations: List<PresentationInfo>,
     val currentRound: RoundInfo? = null,
-    val bookImageUrl: String,
+    val bookInfo: BookInfo,
     val topic: String,
     val description: String? = null,
     val closedAt: Instant? = null,
@@ -26,6 +26,13 @@ data class FindOneResponse(
     val updatedAt: Instant,
     val archivedAt: Instant? = null,
 ) {
+    data class BookInfo(
+        val title: String,
+        val author: String,
+        val description: String? = null,
+        val imageUrl: String? = null,
+    )
+
     data class MemberInfo(
         val id: String,
         val name: String,

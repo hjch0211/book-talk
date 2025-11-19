@@ -29,9 +29,11 @@ data class SearchResponse(
     val isLastPage: Boolean
 ) {
     data class BookData(
+        val isbn: String,
         val title: String,
         val author: String,
         val publisher: String,
+        val description: String,
         val imageUrl: String,
     )
 }
@@ -59,9 +61,11 @@ class NaverBookClient(
         return SearchResponse(
             content = apiResponse.items.map {
                 SearchResponse.BookData(
+                    isbn = it.isbn,
                     title = it.title,
                     author = it.author,
                     publisher = it.publisher,
+                    description = it.description,
                     imageUrl = it.image
                 )
             },
@@ -86,6 +90,7 @@ data class NaverBookItem(
     val link: String,
     val image: String,
     val author: String,
+    val isbn: String,
     val publisher: String,
     val description: String,
 )

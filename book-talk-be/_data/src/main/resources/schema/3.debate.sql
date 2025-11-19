@@ -2,7 +2,7 @@ create table if not exists debate
 (
     id             uuid         not null primary key,
     host_id        uuid         not null,
-    book_image_url varchar(300) not null,
+    book_id        bigint       not null,
     topic          varchar(100) not null,
     description    varchar(300) null,
     closed_at      timestamp    null,

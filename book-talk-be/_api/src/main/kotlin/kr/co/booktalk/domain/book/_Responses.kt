@@ -8,9 +8,11 @@ data class SearchBookResponse(
     val isLastPage: Boolean
 ) {
     data class BookData(
+        val isbn: String,
         val title: String,
         val author: String,
         val publisher: String,
+        val description: String,
         val imageUrl: String,
     )
 }
