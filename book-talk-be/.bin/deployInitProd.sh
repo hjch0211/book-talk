@@ -26,7 +26,7 @@ fi
 echo "✅ .env.prod 파일 확인 완료"
 
 # 필수 디렉토리 확인
-if [ ! -d "data/src/main/resources/schema" ]; then
+if [ ! -d "_data/src/main/resources/schema" ]; then
   echo "❌ schema 디렉토리를 찾을 수 없습니다!"
   echo "   book-talk-be 프로젝트 루트 디렉토리에서 실행하세요."
   exit 1
@@ -91,13 +91,13 @@ fi
 # 초기 데이터 삽입
 echo ""
 echo "📦 초기 데이터 설정 스크립트 실행 중..."
-if [ -f "bin/initDataProd.sh" ]; then
-  if ! ./bin/initDataProd.sh; then
+if [ -f ".bin/initDataProd.sh" ]; then
+  if ! ./.bin/initDataProd.sh; then
     echo "❌ 초기 데이터 설정 실패!"
     exit 1
   fi
 else
-  echo "⚠️  초기 데이터 스크립트를 찾을 수 없습니다: bin/initDataProd.sh"
+  echo "⚠️  초기 데이터 스크립트를 찾을 수 없습니다: .bin/initDataProd.sh"
 fi
 
 # Backend 로그 확인
