@@ -31,7 +31,6 @@ interface CreateDebateModalProps {
 const CreateDebateModal = ({open, onClose}: CreateDebateModalProps) => {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
-    const [bookImageUrl, setBookImageUrl] = useState('');
     const [topic, setTopic] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
@@ -61,7 +60,6 @@ const CreateDebateModal = ({open, onClose}: CreateDebateModalProps) => {
         onSuccess: async (data) => {
             await queryClient.invalidateQueries({queryKey: findOneDebateQueryOptions().queryKey});
             // Reset form
-            setBookImageUrl('');
             setTopic('');
             setSearchQuery('');
             setSelectedBook(null);
@@ -79,26 +77,33 @@ const CreateDebateModal = ({open, onClose}: CreateDebateModalProps) => {
         setShowDropdown(true);
         if (!value) {
             setSelectedBook(null);
-            setBookImageUrl('');
         }
     };
 
     const handleBookSelect = (book: BookData) => {
         setSelectedBook(book);
-        setBookImageUrl(book.imageUrl);
         setSearchQuery(book.title);
         setShowDropdown(false);
     };
 
     const handleSubmit = () => {
+        if (!selectedBook || !selectedBook.isbn) {
+            console.error('ISBN is required to create a debate');
+            return;
+        }
+
         const request: CreateDebateRequest = {
-            bookImageUrl,
+            bookTitle: selectedBook.title,
+            bookISBN: selectedBook.isbn,
+            bookAuthor: selectedBook.author,
+            bookDescription: selectedBook.description,
+            bookImageUrl: selectedBook.imageUrl,
             topic,
         };
         createDebateMutation.mutate(request);
     };
 
-    const isFormValid = bookImageUrl.trim() && topic.trim();
+    const isFormValid = selectedBook && selectedBook.isbn && topic.trim();
 
     return (
         <Modal open={open} onClose={onClose} width={860} height={568}>

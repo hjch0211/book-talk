@@ -15,9 +15,11 @@ fun SearchResponse.toResponse(): SearchBookResponse {
     return SearchBookResponse(
         content = content.map {
             SearchBookResponse.BookData(
+                isbn = it.isbn,
                 title = it.title,
                 author = it.author,
                 publisher = it.publisher,
+                description = it.description,
                 imageUrl = it.imageUrl
             )
         },

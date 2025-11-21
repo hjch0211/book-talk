@@ -16,9 +16,11 @@ export const SearchBookRequestSchema = z.object({
 });
 
 export const BookDataSchema = z.object({
+    isbn: z.string().optional().default(''),
     title: z.string(),
     author: z.string(),
     publisher: z.string(),
+    description: z.string().optional().default(''),
     imageUrl: z.string(),
 });
 

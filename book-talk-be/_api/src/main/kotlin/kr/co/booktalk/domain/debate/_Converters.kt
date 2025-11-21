@@ -2,10 +2,10 @@ package kr.co.booktalk.domain.debate
 
 import kr.co.booktalk.domain.*
 
-fun CreateRequest.toEntity(host: AccountEntity): DebateEntity {
+fun CreateRequest.toEntity(host: AccountEntity, book: BookEntity): DebateEntity {
     return DebateEntity(
         host = host,
-        bookImageUrl = bookImageUrl,
+        book = book,
         topic = topic,
         description = description,
     )
@@ -28,7 +28,12 @@ fun DebateEntity.toResponse(
             )
         },
         currentRound = currentRound?.toRoundInfo(currentSpeakerId, currentSpeakerEndedAt),
-        bookImageUrl = bookImageUrl,
+        bookInfo = FindOneResponse.BookInfo(
+            title = book.title,
+            author = book.author,
+            description = book.description ?: "",
+            imageUrl = book.imageUrl ?: "",
+        ),
         topic = topic,
         description = description,
         closedAt = closedAt,

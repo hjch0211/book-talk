@@ -5,9 +5,13 @@ import kr.co.booktalk.domain.DebateRoundType
 import org.openapitools.jackson.nullable.JsonNullable
 
 data class CreateRequest(
-    val bookImageUrl: String,
     val topic: String,
     val description: String?,
+    val bookTitle: String,
+    val bookISBN: String,
+    val bookAuthor: String,
+    val bookDescription: String? = null,
+    val bookImageUrl: String? = null,
 )
 
 data class JoinRequest(

@@ -2,8 +2,18 @@ import {z} from 'zod';
 
 
 export const CreateDebateRequestSchema = z.object({
+    bookTitle: z.string()
+        .min(1, '책 제목을 입력해주세요'),
+    bookISBN: z.string()
+        .min(1, '책 ISBN을 입력해주세요'),
+    bookAuthor: z.string()
+        .min(1, '책 저자를 입력해주세요'),
+    bookDescription: z.string()
+        .nullable()
+        .optional(),
     bookImageUrl: z.string()
-        .min(1, '책 이미지 URL을 입력해주세요'),
+        .nullable()
+        .optional(),
     topic: z.string()
         .min(1, '토론 주제를 입력해주세요')
         .max(200, '토론 주제는 200자 이내로 입력해주세요'),
@@ -39,12 +49,19 @@ export const RoundInfoSchema = z.object({
     endedAt: z.string().nullable().optional(),
 });
 
+export const BookInfoSchema = z.object({
+    title: z.string(),
+    author: z.string(),
+    description: z.string(),
+    imageUrl: z.string(),
+});
+
 export const FindOneDebateResponseSchema = z.object({
     id: z.string(),
     members: z.array(MemberInfoSchema),
     presentations: z.array(PresentationInfoSchema),
     currentRound: RoundInfoSchema.nullable().optional(),
-    bookImageUrl: z.string(),
+    bookInfo: BookInfoSchema,
     topic: z.string(),
     description: z.string().nullable().optional(),
     closedAt: z.string().nullable().optional(),
@@ -109,6 +126,7 @@ export const ChatResponseSchema = z.object({
 export type CreateDebateRequest = z.infer<typeof CreateDebateRequestSchema>;
 export type JoinDebateRequest = z.infer<typeof JoinDebateRequestSchema>;
 export type FindOneDebateResponse = z.infer<typeof FindOneDebateResponseSchema>;
+export type BookInfo = z.infer<typeof BookInfoSchema>;
 export type MemberInfo = z.infer<typeof MemberInfoSchema>;
 export type PresentationInfo = z.infer<typeof PresentationInfoSchema>;
 export type RoundInfo = z.infer<typeof RoundInfoSchema>;

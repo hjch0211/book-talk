@@ -21,12 +21,23 @@ class DebateService(
     private val presentationRepository: PresentationRepository,
     private val debateRoundSpeakerRepository: DebateRoundSpeakerRepository,
     private val debateRoundSpeakerService: DebateRoundSpeakerService,
-    private val debateRoundService: DebateRoundService
+    private val debateRoundService: DebateRoundService,
+    private val bookRepository: BookRepository
 ) {
     @Transactional
     fun create(request: CreateRequest, authAccount: AuthAccount): CreateResponse {
         val host = accountRepository.findByIdOrNull(authAccount.id.toUUID()) ?: httpBadRequest("존재하지 않는 사용자입니다.")
-        val debate = debateRepository.saveAndFlush(request.toEntity(host))
+        val book = bookRepository.findByIsbn(request.bookISBN) ?: bookRepository.save(
+            BookEntity(
+                isbn = request.bookISBN,
+                title = request.bookTitle,
+                author = request.bookAuthor,
+                description = request.bookDescription,
+                imageUrl = request.bookImageUrl
+            )
+        )
+
+        val debate = debateRepository.saveAndFlush(request.toEntity(host, book))
         debateMemberRepository.save(
             DebateMemberEntity(
                 account = host,
