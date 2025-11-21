@@ -18,7 +18,7 @@ if ! docker ps | grep -q book-talk-postgres; then
 fi
 
 # 초기 데이터 디렉토리
-INIT_DIR="data/src/main/resources/init"
+INIT_DIR="_data/src/main/resources/init"
 
 # 초기 데이터 SQL 파일 실행
 if [ -d "$INIT_DIR" ]; then
