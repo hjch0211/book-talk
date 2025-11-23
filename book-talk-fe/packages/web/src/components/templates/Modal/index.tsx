@@ -1,7 +1,7 @@
-import { Box, IconButton, Modal as MuiModal } from '@mui/material';
+import {Box, IconButton, Modal as MuiModal} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import type { ReactNode } from 'react';
-import { modalStyle, getBoxStyle, closeButtonStyle } from './style';
+import type {ReactNode} from 'react';
+import {closeButtonStyle, getBoxStyle, modalStyle} from './style.ts';
 
 interface ModalProps {
     open: boolean;
@@ -13,19 +13,19 @@ interface ModalProps {
 }
 
 const Modal = ({
-    open,
-    onClose,
-    width = 808,
-    height = 548,
-    children,
-    showCloseButton = true
-}: ModalProps) => {
+                   open,
+                   onClose,
+                   width = 808,
+                   height = 548,
+                   children,
+                   showCloseButton = true
+               }: ModalProps) => {
     return (
         <MuiModal open={open} onClose={onClose} sx={modalStyle}>
             <Box sx={getBoxStyle(width, height)}>
                 {showCloseButton && (
                     <IconButton onClick={onClose} sx={closeButtonStyle}>
-                        <CloseIcon />
+                        <CloseIcon/>
                     </IconButton>
                 )}
                 {children}

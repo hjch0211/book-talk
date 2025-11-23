@@ -1,5 +1,5 @@
 import {Box, Button, Typography} from '@mui/material';
-import Modal from '../../../components/molecules/Modal';
+import Modal from '../../../components/templates/Modal';
 
 interface Props {
     onConfirm: () => void;
