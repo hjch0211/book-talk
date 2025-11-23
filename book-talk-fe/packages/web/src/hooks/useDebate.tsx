@@ -53,9 +53,6 @@ export interface UseDebateReturn {
         type: RoundType | null;
     };
     closeRoundStartBackdrop: () => void;
-
-    // VoiceChat 핸들러
-    voiceChatHandlerRef: ReturnType<typeof useRef<((message: WebSocketMessage) => void) | null>>;
 }
 
 /**
@@ -189,6 +186,5 @@ export const useDebate = ({debateId}: Props): UseDebateReturn => {
         chat,
         showRoundStartBackdrop,
         closeRoundStartBackdrop,
-        voiceChatHandlerRef
     }
 }

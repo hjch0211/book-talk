@@ -1,5 +1,4 @@
 import {ActionButton} from '../Debate.style';
-import {MicrophoneControl} from './MicrophoneControl';
 import raiseHandSvg from "../../../assets/raise-hand.svg";
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
@@ -16,14 +15,14 @@ interface RoundActionsProps {
 
 /** 라운드별 Action button */
 export function RoundActions({
-                                  roundType,
-                                  myRole,
-                                  isCurrentSpeaker,
-                                  onStartDebate,
-                                  onEndPresentation,
-                                  onToggleHand,
-                                  isMyHandRaised
-                              }: RoundActionsProps) {
+                                 roundType,
+                                 myRole,
+                                 isCurrentSpeaker,
+                                 onStartDebate,
+                                 onEndPresentation,
+                                 onToggleHand,
+                                 isMyHandRaised
+                             }: RoundActionsProps) {
     return (
         <>
             {roundType === "PREPARATION" && myRole === 'HOST' && (
@@ -37,7 +36,6 @@ export function RoundActions({
                     발표 끝내기
                 </ActionButton>
             )}
-            {roundType !== "PREPARATION" && <MicrophoneControl/>}
             {
                 roundType === "FREE" && (
                     <ActionButton

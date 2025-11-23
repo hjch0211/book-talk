@@ -1,4 +1,4 @@
-import {Suspense, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {Suspense, useEffect, useMemo, useRef, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {Stack} from '@mui/material';
 import MainContainer from '../../components/templates/MainContainer';
@@ -10,8 +10,6 @@ import {RoundActions} from './_components/RoundActions';
 import {DebateContainer} from './Debate.style';
 import {useDebate} from "../../hooks/useDebate.tsx";
 import StartDebateModal from "./_components/StartDebateModal.tsx";
-import {useVoiceChat, VoiceChatProvider} from "../../contexts/VoiceChatContext";
-import {VoiceAudioRenderer} from "./_components/VoiceAudioRenderer.tsx";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {findOneDebateQueryOptions} from "../../apis/debate";
 import {meQueryOption} from "../../apis/account";
@@ -40,7 +38,6 @@ function DebatePageInner({
                              participantIds
                          }: DebatePageInnerProps) {
     const [showStartModal, setShowStartModal] = useState(false);
-    const {handleSignalingMessage} = useVoiceChat();
 
     const {
         debate,
@@ -67,15 +64,9 @@ function DebatePageInner({
         chat,
         showRoundStartBackdrop,
         closeRoundStartBackdrop,
-        voiceChatHandlerRef
     } = useDebate({
         debateId
     });
-
-    // VoiceChat 핸들러 연결
-    useEffect(() => {
-        voiceChatHandlerRef.current = handleSignalingMessage;
-    }, [handleSignalingMessage, voiceChatHandlerRef]);
 
     // WebSocket 전송 함수 연결
     useEffect(() => {
@@ -209,37 +200,16 @@ function DebatePageContent({debateId}: Props) {
             .map(m => m.id);
     }, [debate.members, me?.id]);
 
-    // useCallback으로 메모이제이션하여 불필요한 리렌더링 방지
-    const handleSendSignaling = useCallback((message: any) => {
-        console.log('📤 Sending signaling message:', message);
-        if (sendSignalingRef.current) {
-            sendSignalingRef.current(message);
-        } else {
-            console.warn('⚠️ sendSignalingRef not initialized yet');
-        }
-    }, []);
-
     return (
         <MainContainer isAuthPage>
-            <VoiceChatProvider
-                debateId={debateId!}
-                myAccountId={me?.id || ''}
+            <DebatePageInner
+                debateId={debateId}
+                sendSignalingRef={sendSignalingRef}
+                onWebSocketConnected={setIsWebSocketConnected}
+                onDebateJoined={setIsDebateJoined}
+                onOnlineParticipantsChange={setOnlineParticipants}
                 participantIds={participantIds}
-                onlineParticipants={onlineParticipants}
-                isWebSocketConnected={isWebSocketConnected}
-                isDebateJoined={isDebateJoined}
-                onSendSignaling={handleSendSignaling}
-            >
-                <DebatePageInner
-                    debateId={debateId}
-                    sendSignalingRef={sendSignalingRef}
-                    onWebSocketConnected={setIsWebSocketConnected}
-                    onDebateJoined={setIsDebateJoined}
-                    onOnlineParticipantsChange={setOnlineParticipants}
-                    participantIds={participantIds}
-                />
-                <VoiceAudioRenderer/>
-            </VoiceChatProvider>
+            />
         </MainContainer>
     );
 }
