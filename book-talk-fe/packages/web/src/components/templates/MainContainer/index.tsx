@@ -1,8 +1,8 @@
 import {type ReactNode, useEffect} from "react";
 import {useNavigate} from 'react-router-dom';
-import {meQueryOption} from "../../apis/account";
+import {meQueryOption} from "../../../apis/account";
 import {useQuery} from "@tanstack/react-query";
-import {StyledContainer} from "./MainContainer.style.ts";
+import {StyledContainer} from "./style.ts";
 
 interface MainContainerProps {
     children: ReactNode;

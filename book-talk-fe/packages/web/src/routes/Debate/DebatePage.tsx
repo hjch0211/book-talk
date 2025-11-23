@@ -1,7 +1,7 @@
 import {Suspense, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useParams} from 'react-router-dom';
 import {Stack} from '@mui/material';
-import MainContainer from '../../components/MainContainer/MainContainer';
+import MainContainer from '../../components/templates/MainContainer';
 import {DebateHeader} from './_components/DebateHeader';
 import {DebatePresentation} from './_components/DebatePresentation';
 import {DebateMemberList} from './_components/DebateMemberList';
@@ -31,7 +31,14 @@ interface DebatePageInnerProps {
     participantIds: string[];
 }
 
-function DebatePageInner({debateId, sendSignalingRef, onWebSocketConnected, onDebateJoined, onOnlineParticipantsChange, participantIds}: DebatePageInnerProps) {
+function DebatePageInner({
+                             debateId,
+                             sendSignalingRef,
+                             onWebSocketConnected,
+                             onDebateJoined,
+                             onOnlineParticipantsChange,
+                             participantIds
+                         }: DebatePageInnerProps) {
     const [showStartModal, setShowStartModal] = useState(false);
     const {handleSignalingMessage} = useVoiceChat();
 
@@ -47,7 +54,16 @@ function DebatePageInner({debateId, sendSignalingRef, onWebSocketConnected, onDe
             handlePresentationRound,
             createRoundSpeakerMutation
         },
-        websocket: {toggleHand, isHandRaised, raisedHands, sendVoiceMessage, sendChatMessage, membersWithPresence, isConnected, isDebateJoined},
+        websocket: {
+            toggleHand,
+            isHandRaised,
+            raisedHands,
+            sendVoiceMessage,
+            sendChatMessage,
+            membersWithPresence,
+            isConnected,
+            isDebateJoined
+        },
         chat,
         showRoundStartBackdrop,
         closeRoundStartBackdrop,

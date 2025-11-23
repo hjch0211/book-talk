@@ -13,12 +13,12 @@ import {
     Typography
 } from '@mui/material';
 import {Logout, Person} from '@mui/icons-material';
-import {LogoContainer, LogoWrapper} from "./MainHeader.style.ts";
-import logoSvg from "../../assets/logo.svg";
+import {LogoContainer, LogoWrapper} from "./style.ts";
+import logoSvg from "../../../assets/logo.svg";
 import {useSuspenseQuery} from "@tanstack/react-query";
-import {meQueryOption} from "../../apis/account";
-import {signOut} from "../../apis/auth";
-import UpdateNicknameModal from "../../routes/Main/_components/NickNameModal/UpdateNicknameModal.tsx";
+import {meQueryOption} from "../../../apis/account";
+import {signOut} from "../../../apis/auth";
+import UpdateNicknameModal from "../../../routes/Main/_components/NickNameModal/UpdateNicknameModal.tsx";
 
 const ProfileSection = () => {
     const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);

@@ -1,6 +1,5 @@
 import {styled} from "@mui/material/styles";
 import {Container} from "@mui/material";
-import {appColor} from "../../constants/color.ts";
 
 export const StyledContainer = styled(Container)(() => ({
     position: 'relative',

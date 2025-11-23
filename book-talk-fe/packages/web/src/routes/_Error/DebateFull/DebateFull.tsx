@@ -11,7 +11,7 @@ import {
     IconContainer,
     TextWrapper
 } from './DebateFull.style';
-import PageWrapper from "../../../components/PageWrapper/PageWrapper";
+import PageWrapper from "../../../components/templates/PageWrapper";
 
 export const DebateFull = () => {
     const navigate = useNavigate();

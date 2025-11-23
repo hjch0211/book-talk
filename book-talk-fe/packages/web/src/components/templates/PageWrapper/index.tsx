@@ -1,5 +1,5 @@
 import {type ReactNode} from "react";
-import {StyledPageWrapper} from "./PageWrapper.style.ts";
+import {StyledPageWrapper} from "./style.ts";
 
 interface PageWrapperProps {
     children: ReactNode;

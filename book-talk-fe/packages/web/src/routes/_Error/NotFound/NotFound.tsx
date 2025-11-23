@@ -11,7 +11,7 @@ import {
     LogoContainer,
     NotFoundContainer
 } from './NotFound.style';
-import PageWrapper from "../../../components/PageWrapper/PageWrapper.tsx";
+import PageWrapper from "../../../components/templates/PageWrapper";
 
 export const NotFound = () => {
     const navigate = useNavigate();
