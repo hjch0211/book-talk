@@ -4,9 +4,9 @@ import {
     findOnePresentationQueryOptions,
     type PatchContentRequest,
     patchPresentationContent
-} from '../apis/presentation';
+} from '../../apis/presentation';
 import {useCallback, useMemo, useRef, useState} from 'react';
-import {useJsonPatch} from "./useJsonPatch.tsx";
+import {useJsonPatch} from "../infra/useJsonPatch.tsx";
 
 /** 발표 페이지를 저장 및 관리 */
 export const usePresentation = (

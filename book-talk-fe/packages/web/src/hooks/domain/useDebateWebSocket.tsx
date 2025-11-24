@@ -6,8 +6,8 @@ import {
     type WebSocketMessage,
     type WS_DebateRoundUpdateResponse,
     type WS_SpeakerUpdateResponse
-} from "../apis/websocket";
-import {findOneDebateQueryOptions, getChatsQueryOptions, type MemberInfo} from "../apis/debate";
+} from "../../apis/websocket";
+import {findOneDebateQueryOptions, getChatsQueryOptions, type MemberInfo} from "../../apis/debate";
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 

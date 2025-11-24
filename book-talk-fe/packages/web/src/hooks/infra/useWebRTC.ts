@@ -1,5 +1,5 @@
 import {useEffect, useRef, useState} from 'react';
-import {type RemoteStream, WebRTCManager} from '../libs/WebRTCManager';
+import {type RemoteStream, WebRTCManager} from '../../libs/WebRTCManager.ts';
 
 export type {RemoteStream};
 

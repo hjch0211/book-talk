@@ -8,7 +8,7 @@ import {DebateMemberList} from './_components/DebateMemberList';
 import {RoundStartBackdropContainer} from './_components/RoundStartBackdropContainer';
 import {RoundActions} from './_components/RoundActions';
 import {DebateContainer} from './Debate.style';
-import {useDebate} from "../../hooks/useDebate.tsx";
+import {useDebate} from "../../hooks/domain/useDebate.tsx";
 import StartDebateModal from "./_components/StartDebateModal.tsx";
 import {useSuspenseQuery} from "@tanstack/react-query";
 import {findOneDebateQueryOptions} from "../../apis/debate";

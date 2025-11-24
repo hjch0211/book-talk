@@ -11,7 +11,7 @@ import {
     patchRound,
     patchRoundSpeaker,
     type PatchRoundSpeakerRequest
-} from "../apis/debate";
+} from "../../apis/debate";
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 

@@ -1,6 +1,6 @@
 import {useCallback} from "react";
 import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import {createChat, getChatsQueryOptions} from "../apis/debate";
+import {createChat, getChatsQueryOptions} from "../../apis/debate";
 
 /**
  * 토론 채팅 관리 (내부 전용)

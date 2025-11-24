@@ -1,12 +1,12 @@
 import {useMutation, useQueryClient, useSuspenseQuery} from "@tanstack/react-query";
-import {findOneDebateQueryOptions, type FindOneDebateResponse, joinDebate} from "../apis/debate";
-import {meQueryOption} from "../apis/account";
+import {findOneDebateQueryOptions, type FindOneDebateResponse, joinDebate} from "../../apis/debate";
+import {meQueryOption} from "../../apis/account";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {useDebateRound, type UseDebateRoundReturn} from "./useDebateRound";
-import {useDebateWebSocket} from "./useDebateWebSocket";
-import {useDebateChat} from "./useDebateChat";
-import type {WebSocketMessage} from "../apis/websocket";
+import {useDebateRound, type UseDebateRoundReturn} from "./useDebateRound.ts";
+import {useDebateWebSocket} from "./useDebateWebSocket.tsx";
+import {useDebateChat} from "./useDebateChat.ts";
+import type {WebSocketMessage} from "../../apis/websocket";
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 

@@ -1,7 +1,7 @@
 import {DebateTitle, NavButton, NavButtonGroup, NavContent, NavigationBar} from '../Debate.style';
 import leaveIconSvg from "../../../assets/leave.svg";
 import userAddIconSvg from "../../../assets/user-add.svg";
-import {useToast} from "../../../hooks/useToast.tsx";
+import {useToast} from "../../../hooks/infra/useToast.tsx";
 import {useNavigate} from "react-router-dom";
 
 interface Props {

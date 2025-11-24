@@ -2,7 +2,7 @@ import {Suspense, useEffect, useState} from 'react';
 import {useSearchParams} from 'react-router-dom';
 import MainContainer from '../../components/templates/MainContainer';
 import LoginNicknameModal from './_components/NickNameModal/LoginNicknameModal.tsx';
-import {useModal} from '../../hooks/useModal';
+import {useModal} from '../../hooks/infra/useModal.tsx';
 import {
     ButtonContainer,
     MainButton,
