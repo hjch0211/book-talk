@@ -95,58 +95,41 @@ data class WS_ChatMessageRequest(
     override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
 }
 
-// WebRTC Signaling Messages
+// WebRTC Signaling Messages - Client sends (C_ prefix)
 data class WS_VoiceJoinRequest(
-    val debateId: String,
+    val debateId: String? = null,
     val accountId: String
 ) : WebSocketMessage {
-    override val type: String = "VOICE_JOIN"
-    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
-}
-
-data class WS_VoiceLeaveRequest(
-    val debateId: String,
-    val accountId: String
-) : WebSocketMessage {
-    override val type: String = "VOICE_LEAVE"
+    override val type: String = "C_VOICE_JOIN"
     override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
 }
 
 data class WS_VoiceOfferRequest(
-    val debateId: String,
+    val debateId: String? = null,
     val fromId: String,
     val toId: String,
     val offer: Map<String, Any>
 ) : WebSocketMessage {
-    override val type: String = "VOICE_OFFER"
+    override val type: String = "C_VOICE_OFFER"
     override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
 }
 
 data class WS_VoiceAnswerRequest(
-    val debateId: String,
+    val debateId: String? = null,
     val fromId: String,
     val toId: String,
     val answer: Map<String, Any>
 ) : WebSocketMessage {
-    override val type: String = "VOICE_ANSWER"
+    override val type: String = "C_VOICE_ANSWER"
     override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
 }
 
 data class WS_VoiceIceRequest(
-    val debateId: String,
+    val debateId: String? = null,
     val fromId: String,
     val toId: String,
     val iceCandidate: Map<String, Any>
 ) : WebSocketMessage {
-    override val type: String = "VOICE_ICE"
-    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
-}
-
-data class WS_VoiceStateRequest(
-    val debateId: String,
-    val accountId: String,
-    val isMuted: Boolean
-) : WebSocketMessage {
-    override val type: String = "VOICE_STATE"
+    override val type: String = "C_VOICE_ICE"
     override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
 }

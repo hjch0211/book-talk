@@ -1,19 +1,11 @@
 import {useCallback, useState} from 'react';
-import {Alert, Snackbar} from '@mui/material';
 import {createRoot} from 'react-dom/client';
+import {Toast} from '../../components/organisms/Toast';
 
 interface ToastOptions {
     message: string;
     duration?: number;
     action?: React.ReactNode;
-}
-
-interface ToastState {
-    open: boolean;
-    message: string;
-    duration: number;
-    action?: React.ReactNode;
-    onClose: () => void;
 }
 
 export const useToast = () => {
@@ -46,39 +38,8 @@ export const useToast = () => {
             setToastRoot(null);
         };
 
-        const ToastComponent = ({open, message, duration, action, onClose}: ToastState) => {
-            return (
-                <Snackbar
-                    open={open}
-                    autoHideDuration={duration}
-                    onClose={onClose}
-                    anchorOrigin={{vertical: 'top', horizontal: 'center'}}
-                >
-                    <Alert
-                        onClose={onClose}
-                        severity="info"
-                        variant="filled"
-                        action={action}
-                        sx={{
-                            width: '100%',
-                            backgroundColor: '#8E99FF',
-                            color: '#fff',
-                            '& .MuiAlert-icon': {
-                                color: '#fff'
-                            },
-                            '& .MuiAlert-action': {
-                                color: '#fff'
-                            }
-                        }}
-                    >
-                        {message}
-                    </Alert>
-                </Snackbar>
-            );
-        };
-
         root.render(
-            <ToastComponent
+            <Toast
                 open={true}
                 message={message}
                 duration={duration}

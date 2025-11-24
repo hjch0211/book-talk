@@ -1,4 +1,4 @@
-import {useEffect, useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 import {type RemoteStream, WebRTCManager} from '../../libs/WebRTCManager.ts';
 
 export type {RemoteStream};
@@ -15,25 +15,48 @@ export const useWebRTC = (options: UseWebRTCOptions = {}) => {
     const [remoteStreams, setRemoteStreams] = useState<RemoteStream[]>([]);
     const managerRef = useRef<WebRTCManager | null>(null);
     if (!managerRef.current) {
-        managerRef.current = new WebRTCManager(
-            setRemoteStreams,
-            onIceCandidate,
-            onError
-        );
+        managerRef.current = new WebRTCManager(setRemoteStreams, onIceCandidate, onError);
     }
 
     useEffect(() => {
         return () => managerRef.current?.disconnect()
     }, []);
 
+    const startLocalStream = useCallback(
+        (constraints?: MediaStreamConstraints) => managerRef.current!.startLocalStream(constraints),
+        []
+    );
+
+    const createOffer = useCallback(
+        (peerId: string) => managerRef.current!.createOffer(peerId),
+        []
+    );
+
+    const handleOffer = useCallback(
+        (peerId: string, offer: RTCSessionDescriptionInit) => managerRef.current!.handleOffer(peerId, offer),
+        []
+    );
+
+    const handleAnswer = useCallback(
+        (peerId: string, answer: RTCSessionDescriptionInit) => managerRef.current!.handleAnswer(peerId, answer),
+        []
+    );
+
+    const handleIceCandidate = useCallback(
+        (peerId: string, candidate: RTCIceCandidateInit) => managerRef.current!.handleIceCandidate(peerId, candidate),
+        []
+    );
+
+    const disconnect = useCallback(() => managerRef.current!.disconnect(), []);
+
     return {
         remoteStreams,
-        localStream: managerRef.current.localStream,
-        startLocalStream: managerRef.current.startLocalStream.bind(managerRef.current),
-        createOffer: managerRef.current.createOffer.bind(managerRef.current),
-        handleOffer: managerRef.current.handleOffer.bind(managerRef.current),
-        handleAnswer: managerRef.current.handleAnswer.bind(managerRef.current),
-        handleIceCandidate: managerRef.current.handleIceCandidate.bind(managerRef.current),
-        disconnect: managerRef.current.disconnect.bind(managerRef.current)
+        localStream: managerRef.current?.localStream ?? null,
+        startLocalStream,
+        createOffer,
+        handleOffer,
+        handleAnswer,
+        handleIceCandidate,
+        disconnect
     };
 };

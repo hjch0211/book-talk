@@ -13,7 +13,6 @@ type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
 interface UseDebateWebSocketOptions {
     onRoundStartBackdrop?: (roundType: RoundType) => void;
-    onVoiceSignaling?: (message: WebSocketMessage) => void;
 }
 
 export interface MemberWithPresence extends MemberInfo {
@@ -24,7 +23,7 @@ export interface MemberWithPresence extends MemberInfo {
  * WebSocket 연결 및 실시간 통신 관리
  * - WebSocket 연결/해제
  * - 메시지 송수신
- * - 상태 관리 (온라인, 손들기)
+ * - 상태 관리 (온라인, 손들기, 음성 메시지)
  * - 비즈니스 로직 (Query 갱신, UI 이벤트)
  * - 온라인 멤버 목록 계산
  *
@@ -42,14 +41,13 @@ export const useDebateWebSocket = (
     const [isConnected, setIsConnected] = useState<boolean>(false);
     const [isDebateJoined, setIsDebateJoined] = useState<boolean>(false);
     const [raisedHands, setRaisedHands] = useState<RaisedHandInfo[]>([]);
+    const [lastVoiceMessage, setLastVoiceMessage] = useState<WebSocketMessage | null>(null);
     const wsClientRef = useRef<DebateWebSocketClient | null>(null);
     const heartbeatIntervalRef = useRef<number | null>(null);
 
-    // options를 ref로 관리하여 재생성 방지
-    const optionsRef = useRef(options);
-    useEffect(() => {
-        optionsRef.current = options;
-    }, [options]);
+    // onRoundStartBackdrop만 ref로 관리 (단순화)
+    const onRoundStartBackdropRef = useRef(options?.onRoundStartBackdrop);
+    onRoundStartBackdropRef.current = options?.onRoundStartBackdrop;
 
     /** 발언자 업데이트 콜백*/
     const handleSpeakerUpdate = useCallback((speakerInfo: WS_SpeakerUpdateResponse) => {
@@ -68,14 +66,14 @@ export const useDebateWebSocket = (
 
         const roundType = roundInfo.round.type as RoundType;
         if (roundType === "PRESENTATION" || roundType === "FREE") {
-            optionsRef.current?.onRoundStartBackdrop?.(roundType);
+            onRoundStartBackdropRef.current?.(roundType);
         }
     }, [debateId, queryClient]);
 
-    /** 음성 시그널링 - 상위로 이벤트 전달만 */
+    /** 음성 시그널링 */
     const handleVoiceSignaling = useCallback((message: WebSocketMessage) => {
         console.log('Voice signaling message received:', message);
-        optionsRef.current?.onVoiceSignaling?.(message);
+        setLastVoiceMessage(message);
     }, []);
 
     const combinedHandlers = useMemo(() => ({
@@ -183,9 +181,13 @@ export const useDebateWebSocket = (
     }, [raisedHands]);
 
     /** 음성 메시지 전송 */
-    const sendVoiceMessage = useCallback((message: WebSocketMessage) => {
+    const sendVoiceMessage = useCallback((message: Omit<WebSocketMessage, 'debateId'>) => {
+        console.log('🎙️ sendVoiceMessage 호출:', message.type);
         if (wsClientRef.current?.isConnected()) {
+            console.log('  ✅ WebSocket 연결됨, 메시지 전송');
             wsClientRef.current.sendVoiceMessage(message);
+        } else {
+            console.error('  ❌ WebSocket 연결 안됨!');
         }
     }, []);
 
@@ -204,7 +206,8 @@ export const useDebateWebSocket = (
         raisedHands,
         toggleHand,
         isHandRaised,
-        handleVoiceSignaling,
+        /** 마지막으로 수신한 음성 시그널링 메시지 */
+        lastVoiceMessage,
         sendVoiceMessage,
         sendChatMessage,
         membersWithPresence

@@ -69,23 +69,23 @@ class ApiWebSocketHandler(
                     handleChatMessage(session, request)
                 }
 
-                // WebRTC Signaling Messages
-                "VOICE_JOIN" -> {
+                // WebRTC Signaling Messages (C_ = Client sends)
+                "C_VOICE_JOIN" -> {
                     val request = objectMapper.readValue<WS_VoiceJoinRequest>(message.payload)
                     handleVoiceJoin(session, request)
                 }
 
-                "VOICE_OFFER" -> {
+                "C_VOICE_OFFER" -> {
                     val request = objectMapper.readValue<WS_VoiceOfferRequest>(message.payload)
                     handleVoiceOffer(session, request)
                 }
 
-                "VOICE_ANSWER" -> {
+                "C_VOICE_ANSWER" -> {
                     val request = objectMapper.readValue<WS_VoiceAnswerRequest>(message.payload)
                     handleVoiceAnswer(session, request)
                 }
 
-                "VOICE_ICE" -> {
+                "C_VOICE_ICE" -> {
                     val request = objectMapper.readValue<WS_VoiceIceRequest>(message.payload)
                     handleVoiceIce(session, request)
                 }
@@ -168,35 +168,9 @@ class ApiWebSocketHandler(
 
             // Redis Pub/Sub을 통해 즉시 브로드캐스트
             publishPresenceUpdate(debateId)
-
-            // voiceEnabled가 true이면 자동으로 VOICE_JOIN broadcast
-            if (voiceEnabled) {
-                autoJoinVoiceChat(debateId, accountId)
-            }
-
         } catch (e: Exception) {
             logger.error(e) { "토론 참여 처리 실패: debateId=$debateId, accountId=$accountId" }
             sendJoinErrorResponse(session, debateId, accountId, e.message ?: "UNKNOWN_ERROR")
-        }
-    }
-
-    /** 토론 참여 시 자동으로 음성 채팅에 참여시킵니다. */
-    private fun autoJoinVoiceChat(debateId: String, accountId: String) {
-        try {
-            logger.info { "자동 음성 채팅 참여: debateId=$debateId, accountId=$accountId" }
-
-            // 같은 토론방의 다른 참가자들에게 VOICE_JOIN 브로드캐스트
-            val broadcastMessage = mapOf(
-                "type" to "VOICE_JOIN",
-                "provider" to "API",
-                "debateId" to debateId,
-                "accountId" to accountId,
-                "fromId" to accountId
-            )
-            val messageJson = objectMapper.writeValueAsString(broadcastMessage)
-            broadcastToDebateRoom(debateId, messageJson)
-        } catch (e: Exception) {
-            logger.error(e) { "자동 음성 참여 실패: debateId=$debateId, accountId=$accountId" }
         }
     }
 
@@ -434,11 +408,11 @@ class ApiWebSocketHandler(
         try {
             logger.info { "음성 채팅 참여: debateId=${request.debateId}, accountId=${request.accountId}" }
 
-            // 같은 토론방의 다른 참가자들에게 브로드캐스트 (fromId 추가)
+            // 같은 토론방의 다른 참가자들에게 S_VOICE_JOIN 브로드캐스트
             val broadcastMessage = mapOf(
-                "type" to "VOICE_JOIN",
+                "type" to "S_VOICE_JOIN",
                 "provider" to "API",
-                "debateId" to request.debateId,
+                "debateId" to sessionDebateId,
                 "accountId" to request.accountId,
                 "fromId" to request.accountId
             )
@@ -472,11 +446,11 @@ class ApiWebSocketHandler(
             }
 
             if (targetSession != null) {
-                // Create new message with provider: "API" and preserve all required fields
+                // S_VOICE_OFFER로 릴레이
                 val relayedMessage = mapOf(
-                    "type" to "VOICE_OFFER",
+                    "type" to "S_VOICE_OFFER",
                     "provider" to "API",
-                    "debateId" to request.debateId,
+                    "debateId" to sessionDebateId,
                     "fromId" to request.fromId,
                     "toId" to request.toId,
                     "offer" to request.offer
@@ -514,11 +488,11 @@ class ApiWebSocketHandler(
             }
 
             if (targetSession != null) {
-                // Create new message with provider: "API" and preserve all required fields
+                // S_VOICE_ANSWER로 릴레이
                 val relayedMessage = mapOf(
-                    "type" to "VOICE_ANSWER",
+                    "type" to "S_VOICE_ANSWER",
                     "provider" to "API",
-                    "debateId" to request.debateId,
+                    "debateId" to sessionDebateId,
                     "fromId" to request.fromId,
                     "toId" to request.toId,
                     "answer" to request.answer
@@ -556,11 +530,11 @@ class ApiWebSocketHandler(
             }
 
             if (targetSession != null) {
-                // Create new message with provider: "API" and preserve all required fields
+                // S_VOICE_ICE로 릴레이
                 val relayedMessage = mapOf(
-                    "type" to "VOICE_ICE",
+                    "type" to "S_VOICE_ICE",
                     "provider" to "API",
-                    "debateId" to request.debateId,
+                    "debateId" to sessionDebateId,
                     "fromId" to request.fromId,
                     "toId" to request.toId,
                     "iceCandidate" to request.iceCandidate

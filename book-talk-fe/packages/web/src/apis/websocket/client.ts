@@ -80,7 +80,14 @@ export class DebateWebSocketClient {
                 ...message,
                 debateId: this.debateId
             };
+            console.log('📤 WebSocket 전송:', message.type, voiceMessage);
             this.ws.send(JSON.stringify(voiceMessage));
+        } else {
+            console.error('❌ WebSocket 전송 실패:', {
+                readyState: this.ws?.readyState,
+                debateId: this.debateId,
+                messageType: message.type
+            });
         }
     }
 
@@ -230,10 +237,10 @@ export class DebateWebSocketClient {
                     }
                 }
                 break;
-            case 'VOICE_JOIN':
-            case 'VOICE_OFFER':
-            case 'VOICE_ANSWER':
-            case 'VOICE_ICE':
+            case 'S_VOICE_JOIN':
+            case 'S_VOICE_OFFER':
+            case 'S_VOICE_ANSWER':
+            case 'S_VOICE_ICE':
                 if (this.handlers.onVoiceSignaling) {
                     this.handlers.onVoiceSignaling(message);
                 }

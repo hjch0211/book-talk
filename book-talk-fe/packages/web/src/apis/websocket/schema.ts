@@ -127,35 +127,67 @@ export const WS_DebateRoundUpdateResponseSchema = z.object({
     currentSpeaker: CurrentSpeakerInfoSchema,
 });
 
-export const WS_VoiceJoinMessageSchema = z.object({
-    type: z.literal('VOICE_JOIN'),
-    provider: z.string().optional(),  // CLIENT when sending, API when receiving broadcast
-    debateId: z.string().optional(),
+// Voice - Client sends
+export const WS_VoiceJoinRequestSchema = z.object({
+    type: z.literal('C_VOICE_JOIN'),
+    provider: z.literal('CLIENT'),
     accountId: z.string(),
-    fromId: z.string().optional(),  // Present in broadcast messages from server
 });
 
-export const WS_VoiceOfferMessageSchema = z.object({
-    type: z.literal('VOICE_OFFER'),
-    provider: z.string().optional(),  // CLIENT when sending, API when receiving relay
+export const WS_VoiceOfferRequestSchema = z.object({
+    type: z.literal('C_VOICE_OFFER'),
+    provider: z.literal('CLIENT'),
+    fromId: z.string(),
+    toId: z.string(),
+    offer: z.custom<RTCSessionDescriptionInit>(),
+});
+
+export const WS_VoiceAnswerRequestSchema = z.object({
+    type: z.literal('C_VOICE_ANSWER'),
+    provider: z.literal('CLIENT'),
+    fromId: z.string(),
+    toId: z.string(),
+    answer: z.custom<RTCSessionDescriptionInit>(),
+});
+
+export const WS_VoiceIceRequestSchema = z.object({
+    type: z.literal('C_VOICE_ICE'),
+    provider: z.literal('CLIENT'),
+    fromId: z.string(),
+    toId: z.string(),
+    iceCandidate: z.custom<RTCIceCandidateInit>(),
+});
+
+// Voice - Server broadcasts/relays
+export const WS_VoiceJoinResponseSchema = z.object({
+    type: z.literal('S_VOICE_JOIN'),
+    provider: z.literal('API'),
+    debateId: z.string(),
+    accountId: z.string(),
+    fromId: z.string(),
+});
+
+export const WS_VoiceOfferResponseSchema = z.object({
+    type: z.literal('S_VOICE_OFFER'),
+    provider: z.literal('API'),
     debateId: z.string(),
     fromId: z.string(),
     toId: z.string(),
     offer: z.custom<RTCSessionDescriptionInit>(),
 });
 
-export const WS_VoiceAnswerMessageSchema = z.object({
-    type: z.literal('VOICE_ANSWER'),
-    provider: z.string().optional(),  // CLIENT when sending, API when receiving relay
+export const WS_VoiceAnswerResponseSchema = z.object({
+    type: z.literal('S_VOICE_ANSWER'),
+    provider: z.literal('API'),
     debateId: z.string(),
     fromId: z.string(),
     toId: z.string(),
     answer: z.custom<RTCSessionDescriptionInit>(),
 });
 
-export const WS_VoiceIceMessageSchema = z.object({
-    type: z.literal('VOICE_ICE'),
-    provider: z.string().optional(),  // CLIENT when sending, API when receiving relay
+export const WS_VoiceIceResponseSchema = z.object({
+    type: z.literal('S_VOICE_ICE'),
+    provider: z.literal('API'),
     debateId: z.string(),
     fromId: z.string(),
     toId: z.string(),
@@ -178,11 +210,16 @@ export const WebSocketMessageSchema = z.discriminatedUnion('type', [
     WS_ChatMessageResponseSchema,
     WS_SpeakerUpdateResponseSchema,
     WS_DebateRoundUpdateResponseSchema,
-    // Voice messages
-    WS_VoiceJoinMessageSchema,
-    WS_VoiceOfferMessageSchema,
-    WS_VoiceAnswerMessageSchema,
-    WS_VoiceIceMessageSchema,
+    // Voice - Client
+    WS_VoiceJoinRequestSchema,
+    WS_VoiceOfferRequestSchema,
+    WS_VoiceAnswerRequestSchema,
+    WS_VoiceIceRequestSchema,
+    // Voice - Server
+    WS_VoiceJoinResponseSchema,
+    WS_VoiceOfferResponseSchema,
+    WS_VoiceAnswerResponseSchema,
+    WS_VoiceIceResponseSchema,
 ]);
 
 export type WS_JoinDebateRequest = z.infer<typeof WS_JoinDebateRequestSchema>;
@@ -200,10 +237,17 @@ export type WS_ChatMessageResponse = z.infer<typeof WS_ChatMessageResponseSchema
 export type WS_SpeakerUpdateResponse = z.infer<typeof WS_SpeakerUpdateResponseSchema>;
 export type WS_DebateRoundUpdateResponse = z.infer<typeof WS_DebateRoundUpdateResponseSchema>;
 
-export type WS_VoiceJoinMessage = z.infer<typeof WS_VoiceJoinMessageSchema>;
-export type WS_VoiceOfferMessage = z.infer<typeof WS_VoiceOfferMessageSchema>;
-export type WS_VoiceAnswerMessage = z.infer<typeof WS_VoiceAnswerMessageSchema>;
-export type WS_VoiceIceMessage = z.infer<typeof WS_VoiceIceMessageSchema>;
+// Voice - Client types
+export type WS_VoiceJoinRequest = z.infer<typeof WS_VoiceJoinRequestSchema>;
+export type WS_VoiceOfferRequest = z.infer<typeof WS_VoiceOfferRequestSchema>;
+export type WS_VoiceAnswerRequest = z.infer<typeof WS_VoiceAnswerRequestSchema>;
+export type WS_VoiceIceRequest = z.infer<typeof WS_VoiceIceRequestSchema>;
+
+// Voice - Server types
+export type WS_VoiceJoinResponse = z.infer<typeof WS_VoiceJoinResponseSchema>;
+export type WS_VoiceOfferResponse = z.infer<typeof WS_VoiceOfferResponseSchema>;
+export type WS_VoiceAnswerResponse = z.infer<typeof WS_VoiceAnswerResponseSchema>;
+export type WS_VoiceIceResponse = z.infer<typeof WS_VoiceIceResponseSchema>;
 
 export type WebSocketMessage = z.infer<typeof WebSocketMessageSchema>;
 

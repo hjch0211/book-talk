@@ -1,12 +1,12 @@
 import {useMutation, useQueryClient, useSuspenseQuery} from "@tanstack/react-query";
-import {findOneDebateQueryOptions, type FindOneDebateResponse, joinDebate} from "../../apis/debate";
+import {findOneDebateQueryOptions, joinDebate} from "../../apis/debate";
 import {meQueryOption} from "../../apis/account";
 import {useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {useNavigate} from "react-router-dom";
-import {useDebateRound, type UseDebateRoundReturn} from "./useDebateRound.ts";
+import {useDebateRound} from "./useDebateRound.ts";
 import {useDebateWebSocket} from "./useDebateWebSocket.tsx";
 import {useDebateChat} from "./useDebateChat.ts";
-import type {WebSocketMessage} from "../../apis/websocket";
+import {useDebateVoiceChat} from "./useDebateVoiceChat.ts";
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
@@ -25,36 +25,6 @@ export interface CurrentRoundInfo {
     isEditable: boolean;
 }
 
-export interface UseDebateReturn {
-    // 토론 기본 정보
-    debate: FindOneDebateResponse;
-    myMemberData: {
-        id: string | undefined;
-        role: string | undefined;
-    };
-    currentRoundInfo: CurrentRoundInfo;
-
-    // 라운드 & 발언자 정보
-    round: UseDebateRoundReturn;
-
-    // WebSocket 정보
-    websocket: ReturnType<typeof useDebateWebSocket>;
-
-    // 채팅 기능
-    chat: {
-        chats: any[];
-        sendChat: (content: string) => void;
-        isSending: boolean;
-    };
-
-    // UI 상태
-    showRoundStartBackdrop: {
-        show: boolean;
-        type: RoundType | null;
-    };
-    closeRoundStartBackdrop: () => void;
-}
-
 /**
  * 토론 참여 및 전체 관리
  * - 토론 기본 정보 제공
@@ -62,9 +32,9 @@ export interface UseDebateReturn {
  * - WebSocket 연결 관리 (useDebateWebSocket)
  * - 자동 참여 처리
  * - UI 상태 관리 (백드롭)
- * - VoiceChat 핸들러 관리
+ * - VoiceChat 관리
  */
-export const useDebate = ({debateId}: Props): UseDebateReturn => {
+export const useDebate = ({debateId}: Props) => {
     const queryClient = useQueryClient();
     const navigate = useNavigate();
     const {data: debate} = useSuspenseQuery(findOneDebateQueryOptions(debateId));
@@ -72,14 +42,6 @@ export const useDebate = ({debateId}: Props): UseDebateReturn => {
     const joinAttempted = useRef<Set<string>>(new Set());
 
     const myMemberInfo = debate.members.find((m) => m.id === _me?.id);
-
-    /** VoiceChat 메시지 핸들러를 ref로 저장 */
-    const voiceChatHandlerRef = useRef<((message: WebSocketMessage) => void) | null>(null);
-
-    const handleVoiceSignalingWrapper = useCallback((message: WebSocketMessage) => {
-        console.log('Voice signaling received in useDebate:', message);
-        voiceChatHandlerRef.current?.(message);
-    }, []);
 
     /** RoundStartBackdrop UI 상태 */
     const [showRoundStartBackdrop, setShowRoundStartBackdrop] = useState<{
@@ -97,7 +59,6 @@ export const useDebate = ({debateId}: Props): UseDebateReturn => {
             closeRoundStartBackdrop()
         }, 5000);
     }, [closeRoundStartBackdrop]);
-
 
     /** 토론 참여 */
     const joinDebateMutation = useMutation({
@@ -158,16 +119,32 @@ export const useDebate = ({debateId}: Props): UseDebateReturn => {
     }, [debate.currentRound, debate.presentations, _me?.id]);
 
     const round = useDebateRound(debate, debateId, currentRoundInfo);
+
+    /** WebSocket 연결 (먼저 생성 - voiceChat에서 사용) */
     const websocket = useDebateWebSocket(
         debateId || null,
         debate.members,
         myMemberData.id,
         currentRoundInfo.type === 'FREE',
-        {
-            onRoundStartBackdrop: handleRoundStartBackdrop,
-            onVoiceSignaling: handleVoiceSignalingWrapper
-        }
+        {onRoundStartBackdrop: handleRoundStartBackdrop}
     );
+
+    /**
+     * 음성 채팅 기능
+     * - PREPARATION 라운드가 아닐 것
+     * - myId가 있을 것
+     * - WebSocket 토론 참여 완료(S_JOIN_SUCCESS)되었을 것
+     *
+     * 중요: isDebateJoined 조건으로 Race Condition 방지
+     * (C_VOICE_JOIN이 C_JOIN_DEBATE보다 먼저 도착하면 백엔드에서 거부됨)
+     */
+    const voiceChat = useDebateVoiceChat({
+        myId: myMemberData.id ?? '',
+        debateId: debateId ?? '',
+        sendVoiceMessage: websocket.sendVoiceMessage,
+        voiceMessage: websocket.lastVoiceMessage,
+        enabled: currentRoundInfo.type !== 'PREPARATION' && !!myMemberData.id && websocket.isDebateJoined,
+    });
 
     /** 채팅 기능 (FREE 라운드에서만 동작) */
     const chat = useDebateChat(
@@ -178,13 +155,23 @@ export const useDebate = ({debateId}: Props): UseDebateReturn => {
     );
 
     return {
+        /** 토론 기본 정보 */
         debate,
+        /** 내 멤버 정보 (id, role) */
         myMemberData,
+        /** 현재 라운드 정보 */
         currentRoundInfo,
+        /** 라운드 & 발언자 관리 */
         round,
+        /** WebSocket 연결 및 실시간 통신 */
         websocket,
+        /** 채팅 기능 (FREE 라운드 전용) */
         chat,
+        /** 음성 채팅 기능 */
+        voiceChat,
+        /** 라운드 시작 백드롭 UI 상태 */
         showRoundStartBackdrop,
+        /** 라운드 시작 백드롭 닫기 */
         closeRoundStartBackdrop,
     }
 }

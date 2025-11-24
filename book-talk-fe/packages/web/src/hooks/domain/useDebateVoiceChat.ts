@@ -1,21 +1,19 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {type RemoteStream, useWebRTC} from '../infra/useWebRTC';
+import {useWebRTC} from '../infra/useWebRTC';
 import type {
     WebSocketMessage,
-    WS_VoiceAnswerMessage,
-    WS_VoiceIceMessage,
-    WS_VoiceJoinMessage,
-    WS_VoiceOfferMessage,
+    WS_VoiceAnswerRequest,
+    WS_VoiceIceRequest,
+    WS_VoiceJoinRequest,
+    WS_VoiceOfferRequest,
 } from '../../apis/websocket/schema';
-
-export type {RemoteStream};
 
 /** Voice 메시지 타입 (전송용) */
 type VoiceMessage =
-    | Omit<WS_VoiceJoinMessage, 'debateId'>
-    | Omit<WS_VoiceOfferMessage, 'debateId'>
-    | Omit<WS_VoiceAnswerMessage, 'debateId'>
-    | Omit<WS_VoiceIceMessage, 'debateId'>;
+    | WS_VoiceJoinRequest
+    | WS_VoiceOfferRequest
+    | WS_VoiceAnswerRequest
+    | WS_VoiceIceRequest;
 
 export interface UseDebateVoiceChatOptions {
     /** 내 ID */
@@ -24,40 +22,35 @@ export interface UseDebateVoiceChatOptions {
     debateId: string;
     /** Voice 메시지 전송 함수 */
     sendVoiceMessage: (message: VoiceMessage) => void;
+    /** 수신된 음성 시그널링 메시지 (WebSocket에서 전달) */
+    voiceMessage: WebSocketMessage | null;
+    /** 활성화 여부 (기본: true) */
+    enabled?: boolean;
     /** 에러 콜백 */
     onError?: (error: Error) => void;
 }
 
-export interface UseDebateVoiceChatReturn {
-    /** 음성 채팅 참여 여부 */
-    isJoined: boolean;
-    /** 음소거 상태 */
-    isMuted: boolean;
-    /** 로컬 스트림 */
-    localStream: MediaStream | null;
-    /** 원격 스트림 목록 */
-    remoteStreams: RemoteStream[];
-    /** 병합된 오디오 스트림 */
-    mergedAudioStream: MediaStream | null;
-    /** 음성 채팅 퇴장 */
-    leave: () => void;
-    /** 음소거 토글 */
-    toggleMute: () => void;
-    /** WebSocket 메시지 핸들러 (onVoiceSignaling에 연결) */
-    handleVoiceMessage: (message: WebSocketMessage) => void;
-}
-
-export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions): UseDebateVoiceChatReturn => {
-    const {myId, sendVoiceMessage, onError} = options;
+/**
+ * 토론 음성 채팅 관리 (내부 전용)
+ * - 토론방 입장 시 자동 참여
+ * - WebRTC P2P 연결 관리
+ * - 원격 오디오 스트림 병합
+ *
+ * @internal useDebate 내부에서만 사용
+ */
+export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
+    const {myId, sendVoiceMessage, voiceMessage, enabled = true, onError} = options;
 
     const [isJoined, setIsJoined] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
-    const [mergedAudioStream, setMergedAudioStream] = useState<MediaStream | null>(null);
+    const [isAudioActive, setIsAudioActive] = useState(false); // autoplay policy 대응
 
-    /** AudioContext for merging streams */
-    const audioContextRef = useRef<AudioContext | null>(null);
-    const destinationRef = useRef<MediaStreamAudioDestinationNode | null>(null);
-    const sourceNodesRef = useRef<Map<string, MediaStreamAudioSourceNode>>(new Map());
+    /** 최신 상태를 ref로 유지 (useEffect 내에서 사용) */
+    const isJoinedRef = useRef(isJoined);
+    isJoinedRef.current = isJoined;
+
+    /** 마지막 처리된 메시지 추적 (중복 처리 방지) */
+    const lastProcessedMessageRef = useRef<WebSocketMessage | null>(null);
 
     const {
         localStream,
@@ -71,7 +64,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions): UseDebat
     } = useWebRTC({
         onIceCandidate: (peerId, candidate) => {
             sendVoiceMessage({
-                type: 'VOICE_ICE',
+                type: 'C_VOICE_ICE',
                 provider: 'CLIENT',
                 fromId: myId,
                 toId: peerId,
@@ -81,94 +74,66 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions): UseDebat
         onError
     });
 
-    /** 오디오 스트림 병합 */
-    const mergeAudioStreams = useCallback(() => {
-        // AudioContext 초기화
-        if (!audioContextRef.current) {
-            audioContextRef.current = new AudioContext();
-            destinationRef.current = audioContextRef.current.createMediaStreamDestination();
-            setMergedAudioStream(destinationRef.current.stream);
-        }
-
-        const ctx = audioContextRef.current;
-        const destination = destinationRef.current!;
-        const existingNodes = sourceNodesRef.current;
-
-        // 현재 연결된 peer ID 목록
-        const currentPeerIds = new Set(remoteStreams.map(rs => rs.peerId));
-
-        // 제거된 peer의 source node 정리
-        existingNodes.forEach((node, peerId) => {
-            if (!currentPeerIds.has(peerId)) {
-                node.disconnect();
-                existingNodes.delete(peerId);
-            }
-        });
-
-        // 새 peer의 source node 생성
-        remoteStreams.forEach(({peerId, stream}) => {
-            if (!existingNodes.has(peerId)) {
-                const source = ctx.createMediaStreamSource(stream);
-                source.connect(destination);
-                existingNodes.set(peerId, source);
-            }
-        });
-    }, [remoteStreams]);
 
     /** 음성 채팅 참여 */
     const join = useCallback(async () => {
-        if (isJoined) return;
+        if (isJoinedRef.current || !myId) return;
 
         const stream = await startLocalStream({audio: true, video: false});
-        if (!stream) return;
+        if (!stream) {
+            console.error('로컬 스트림 생성 실패');
+            return;
+        }
 
+        // ref를 먼저 업데이트하여 즉시 Offer를 받을 수 있도록 함
+        isJoinedRef.current = true;
         setIsJoined(true);
+
         sendVoiceMessage({
-            type: 'VOICE_JOIN',
+            type: 'C_VOICE_JOIN',
             provider: 'CLIENT',
             accountId: myId
         });
-    }, [isJoined, myId, sendVoiceMessage, startLocalStream]);
+    }, [myId, sendVoiceMessage, startLocalStream]);
 
     /** 음성 채팅 퇴장 */
     const leave = useCallback(() => {
-        if (!isJoined) return;
+        if (!isJoinedRef.current) return;
 
         disconnect();
+        isJoinedRef.current = false;
         setIsJoined(false);
-
-        // AudioContext 정리
-        sourceNodesRef.current.forEach(node => node.disconnect());
-        sourceNodesRef.current.clear();
-        audioContextRef.current?.close();
-        audioContextRef.current = null;
-        destinationRef.current = null;
-        setMergedAudioStream(null);
-    }, [isJoined, disconnect]);
+    }, [disconnect]);
 
     /** 음소거 토글 */
     const toggleMute = useCallback(() => {
-        if (!localStream) return;
+        const stream = localStream;
+        if (!stream) return;
 
         const newMuted = !isMuted;
-        localStream.getAudioTracks().forEach(track => {
+        stream.getAudioTracks().forEach(track => {
             track.enabled = !newMuted;
         });
         setIsMuted(newMuted);
     }, [localStream, isMuted]);
 
-    /** WebSocket 메시지 핸들러 */
-    const handleVoiceMessage = useCallback(async (message: WebSocketMessage) => {
+    /** 오디오 활성화 (사용자 제스처로 autoplay policy 해제) */
+    const activateAudio = useCallback(() => {
+        setIsAudioActive(true);
+    }, []);
+
+    /** 음성 메시지 처리 (내부 함수) - isJoinedRef 사용으로 의존성 최소화 */
+    const processVoiceMessage = useCallback(async (message: WebSocketMessage) => {
         switch (message.type) {
-            case 'VOICE_JOIN': {
+            case 'S_VOICE_JOIN': {
                 // 다른 사람이 참여 → 내가 참여 중이면 offer 전송
                 const fromId = message.fromId ?? message.accountId;
-                if (fromId === myId || !isJoined) return;
+                if (fromId === myId || !isJoinedRef.current) return;
 
                 const offer = await createOffer(fromId);
                 if (offer) {
                     sendVoiceMessage({
-                        type: 'VOICE_OFFER',
+                        type: 'C_VOICE_OFFER',
                         provider: 'CLIENT',
                         fromId: myId,
                         toId: fromId,
@@ -178,14 +143,14 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions): UseDebat
                 break;
             }
 
-            case 'VOICE_OFFER': {
+            case 'S_VOICE_OFFER': {
                 // Offer 수신 → Answer 생성 후 전송
-                if (message.toId !== myId) return;
+                if (message.toId !== myId || !isJoinedRef.current) return;
 
                 const answer = await handleOffer(message.fromId, message.offer);
                 if (answer) {
                     sendVoiceMessage({
-                        type: 'VOICE_ANSWER',
+                        type: 'C_VOICE_ANSWER',
                         provider: 'CLIENT',
                         fromId: myId,
                         toId: message.fromId,
@@ -195,43 +160,56 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions): UseDebat
                 break;
             }
 
-            case 'VOICE_ANSWER': {
+            case 'S_VOICE_ANSWER': {
                 // Answer 수신 → 연결 완료
                 if (message.toId !== myId) return;
                 await handleAnswer(message.fromId, message.answer);
                 break;
             }
 
-            case 'VOICE_ICE': {
+            case 'S_VOICE_ICE': {
                 // ICE Candidate 수신
                 if (message.toId !== myId) return;
                 await handleIceCandidate(message.fromId, message.iceCandidate);
                 break;
             }
         }
-    }, [myId, isJoined, createOffer, handleOffer, handleAnswer, handleIceCandidate, sendVoiceMessage]);
+    }, [myId, createOffer, handleOffer, handleAnswer, handleIceCandidate, sendVoiceMessage]);
 
-    // 자동 참여 (마운트 시)
+    // voiceMessage가 변경되면 처리 (중복 처리 방지)
     useEffect(() => {
-        join();
-        return () => leave();
-    }, []);
-
-    // remoteStreams 변경 시 오디오 병합
-    useEffect(() => {
-        if (remoteStreams.length > 0) {
-            mergeAudioStreams();
+        if (voiceMessage && voiceMessage !== lastProcessedMessageRef.current) {
+            lastProcessedMessageRef.current = voiceMessage;
+            processVoiceMessage(voiceMessage);
         }
-    }, [remoteStreams, mergeAudioStreams]);
+    }, [voiceMessage, processVoiceMessage]);
+
+    // enabled 상태에 따라 자동 참여/퇴장
+    useEffect(() => {
+        if (enabled) {
+            join();
+        } else {
+            leave();
+        }
+        return () => leave();
+    }, [enabled]);
 
     return {
+        /** 음성 채팅 참여 여부 */
         isJoined,
+        /** 음소거 상태 */
         isMuted,
+        /** 오디오 재생 가능 상태 (사용자 제스처 후 true) */
+        isAudioActive,
+        /** 로컬 오디오 스트림 */
         localStream,
+        /** 원격 오디오 스트림 목록 */
         remoteStreams,
-        mergedAudioStream,
+        /** 음성 채팅 퇴장 */
         leave,
+        /** 음소거 토글 */
         toggleMute,
-        handleVoiceMessage
+        /** 오디오 활성화 (사용자 클릭 필요) */
+        activateAudio
     };
 };
