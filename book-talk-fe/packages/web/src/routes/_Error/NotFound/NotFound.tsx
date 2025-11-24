@@ -11,7 +11,7 @@ import {
     LogoContainer,
     NotFoundContainer
 } from './NotFound.style';
-import PageWrapper from "../../../components/templates/PageWrapper";
+import PageContainer from "../../../components/templates/PageContainer";
 
 export const NotFound = () => {
     const navigate = useNavigate();
@@ -21,7 +21,7 @@ export const NotFound = () => {
     };
 
     return (
-        <PageWrapper bgColor="linear-gradient(180deg, #FFFFFF 39.9%, #FBEAE7 100%)">
+        <PageContainer bgColor="linear-gradient(180deg, #FFFFFF 39.9%, #FBEAE7 100%)">
             <NotFoundContainer>
                 <ContentWrapper>
                     <ErrorTitle>404 ERROR</ErrorTitle>
@@ -38,6 +38,6 @@ export const NotFound = () => {
                     </BackButtonBase>
                 </BackButton>
             </NotFoundContainer>
-        </PageWrapper>
+        </PageContainer>
     );
 };

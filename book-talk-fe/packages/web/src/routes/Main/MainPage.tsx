@@ -16,7 +16,7 @@ import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
 import {meQueryOption} from "../../apis/account";
 import CreateDebateModal from "./_components/CreateDebateModal/CreateDebateModal.tsx";
 import AuthRequiredModal from "../Debate/_components/AuthRequiredModal.tsx";
-import PageWrapper from "../../components/templates/PageWrapper";
+import PageContainer from "../../components/templates/PageContainer";
 
 const TextSection = () => {
     const {data: me} = useSuspenseQuery(meQueryOption);
@@ -89,7 +89,7 @@ export function MainPage() {
                 onClose={() => setShowAuthModal(false)}
                 onLoginClick={handleLogin}
             />
-            <PageWrapper bgColor="linear-gradient(180deg, #FFFFFF 39.9%, #FBEAE7 100%)">
+            <PageContainer bgColor="linear-gradient(180deg, #FFFFFF 39.9%, #FBEAE7 100%)">
                 <MainContainer>
                     <MainHeader/>
                     <MainTextContainer>
@@ -104,7 +104,7 @@ export function MainPage() {
                         </ButtonContainer>
                     </MainTextContainer>
                 </MainContainer>
-            </PageWrapper>
+            </PageContainer>
         </>
     );
 }

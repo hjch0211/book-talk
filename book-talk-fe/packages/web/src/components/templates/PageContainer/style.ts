@@ -1,7 +1,7 @@
 import {styled} from "@mui/material/styles";
 import {Box} from "@mui/material";
 
-export const StyledPageWrapper = styled(Box)<{ bgColor?: string }>(({bgColor}) => ({
+export const StyledPageContainer = styled(Box)<{ bgColor?: string }>(({bgColor}) => ({
     position: 'fixed',
     top: 0,
     left: 0,
