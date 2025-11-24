@@ -12,8 +12,8 @@ import {LinkPreview} from './editor/LinkPreviewExtension.tsx';
 import {usePresentation} from "../../../hooks/domain/usePresentation.tsx";
 import type {CurrentRoundInfo} from '../../../hooks/domain/useDebate.tsx';
 import {LastModified} from './LastModified';
-import {ChatMessageList} from './ChatMessageList';
-import {ChatInput} from './ChatInput';
+import {ChatMessageList} from './chat/ChatMessageList.tsx';
+import {ChatInput} from './chat/ChatInput.tsx';
 
 interface CurrentSpeaker {
     accountId: string;

@@ -4,11 +4,11 @@ import {useCallback, useEffect, useState} from 'react';
 import StarterKit from '@tiptap/starter-kit';
 import Youtube from '@tiptap/extension-youtube';
 import Heading from '@tiptap/extension-heading';
-import type {ChatResponse} from '../../../apis/debate';
-import {LinkPreview} from "./editor/LinkPreviewExtension.tsx";
-import {createMentionExtension} from './editor/MentionExtension.tsx';
-import {PresentationViewModal} from './PresentationViewModal';
-import {ImageWithPaste} from "./editor/ImageExtension.ts";
+import type {ChatResponse} from '../../../../apis/debate';
+import {LinkPreview} from "../editor/LinkPreviewExtension.tsx";
+import {createMentionExtension} from '../editor/MentionExtension.tsx';
+import {PresentationViewModal} from '../PresentationViewModal.tsx';
+import {ImageWithPaste} from "../editor/ImageExtension.ts";
 
 interface ChatMessageProps {
     chat: ChatResponse;

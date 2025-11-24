@@ -1,7 +1,7 @@
 import {useEffect, useRef} from 'react';
 import {Box} from '@mui/material';
-import {ChatMessage} from './ChatMessage';
-import type {ChatResponse} from '../../../apis/debate';
+import {ChatMessage} from './ChatMessage.tsx';
+import type {ChatResponse} from '../../../../apis/debate';
 
 interface ChatMessageListProps {
     chats: ChatResponse[];
