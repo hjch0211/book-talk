@@ -1,5 +1,5 @@
 import {Box, Button, Typography} from '@mui/material';
-import Modal from '../../../components/templates/Modal';
+import Modal from '../../../components/organisms/Modal';
 
 interface AuthRequiredModalProps {
     open: boolean;
