@@ -13,7 +13,7 @@ import {createEnterToSendExtension} from '../editor/EnterToSendExtension.ts';
 import {createMentionExtension} from '../editor/MentionExtension.tsx';
 import {ImageWithPaste} from '../editor/ImageExtension.ts';
 import {ChatInputBox, ChatInputContainer} from '../../Debate.style.tsx';
-import {PresentationViewModal} from '../PresentationViewModal.tsx';
+import {PresentationViewModal} from '../modal/PresentationViewModal.tsx';
 import {LinkPreview} from "../editor/LinkPreviewExtension.tsx";
 
 interface ChatInputProps {

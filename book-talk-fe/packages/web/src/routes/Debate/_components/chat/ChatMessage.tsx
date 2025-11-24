@@ -7,7 +7,7 @@ import Heading from '@tiptap/extension-heading';
 import type {ChatResponse} from '../../../../apis/debate';
 import {LinkPreview} from "../editor/LinkPreviewExtension.tsx";
 import {createMentionExtension} from '../editor/MentionExtension.tsx';
-import {PresentationViewModal} from '../PresentationViewModal.tsx';
+import {PresentationViewModal} from '../modal/PresentationViewModal.tsx';
 import {ImageWithPaste} from "../editor/ImageExtension.ts";
 
 interface ChatMessageProps {

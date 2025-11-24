@@ -8,7 +8,7 @@ import {RoundStartBackdrop} from './_components/RoundStartBackdrop';
 import {RoundActions} from './_components/RoundActions';
 import {DebateContainer} from './Debate.style';
 import {useDebate} from "../../hooks/domain/useDebate.tsx";
-import StartDebateModal from "./_components/StartDebateModal.tsx";
+import StartDebateModal from "./_components/modal/StartDebateModal.tsx";
 import {AudioPlayer} from "../../components/molecules/AudioPlayer";
 import {AudioActivationBanner} from "../../components/organisms/AudioActivationBanner";
 

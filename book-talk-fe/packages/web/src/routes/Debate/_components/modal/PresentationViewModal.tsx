@@ -6,10 +6,10 @@ import Youtube from '@tiptap/extension-youtube';
 import Heading from '@tiptap/extension-heading';
 import {Box, IconButton, Modal as MuiModal, Typography} from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
-import {usePresentation} from '../../../hooks/domain/usePresentation.tsx';
+import {usePresentation} from '../../../../hooks/domain/usePresentation.tsx';
 import {styled} from '@mui/material/styles';
-import {createMentionExtension} from './editor/MentionExtension.tsx';
-import {LinkPreview} from "./editor/LinkPreviewExtension.tsx";
+import {createMentionExtension} from '../editor/MentionExtension.tsx';
+import {LinkPreview} from "../editor/LinkPreviewExtension.tsx";
 
 interface Props {
     open: boolean;

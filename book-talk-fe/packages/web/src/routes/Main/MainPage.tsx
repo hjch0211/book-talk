@@ -15,7 +15,7 @@ import MainHeader from "../../components/organisms/MainHeader";
 import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
 import {meQueryOption} from "../../apis/account";
 import CreateDebateModal from "./_components/CreateDebateModal/CreateDebateModal.tsx";
-import AuthRequiredModal from "../Debate/_components/AuthRequiredModal.tsx";
+import AuthRequiredModal from "../Debate/_components/modal/AuthRequiredModal.tsx";
 import PageContainer from "../../components/templates/PageContainer";
 
 const TextSection = () => {
