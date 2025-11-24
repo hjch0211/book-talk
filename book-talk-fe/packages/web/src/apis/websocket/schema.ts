@@ -135,14 +135,6 @@ export const WS_VoiceJoinMessageSchema = z.object({
     fromId: z.string().optional(),  // Present in broadcast messages from server
 });
 
-export const WS_VoiceLeaveMessageSchema = z.object({
-    type: z.literal('VOICE_LEAVE'),
-    provider: z.string().optional(),  // CLIENT when sending, API when receiving broadcast
-    debateId: z.string().optional(),
-    accountId: z.string(),
-    fromId: z.string().optional(),  // Present in broadcast messages from server
-});
-
 export const WS_VoiceOfferMessageSchema = z.object({
     type: z.literal('VOICE_OFFER'),
     provider: z.string().optional(),  // CLIENT when sending, API when receiving relay
@@ -170,15 +162,6 @@ export const WS_VoiceIceMessageSchema = z.object({
     iceCandidate: z.custom<RTCIceCandidateInit>(),
 });
 
-export const WS_VoiceStateMessageSchema = z.object({
-    type: z.literal('VOICE_STATE'),
-    provider: z.string().optional(),  // CLIENT when sending, API when receiving broadcast
-    debateId: z.string().optional(),
-    accountId: z.string(),
-    fromId: z.string().optional(),  // Present in broadcast messages from server
-    isMuted: z.boolean().optional(),
-});
-
 export const WebSocketMessageSchema = z.discriminatedUnion('type', [
     // Client messages
     WS_JoinDebateRequestSchema,
@@ -197,11 +180,9 @@ export const WebSocketMessageSchema = z.discriminatedUnion('type', [
     WS_DebateRoundUpdateResponseSchema,
     // Voice messages
     WS_VoiceJoinMessageSchema,
-    WS_VoiceLeaveMessageSchema,
     WS_VoiceOfferMessageSchema,
     WS_VoiceAnswerMessageSchema,
     WS_VoiceIceMessageSchema,
-    WS_VoiceStateMessageSchema,
 ]);
 
 export type WS_JoinDebateRequest = z.infer<typeof WS_JoinDebateRequestSchema>;
@@ -220,11 +201,9 @@ export type WS_SpeakerUpdateResponse = z.infer<typeof WS_SpeakerUpdateResponseSc
 export type WS_DebateRoundUpdateResponse = z.infer<typeof WS_DebateRoundUpdateResponseSchema>;
 
 export type WS_VoiceJoinMessage = z.infer<typeof WS_VoiceJoinMessageSchema>;
-export type WS_VoiceLeaveMessage = z.infer<typeof WS_VoiceLeaveMessageSchema>;
 export type WS_VoiceOfferMessage = z.infer<typeof WS_VoiceOfferMessageSchema>;
 export type WS_VoiceAnswerMessage = z.infer<typeof WS_VoiceAnswerMessageSchema>;
 export type WS_VoiceIceMessage = z.infer<typeof WS_VoiceIceMessageSchema>;
-export type WS_VoiceStateMessage = z.infer<typeof WS_VoiceStateMessageSchema>;
 
 export type WebSocketMessage = z.infer<typeof WebSocketMessageSchema>;
 

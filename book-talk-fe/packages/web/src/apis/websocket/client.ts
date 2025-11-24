@@ -231,11 +231,9 @@ export class DebateWebSocketClient {
                 }
                 break;
             case 'VOICE_JOIN':
-            case 'VOICE_LEAVE':
             case 'VOICE_OFFER':
             case 'VOICE_ANSWER':
             case 'VOICE_ICE':
-            case 'VOICE_STATE':
                 if (this.handlers.onVoiceSignaling) {
                     this.handlers.onVoiceSignaling(message);
                 }
