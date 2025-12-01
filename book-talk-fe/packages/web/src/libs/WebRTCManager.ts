@@ -24,6 +24,8 @@ export class WebRTCManager {
 
     /** Buffered ICE candidates per peer (peerId : candidates[]) */
     private iceCandidateBuffer = new Map<string, RTCIceCandidateInit[]>();
+    /** Remote streams 목록 */
+    private _remoteStreams: RemoteStream[] = [];
 
     constructor(
         /** Remote streams 변경 콜백 */
@@ -40,13 +42,6 @@ export class WebRTCManager {
 
     get localStream(): MediaStream | null {
         return this._localStream;
-    }
-
-    /** Remote streams 목록 */
-    private _remoteStreams: RemoteStream[] = [];
-
-    get remoteStreams(): RemoteStream[] {
-        return this._remoteStreams;
     }
 
     /** Local stream 시작 (미디어 권한 요청) */
@@ -78,14 +73,9 @@ export class WebRTCManager {
             return;
         }
 
-        // 기존 연결 정리
-        const existingPc = this.peerConnections.get(peerId);
-        if (existingPc) {
-            if (existingPc.connectionState === 'connected') return;
-            existingPc.close();
-            this.peerConnections.delete(peerId);
-            this.iceCandidateBuffer.delete(peerId);
-        }
+        // S_VOICE_JOIN을 받았다는 것은 상대방이 (재)연결을 시작한 것
+        // 기존 연결이 있어도 정리하고 새로 생성
+        this.cleanupPeerConnection(peerId);
 
         const pc = await this.createPeerConnection(peerId);
 
@@ -100,12 +90,7 @@ export class WebRTCManager {
 
     /** Offer 수신 → Answer 반환 */
     async handleOffer(peerId: string, offer: RTCSessionDescriptionInit): Promise<RTCSessionDescriptionInit | undefined> {
-        // 기존 연결 정리
-        const existingPc = this.peerConnections.get(peerId);
-        if (existingPc) {
-            existingPc.close();
-            this.peerConnections.delete(peerId);
-        }
+        this.cleanupPeerConnection(peerId);
 
         const pc = await this.createPeerConnection(peerId);
 
@@ -136,10 +121,10 @@ export class WebRTCManager {
     /** ICE Candidate 수신 */
     async handleIceCandidate(peerId: string, candidate: RTCIceCandidateInit): Promise<void> {
         const pc = this.peerConnections.get(peerId);
-        if (!pc) return;
 
-        // Buffer candidates if remote description not set
-        if (!pc.remoteDescription) {
+        // PC가 없거나 remoteDescription이 없으면 버퍼에 저장
+        // (Offer 처리 중에 ICE가 먼저 도착할 수 있음)
+        if (!pc || !pc.remoteDescription) {
             if (!this.iceCandidateBuffer.has(peerId)) {
                 this.iceCandidateBuffer.set(peerId, []);
             }
@@ -147,13 +132,11 @@ export class WebRTCManager {
             return;
         }
 
-        // Add candidate immediately if remote description is set
-        if (candidate) {
-            try {
-                await pc.addIceCandidate(new RTCIceCandidate(candidate));
-            } catch (err) {
-                console.error('ICE Candidate 추가 실패:', err);
-            }
+        // remoteDescription이 설정된 후에는 즉시 추가
+        try {
+            await pc.addIceCandidate(new RTCIceCandidate(candidate));
+        } catch (err) {
+            console.error('ICE Candidate 추가 실패:', err);
         }
     }
 
@@ -167,6 +150,16 @@ export class WebRTCManager {
         this._localStream = null;
 
         this.updateRemoteStreams([]);
+    }
+
+    /** 특정 피어 연결 정리 */
+    private cleanupPeerConnection(peerId: string): void {
+        const existingPc = this.peerConnections.get(peerId);
+        if (existingPc) {
+            existingPc.close();
+            this.peerConnections.delete(peerId);
+        }
+        this.iceCandidateBuffer.delete(peerId);
     }
 
     /** Process buffered ICE candidates after setRemoteDescription */
@@ -227,17 +220,11 @@ export class WebRTCManager {
             }
         };
 
-        /** ICE Connection 상태 변경 (실제 P2P 연결) */
-        pc.oniceconnectionstatechange = () => {
-            if (pc.iceConnectionState === 'failed') {
-                console.error(`ICE 연결 실패 (${peerId.slice(0, 8)}) - NAT 문제 또는 TURN 서버 필요`);
-            }
-        };
-
         /** Connection 변경 시 */
         pc.onconnectionstatechange = () => {
             if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
                 this.peerConnections.delete(peerId);
+                this.iceCandidateBuffer.delete(peerId);
                 this.updateRemoteStreams(this._remoteStreams.filter(rs => rs.peerId !== peerId));
             }
         };

@@ -460,7 +460,6 @@ class ApiWebSocketHandler(
             }
 
             if (targetSession != null) {
-                // S_VOICE_OFFER로 릴레이
                 val relayedMessage = mapOf(
                     "type" to "S_VOICE_OFFER",
                     "provider" to "API",
@@ -502,7 +501,6 @@ class ApiWebSocketHandler(
             }
 
             if (targetSession != null) {
-                // S_VOICE_ANSWER로 릴레이
                 val relayedMessage = mapOf(
                     "type" to "S_VOICE_ANSWER",
                     "provider" to "API",
@@ -544,7 +542,6 @@ class ApiWebSocketHandler(
             }
 
             if (targetSession != null) {
-                // S_VOICE_ICE로 릴레이
                 val relayedMessage = mapOf(
                     "type" to "S_VOICE_ICE",
                     "provider" to "API",

@@ -128,11 +128,11 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
         setIsAudioActive(true);
     }, []);
 
-    /** 음성 메시지 처리 (내부 함수) - isJoinedRef 사용으로 의존성 최소화 */
+    /** WebSocket voice message handling */
     const processVoiceMessage = useCallback(async (message: WebSocketMessage) => {
         switch (message.type) {
+            /** 새 참가자 입장 → Offer 전송 */
             case 'S_VOICE_JOIN': {
-                // 다른 사람이 참여 → 내가 참여 중이면 offer 전송
                 const fromId = message.fromId ?? message.accountId;
                 if (fromId === myId || !isJoinedRef.current) return;
 
@@ -149,8 +149,8 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
                 break;
             }
 
+            /** Offer 수신 → Answer 응답 */
             case 'S_VOICE_OFFER': {
-                // Offer 수신 → Answer 생성 후 전송
                 if (message.toId !== myId || !isJoinedRef.current) return;
 
                 const answer = await handleOffer(message.fromId, message.offer);
@@ -166,15 +166,15 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
                 break;
             }
 
+            /** Answer 수신 → 연결 완료 */
             case 'S_VOICE_ANSWER': {
-                // Answer 수신 → 연결 완료
                 if (message.toId !== myId) return;
                 await handleAnswer(message.fromId, message.answer);
                 break;
             }
 
+            /** ICE Candidate 수신 → 네트워크 경로 추가 */
             case 'S_VOICE_ICE': {
-                // ICE Candidate 수신
                 if (message.toId !== myId) return;
                 await handleIceCandidate(message.fromId, message.iceCandidate);
                 break;
@@ -197,7 +197,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
     useEffect(() => {
         if (voiceMessage && voiceMessage !== lastProcessedMessageRef.current) {
             lastProcessedMessageRef.current = voiceMessage;
-            processVoiceMessage(voiceMessage);
+            void processVoiceMessage(voiceMessage);
         }
     }, [voiceMessage, processVoiceMessage]);
 
@@ -209,7 +209,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
             leave();
         }
         return () => leave();
-    }, [enabled]);
+    }, [enabled, join, leave]);
 
     return {
         /** 음성 채팅 참여 여부 */
