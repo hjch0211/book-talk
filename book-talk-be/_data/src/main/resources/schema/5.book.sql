@@ -4,7 +4,7 @@ create table if not exists book
     isbn        varchar(20)   not null unique,
     author      varchar(50)   not null,
     title       varchar(50)   not null,
-    description varchar(1000) null,
+    description varchar(5000) null,
     image_url   varchar(300)  null,
 
     created_at  timestamp     not null,

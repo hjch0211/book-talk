@@ -1,6 +1,5 @@
 package kr.co.booktalk.domain
 
-import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.EntityListeners
 import jakarta.persistence.Table
@@ -14,19 +13,14 @@ import org.springframework.transaction.annotation.Transactional
 @Table(name = "book")
 @EntityListeners(AuditingEntityListener::class)
 class BookEntity(
-    @Column(name = "isbn", nullable = false, unique = true, length = 20)
     val isbn: String,
 
-    @Column(name = "title", nullable = false, length = 50)
     val title: String,
 
-    @Column(name = "author", nullable = false, length = 50)
     val author: String,
 
-    @Column(name = "description", nullable = true, length = 300)
     val description: String? = null,
 
-    @Column(name = "imageUrl", nullable = true, length = 300)
     val imageUrl: String? = null
 ) : AuditableLongIdEntity()
 
