@@ -3,6 +3,10 @@ package kr.co.booktalk.domain.webSocket
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.github.oshai.kotlinlogging.KotlinLogging
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kr.co.booktalk.domain.debate.*
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.CloseStatus
@@ -24,6 +28,9 @@ class ApiWebSocketHandler(
 
     /** 토론방별 손든 사용자 정보를 in-memory로 관리 (debateId -> (accountId -> RaisedHandInfo)) */
     private val raisedHands = ConcurrentHashMap<String, ConcurrentHashMap<String, RaisedHandInfo>>()
+
+    /** 비동기 작업용 CoroutineScope */
+    private val scope = CoroutineScope(Dispatchers.Default)
 
     data class RaisedHandInfo(
         val accountId: String,
@@ -323,6 +330,13 @@ class ApiWebSocketHandler(
                     accountName = request.accountName,
                     raisedAt = System.currentTimeMillis()
                 )
+
+                // 3초 후 자동으로 손 내리기
+                scope.launch {
+                    delay(3000)
+                    debateHands.remove(authenticatedAccountId)
+                    publishHandRaiseUpdate(request.debateId)
+                }
             }
 
             // 손들기 상태 브로드캐스트
