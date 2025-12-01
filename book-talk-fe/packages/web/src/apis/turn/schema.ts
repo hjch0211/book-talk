@@ -4,8 +4,8 @@ import {z} from 'zod';
 export const PostGenerateIceServersResponseSchema = z.object({
     iceServers: z.array(z.object({
         urls: z.array(z.string()),
-        username: z.string(),
-        credential: z.string(),
+        username: z.string().optional(),
+        credential: z.string().optional(),
     })),
 });
 
