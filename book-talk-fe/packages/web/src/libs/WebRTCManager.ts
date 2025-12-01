@@ -77,7 +77,15 @@ export class WebRTCManager {
             console.error('로컬 스트림이 없습니다. startLocalStream을 먼저 호출하세요.');
             return;
         }
-        if (this.peerConnections.has(peerId)) return;
+
+        // 기존 연결 정리
+        const existingPc = this.peerConnections.get(peerId);
+        if (existingPc) {
+            if (existingPc.connectionState === 'connected') return;
+            existingPc.close();
+            this.peerConnections.delete(peerId);
+            this.iceCandidateBuffer.delete(peerId);
+        }
 
         const pc = await this.createPeerConnection(peerId);
 
