@@ -43,7 +43,10 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
 
     const [isJoined, setIsJoined] = useState(false);
     const [isMuted, setIsMuted] = useState(false);
-    const [isAudioActive, setIsAudioActive] = useState(false); // autoplay policy 대응
+    const [isAudioActive, setIsAudioActive] = useState(false);
+
+    /** AudioContext로 autoplay policy 관리 */
+    const audioContextRef = useRef<AudioContext | null>(null);
 
     /** 최신 상태를 ref로 유지 (useEffect 내에서 사용) */
     const isJoinedRef = useRef(isJoined);
@@ -118,7 +121,10 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
     }, [localStream, isMuted]);
 
     /** 오디오 활성화 (사용자 제스처로 autoplay policy 해제) */
-    const activateAudio = useCallback(() => {
+    const activateAudio = useCallback(async () => {
+        if (audioContextRef.current?.state === 'suspended') {
+            await audioContextRef.current.resume();
+        }
         setIsAudioActive(true);
     }, []);
 
@@ -175,6 +181,17 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
             }
         }
     }, [myId, createOffer, handleOffer, handleAnswer, handleIceCandidate, sendVoiceMessage]);
+
+    /** AudioContext 초기화 및 autoplay 허용 여부 확인 */
+    useEffect(() => {
+        const ctx = new AudioContext();
+        audioContextRef.current = ctx;
+        setIsAudioActive(ctx.state === 'running');
+
+        return () => {
+            ctx.close();
+        };
+    }, []);
 
     // voiceMessage가 변경되면 처리 (중복 처리 방지)
     useEffect(() => {
