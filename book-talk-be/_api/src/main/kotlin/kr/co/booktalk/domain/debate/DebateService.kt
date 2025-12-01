@@ -32,7 +32,7 @@ class DebateService(
                 isbn = request.bookISBN,
                 title = request.bookTitle,
                 author = request.bookAuthor,
-                description = request.bookDescription?.take(1000),
+                description = request.bookDescription?.trim()?.take(5000),
                 imageUrl = request.bookImageUrl
             )
         )

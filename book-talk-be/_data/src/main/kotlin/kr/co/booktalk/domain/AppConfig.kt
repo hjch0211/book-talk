@@ -1,6 +1,5 @@
 package kr.co.booktalk.domain
 
-import jakarta.persistence.Column
 import jakarta.persistence.Entity
 import jakarta.persistence.Id
 import jakarta.persistence.Table
@@ -14,7 +13,6 @@ class AppConfigEntity(
     @Id
     val key: String,
 
-    @Column(nullable = false)
     val value: String,
 
     val cacheSeconds: Long? = null,

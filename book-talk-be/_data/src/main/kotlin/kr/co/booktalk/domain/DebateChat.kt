@@ -21,7 +21,6 @@ class DebateChatEntity(
     @JoinColumn(name = "account_id", nullable = false)
     val account: AccountEntity,
 
-    @Column(nullable = false)
     var content: String,
 ) : AuditableLongIdEntity()
 
