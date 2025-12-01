@@ -1,4 +1,5 @@
 import 'webrtc-adapter';
+import {postGenerateIceServers} from '../apis/turn';
 
 /** Remote stream 정보 */
 export interface RemoteStream {
@@ -6,13 +7,11 @@ export interface RemoteStream {
     stream: MediaStream;
 }
 
-/** ICE 서버 설정 */
-const ICE_SERVERS: RTCConfiguration = {
-    iceServers: [
-        {urls: 'stun:stun.l.google.com:19302'},
-        {urls: 'stun:stun1.l.google.com:19302'},
-    ]
-};
+/** 기본 STUN 서버 (fallback) */
+const DEFAULT_ICE_SERVERS: RTCIceServer[] = [
+    {urls: 'stun:stun.l.google.com:19302'},
+    {urls: 'stun:stun1.l.google.com:19302'},
+];
 
 /**
  * WebRTC Mesh 연결 관리 클래스
@@ -80,7 +79,7 @@ export class WebRTCManager {
         }
         if (this.peerConnections.has(peerId)) return;
 
-        const pc = this.createPeerConnection(peerId);
+        const pc = await this.createPeerConnection(peerId);
 
         this._localStream.getTracks().forEach(track => {
             pc.addTrack(track, this._localStream!);
@@ -100,7 +99,7 @@ export class WebRTCManager {
             this.peerConnections.delete(peerId);
         }
 
-        const pc = this.createPeerConnection(peerId);
+        const pc = await this.createPeerConnection(peerId);
 
         this._localStream?.getTracks().forEach(track => {
             pc.addTrack(track, this._localStream!);
@@ -177,9 +176,20 @@ export class WebRTCManager {
         }
     }
 
+    /** ICE 서버 설정 가져오기 (TURN 포함) */
+    private async getIceServers(): Promise<RTCConfiguration> {
+        try {
+            return await postGenerateIceServers()
+        } catch (err) {
+            console.warn('TURN 서버 조회 실패, Google STUN 사용:', err);
+            return {iceServers: DEFAULT_ICE_SERVERS};
+        }
+    }
+
     /** PeerConnection 생성 및 이벤트 핸들러 설정 */
-    private createPeerConnection(peerId: string): RTCPeerConnection {
-        const pc = new RTCPeerConnection(ICE_SERVERS);
+    private async createPeerConnection(peerId: string): Promise<RTCPeerConnection> {
+        const iceConfig = await this.getIceServers();
+        const pc = new RTCPeerConnection(iceConfig);
 
         /** ICE Candidate 수신 시 */
         pc.onicecandidate = (event) => {

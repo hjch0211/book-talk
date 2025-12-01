@@ -40,6 +40,16 @@ export const authApiClient: AxiosInstance = axios.create({
     headers: {'Content-Type': 'application/json'},
 });
 
+/** Cloudflare TURN API 클라이언트 */
+export const cloudflareApiClient: AxiosInstance = axios.create({
+    baseURL: env.CLOUDFLARE_TURN_URL,
+    timeout: TIMEOUT,
+    headers: {
+        'Authorization': `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+        'Content-Type': 'application/json',
+    },
+});
+
 /** 에러 응답 처리 공통 함수 */
 const handleErrorResponse = (error: AxiosError): Promise<never> => {
     if (error.response) {
