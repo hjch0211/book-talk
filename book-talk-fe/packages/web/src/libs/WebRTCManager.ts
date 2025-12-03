@@ -13,6 +13,9 @@ const DEFAULT_ICE_SERVERS: RTCIceServer[] = [
     {urls: 'stun:stun1.l.google.com:19302'},
 ];
 
+/** WebRTC 재연결 최대 횟수 */
+const MAX_RETRIES = 5;
+
 /**
  * WebRTC Mesh 연결 관리 클래스
  * - 순수 WebRTC 연결만 담당
@@ -24,6 +27,8 @@ export class WebRTCManager {
 
     /** Buffered ICE candidates per peer (peerId : candidates[]) */
     private iceCandidateBuffer = new Map<string, RTCIceCandidateInit[]>();
+    /** 재연결 시도 횟수 (peerId : count) */
+    private retryCount = new Map<string, number>();
     /** Remote streams 목록 */
     private _remoteStreams: RemoteStream[] = [];
 
@@ -34,6 +39,8 @@ export class WebRTCManager {
         private onIceCandidate?: (peerId: string, candidate: RTCIceCandidateInit) => void,
         /** 에러 콜백 */
         private onError?: (error: Error) => void,
+        /** 재연결 필요 콜백 (연결 실패 시 호출) */
+        private onReconnectNeeded?: () => void,
     ) {
     }
 
@@ -73,8 +80,7 @@ export class WebRTCManager {
             return;
         }
 
-        // S_VOICE_JOIN을 받았다는 것은 상대방이 (재)연결을 시작한 것
-        // 기존 연결이 있어도 정리하고 새로 생성
+        // 기존 연결이 있어도 정리하고 새로 생성 -> 재연결 전략
         this.cleanupPeerConnection(peerId);
 
         const pc = await this.createPeerConnection(peerId);
@@ -145,6 +151,7 @@ export class WebRTCManager {
         this.peerConnections.forEach(pc => pc.close());
         this.peerConnections.clear();
         this.iceCandidateBuffer.clear();
+        this.retryCount.clear();
 
         this._localStream?.getTracks().forEach(track => track.stop());
         this._localStream = null;
@@ -222,9 +229,26 @@ export class WebRTCManager {
 
         /** Connection 변경 시 */
         pc.onconnectionstatechange = () => {
-            if (pc.connectionState === 'failed' || pc.connectionState === 'closed') {
+            if (pc.connectionState === 'connected') {
+                this.retryCount.delete(peerId);
+            } else if (pc.connectionState === 'failed') {
+                this.cleanupPeerConnection(peerId);
+                this.updateRemoteStreams(this._remoteStreams.filter(rs => rs.peerId !== peerId));
+
+                const currentRetry = (this.retryCount.get(peerId) ?? 0) + 1;
+                this.retryCount.set(peerId, currentRetry);
+
+                if (currentRetry <= MAX_RETRIES) {
+                    this.onReconnectNeeded?.();
+                } else {
+                    console.error(`피어 ${peerId} 재연결 실패: 최대 재시도 횟수(${MAX_RETRIES}) 초과`);
+                    this.retryCount.delete(peerId);
+                    this.onError?.(new Error(`재연결 실패: 최대 재시도 횟수(${MAX_RETRIES}) 초과`));
+                }
+            } else if (pc.connectionState === 'closed') {
                 this.peerConnections.delete(peerId);
                 this.iceCandidateBuffer.delete(peerId);
+                this.retryCount.delete(peerId);
                 this.updateRemoteStreams(this._remoteStreams.filter(rs => rs.peerId !== peerId));
             }
         };

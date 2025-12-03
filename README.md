@@ -64,12 +64,13 @@ sequenceDiagram
 	participant s as Main server with Signaling
 	actor p2 as peer2
 	
+	note over p1, p2: 토론방 입장, 네트워크 연결 복구, 재연결 시 C_VOICE_CHAT부턱 시작
 	p1->>s: C_VOICE_JOIN
 	s->>p2: S_VOICE_JOIN(broadcast)
-	p2->>p2: createOffer(새로고침 등의 재연결 상황을 위해<br/>만약 이미 연결되어있더라도 재연결)
+	p2->>p2: createOffer<br/>(이미 연결되어있더라도 재연결)<br/>(RTCPeerConnection 생성)
 	p2->>s: C_VOICE_OFFER with RTCSessionDescription
 	s->>p1: S_VOICE_OFFER with RTCSessionDescription
-	p1->>p1: handleOffer
+	p1->>p1: handleOffer<br/>(RTCPeerConnection 생성)
 	p1->>s: C_VOICE_ANSWER
 	s->>p2: S_VOICE_ANSWER
 	p1->p2: handleAnswer(ICE candidate 교환 시작)

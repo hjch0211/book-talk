@@ -8,14 +8,16 @@ export interface UseWebRTCOptions {
     onIceCandidate?: (peerId: string, candidate: RTCIceCandidateInit) => void;
     /** 에러 콜백 */
     onError?: (error: Error) => void;
+    /** 재연결 필요 콜백 (연결 실패 시 호출) */
+    onReconnectNeeded?: () => void;
 }
 
 export const useWebRTC = (options: UseWebRTCOptions = {}) => {
-    const {onIceCandidate, onError} = options;
+    const {onIceCandidate, onError, onReconnectNeeded} = options;
     const [remoteStreams, setRemoteStreams] = useState<RemoteStream[]>([]);
     const managerRef = useRef<WebRTCManager | null>(null);
     if (!managerRef.current) {
-        managerRef.current = new WebRTCManager(setRemoteStreams, onIceCandidate, onError);
+        managerRef.current = new WebRTCManager(setRemoteStreams, onIceCandidate, onError, onReconnectNeeded);
     }
 
     useEffect(() => {

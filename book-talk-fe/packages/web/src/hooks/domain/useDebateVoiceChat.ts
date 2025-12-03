@@ -74,7 +74,16 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
                 iceCandidate: candidate
             });
         },
-        onError
+        onError,
+        onReconnectNeeded: () => {
+            if (!isJoinedRef.current || !myId) return;
+            // 연결 실패 시 C_VOICE_JOIN을 다시 전송하여 재연결
+            sendVoiceMessage({
+                type: 'C_VOICE_JOIN',
+                provider: 'CLIENT',
+                accountId: myId
+            });
+        }
     });
 
 
@@ -189,7 +198,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
         setIsAudioActive(ctx.state === 'running');
 
         return () => {
-            ctx.close();
+            void ctx.close();
         };
     }, []);
 
@@ -204,7 +213,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
     // enabled 상태에 따라 자동 참여/퇴장
     useEffect(() => {
         if (enabled) {
-            join();
+            void join();
         } else {
             leave();
         }
