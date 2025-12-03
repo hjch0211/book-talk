@@ -20,10 +20,8 @@ class DebateRoundSpeakerEntity(
     @JoinColumn(name = "account_id", nullable = false)
     val account: AccountEntity,
 
-    @Column(nullable = false)
     var endedAt: Instant,
 
-    @Column(nullable = false)
     var isActive: Boolean,
 ) : AuditableLongIdEntity()
 

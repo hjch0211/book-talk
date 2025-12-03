@@ -1,20 +1,16 @@
-import {Suspense, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {Suspense, useState} from 'react';
 import {useParams} from 'react-router-dom';
-import {Stack} from '@mui/material';
 import MainContainer from '../../components/templates/MainContainer';
 import {DebateHeader} from './_components/DebateHeader';
 import {DebatePresentation} from './_components/DebatePresentation';
 import {DebateMemberList} from './_components/DebateMemberList';
-import {RoundStartBackdropContainer} from './_components/RoundStartBackdropContainer';
+import {RoundStartBackdrop} from './_components/RoundStartBackdrop';
 import {RoundActions} from './_components/RoundActions';
 import {DebateContainer} from './Debate.style';
-import {useDebate} from "../../hooks/useDebate.tsx";
-import StartDebateModal from "./_components/StartDebateModal.tsx";
-import {useVoiceChat, VoiceChatProvider} from "../../contexts/VoiceChatContext";
-import {VoiceAudioRenderer} from "./_components/VoiceAudioRenderer.tsx";
-import {useSuspenseQuery} from "@tanstack/react-query";
-import {findOneDebateQueryOptions} from "../../apis/debate";
-import {meQueryOption} from "../../apis/account";
+import {useDebate} from "../../hooks/domain/useDebate.tsx";
+import StartDebateModal from "./_components/modal/StartDebateModal.tsx";
+import {AudioPlayer} from "../../components/molecules/AudioPlayer";
+import {AudioActivationBanner} from "../../components/organisms/AudioActivationBanner";
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
@@ -22,102 +18,31 @@ interface Props {
     debateId: string | undefined;
 }
 
-interface DebatePageInnerProps {
-    debateId: string | undefined;
-    sendSignalingRef: React.MutableRefObject<((message: any) => void) | null>;
-    onWebSocketConnected: (connected: boolean) => void;
-    onDebateJoined: (joined: boolean) => void;
-    onOnlineParticipantsChange: (participants: Set<string>) => void;
-    participantIds: string[];
-}
-
-function DebatePageInner({
-                             debateId,
-                             sendSignalingRef,
-                             onWebSocketConnected,
-                             onDebateJoined,
-                             onOnlineParticipantsChange,
-                             participantIds
-                         }: DebatePageInnerProps) {
+function DebatePageContent({debateId}: Props) {
     const [showStartModal, setShowStartModal] = useState(false);
-    const {handleSignalingMessage} = useVoiceChat();
 
     const {
         debate,
         myMemberData,
         currentRoundInfo,
-        round: {
-            currentSpeaker,
-            nextSpeaker,
-            realTimeRemainingSeconds,
-            createRoundMutation,
-            handlePresentationRound,
-            createRoundSpeakerMutation
-        },
-        websocket: {
-            toggleHand,
-            isHandRaised,
-            raisedHands,
-            sendVoiceMessage,
-            sendChatMessage,
-            membersWithPresence,
-            isConnected,
-            isDebateJoined
-        },
+        round,
+        websocket,
+        voiceChat,
         chat,
         showRoundStartBackdrop,
         closeRoundStartBackdrop,
-        voiceChatHandlerRef
-    } = useDebate({
-        debateId
-    });
-
-    // VoiceChat 핸들러 연결
-    useEffect(() => {
-        voiceChatHandlerRef.current = handleSignalingMessage;
-    }, [handleSignalingMessage, voiceChatHandlerRef]);
-
-    // WebSocket 전송 함수 연결
-    useEffect(() => {
-        if (sendSignalingRef) {
-            sendSignalingRef.current = sendVoiceMessage;
-        }
-    }, [sendVoiceMessage, sendSignalingRef]);
-
-    // WebSocket 연결 상태 전달
-    useEffect(() => {
-        onWebSocketConnected(isConnected);
-    }, [isConnected, onWebSocketConnected]);
-
-    // Debate join 상태 전달
-    useEffect(() => {
-        onDebateJoined(isDebateJoined);
-    }, [isDebateJoined, onDebateJoined]);
-
-    // 온라인 참여자 Set 계산 (membersWithPresence 기반)
-    const onlineParticipants = useMemo(() => {
-        return new Set(
-            membersWithPresence
-                .filter(m => participantIds.includes(m.id))
-                .map(m => m.id)
-        );
-    }, [membersWithPresence, participantIds]);
-
-    // 온라인 참여자 상태 전달
-    useEffect(() => {
-        onOnlineParticipantsChange(onlineParticipants);
-    }, [onlineParticipants, onOnlineParticipantsChange]);
+    } = useDebate({debateId});
 
     const handleStartDebate = async () => {
         if (!debateId) return;
 
         setShowStartModal(false);
-        await handlePresentationRound();
+        await round.handlePresentationRound();
     };
 
     const handleEndPresentation = () => {
         if (currentRoundInfo.type === 'PRESENTATION') {
-            void handlePresentationRound();
+            void round.handlePresentationRound();
         }
     };
 
@@ -125,7 +50,7 @@ function DebatePageInner({
         if (!currentRoundInfo.id) return;
 
         try {
-            await createRoundSpeakerMutation.mutateAsync({
+            await round.createRoundSpeakerMutation.mutateAsync({
                 debateRoundId: currentRoundInfo.id,
                 nextSpeakerId: memberId
             });
@@ -139,107 +64,74 @@ function DebatePageInner({
     }
 
     return (
-        <DebateContainer>
-            <DebateHeader topic={debate.topic}/>
-            <DebatePresentation
-                currentRoundInfo={currentRoundInfo}
-                currentSpeaker={currentSpeaker}
-                debateId={debateId}
-                myAccountId={myMemberData.id}
-                onChatMessage={sendChatMessage}
-                chat={chat}
-                members={debate.members}
-                presentations={debate.presentations}
-            />
-            <DebateMemberList
-                members={membersWithPresence}
-                currentSpeaker={currentSpeaker}
-                nextSpeaker={nextSpeaker}
-                realTimeRemainingSeconds={realTimeRemainingSeconds}
-                raisedHands={raisedHands}
-                currentRoundType={currentRoundInfo.type}
-                myAccountId={myMemberData.id}
-                onPassSpeaker={handlePassSpeaker}
-                presentations={debate.presentations}
-            />
-            <Stack spacing={2}>
+        <MainContainer isAuthPage>
+            <DebateContainer>
+                <DebateHeader topic={debate.topic}/>
+                <DebatePresentation
+                    currentRoundInfo={currentRoundInfo}
+                    currentSpeaker={round.currentSpeaker}
+                    debateId={debateId}
+                    myAccountId={myMemberData.id}
+                    onChatMessage={websocket.sendChatMessage}
+                    chat={chat}
+                    members={debate.members}
+                    presentations={debate.presentations}
+                />
+                <DebateMemberList
+                    members={websocket.membersWithPresence}
+                    currentSpeaker={round.currentSpeaker}
+                    nextSpeaker={round.nextSpeaker}
+                    realTimeRemainingSeconds={round.realTimeRemainingSeconds}
+                    raisedHands={websocket.raisedHands}
+                    currentRoundType={currentRoundInfo.type}
+                    myAccountId={myMemberData.id}
+                    onPassSpeaker={handlePassSpeaker}
+                    presentations={debate.presentations}
+                />
                 <RoundActions
                     roundType={currentRoundInfo.type as RoundType}
                     myRole={myMemberData.role || ''}
-                    isCurrentSpeaker={currentSpeaker?.accountId === myMemberData.id}
+                    isCurrentSpeaker={round.currentSpeaker?.accountId === myMemberData.id}
                     onStartDebate={() => setShowStartModal(true)}
                     onEndPresentation={handleEndPresentation}
-                    onToggleHand={toggleHand}
-                    isMyHandRaised={myMemberData.id ? isHandRaised(myMemberData.id) : false}
+                    onToggleHand={websocket.toggleHand}
+                    isMyHandRaised={myMemberData.id ? websocket.isHandRaised(myMemberData.id) : false}
+                    isVoiceChatJoined={voiceChat.isJoined}
+                    isVoiceMuted={voiceChat.isMuted}
+                    onToggleMute={voiceChat.toggleMute}
                 />
-            </Stack>
 
-            <StartDebateModal
-                open={showStartModal}
-                onClose={() => setShowStartModal(false)}
-                onConfirm={handleStartDebate}
-                isLoading={createRoundMutation.isPending}
-            />
-
-            <RoundStartBackdropContainer
-                show={showRoundStartBackdrop.show}
-                roundType={showRoundStartBackdrop.type}
-                onClose={closeRoundStartBackdrop}
-            />
-        </DebateContainer>
-    );
-}
-
-function DebatePageContent({debateId}: Props) {
-    const {data: debate} = useSuspenseQuery(findOneDebateQueryOptions(debateId));
-    const {data: me} = useSuspenseQuery(meQueryOption);
-
-    // WebSocket 전송 함수를 담을 ref
-    const sendSignalingRef = useRef<((message: any) => void) | null>(null);
-
-    // WebSocket 연결 상태
-    const [isWebSocketConnected, setIsWebSocketConnected] = useState(false);
-    const [isDebateJoined, setIsDebateJoined] = useState(false);
-    const [onlineParticipants, setOnlineParticipants] = useState<Set<string>>(new Set());
-
-    // 모든 참여자 ID (자신 제외)
-    const participantIds = useMemo(() => {
-        return debate.members
-            .filter(m => m.id !== me?.id)
-            .map(m => m.id);
-    }, [debate.members, me?.id]);
-
-    // useCallback으로 메모이제이션하여 불필요한 리렌더링 방지
-    const handleSendSignaling = useCallback((message: any) => {
-        console.log('📤 Sending signaling message:', message);
-        if (sendSignalingRef.current) {
-            sendSignalingRef.current(message);
-        } else {
-            console.warn('⚠️ sendSignalingRef not initialized yet');
-        }
-    }, []);
-
-    return (
-        <MainContainer isAuthPage>
-            <VoiceChatProvider
-                debateId={debateId!}
-                myAccountId={me?.id || ''}
-                participantIds={participantIds}
-                onlineParticipants={onlineParticipants}
-                isWebSocketConnected={isWebSocketConnected}
-                isDebateJoined={isDebateJoined}
-                onSendSignaling={handleSendSignaling}
-            >
-                <DebatePageInner
-                    debateId={debateId}
-                    sendSignalingRef={sendSignalingRef}
-                    onWebSocketConnected={setIsWebSocketConnected}
-                    onDebateJoined={setIsDebateJoined}
-                    onOnlineParticipantsChange={setOnlineParticipants}
-                    participantIds={participantIds}
+                <StartDebateModal
+                    open={showStartModal}
+                    onClose={() => setShowStartModal(false)}
+                    onConfirm={handleStartDebate}
+                    isLoading={round.createRoundMutation.isPending}
                 />
-                <VoiceAudioRenderer/>
-            </VoiceChatProvider>
+
+                <RoundStartBackdrop
+                    show={showRoundStartBackdrop.show}
+                    roundType={showRoundStartBackdrop.type}
+                    onClose={closeRoundStartBackdrop}
+                />
+
+                {/* 음성 채팅 (PREPARATION 라운드 제외) */}
+                {currentRoundInfo.type !== 'PREPARATION' && (
+                    <>
+                        {/* 각 원격 스트림을 개별 audio element로 재생 (브라우저가 자동 믹싱) */}
+                        {voiceChat.remoteStreams.map(rs => (
+                            <AudioPlayer
+                                key={rs.peerId}
+                                stream={rs.stream}
+                                isAudioActive={voiceChat.isAudioActive}
+                            />
+                        ))}
+                        <AudioActivationBanner
+                            open={!voiceChat.isAudioActive && voiceChat.remoteStreams.length > 0}
+                            onActivate={voiceChat.activateAudio}
+                        />
+                    </>
+                )}
+            </DebateContainer>
         </MainContainer>
     );
 }

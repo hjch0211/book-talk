@@ -20,7 +20,6 @@ class PresentationEntity(
     @JoinColumn(name = "account_id", nullable = false)
     val account: AccountEntity,
 
-    @Column(nullable = false)
     var content: String,
 ) : AuditableUuidEntity()
 

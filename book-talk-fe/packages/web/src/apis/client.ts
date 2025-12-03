@@ -1,5 +1,6 @@
 import type {AxiosInstance, AxiosResponse, InternalAxiosRequestConfig} from 'axios';
 import axios, {AxiosError} from 'axios';
+import {env} from "../configs/env.ts";
 
 /** 백엔드 ApiResult와 매칭되는 API 응답 래퍼 */
 export interface ApiResult<T> {
@@ -23,21 +24,30 @@ export class ApiError extends Error {
     }
 }
 
-const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
-const TIMEOUT = 10000;
+const TIMEOUT = 10 * 1000; // 10초
 
 /** 기본 API 클라이언트 (인증 불필요) */
 export const apiClient: AxiosInstance = axios.create({
-    baseURL: BASE_URL,
+    baseURL: env.BASE_URL,
     timeout: TIMEOUT,
     headers: {'Content-Type': 'application/json'},
 });
 
 /** 인증이 필요한 API 클라이언트 */
 export const authApiClient: AxiosInstance = axios.create({
-    baseURL: BASE_URL,
+    baseURL: env.BASE_URL,
     timeout: TIMEOUT,
     headers: {'Content-Type': 'application/json'},
+});
+
+/** Cloudflare TURN API 클라이언트 */
+export const cloudflareApiClient: AxiosInstance = axios.create({
+    baseURL: env.CLOUDFLARE_TURN_URL,
+    timeout: TIMEOUT,
+    headers: {
+        'Authorization': `Bearer ${env.CLOUDFLARE_API_TOKEN}`,
+        'Content-Type': 'application/json',
+    },
 });
 
 /** 에러 응답 처리 공통 함수 */

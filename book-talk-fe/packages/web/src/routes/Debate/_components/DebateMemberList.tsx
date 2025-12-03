@@ -24,7 +24,7 @@ import {
     SpeakerTimer
 } from '../Debate.style';
 import raiseHandSvg from "../../../assets/raise-hand.svg";
-import {PresentationViewModal} from "./PresentationViewModal.tsx";
+import {PresentationViewModal} from "./modal/PresentationViewModal.tsx";
 
 interface CurrentSpeaker {
     accountId: string;

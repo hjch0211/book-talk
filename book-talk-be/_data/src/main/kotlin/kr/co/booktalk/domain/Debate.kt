@@ -21,13 +21,10 @@ class DebateEntity(
     @JoinColumn(name = "book_id", nullable = false)
     val book: BookEntity,
 
-    @Column(nullable = false, length = 100)
     val topic: String,
 
-    @Column(length = 300)
     val description: String? = null,
 
-    @Column
     var closedAt: Instant? = null,
 ) : AuditableUuidEntity()
 

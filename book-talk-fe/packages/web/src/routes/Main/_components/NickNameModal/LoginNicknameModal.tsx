@@ -1,6 +1,6 @@
 import {useMutation, useQueryClient} from '@tanstack/react-query';
 import {signIn, signUp} from '../../../../apis/auth';
-import {useToast} from '../../../../hooks/useToast';
+import {useToast} from '../../../../hooks/infra/useToast.tsx';
 import NicknameModal from './NicknameModal';
 import type {ApiError} from '../../../../apis/client';
 

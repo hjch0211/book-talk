@@ -5,7 +5,7 @@ import {useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
 import {useNavigate} from 'react-router-dom';
 import {createDebate, type CreateDebateRequest, findOneDebateQueryOptions} from '../../../../apis/debate';
 import {type BookData, searchBooksQueryOptions} from '../../../../apis/book';
-import Modal from "../../../../components/Modal.tsx";
+import Modal from "../../../../components/organisms/Modal"
 import {
     BookAuthor,
     BookImage,

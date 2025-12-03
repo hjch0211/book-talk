@@ -11,7 +11,7 @@ import {
     IconContainer,
     TextWrapper
 } from './DebateFull.style';
-import PageWrapper from "../../../components/templates/PageWrapper";
+import PageContainer from "../../../components/templates/PageContainer";
 
 export const DebateFull = () => {
     const navigate = useNavigate();
@@ -21,7 +21,7 @@ export const DebateFull = () => {
     };
 
     return (
-        <PageWrapper bgColor="linear-gradient(180deg, #FFFFFF 39.9%, #FBEAE7 100%)">
+        <PageContainer bgColor="linear-gradient(180deg, #FFFFFF 39.9%, #FBEAE7 100%)">
             <DebateFullContainer>
                 <ContentWrapper>
                     <TextWrapper>
@@ -38,6 +38,6 @@ export const DebateFull = () => {
                     </BackButtonBase>
                 </BackButton>
             </DebateFullContainer>
-        </PageWrapper>
+        </PageContainer>
     );
 };

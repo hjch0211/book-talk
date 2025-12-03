@@ -1,6 +1,6 @@
 import {useState} from 'react';
 import {CircularProgress} from '@mui/material';
-import Modal from '../../../../components/molecules/Modal';
+import Modal from '../../../../components/organisms/Modal';
 import {
     ButtonText,
     ConfirmButton,

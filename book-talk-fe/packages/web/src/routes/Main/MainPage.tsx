@@ -2,7 +2,7 @@ import {Suspense, useEffect, useState} from 'react';
 import {useSearchParams} from 'react-router-dom';
 import MainContainer from '../../components/templates/MainContainer';
 import LoginNicknameModal from './_components/NickNameModal/LoginNicknameModal.tsx';
-import {useModal} from '../../hooks/useModal';
+import {useModal} from '../../hooks/infra/useModal.tsx';
 import {
     ButtonContainer,
     MainButton,
@@ -15,8 +15,8 @@ import MainHeader from "../../components/organisms/MainHeader";
 import {useQuery, useSuspenseQuery} from "@tanstack/react-query";
 import {meQueryOption} from "../../apis/account";
 import CreateDebateModal from "./_components/CreateDebateModal/CreateDebateModal.tsx";
-import AuthRequiredModal from "../Debate/_components/AuthRequiredModal.tsx";
-import PageWrapper from "../../components/templates/PageWrapper";
+import AuthRequiredModal from "../Debate/_components/modal/AuthRequiredModal.tsx";
+import PageContainer from "../../components/templates/PageContainer";
 
 const TextSection = () => {
     const {data: me} = useSuspenseQuery(meQueryOption);
@@ -89,7 +89,7 @@ export function MainPage() {
                 onClose={() => setShowAuthModal(false)}
                 onLoginClick={handleLogin}
             />
-            <PageWrapper bgColor="linear-gradient(180deg, #FFFFFF 39.9%, #FBEAE7 100%)">
+            <PageContainer bgColor="linear-gradient(180deg, #FFFFFF 39.9%, #FBEAE7 100%)">
                 <MainContainer>
                     <MainHeader/>
                     <MainTextContainer>
@@ -104,7 +104,7 @@ export function MainPage() {
                         </ButtonContainer>
                     </MainTextContainer>
                 </MainContainer>
-            </PageWrapper>
+            </PageContainer>
         </>
     );
 }
