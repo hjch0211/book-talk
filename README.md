@@ -52,6 +52,13 @@ cd book-talk-fe
 
 > `.env.production` 파일이 설정되어 있어야 합니다.
 
+### 3. Nginx 설정 적용
+
+```bash
+cd deploy
+./bin/applyNginx.sh
+```
+
 ---
 
 ## 주요 플로우
