@@ -1,5 +1,5 @@
-import {useModalContext} from '../../providers/ModalProvider.tsx';
+import { useModalContext } from '../../providers/ModalProvider.tsx';
 
 export const useModal = () => {
-    return useModalContext();
+  return useModalContext();
 };

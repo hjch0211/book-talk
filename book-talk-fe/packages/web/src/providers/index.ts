@@ -1,3 +1,3 @@
-export {TanStackQueryProvider} from './TanStackQueryProvider.tsx';
-export {MuiThemeProvider} from './MuiThemeProvider.tsx';
-export {ModalProvider} from './ModalProvider.tsx';
+export { ModalProvider } from './ModalProvider.tsx';
+export { MuiThemeProvider } from './MuiThemeProvider.tsx';
+export { TanStackQueryProvider } from './TanStackQueryProvider.tsx';

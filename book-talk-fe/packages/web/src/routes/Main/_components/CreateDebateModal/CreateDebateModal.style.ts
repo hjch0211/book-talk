@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import {Box, Button, List, ListItem, Paper, TextField, Typography} from '@mui/material';
+import { Box, Button, List, ListItem, Paper, TextField, Typography } from '@mui/material';
 
 export const ModalContainer = styled(Box)`
     display: flex;
@@ -111,8 +111,8 @@ export const MultilineTextField = styled(TextField)`
 export const SubmitButton = styled(Button)<{ isValid?: boolean }>`
     width: 160px;
     height: 60px;
-    background-color: ${({isValid}) => isValid ? '#BEC3F5' : 'rgba(0, 0, 0, 0.12)'};
-    color: ${({isValid}) => isValid ? '#262626' : 'rgba(0, 0, 0, 0.38)'};
+    background-color: ${({ isValid }) => (isValid ? '#BEC3F5' : 'rgba(0, 0, 0, 0.12)')};
+    color: ${({ isValid }) => (isValid ? '#262626' : 'rgba(0, 0, 0, 0.38)')};
     border-radius: 4px;
     font-family: 'S-Core Dream', sans-serif;
     font-weight: 500;
@@ -122,7 +122,7 @@ export const SubmitButton = styled(Button)<{ isValid?: boolean }>`
     text-transform: none;
 
     &:hover {
-        background-color: ${({isValid}) => isValid ? '#A8ADF0' : 'rgba(0, 0, 0, 0.12)'};
+        background-color: ${({ isValid }) => (isValid ? '#A8ADF0' : 'rgba(0, 0, 0, 0.12)')};
     }
 
     &:disabled {

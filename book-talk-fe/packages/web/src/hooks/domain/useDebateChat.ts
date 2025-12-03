@@ -1,6 +1,6 @@
-import {useCallback} from "react";
-import {useMutation, useQuery, useQueryClient} from "@tanstack/react-query";
-import {createChat, getChatsQueryOptions} from "../../apis/debate";
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useCallback } from 'react';
+import { createChat, getChatsQueryOptions } from '../../apis/debate';
 
 /**
  * 토론 채팅 관리 (내부 전용)
@@ -9,32 +9,39 @@ import {createChat, getChatsQueryOptions} from "../../apis/debate";
  * @internal useDebate 내부에서만 사용
  */
 export const useDebateChat = (
-    debateId: string | undefined,
-    sendChatMessage: ((chatId: number) => void) | undefined,
-    isFreeRound: boolean,
-    hasMyMemberInfo: boolean
+  debateId: string | undefined,
+  sendChatMessage: ((chatId: number) => void) | undefined,
+  isFreeRound: boolean,
+  hasMyMemberInfo: boolean
 ) => {
-    const queryClient = useQueryClient();
+  const queryClient = useQueryClient();
 
-    // FREE 라운드이고 멤버일 때만 채팅 데이터 로드
-    const {data: chats = []} = useQuery(getChatsQueryOptions(debateId, isFreeRound, hasMyMemberInfo));
-    const createChatMutation = useMutation({
-        mutationFn: createChat,
-        onSuccess: (newChat) => {
-            void queryClient.invalidateQueries({queryKey: getChatsQueryOptions(debateId, isFreeRound, hasMyMemberInfo).queryKey});
-            sendChatMessage?.(newChat.id);
-        }
-    });
+  // FREE 라운드이고 멤버일 때만 채팅 데이터 로드
+  const { data: chats = [] } = useQuery(
+    getChatsQueryOptions(debateId, isFreeRound, hasMyMemberInfo)
+  );
+  const createChatMutation = useMutation({
+    mutationFn: createChat,
+    onSuccess: (newChat) => {
+      void queryClient.invalidateQueries({
+        queryKey: getChatsQueryOptions(debateId, isFreeRound, hasMyMemberInfo).queryKey,
+      });
+      sendChatMessage?.(newChat.id);
+    },
+  });
 
-    const sendChat = useCallback((content: string) => {
-        if (!isFreeRound || !content.trim() || !debateId || !hasMyMemberInfo) return;
+  const sendChat = useCallback(
+    (content: string) => {
+      if (!isFreeRound || !content.trim() || !debateId || !hasMyMemberInfo) return;
 
-        createChatMutation.mutate({debateId, content: content.trim()});
-    }, [debateId, createChatMutation, isFreeRound, hasMyMemberInfo]);
+      createChatMutation.mutate({ debateId, content: content.trim() });
+    },
+    [debateId, createChatMutation, isFreeRound, hasMyMemberInfo]
+  );
 
-    return {
-        chats: isFreeRound && hasMyMemberInfo ? chats : [],
-        sendChat,
-        isSending: createChatMutation.isPending
-    };
+  return {
+    chats: isFreeRound && hasMyMemberInfo ? chats : [],
+    sendChat,
+    isSending: createChatMutation.isPending,
+  };
 };

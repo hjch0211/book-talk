@@ -1,14 +1,14 @@
-import {forwardRef, useEffect, useImperativeHandle, useState} from 'react';
-import {styled} from '@mui/material/styles';
+import { styled } from '@mui/material/styles';
+import { forwardRef, useEffect, useImperativeHandle, useState } from 'react';
 
 interface MentionItem {
-    id: string;
-    name: string;
+  id: string;
+  name: string;
 }
 
 interface MentionListProps {
-    items: MentionItem[];
-    command: (item: MentionItem) => void;
+  items: MentionItem[];
+  command: (item: MentionItem) => void;
 }
 
 const MentionSuggestionsContainer = styled('div')`
@@ -28,7 +28,7 @@ const MentionItemButton = styled('button')<{ $isSelected: boolean }>`
     padding: 8px 16px;
     text-align: left;
     border: none;
-    background: ${props => props.$isSelected ? '#F7F8FF' : 'none'};
+    background: ${(props) => (props.$isSelected ? '#F7F8FF' : 'none')};
     cursor: pointer;
     font-family: 'S-Core Dream', sans-serif;
     font-size: 14px;
@@ -41,71 +41,69 @@ const MentionItemButton = styled('button')<{ $isSelected: boolean }>`
 `;
 
 export const MentionList = forwardRef<any, MentionListProps>((props, ref) => {
-    const [selectedIndex, setSelectedIndex] = useState(0);
+  const [selectedIndex, setSelectedIndex] = useState(0);
 
-    const selectItem = (index: number) => {
-        const item = props.items[index];
-        if (item) {
-            props.command(item);
-        }
-    };
+  const selectItem = (index: number) => {
+    const item = props.items[index];
+    if (item) {
+      props.command(item);
+    }
+  };
 
-    const upHandler = () => {
-        setSelectedIndex((selectedIndex + props.items.length - 1) % props.items.length);
-    };
+  const upHandler = () => {
+    setSelectedIndex((selectedIndex + props.items.length - 1) % props.items.length);
+  };
 
-    const downHandler = () => {
-        setSelectedIndex((selectedIndex + 1) % props.items.length);
-    };
+  const downHandler = () => {
+    setSelectedIndex((selectedIndex + 1) % props.items.length);
+  };
 
-    const enterHandler = () => {
-        selectItem(selectedIndex);
-    };
+  const enterHandler = () => {
+    selectItem(selectedIndex);
+  };
 
-    useEffect(() => {
-        setSelectedIndex(0);
-    }, [props.items]);
+  useEffect(() => {
+    setSelectedIndex(0);
+  }, [props.items]);
 
-    useImperativeHandle(ref, () => ({
-        onKeyDown: ({event}: any) => {
-            if (event.key === 'ArrowUp') {
-                upHandler();
-                return true;
-            }
+  useImperativeHandle(ref, () => ({
+    onKeyDown: ({ event }: any) => {
+      if (event.key === 'ArrowUp') {
+        upHandler();
+        return true;
+      }
 
-            if (event.key === 'ArrowDown') {
-                downHandler();
-                return true;
-            }
+      if (event.key === 'ArrowDown') {
+        downHandler();
+        return true;
+      }
 
-            if (event.key === 'Enter') {
-                enterHandler();
-                return true;
-            }
+      if (event.key === 'Enter') {
+        enterHandler();
+        return true;
+      }
 
-            return false;
-        },
-    }));
+      return false;
+    },
+  }));
 
-    return (
-        <MentionSuggestionsContainer>
-            {props.items.length ? (
-                props.items.map((item, index) => (
-                    <MentionItemButton
-                        key={item.id}
-                        onClick={() => selectItem(index)}
-                        $isSelected={index === selectedIndex}
-                    >
-                        @{item.name}
-                    </MentionItemButton>
-                ))
-            ) : (
-                <div style={{padding: '8px 16px', color: '#999'}}>
-                    참여자를 찾을 수 없습니다
-                </div>
-            )}
-        </MentionSuggestionsContainer>
-    );
+  return (
+    <MentionSuggestionsContainer>
+      {props.items.length ? (
+        props.items.map((item, index) => (
+          <MentionItemButton
+            key={item.id}
+            onClick={() => selectItem(index)}
+            $isSelected={index === selectedIndex}
+          >
+            @{item.name}
+          </MentionItemButton>
+        ))
+      ) : (
+        <div style={{ padding: '8px 16px', color: '#999' }}>참여자를 찾을 수 없습니다</div>
+      )}
+    </MentionSuggestionsContainer>
+  );
 });
 
 MentionList.displayName = 'MentionList';

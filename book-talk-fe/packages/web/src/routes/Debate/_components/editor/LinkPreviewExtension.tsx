@@ -1,6 +1,6 @@
-import {mergeAttributes, Node, nodePasteRule} from '@tiptap/core';
-import {ReactNodeViewRenderer} from '@tiptap/react';
-import {LinkPreviewNode} from './LinkPreviewNode.tsx';
+import { mergeAttributes, Node, nodePasteRule } from '@tiptap/core';
+import { ReactNodeViewRenderer } from '@tiptap/react';
+import { LinkPreviewNode } from './LinkPreviewNode.tsx';
 
 /**
  * URL 패턴 정규식
@@ -10,90 +10,90 @@ import {LinkPreviewNode} from './LinkPreviewNode.tsx';
 const URL_REGEX = /https?:\/\/[^\s]+/gi;
 
 export const LinkPreview = Node.create({
-    name: 'linkPreview',
+  name: 'linkPreview',
 
-    group: 'block',
+  group: 'block',
 
-    atom: true,
+  atom: true,
 
-    addAttributes() {
-        return {
-            url: {
-                default: null,
-                parseHTML: element => element.getAttribute('data-url'),
-                renderHTML: attributes => ({
-                    'data-url': attributes.url,
-                }),
-            },
-            title: {
-                default: null,
-                parseHTML: element => element.getAttribute('data-title'),
-                renderHTML: attributes => ({
-                    'data-title': attributes.title,
-                }),
-            },
-            description: {
-                default: null,
-                parseHTML: element => element.getAttribute('data-description'),
-                renderHTML: attributes => ({
-                    'data-description': attributes.description,
-                }),
-            },
-            image: {
-                default: null,
-                parseHTML: element => element.getAttribute('data-image'),
-                renderHTML: attributes => ({
-                    'data-image': attributes.image,
-                }),
-            },
-            siteName: {
-                default: null,
-                parseHTML: element => element.getAttribute('data-site-name'),
-                renderHTML: attributes => ({
-                    'data-site-name': attributes.siteName,
-                }),
-            },
-            type: {
-                default: null,
-                parseHTML: element => element.getAttribute('data-type'),
-                renderHTML: attributes => ({
-                    'data-type': attributes.type,
-                }),
-            },
-        };
-    },
+  addAttributes() {
+    return {
+      url: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-url'),
+        renderHTML: (attributes) => ({
+          'data-url': attributes.url,
+        }),
+      },
+      title: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-title'),
+        renderHTML: (attributes) => ({
+          'data-title': attributes.title,
+        }),
+      },
+      description: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-description'),
+        renderHTML: (attributes) => ({
+          'data-description': attributes.description,
+        }),
+      },
+      image: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-image'),
+        renderHTML: (attributes) => ({
+          'data-image': attributes.image,
+        }),
+      },
+      siteName: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-site-name'),
+        renderHTML: (attributes) => ({
+          'data-site-name': attributes.siteName,
+        }),
+      },
+      type: {
+        default: null,
+        parseHTML: (element) => element.getAttribute('data-type'),
+        renderHTML: (attributes) => ({
+          'data-type': attributes.type,
+        }),
+      },
+    };
+  },
 
-    parseHTML() {
-        return [
-            {
-                tag: 'div[data-link-preview]',
-            },
-        ];
-    },
+  parseHTML() {
+    return [
+      {
+        tag: 'div[data-link-preview]',
+      },
+    ];
+  },
 
-    renderHTML({HTMLAttributes}) {
-        return ['div', mergeAttributes({'data-link-preview': ''}, HTMLAttributes)];
-    },
+  renderHTML({ HTMLAttributes }) {
+    return ['div', mergeAttributes({ 'data-link-preview': '' }, HTMLAttributes)];
+  },
 
-    addNodeView() {
-        return ReactNodeViewRenderer(LinkPreviewNode);
-    },
+  addNodeView() {
+    return ReactNodeViewRenderer(LinkPreviewNode);
+  },
 
-    addPasteRules() {
-        return [
-            nodePasteRule({
-                find: URL_REGEX,
-                type: this.type,
-                getAttributes: (match) => {
-                    const url = match[0];
-                    console.log('[LinkPreview] Matched general URL:', url);
-                    // Extension 배열 순서상 ImageWithPaste, Youtube보다 나중에 실행되므로
-                    // 여기 도달한 URL은 일반 URL임
-                    return {
-                        url: url,
-                    };
-                },
-            }),
-        ];
-    },
+  addPasteRules() {
+    return [
+      nodePasteRule({
+        find: URL_REGEX,
+        type: this.type,
+        getAttributes: (match) => {
+          const url = match[0];
+          console.log('[LinkPreview] Matched general URL:', url);
+          // Extension 배열 순서상 ImageWithPaste, Youtube보다 나중에 실행되므로
+          // 여기 도달한 URL은 일반 URL임
+          return {
+            url: url,
+          };
+        },
+      }),
+    ];
+  },
 });

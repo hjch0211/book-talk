@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import {Alert, Box, Button, ListItem} from '@mui/material';
+import { Alert, Box, Button, ListItem } from '@mui/material';
 
 export const DebateContainer = styled.div`
     position: relative;
@@ -149,7 +149,7 @@ export const PresentationArea = styled.div<{ $isChatMode?: boolean }>`
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: ${props => props.$isChatMode ? '20px' : '60px 90px 100px 60px'};
+    padding: ${(props) => (props.$isChatMode ? '20px' : '60px 90px 100px 60px')};
     gap: 10px;
     width: 970px;
     min-height: 224px;
@@ -533,7 +533,7 @@ export const MemberProfile = styled.div<{ $isCurrentSpeaker?: boolean }>`
     isolation: isolate;
     width: 230px;
     height: 72px;
-    background: ${props => props.$isCurrentSpeaker ? '#F5F5F5' : '#FFFFFF'};
+    background: ${(props) => (props.$isCurrentSpeaker ? '#F5F5F5' : '#FFFFFF')};
     border-radius: 2px 50px 50px 2px;
     flex: none;
     order: 1;
@@ -680,7 +680,7 @@ export const MemberStatus = styled.div`
     font-weight: 200;
 `;
 
-export const ActionButton = styled(Button)<{ borderColor?: string, backgroundColor?: string }>`
+export const ActionButton = styled(Button)<{ borderColor?: string; backgroundColor?: string }>`
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -711,7 +711,7 @@ export const ActionButton = styled(Button)<{ borderColor?: string, backgroundCol
         inset: 0;
         border-radius: 24px;
         padding: 2px;
-        background: ${({borderColor}) => borderColor || "linear-gradient(110deg, #1A00E2 28.5%, #FF7544 86.82%)"};
+        background: ${({ borderColor }) => borderColor || 'linear-gradient(110deg, #1A00E2 28.5%, #FF7544 86.82%)'};
         mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
         mask-composite: exclude;
         -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
@@ -725,7 +725,7 @@ export const ActionButton = styled(Button)<{ borderColor?: string, backgroundCol
         content: '';
         position: absolute;
         inset: 2px;
-        background: ${({backgroundColor}) => backgroundColor || "#F7F8FF"};
+        background: ${({ backgroundColor }) => backgroundColor || '#F7F8FF'};
         border-radius: 22px;
         z-index: -1;
     }
@@ -740,7 +740,7 @@ export const ActionButton = styled(Button)<{ borderColor?: string, backgroundCol
 
     &:hover:not(:disabled) {
         &::after {
-            background: ${({borderColor}) => borderColor || "#BEC3F5"};
+            background: ${({ borderColor }) => borderColor || '#BEC3F5'};
             opacity: 0.6;
         }
 

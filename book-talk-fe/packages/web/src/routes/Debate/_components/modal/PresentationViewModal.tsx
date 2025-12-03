@@ -1,22 +1,22 @@
-import {EditorContent, useEditor} from '@tiptap/react';
-import {useEffect} from 'react';
-import StarterKit from '@tiptap/starter-kit';
+import CloseIcon from '@mui/icons-material/Close';
+import { Box, IconButton, Modal as MuiModal, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
+import Heading from '@tiptap/extension-heading';
 import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
-import Heading from '@tiptap/extension-heading';
-import {Box, IconButton, Modal as MuiModal, Typography} from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import {usePresentation} from '../../../../hooks/domain/usePresentation.tsx';
-import {styled} from '@mui/material/styles';
-import {createMentionExtension} from '../editor/MentionExtension.tsx';
-import {LinkPreview} from "../editor/LinkPreviewExtension.tsx";
+import { EditorContent, useEditor } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { useEffect } from 'react';
+import { usePresentation } from '../../../../hooks/domain/usePresentation.tsx';
+import { LinkPreview } from '../editor/LinkPreviewExtension.tsx';
+import { createMentionExtension } from '../editor/MentionExtension.tsx';
 
 interface Props {
-    open: boolean;
-    onClose: () => void;
-    memberName: string;
-    presentationId?: string;
-    members?: Array<{ id: string; name: string }>;
+  open: boolean;
+  onClose: () => void;
+  memberName: string;
+  presentationId?: string;
+  members?: Array<{ id: string; name: string }>;
 }
 
 const ModalContainer = styled(Box)`
@@ -158,80 +158,82 @@ const EditorContainer = styled(Box)`
 `;
 
 export function PresentationViewModal({
-                                          open,
-                                          onClose,
-                                          memberName,
-                                          presentationId,
-                                          members = []
-                                      }: Props) {
-    const {currentPresentation, isLoading} = usePresentation(presentationId);
+  open,
+  onClose,
+  memberName,
+  presentationId,
+  members = [],
+}: Props) {
+  const { currentPresentation, isLoading } = usePresentation(presentationId);
 
-    const editor = useEditor({
-        extensions: [
-            // Mention Extension for read-only mode (no click handler, editable=false)
-            createMentionExtension(members, undefined, false),
-            StarterKit.configure({heading: false}),
-            Heading.configure({levels: [1]}),
-            Image.configure({HTMLAttributes: {class: 'presentation-image'}}),
-            Youtube.configure({
-                addPasteHandler: true,  // YouTube URL 자동 감지 활성화
-                HTMLAttributes: {class: 'presentation-video'},
-                controls: false,
-                nocookie: true,
-                width: 720,
-                height: 480
-            }),
-            LinkPreview,
-        ],
-        editable: false,
-        immediatelyRender: false,
-        editorProps: {attributes: {class: 'presentation-editor'}},
-    });
+  const editor = useEditor({
+    extensions: [
+      // Mention Extension for read-only mode (no click handler, editable=false)
+      createMentionExtension(members, undefined, false),
+      StarterKit.configure({ heading: false }),
+      Heading.configure({ levels: [1] }),
+      Image.configure({ HTMLAttributes: { class: 'presentation-image' } }),
+      Youtube.configure({
+        addPasteHandler: true, // YouTube URL 자동 감지 활성화
+        HTMLAttributes: { class: 'presentation-video' },
+        controls: false,
+        nocookie: true,
+        width: 720,
+        height: 480,
+      }),
+      LinkPreview,
+    ],
+    editable: false,
+    immediatelyRender: false,
+    editorProps: { attributes: { class: 'presentation-editor' } },
+  });
 
-    // presentation 데이터 로드시 에디터 내용 업데이트
-    useEffect(() => {
-        if (editor && currentPresentation?.content) {
-            try {
-                const content = JSON.parse(currentPresentation.content);
-                editor.commands.setContent(content);
-            } catch (error) {
-                console.error('Failed to parse presentation content:', error);
-            }
-        }
-    }, [editor, currentPresentation?.content]);
+  // presentation 데이터 로드시 에디터 내용 업데이트
+  useEffect(() => {
+    if (editor && currentPresentation?.content) {
+      try {
+        const content = JSON.parse(currentPresentation.content);
+        editor.commands.setContent(content);
+      } catch (error) {
+        console.error('Failed to parse presentation content:', error);
+      }
+    }
+  }, [editor, currentPresentation?.content]);
 
-    return (
-        <MuiModal
-            open={open}
-            onClose={onClose}
-            sx={{
+  return (
+    <MuiModal
+      open={open}
+      onClose={onClose}
+      sx={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <ModalContainer>
+        <ModalHeader>
+          <ModalTitle>{memberName}님의 발표페이지</ModalTitle>
+        </ModalHeader>
+        <CloseButton onClick={onClose}>
+          <CloseIcon />
+        </CloseButton>
+        <EditorContainer>
+          {isLoading ? (
+            <Box
+              sx={{
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
-            }}
-        >
-            <ModalContainer>
-                <ModalHeader>
-                    <ModalTitle>{memberName}님의 발표페이지</ModalTitle>
-                </ModalHeader>
-                <CloseButton onClick={onClose}>
-                    <CloseIcon/>
-                </CloseButton>
-                <EditorContainer>
-                    {isLoading ? (
-                        <Box sx={{
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            height: '100%'
-                        }}>
-                            <Typography>로딩 중...</Typography>
-                        </Box>
-                    ) : (
-                        <EditorContent editor={editor}/>
-                    )}
-                </EditorContainer>
-            </ModalContainer>
-        </MuiModal>
-    );
+                justifyContent: 'center',
+                height: '100%',
+              }}
+            >
+              <Typography>로딩 중...</Typography>
+            </Box>
+          ) : (
+            <EditorContent editor={editor} />
+          )}
+        </EditorContainer>
+      </ModalContainer>
+    </MuiModal>
+  );
 }

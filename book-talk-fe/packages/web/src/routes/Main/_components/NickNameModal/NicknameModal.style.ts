@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import {Box, Button, TextField, Typography} from '@mui/material';
+import { Box, Button, TextField, Typography } from '@mui/material';
 
 export const ModalContainer = styled(Box)`
     display: flex;
@@ -111,6 +111,6 @@ export const ButtonText = styled(Typography)<{ isDisabled?: boolean }>`
     line-height: 125%;
     text-align: center;
     letter-spacing: 0.3px;
-    color: ${({isDisabled}) => isDisabled ? '#7B7B7B' : '#262626'};
+    color: ${({ isDisabled }) => (isDisabled ? '#7B7B7B' : '#262626')};
     text-transform: none;
 `;
