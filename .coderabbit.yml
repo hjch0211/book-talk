@@ -163,7 +163,7 @@ reviews:
     # ============ Frontend (React/TypeScript) ============
 
     # 전체 TypeScript/TSX 코드 리뷰
-    - path: "book-talk-fe/**/*.{ts,tsx}"
+    - path: "book-talk-ts/**/*.{ts,tsx}"
       instructions: |
         "TypeScript 코드에 대해 다음 기준에 따라 리뷰해주세요!
 
@@ -180,7 +180,7 @@ reviews:
         - 코드 중복은 없나요?"
 
     # React 컴포넌트
-    - path: "book-talk-fe/packages/web/src/routes/**/*.tsx"
+    - path: "book-talk-ts/packages/web/src/routes/**/*.tsx"
       instructions: |
         "React 컴포넌트는 아래 사항을 확인해주세요!
         - 컴포넌트가 단일 책임 원칙을 따르나요?
@@ -192,7 +192,7 @@ reviews:
         - Loading/Error 상태 처리가 적절한가요?"
 
     # Custom Hooks
-    - path: "book-talk-fe/packages/web/src/hooks/**/*.ts"
+    - path: "book-talk-ts/packages/web/src/hooks/**/*.ts"
       instructions: |
         "Custom Hooks는 아래 사항을 확인해주세요!
         - Hook의 책임이 명확하고 재사용 가능한가요?
@@ -203,7 +203,7 @@ reviews:
         - 상태 업데이트가 안전한가요? (함수형 업데이트)"
 
     # Context & Providers
-    - path: "book-talk-fe/packages/web/src/contexts/**/*.tsx"
+    - path: "book-talk-ts/packages/web/src/contexts/**/*.tsx"
       instructions: |
         "Context는 아래 사항을 확인해주세요!
         - Context의 범위가 적절한가요? (전역 vs 지역)
@@ -213,7 +213,7 @@ reviews:
         - 초기값이 명확하게 정의되어 있나요?"
 
     # API 클라이언트
-    - path: "book-talk-fe/packages/web/src/apis/**/*.ts"
+    - path: "book-talk-ts/packages/web/src/apis/**/*.ts"
       instructions: |
         "API 클라이언트는 아래 사항을 확인해주세요!
         - HTTP 메서드와 엔드포인트가 올바른가요?
@@ -224,7 +224,7 @@ reviews:
         - timeout 설정이 적절한가요?"
 
     # WebSocket 클라이언트
-    - path: "book-talk-fe/packages/web/src/apis/websocket/**/*.ts"
+    - path: "book-talk-ts/packages/web/src/apis/websocket/**/*.ts"
       instructions: |
         "WebSocket 클라이언트는 아래 사항을 확인해주세요!
         - 연결/재연결 로직이 안전한가요?
@@ -236,7 +236,7 @@ reviews:
         - 하트비트 로직이 있나요?"
 
     # WebRTC Manager
-    - path: "book-talk-fe/packages/web/src/apis/webrtc/**/*.ts"
+    - path: "book-talk-ts/packages/web/src/apis/webrtc/**/*.ts"
       instructions: |
         "WebRTC 코드는 아래 사항을 확인해주세요!
         - Peer connection 생성/종료가 올바른가요?
@@ -250,7 +250,7 @@ reviews:
         - 리소스 누수가 없나요? (AudioContext cleanup)"
 
     # TypeScript 타입 정의
-    - path: "book-talk-fe/packages/web/src/types/**/*.ts"
+    - path: "book-talk-ts/packages/web/src/types/**/*.ts"
       instructions: |
         "타입 정의는 아래 사항을 확인해주세요!
         - 타입이 명확하고 재사용 가능한가요?
@@ -260,7 +260,7 @@ reviews:
         - 타입 가드가 필요한가요?"
 
     # Vite/환경 설정
-    - path: "book-talk-fe/packages/web/vite.config.ts"
+    - path: "book-talk-ts/packages/web/vite.config.ts"
       instructions: |
         "Vite 설정은 아래 사항을 확인해주세요!
         - 빌드 최적화 설정이 적절한가요?
@@ -280,7 +280,7 @@ reviews:
         - 프론트엔드 환경변수는 VITE_ prefix를 사용하나요?"
 
     # Package.json
-    - path: "book-talk-fe/**/package.json"
+    - path: "book-talk-ts/**/package.json"
       instructions: |
         "package.json은 아래 사항을 확인해주세요!
         - 의존성 버전이 적절한가요?
