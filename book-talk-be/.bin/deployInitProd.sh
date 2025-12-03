@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/.bin/sh
 
 echo "🚀 Book Talk 배포 시작 (Production)"
 echo "환경 변수 파일: .env.prod"
@@ -92,7 +92,7 @@ fi
 echo ""
 echo "📦 초기 데이터 설정 스크립트 실행 중..."
 if [ -f ".bin/initDataProd.sh" ]; then
-  if ! ./.bin/initDataProd.sh; then
+  if ! ./..bin/initDataProd.sh; then
     echo "❌ 초기 데이터 설정 실패!"
     exit 1
   fi

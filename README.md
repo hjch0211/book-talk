@@ -38,7 +38,7 @@ cd book-talk-be
 
 ```bash
 cd book-talk-be
-./bin/redeployOnlyBackend.sh
+./.bin/redeployOnlyBackend.sh
 ```
 
 > DB와 Redis는 유지하고 백엔드 코드만 재배포합니다.
@@ -46,11 +46,18 @@ cd book-talk-be
 ### 2. 프론트엔드 배포
 
 ```bash
-cd book-talk-fe
-./bin/deployProd.sh
+cd book-talk-ts
+./.bin/web/deployProd.sh
 ```
 
 > `.env.production` 파일이 설정되어 있어야 합니다.
+
+### 3. Nginx 설정 적용
+
+```bash
+cd deploy
+./.bin/applyNginx.sh
+```
 
 ---
 
