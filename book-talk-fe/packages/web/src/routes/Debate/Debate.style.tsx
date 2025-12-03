@@ -783,22 +783,3 @@ export const ActionButton = styled(Button)<{ borderColor?: string; backgroundCol
         }
     }
 `;
-
-export const StyledAlert = styled(Alert)`
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    padding: 6px 16px;
-    position: absolute;
-    width: 320px;
-    height: 48px;
-    left: 560px;
-    top: 758px;
-    background: #8E99FF;
-    border-radius: 4px;
-    color: #FFFFFF;
-
-    & .MuiAlert-icon {
-        color: #FFFFFF;
-    }
-`;
