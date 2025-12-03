@@ -56,7 +56,7 @@ cd book-talk-fe
 
 ## 주요 플로우
 
-### voice chat UseWebFlow
+### voice chat flow
 
 ```mermaid
 sequenceDiagram
@@ -64,7 +64,7 @@ sequenceDiagram
 	participant s as Main server with Signaling
 	actor p2 as peer2
 	
-	note over p1, p2: 토론방 입장, 네트워크 연결 복구, 재연결 시 C_VOICE_CHAT부턱 시작
+	note over p1, p2: 토론방 입장, 네트워크 연결 복구, 재연결 시 C_VOICE_CHAT부터 시작
 	p1->>s: C_VOICE_JOIN
 	s->>p2: S_VOICE_JOIN(broadcast)
 	p2->>p2: createOffer<br/>(이미 연결되어있더라도 재연결)<br/>(RTCPeerConnection 생성)
@@ -76,4 +76,6 @@ sequenceDiagram
 	p1->p2: handleAnswer(ICE candidate 교환 시작)
 	p1->>p1: PeerConnection.onTrack(상대 미디어 수신)
 	p2->>p2: PeerConnection.onTrack(상대 미디어 수신)
+	
+	note over p1, p2: 새로고침, 네트워크 연결 복구 발생 시<br/>최대 5번까지 C_VOICE_JOIN 메시지 전송 시도
 ```
