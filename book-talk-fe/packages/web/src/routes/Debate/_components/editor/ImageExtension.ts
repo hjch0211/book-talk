@@ -1,5 +1,5 @@
-import Image from '@tiptap/extension-image';
 import { nodePasteRule } from '@tiptap/core';
+import Image from '@tiptap/extension-image';
 
 /**
  * 이미지 URL 패턴 정규식
@@ -14,7 +14,8 @@ import { nodePasteRule } from '@tiptap/core';
  * - data:image/jpeg;base64,/9j/4AAQSkZJRg...
  * - data:image/png;base64,iVBORw0KGgo...
  */
-const IMAGE_URL_REGEX = /(?:https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|svg|bmp|ico)(?:\?[^\s]*)?|data:image\/(?:jpeg|jpg|png|gif|webp|svg|bmp|ico);base64,[^\s]+)/gi;
+const IMAGE_URL_REGEX =
+  /(?:https?:\/\/[^\s]+\.(?:jpg|jpeg|png|gif|webp|svg|bmp|ico)(?:\?[^\s]*)?|data:image\/(?:jpeg|jpg|png|gif|webp|svg|bmp|ico);base64,[^\s]+)/gi;
 
 /**
  * Image extension with auto-paste handler

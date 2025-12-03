@@ -91,15 +91,17 @@ export const MainButton = styled.button<{ disabled?: boolean }>`
     padding: 8px 20px;
     width: 360px;
     height: 80px;
-    background: ${props => props.disabled ? '#D9D9D9' : '#BEC3F5'};
-    box-shadow: ${props => props.disabled ? 'none' : '0px 2px 4px rgba(0, 0, 0, 0.25)'};
+    background: ${(props) => (props.disabled ? '#D9D9D9' : '#BEC3F5')};
+    box-shadow: ${(props) => (props.disabled ? 'none' : '0px 2px 4px rgba(0, 0, 0, 0.25)')};
     border-radius: 8px;
     border: none;
-    cursor: ${props => props.disabled ? 'not-allowed' : 'pointer'};
+    cursor: ${(props) => (props.disabled ? 'not-allowed' : 'pointer')};
     transition: all 0.3s ease;
 
     &:hover {
-        ${props => !props.disabled && `
+        ${(props) =>
+          !props.disabled &&
+          `
       background: #A8B0F0;
       transform: translateY(-2px);
       box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
@@ -107,7 +109,9 @@ export const MainButton = styled.button<{ disabled?: boolean }>`
     }
 
     &:active {
-        ${props => !props.disabled && `
+        ${(props) =>
+          !props.disabled &&
+          `
       transform: translateY(0);
       box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
     `}
@@ -122,5 +126,5 @@ export const MainButtonText = styled.span<{ disabled?: boolean }>`
     line-height: 125%;
     text-align: center;
     letter-spacing: 0.3px;
-    color: ${props => props.disabled ? '#7B7B7B' : '#262626'};
+    color: ${(props) => (props.disabled ? '#7B7B7B' : '#262626')};
 `;
