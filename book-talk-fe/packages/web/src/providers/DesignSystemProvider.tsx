@@ -37,7 +37,12 @@ const configMuiComponents: Components = {
   },
 };
 
-export const MuiThemeProvider = ({ children }: { children: React.ReactNode }) => (
+/**
+ * @name DesignSystemProvider
+ * @description 앱 전역 디자인 시스템 (테마, 타이포그래피, 색상, 반응형) 제공
+ * @external @mui/material
+ */
+export const DesignSystemProvider = ({ children }: { children: React.ReactNode }) => (
   <ThemeProvider
     theme={responsiveFontSizes(
       createTheme({

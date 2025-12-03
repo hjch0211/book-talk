@@ -1,8 +1,8 @@
+import { meQueryOption } from '@src/apis/account';
+import { findOneDebateQueryOptions, joinDebate } from '@src/apis/debate';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { meQueryOption } from '../../apis/account';
-import { findOneDebateQueryOptions, joinDebate } from '../../apis/debate';
 import { useDebateChat } from './useDebateChat.ts';
 import { useDebateRound } from './useDebateRound.ts';
 import { useDebateVoiceChat } from './useDebateVoiceChat.ts';

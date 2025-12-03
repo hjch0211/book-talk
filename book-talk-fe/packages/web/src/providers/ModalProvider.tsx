@@ -1,12 +1,4 @@
-import {
-  type ComponentType,
-  createContext,
-  type ReactNode,
-  useCallback,
-  useContext,
-  useState,
-} from 'react';
-import { createPortal } from 'react-dom';
+import { type ComponentType, createContext, type ReactNode, useCallback, useState } from 'react';
 
 interface ModalProps {
   open: boolean;
@@ -21,9 +13,18 @@ interface ModalContextType {
   closeModal: () => void;
 }
 
-const ModalContext = createContext<ModalContextType | undefined>(undefined);
+export const ModalContext = createContext<ModalContextType | null>(null);
 
-export function ModalProvider({ children }: { children: ReactNode }) {
+interface ModalProviderProps {
+  children: ReactNode;
+}
+
+/**
+ * @name ModalProvider
+ * @description 전역 모달 상태 관리 및 동적 모달 렌더링 제공
+ * @external none
+ */
+export const ModalProvider = ({ children }: ModalProviderProps) => {
   const [modalState, setModalState] = useState<{
     Component: ComponentType<ModalProps>;
     props: Record<string, unknown>;
@@ -43,24 +44,12 @@ export function ModalProvider({ children }: { children: ReactNode }) {
     setModalState(null);
   }, []);
 
-  const modalRoot = document.getElementById('modal-root') || document.body;
-
   return (
     <ModalContext.Provider value={{ openModal, closeModal }}>
       {children}
-      {modalState &&
-        createPortal(
-          <modalState.Component {...modalState.props} open={true} onClose={closeModal} />,
-          modalRoot
-        )}
+      {modalState && (
+        <modalState.Component {...modalState.props} open={true} onClose={closeModal} />
+      )}
     </ModalContext.Provider>
   );
-}
-
-export const useModalContext = () => {
-  const context = useContext(ModalContext);
-  if (!context) {
-    throw new Error('useModalContext must be used within a ModalProvider');
-  }
-  return context;
 };

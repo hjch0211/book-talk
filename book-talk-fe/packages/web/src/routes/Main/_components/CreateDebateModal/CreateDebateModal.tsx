@@ -1,14 +1,14 @@
 import { Search } from '@mui/icons-material';
 import { Typography } from '@mui/material';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { type BookData, searchBooksQueryOptions } from '../../../../apis/book';
+import { type BookData, searchBooksQueryOptions } from '@src/apis/book';
 import {
   type CreateDebateRequest,
   createDebate,
   findOneDebateQueryOptions,
-} from '../../../../apis/debate';
+} from '@src/apis/debate';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Modal from '../../../../components/organisms/Modal';
 import {
   BookAuthor,
