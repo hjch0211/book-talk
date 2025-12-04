@@ -13,15 +13,25 @@
   "dependencies": {
     "@langchain/core": "^1.0.0",
     "@langchain/langgraph": "^1.0.0",
+    "@langchain/openai": "^1.0.0",
     "@nestjs/common": "^11.0.0",
+    "@nestjs/config": "^4.0.2",
     "@nestjs/core": "^11.0.0",
     "@nestjs/platform-express": "^11.0.0",
+    "@nestjs/typeorm": "^11.0.0",
+    "langfuse": "^3.0.0",
+    "langfuse-langchain": "^3.0.0",
+    "pg": "^8.16.3",
+    "ramda": "^0.32.0",
     "reflect-metadata": "^0.2.0",
-    "rxjs": "^7.8.0"
+    "rxjs": "^7.8.0",
+    "typeorm": "^0.3.28",
+    "zod": "^3.23.0"
   },
   "devDependencies": {
     "@types/express": "^5.0.0",
     "@types/node": "^22.0.0",
+    "@types/ramda": "^0.31.1",
     "vite-plugin-node": "^3.1.0"
   }
 }

@@ -1,0 +1,66 @@
+import type { Callbacks } from '@langchain/core/callbacks/manager';
+import { Inject, Injectable } from '@nestjs/common';
+import { PROMPT_STUDIO_AGENT, type PromptStudioAgent } from '@src/client';
+import {
+  AI_CHAT_MESSAGE_REPOSITORY,
+  AI_CHAT_REPOSITORY,
+  type AiChatMessageRepository,
+  type AiChatRepository,
+} from '@src/data/data.module';
+import type { ChatRequest, CreateRequest } from './_requests';
+import type { ChatResponse } from './_responses';
+import { DEBATE_GRAPH, type DebateGraph } from './graph/debate.graph';
+
+export const DEBATE_SERVICE = Symbol.for('DEBATE_SERVICE');
+
+@Injectable()
+export class DebateService {
+  constructor(
+    @Inject(PROMPT_STUDIO_AGENT)
+    private readonly promptStudioAgent: PromptStudioAgent,
+    @Inject(DEBATE_GRAPH)
+    private readonly debateGraph: DebateGraph,
+    @Inject(AI_CHAT_REPOSITORY)
+    private readonly chatRepository: AiChatRepository,
+    @Inject(AI_CHAT_MESSAGE_REPOSITORY)
+    private readonly messageRepository: AiChatMessageRepository,
+  ) {}
+
+  /** 새 토론 세션 생성 */
+  async create(request: CreateRequest): Promise<{ chatId: string }> {
+    const { debateId } = request;
+
+    const chat = await this.chatRepository.save({ debateId });
+
+    return { chatId: chat.id };
+  }
+
+  // TODO: stream 응답, 토큰 초과 시, 메시지 요약, retry 전략
+  async chat(request: ChatRequest): Promise<ChatResponse> {
+    const { message, chatId } = request;
+
+    const chat = await this.chatRepository.findOneBy({ id: chatId });
+    if (!chat) {
+      throw new Error(`Chat not found: ${chatId}`);
+    }
+
+    await this.messageRepository.save({ chatId, role: 'user', content: message });
+
+    const callbacks = this.createCallbacks(chatId);
+    const response = await this.debateGraph.run(message, chatId, chat.debateId, callbacks);
+
+    await this.messageRepository.save({ chatId, role: 'assistant', content: response });
+
+    return { response, chatId };
+  }
+
+  /** 채팅방 삭제 */
+  async remove(chatId: string): Promise<void> {
+    await this.chatRepository.delete({ id: chatId });
+  }
+
+  private createCallbacks(chatId: string): Callbacks {
+    const handler = this.promptStudioAgent.createCallbackHandler(chatId);
+    return handler ? [handler] : [];
+  }
+}

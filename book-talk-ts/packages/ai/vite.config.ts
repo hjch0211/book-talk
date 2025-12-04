@@ -10,7 +10,7 @@ export default defineConfig({
     ...VitePluginNode({
       adapter: 'nest',
       appPath: './src/main.ts',
-      exportName: 'viteNodeApp',
+      exportName: 'booktalkApplication',
       tsCompiler: 'esbuild',
       swcOptions: {},
     }),
