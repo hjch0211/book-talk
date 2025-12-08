@@ -1,4 +1,4 @@
-#!/.bin/sh
+#!/bin/sh
 
 echo "🔄 Backend 재배포 시작 (Production)"
 echo "환경 변수 파일: .env.prod"

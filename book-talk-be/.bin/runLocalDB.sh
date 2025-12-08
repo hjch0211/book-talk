@@ -1,4 +1,4 @@
-#!/.bin/sh
+#!/bin/sh
 
 echo "📦 Local DB 시작"
 echo "환경 변수 파일: .env.local"
