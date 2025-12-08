@@ -10,6 +10,9 @@ import type {
 /** Voice 메시지 타입 (전송용) */
 type VoiceMessage = WS_VoiceJoinRequest | WS_VoiceOfferRequest | WS_VoiceAnswerRequest;
 
+/** Voice chat 연결 상태 */
+export type VoiceConnectionStatus = 'PENDING' | 'COMPLETED' | 'FAILED';
+
 export interface UseDebateVoiceChatOptions {
   /** 내 ID */
   myId: string;
@@ -37,6 +40,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
   const { myId, debateId, sendVoiceMessage, voiceMessage, enabled = true, onError } = options;
 
   const [isJoined, setIsJoined] = useState(false);
+  const [connectionStatus, setConnectionStatus] = useState<VoiceConnectionStatus | null>(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isAudioActive, setIsAudioActive] = useState(false);
 
@@ -59,9 +63,13 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
     handleAnswer,
     disconnect,
   } = useWebRTC({
-    onError,
+    onError: (error) => {
+      setConnectionStatus('FAILED');
+      onError?.(error);
+    },
     onReconnectNeeded: () => {
       if (!isJoinedRef.current || !myId) return;
+      setConnectionStatus('PENDING');
       // 연결 실패 시 C_VOICE_JOIN을 다시 전송하여 재연결
       sendVoiceMessage({
         type: 'C_VOICE_JOIN',
@@ -76,9 +84,12 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
   const join = useCallback(async () => {
     if (isJoinedRef.current || !myId) return;
 
+    setConnectionStatus('PENDING');
+
     const stream = await startLocalStream({ audio: true, video: false });
     if (!stream) {
       console.error('로컬 스트림 생성 실패');
+      setConnectionStatus('FAILED');
       return;
     }
 
@@ -101,6 +112,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
     disconnect();
     isJoinedRef.current = false;
     setIsJoined(false);
+    setConnectionStatus(null);
   }, [disconnect]);
 
   /** 음소거 토글 */
@@ -204,9 +216,18 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
     return () => leave();
   }, [enabled, join, leave]);
 
+  // remoteStreams가 있으면 COMPLETED 상태로 변경
+  useEffect(() => {
+    if (remoteStreams.length > 0 && connectionStatus === 'PENDING') {
+      setConnectionStatus('COMPLETED');
+    }
+  }, [remoteStreams.length, connectionStatus]);
+
   return {
     /** 음성 채팅 참여 여부 */
     isJoined,
+    /** 음성 연결 상태 (PENDING | COMPLETED | FAILED | null) */
+    connectionStatus,
     /** 음소거 상태 */
     isMuted,
     /** 오디오 재생 가능 상태 (사용자 제스처 후 true) */
