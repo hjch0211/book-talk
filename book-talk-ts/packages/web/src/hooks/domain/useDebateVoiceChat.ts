@@ -1,19 +1,14 @@
+import { useWebRTC } from '@src/hooks';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   WebSocketMessage,
   WS_VoiceAnswerRequest,
-  WS_VoiceIceRequest,
   WS_VoiceJoinRequest,
   WS_VoiceOfferRequest,
 } from '../../apis/websocket/schema';
-import { useWebRTC } from '../infra/useWebRTC';
 
 /** Voice 메시지 타입 (전송용) */
-type VoiceMessage =
-  | WS_VoiceJoinRequest
-  | WS_VoiceOfferRequest
-  | WS_VoiceAnswerRequest
-  | WS_VoiceIceRequest;
+type VoiceMessage = WS_VoiceJoinRequest | WS_VoiceOfferRequest | WS_VoiceAnswerRequest;
 
 export interface UseDebateVoiceChatOptions {
   /** 내 ID */
@@ -62,19 +57,8 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
     createOffer,
     handleOffer,
     handleAnswer,
-    handleIceCandidate,
     disconnect,
   } = useWebRTC({
-    onIceCandidate: (peerId, candidate) => {
-      sendVoiceMessage({
-        type: 'C_VOICE_ICE',
-        provider: 'CLIENT',
-        debateId,
-        fromId: myId,
-        toId: peerId,
-        iceCandidate: candidate,
-      });
-    },
     onError,
     onReconnectNeeded: () => {
       if (!isJoinedRef.current || !myId) return;
@@ -186,16 +170,9 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
           await handleAnswer(message.fromId, message.answer);
           break;
         }
-
-        /** ICE Candidate 수신 → 네트워크 경로 추가 */
-        case 'S_VOICE_ICE': {
-          if (message.toId !== myId) return;
-          await handleIceCandidate(message.fromId, message.iceCandidate);
-          break;
-        }
       }
     },
-    [myId, debateId, createOffer, handleOffer, handleAnswer, handleIceCandidate, sendVoiceMessage]
+    [myId, debateId, createOffer, handleOffer, handleAnswer, sendVoiceMessage]
   );
 
   /** AudioContext 초기화 및 autoplay 허용 여부 확인 */

@@ -123,13 +123,3 @@ data class WS_VoiceAnswerRequest(
     override val type: String = "C_VOICE_ANSWER"
     override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
 }
-
-data class WS_VoiceIceRequest(
-    val debateId: String,
-    val fromId: String,
-    val toId: String,
-    val iceCandidate: Map<String, Any>
-) : WebSocketMessage {
-    override val type: String = "C_VOICE_ICE"
-    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
-}

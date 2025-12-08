@@ -84,22 +84,24 @@ cd deploy
 
 ```mermaid
 sequenceDiagram
-	actor p1 as peer1
-	participant s as Main server with Signaling
-	actor p2 as peer2
-	
-	note over p1, p2: 토론방 입장, 네트워크 연결 복구, 재연결 시 C_VOICE_CHAT부터 시작
-	p1->>s: C_VOICE_JOIN (debateId, peer1's accountId)
-	s->>p2: broadcast S_VOICE_JOIN (debateId, peer1's accountId)
-	p2->>p2: createOffer<br/>(이미 연결되어있더라도 재연결)<br/>(RTCPeerConnection 생성)
-	p2->>s: C_VOICE_OFFER (debateId, fromId, toId, peer2의 SDP(코덱/미디어 협상 정보))
-	s->>p1: S_VOICE_OFFER (debateId, fromId, toId, peer2의 SDP(코덱/미디어 협상 정보))
-	p1->>p1: handleOffer<br/>(RTCPeerConnection 생성)
-	p1->>s: C_VOICE_ANSWER (debateId, fromId, toId, peer1의 SDP(코덱/미디어 협상 정보))
-	s->>p2: S_VOICE_ANSWER (debateId, fromId, toId, peer1의 SDP(코덱/미디어 협상 정보))
-	p1->p2: handleAnswer(ICE candidate(어떻게 최적 경로로 통신을 할지 협상) 교환 시작)
-	p1->>p1: PeerConnection.onTrack(상대 미디어 수신)
-	p2->>p2: PeerConnection.onTrack(상대 미디어 수신)
-	
-	note over p1, p2: 새로고침, 네트워크 연결 복구 발생 시<br/>최대 5번까지 C_VOICE_JOIN 메시지 전송 시도
+    actor p1 as peer1
+    participant s as Main server with Signaling
+    actor p2 as peer2
+    
+    note over p1, p2: 토론방 입장, 네트워크 연결 복구, 재연결 시 C_VOICE_JOIN부터 시작
+    p1->>s: C_VOICE_JOIN (debateId, peer1's accountId)
+    s->>p2: broadcast S_VOICE_JOIN (debateId, peer1's accountId)
+    p2->>p2: createOffer<br/>(RTCPeerConnection 생성)<br/>ICE Gathering 완료 대기
+    p2->>s: C_VOICE_OFFER (debateId, fromId, toId, SDP + 모든 ICE Candidates 포함)
+    s->>p1: S_VOICE_OFFER (debateId, fromId, toId, SDP + 모든 ICE Candidates 포함)
+    p1->>p1: handleOffer<br/>(RTCPeerConnection 생성)<br/>ICE Gathering 완료 대기
+    p1->>s: C_VOICE_ANSWER (debateId, fromId, toId, SDP + 모든 ICE Candidates 포함)
+    s->>p2: S_VOICE_ANSWER (debateId, fromId, toId, SDP + 모든 ICE Candidates 포함)
+    p2->>p2: handleAnswer
+    
+    note over p1, p2: ICE 연결 수립
+    p1->>p1: PeerConnection.onTrack(상대 미디어 수신)
+    p2->>p2: PeerConnection.onTrack(상대 미디어 수신)
+    
+    note over p1, p2: 연결 실패 시 최대 5번까지 C_VOICE_JOIN 재시도
 ```
