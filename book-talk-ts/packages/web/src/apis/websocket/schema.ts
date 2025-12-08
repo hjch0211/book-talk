@@ -163,7 +163,6 @@ export const WS_VoiceJoinResponseSchema = z.object({
   type: z.literal('S_VOICE_JOIN'),
   provider: z.literal('API'),
   debateId: z.string(),
-  accountId: z.string(),
   fromId: z.string(),
 });
 

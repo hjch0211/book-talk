@@ -142,7 +142,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
       switch (message.type) {
         /** 새 참가자 입장 → Offer 전송 */
         case 'S_VOICE_JOIN': {
-          const fromId = message.fromId ?? message.accountId;
+          const fromId = message.fromId;
           if (fromId === myId || !isJoinedRef.current) return;
 
           const offer = await createOffer(fromId);

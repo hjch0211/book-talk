@@ -427,7 +427,6 @@ class ApiWebSocketHandler(
                 "type" to "S_VOICE_JOIN",
                 "provider" to "API",
                 "debateId" to sessionDebateId,
-                "accountId" to request.accountId,
                 "fromId" to request.accountId
             )
             val messageJson = objectMapper.writeValueAsString(broadcastMessage)
