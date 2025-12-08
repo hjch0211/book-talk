@@ -39,7 +39,7 @@ export interface UseDebateVoiceChatOptions {
  * @internal useDebate 내부에서만 사용
  */
 export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
-  const { myId, sendVoiceMessage, voiceMessage, enabled = true, onError } = options;
+  const { myId, debateId, sendVoiceMessage, voiceMessage, enabled = true, onError } = options;
 
   const [isJoined, setIsJoined] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
@@ -69,6 +69,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
       sendVoiceMessage({
         type: 'C_VOICE_ICE',
         provider: 'CLIENT',
+        debateId,
         fromId: myId,
         toId: peerId,
         iceCandidate: candidate,
@@ -81,6 +82,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
       sendVoiceMessage({
         type: 'C_VOICE_JOIN',
         provider: 'CLIENT',
+        debateId,
         accountId: myId,
       });
     },
@@ -103,9 +105,10 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
     sendVoiceMessage({
       type: 'C_VOICE_JOIN',
       provider: 'CLIENT',
+      debateId,
       accountId: myId,
     });
-  }, [myId, sendVoiceMessage, startLocalStream]);
+  }, [myId, debateId, sendVoiceMessage, startLocalStream]);
 
   /** 음성 채팅 퇴장 */
   const leave = useCallback(() => {
@@ -150,6 +153,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
             sendVoiceMessage({
               type: 'C_VOICE_OFFER',
               provider: 'CLIENT',
+              debateId,
               fromId: myId,
               toId: fromId,
               offer,
@@ -167,6 +171,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
             sendVoiceMessage({
               type: 'C_VOICE_ANSWER',
               provider: 'CLIENT',
+              debateId,
               fromId: myId,
               toId: message.fromId,
               answer,
@@ -190,7 +195,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
         }
       }
     },
-    [myId, createOffer, handleOffer, handleAnswer, handleIceCandidate, sendVoiceMessage]
+    [myId, debateId, createOffer, handleOffer, handleAnswer, handleIceCandidate, sendVoiceMessage]
   );
 
   /** AudioContext 초기화 및 autoplay 허용 여부 확인 */

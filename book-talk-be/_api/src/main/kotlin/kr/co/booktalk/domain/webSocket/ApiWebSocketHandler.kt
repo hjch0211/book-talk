@@ -414,7 +414,7 @@ class ApiWebSocketHandler(
         }
 
         val sessionDebateId = session.attributes["debateId"] as? String
-        if (sessionDebateId == null || sessionDebateId != request.debateId) {
+        if (sessionDebateId != request.debateId) {
             logger.error { "음성 참여 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}" }
             return
         }
@@ -426,7 +426,7 @@ class ApiWebSocketHandler(
             val broadcastMessage = mapOf(
                 "type" to "S_VOICE_JOIN",
                 "provider" to "API",
-                "debateId" to sessionDebateId,
+                "debateId" to request.debateId,
                 "fromId" to request.accountId
             )
             val messageJson = objectMapper.writeValueAsString(broadcastMessage)
@@ -444,7 +444,7 @@ class ApiWebSocketHandler(
         }
 
         val sessionDebateId = session.attributes["debateId"] as? String
-        if (sessionDebateId == null || sessionDebateId != request.debateId) {
+        if (sessionDebateId != request.debateId) {
             logger.error { "Offer 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}" }
             return
         }
@@ -462,7 +462,7 @@ class ApiWebSocketHandler(
                 val relayedMessage = mapOf(
                     "type" to "S_VOICE_OFFER",
                     "provider" to "API",
-                    "debateId" to sessionDebateId,
+                    "debateId" to request.debateId,
                     "fromId" to request.fromId,
                     "toId" to request.toId,
                     "offer" to request.offer
@@ -485,7 +485,7 @@ class ApiWebSocketHandler(
         }
 
         val sessionDebateId = session.attributes["debateId"] as? String
-        if (sessionDebateId == null || sessionDebateId != request.debateId) {
+        if (sessionDebateId != request.debateId) {
             logger.error { "Answer 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}" }
             return
         }
@@ -503,7 +503,7 @@ class ApiWebSocketHandler(
                 val relayedMessage = mapOf(
                     "type" to "S_VOICE_ANSWER",
                     "provider" to "API",
-                    "debateId" to sessionDebateId,
+                    "debateId" to request.debateId,
                     "fromId" to request.fromId,
                     "toId" to request.toId,
                     "answer" to request.answer
@@ -526,7 +526,7 @@ class ApiWebSocketHandler(
         }
 
         val sessionDebateId = session.attributes["debateId"] as? String
-        if (sessionDebateId == null || sessionDebateId != request.debateId) {
+        if (sessionDebateId != request.debateId) {
             logger.error { "ICE 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}" }
             return
         }
@@ -544,7 +544,7 @@ class ApiWebSocketHandler(
                 val relayedMessage = mapOf(
                     "type" to "S_VOICE_ICE",
                     "provider" to "API",
-                    "debateId" to sessionDebateId,
+                    "debateId" to request.debateId,
                     "fromId" to request.fromId,
                     "toId" to request.toId,
                     "iceCandidate" to request.iceCandidate

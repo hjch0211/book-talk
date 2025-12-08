@@ -131,12 +131,14 @@ export const WS_DebateRoundUpdateResponseSchema = z.object({
 export const WS_VoiceJoinRequestSchema = z.object({
   type: z.literal('C_VOICE_JOIN'),
   provider: z.literal('CLIENT'),
+  debateId: z.string(),
   accountId: z.string(),
 });
 
 export const WS_VoiceOfferRequestSchema = z.object({
   type: z.literal('C_VOICE_OFFER'),
   provider: z.literal('CLIENT'),
+  debateId: z.string(),
   fromId: z.string(),
   toId: z.string(),
   offer: z.custom<RTCSessionDescriptionInit>(),
@@ -145,6 +147,7 @@ export const WS_VoiceOfferRequestSchema = z.object({
 export const WS_VoiceAnswerRequestSchema = z.object({
   type: z.literal('C_VOICE_ANSWER'),
   provider: z.literal('CLIENT'),
+  debateId: z.string(),
   fromId: z.string(),
   toId: z.string(),
   answer: z.custom<RTCSessionDescriptionInit>(),
@@ -153,6 +156,7 @@ export const WS_VoiceAnswerRequestSchema = z.object({
 export const WS_VoiceIceRequestSchema = z.object({
   type: z.literal('C_VOICE_ICE'),
   provider: z.literal('CLIENT'),
+  debateId: z.string(),
   fromId: z.string(),
   toId: z.string(),
   iceCandidate: z.custom<RTCIceCandidateInit>(),
