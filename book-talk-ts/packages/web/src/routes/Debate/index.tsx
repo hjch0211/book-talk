@@ -1,16 +1,15 @@
+import { AudioActivationBanner, AudioPlayer } from '@src/components';
+import { useDebate } from '@src/hooks';
 import { Suspense, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { AudioPlayer } from '../../components/molecules/AudioPlayer';
-import { AudioActivationBanner } from '../../components/organisms/AudioActivationBanner';
 import MainContainer from '../../components/templates/MainContainer';
-import { useDebate } from '../../hooks/domain/useDebate.tsx';
 import { DebateHeader } from './_components/DebateHeader';
 import { DebateMemberList } from './_components/DebateMemberList';
 import { DebatePresentation } from './_components/DebatePresentation';
 import StartDebateModal from './_components/modal/StartDebateModal.tsx';
 import { RoundActions } from './_components/RoundActions';
 import { RoundStartBackdrop } from './_components/RoundStartBackdrop';
-import { DebateContainer } from './Debate.style';
+import { DebateContainer } from './style.ts';
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 

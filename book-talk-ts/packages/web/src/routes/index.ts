@@ -1,5 +1,5 @@
-export { DebateFull } from './_Error/DebateFull/DebateFull.tsx';
-export { NotFound } from './_Error/NotFound/NotFound.tsx';
+export { DebateFull } from './_Error/DebateFull';
+export { NotFound } from './_Error/NotFound';
 export { AppRoutes } from './AppRoutes';
-export { DebatePage } from './Debate/DebatePage.tsx';
-export { MainPage } from './Main/MainPage.tsx';
+export { DebatePage } from './Debate';
+export { MainPage } from './Main';

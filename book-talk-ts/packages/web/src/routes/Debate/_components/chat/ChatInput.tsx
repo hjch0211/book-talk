@@ -16,7 +16,7 @@ import Youtube from '@tiptap/extension-youtube';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ChatInputBox, ChatInputContainer } from '../../Debate.style.tsx';
+import { ChatInputBox, ChatInputContainer } from '../../style.ts';
 import { createEnterToSendExtension } from '../editor/EnterToSendExtension.ts';
 import { ImageWithPaste } from '../editor/ImageExtension.ts';
 import { LinkPreview } from '../editor/LinkPreviewExtension.tsx';

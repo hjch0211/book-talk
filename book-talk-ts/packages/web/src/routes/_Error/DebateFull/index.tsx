@@ -11,7 +11,7 @@ import {
   FullRoomTitle,
   IconContainer,
   TextWrapper,
-} from './DebateFull.style';
+} from './style';
 
 export const DebateFull = () => {
   const navigate = useNavigate();

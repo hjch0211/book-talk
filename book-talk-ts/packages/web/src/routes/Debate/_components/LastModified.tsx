@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react';
-import { SavedTimeIndicator } from '../Debate.style';
+import { SavedTimeIndicator } from '../style.ts';
 
 interface LastModifiedProps {
   lastSavedAt: Date | null;
