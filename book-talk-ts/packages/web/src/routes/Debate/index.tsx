@@ -6,6 +6,7 @@ import MainContainer from '../../components/templates/MainContainer';
 import { DebateHeader } from './_components/DebateHeader';
 import { DebateMemberList } from './_components/DebateMemberList';
 import { DebatePresentation } from './_components/DebatePresentation';
+import { DebateSkeleton } from './_components/DebateSkeleton';
 import StartDebateModal from './_components/modal/StartDebateModal.tsx';
 import { RoundActions } from './_components/RoundActions';
 import { RoundStartBackdrop } from './_components/RoundStartBackdrop';
@@ -62,6 +63,11 @@ function DebatePageContent({ debateId }: Props) {
     return <div>Invalid debate ID</div>;
   }
 
+  // PENDING 또는 FAILED 상태일 때 스켈레톤 표시
+  if (voiceChat.connectionStatus === 'PENDING' || voiceChat.connectionStatus === 'FAILED') {
+    return <DebateSkeleton connectionStatus={voiceChat.connectionStatus} />;
+  }
+
   return (
     <MainContainer isAuthPage>
       <DebateContainer>
@@ -95,7 +101,7 @@ function DebatePageContent({ debateId }: Props) {
           onEndPresentation={handleEndPresentation}
           onToggleHand={websocket.toggleHand}
           isMyHandRaised={myMemberData.id ? websocket.isHandRaised(myMemberData.id) : false}
-          isVoiceChatJoined={voiceChat.isJoined}
+          isVoiceChatJoined={voiceChat.connectionStatus === 'COMPLETED'}
           isVoiceMuted={voiceChat.isMuted}
           onToggleMute={voiceChat.toggleMute}
         />
