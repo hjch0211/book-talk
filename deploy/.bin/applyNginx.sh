@@ -1,4 +1,4 @@
-#!/..bin/sh
+#!/bin/sh
 
 echo "🔧 Nginx 설정 적용"
 

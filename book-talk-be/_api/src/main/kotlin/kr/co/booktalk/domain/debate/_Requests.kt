@@ -97,7 +97,7 @@ data class WS_ChatMessageRequest(
 
 // WebRTC Signaling Messages - Client sends (C_ prefix)
 data class WS_VoiceJoinRequest(
-    val debateId: String? = null,
+    val debateId: String,
     val accountId: String
 ) : WebSocketMessage {
     override val type: String = "C_VOICE_JOIN"
@@ -105,7 +105,7 @@ data class WS_VoiceJoinRequest(
 }
 
 data class WS_VoiceOfferRequest(
-    val debateId: String? = null,
+    val debateId: String,
     val fromId: String,
     val toId: String,
     val offer: Map<String, Any>
@@ -115,21 +115,11 @@ data class WS_VoiceOfferRequest(
 }
 
 data class WS_VoiceAnswerRequest(
-    val debateId: String? = null,
+    val debateId: String,
     val fromId: String,
     val toId: String,
     val answer: Map<String, Any>
 ) : WebSocketMessage {
     override val type: String = "C_VOICE_ANSWER"
-    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
-}
-
-data class WS_VoiceIceRequest(
-    val debateId: String? = null,
-    val fromId: String,
-    val toId: String,
-    val iceCandidate: Map<String, Any>
-) : WebSocketMessage {
-    override val type: String = "C_VOICE_ICE"
     override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
 }

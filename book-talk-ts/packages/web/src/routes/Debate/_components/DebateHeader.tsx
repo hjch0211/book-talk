@@ -2,7 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import leaveIconSvg from '../../../assets/leave.svg';
 import userAddIconSvg from '../../../assets/user-add.svg';
 import { useToast } from '../../../hooks/infra/useToast.tsx';
-import { DebateTitle, NavButton, NavButtonGroup, NavContent, NavigationBar } from '../Debate.style';
+import { DebateTitle, NavButton, NavButtonGroup, NavContent, NavigationBar } from '../style.ts';
 
 interface Props {
   topic: string;

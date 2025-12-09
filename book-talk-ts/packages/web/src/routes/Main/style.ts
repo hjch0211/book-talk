@@ -1,47 +1,5 @@
 import styled from '@emotion/styled';
 
-export const BackgroundCircle = styled.div`
-    position: absolute;
-    width: 398px;
-    height: 398px;
-    left: calc(50% - 398px / 2);
-    top: 465px;
-    background: radial-gradient(circle, rgba(190, 195, 245, 0.3) 0%, transparent 70%);
-    border-radius: 50%;
-    pointer-events: none;
-    filter: blur(80px);
-`;
-
-export const AvatarIcon = styled.div`
-    position: absolute;
-    width: 40px;
-    height: 40px;
-    right: 210px;
-    top: 80px;
-    background: #EADDFF;
-    border-radius: 100px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-        transform: scale(1.05);
-        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    &::after {
-        content: '';
-        position: absolute;
-        width: 24px;
-        height: 24px;
-        background: #4F378A;
-        mask: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>') no-repeat center;
-        mask-size: contain;
-    }
-`;
-
 export const MainTextContainer = styled.div`
     display: flex;
     flex-direction: column;

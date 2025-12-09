@@ -228,6 +228,7 @@ export class DebateWebSocketClient {
             const speakerUpdate: WS_SpeakerUpdateResponse = {
               type: 'S_SPEAKER_UPDATE',
               debateId: message.debateId,
+              provider: message.provider,
               currentSpeaker: message.currentSpeaker.accountId
                 ? {
                     accountId: message.currentSpeaker.accountId,

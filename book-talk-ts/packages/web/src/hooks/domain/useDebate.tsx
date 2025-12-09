@@ -148,6 +148,7 @@ export const useDebate = ({ debateId }: Props) => {
     debateId: debateId ?? '',
     sendVoiceMessage: websocket.sendVoiceMessage,
     voiceMessage: websocket.lastVoiceMessage,
+    onlineAccountIds: websocket.onlineAccountIds,
     enabled:
       currentRoundInfo.type !== 'PREPARATION' && !!myMemberData.id && websocket.isDebateJoined,
   });

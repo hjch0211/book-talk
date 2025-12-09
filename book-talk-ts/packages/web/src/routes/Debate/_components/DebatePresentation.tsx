@@ -14,7 +14,7 @@ import StarterKit from '@tiptap/starter-kit';
 import { useCallback, useEffect, useState } from 'react';
 import type { CurrentRoundInfo } from '../../../hooks/domain/useDebate.tsx';
 import { usePresentation } from '../../../hooks/domain/usePresentation.tsx';
-import { MainContent, PresentationArea } from '../Debate.style';
+import { MainContent, PresentationArea } from '../style.ts';
 import { ChatInput } from './chat/ChatInput.tsx';
 import { ChatMessageList } from './chat/ChatMessageList.tsx';
 import { ImageWithPaste } from './editor/ImageExtension.ts';

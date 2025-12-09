@@ -11,7 +11,7 @@ import {
   ErrorTitle,
   LogoContainer,
   NotFoundContainer,
-} from './NotFound.style';
+} from './style';
 
 export const NotFound = () => {
   const navigate = useNavigate();

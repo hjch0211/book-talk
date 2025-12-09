@@ -1,6 +1,6 @@
 import micOffSvg from '../../../assets/mic-off.svg';
 import micOnSvg from '../../../assets/mic-on.svg';
-import { ActionButton } from '../Debate.style.tsx';
+import { ActionButton } from '../style.ts';
 
 type Props = {
   isActive: boolean;

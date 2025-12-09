@@ -1,5 +1,5 @@
 import styled from '@emotion/styled';
-import { Alert, Box, Button, ListItem } from '@mui/material';
+import { Box, Button, ListItem } from '@mui/material';
 
 export const DebateContainer = styled.div`
     position: relative;

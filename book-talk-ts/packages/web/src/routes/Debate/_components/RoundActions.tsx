@@ -1,6 +1,6 @@
 import { Stack } from '@mui/material';
 import raiseHandSvg from '../../../assets/raise-hand.svg';
-import { ActionButton } from '../Debate.style';
+import { ActionButton } from '../style.ts';
 import { MicrophoneControlButton } from './MicrophoneControlButton.tsx';
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';

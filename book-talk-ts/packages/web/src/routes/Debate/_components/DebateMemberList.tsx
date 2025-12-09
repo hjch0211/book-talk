@@ -23,7 +23,7 @@ import {
   MemberStatus,
   RaisedHandIcon,
   SpeakerTimer,
-} from '../Debate.style';
+} from '../style.ts';
 import { PresentationViewModal } from './modal/PresentationViewModal.tsx';
 
 interface CurrentSpeaker {

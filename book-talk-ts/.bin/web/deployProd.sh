@@ -1,4 +1,4 @@
-#!/.bin/sh
+#!/bin/sh
 
 echo "🚀 프론트엔드 프로덕션 배포"
 echo "환경 변수 파일: packages/web/.env.production"

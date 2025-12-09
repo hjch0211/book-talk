@@ -31,7 +31,8 @@
         "useImportType": "error"
       },
       "suspicious": {
-        "noExplicitAny": "warn"
+        "noExplicitAny": "warn",
+        "useIterableCallbackReturn": "off"
       }
     }
   },

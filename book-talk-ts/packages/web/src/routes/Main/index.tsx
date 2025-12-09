@@ -1,11 +1,11 @@
+import { meQueryOption } from '@src/apis/account';
+import { useModal } from '@src/hooks';
 import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense, useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { meQueryOption } from '../../apis/account';
 import MainHeader from '../../components/organisms/MainHeader';
 import MainContainer from '../../components/templates/MainContainer';
 import PageContainer from '../../components/templates/PageContainer';
-import { useModal } from '../../hooks/infra/useModal.tsx';
 import AuthRequiredModal from '../Debate/_components/modal/AuthRequiredModal.tsx';
 import CreateDebateModal from './_components/CreateDebateModal/CreateDebateModal.tsx';
 import LoginNicknameModal from './_components/NickNameModal/LoginNicknameModal.tsx';
@@ -16,7 +16,7 @@ import {
   MainText,
   MainTextContainer,
   MainTextWrapper,
-} from './Main.style.tsx';
+} from './style.ts';
 
 const TextSection = () => {
   const { data: me } = useSuspenseQuery(meQueryOption);
