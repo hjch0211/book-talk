@@ -1,17 +1,13 @@
-import { useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import {
-  findOneDebateQueryOptions,
-  getChatsQueryOptions,
-  type MemberInfo,
-} from '../../apis/debate';
+import { findOneDebateQueryOptions, getChatsQueryOptions, type MemberInfo } from '@src/apis/debate';
 import {
   DebateWebSocketClient,
   type RaisedHandInfo,
   type WebSocketMessage,
   type WS_DebateRoundUpdateResponse,
   type WS_SpeakerUpdateResponse,
-} from '../../apis/websocket';
+} from '@src/apis/websocket';
+import { useQueryClient } from '@tanstack/react-query';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 

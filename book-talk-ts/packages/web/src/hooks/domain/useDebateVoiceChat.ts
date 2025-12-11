@@ -28,6 +28,8 @@ export interface UseDebateVoiceChatOptions {
   enabled?: boolean;
   /** 에러 콜백 */
   onError?: (error: Error) => void;
+  /** 모든 peer 연결 완료 콜백 */
+  onConnectionCompleted?: () => void;
 }
 
 /**
@@ -47,6 +49,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
     onlineAccountIds,
     enabled = true,
     onError,
+    onConnectionCompleted,
   } = options;
 
   const [connectionStatus, setConnectionStatus] = useState<VoiceConnectionStatus>('NOT_STARTED');
@@ -224,17 +227,18 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
 
   // PENDING 상태에서 COMPLETED로 전이
   // - 혼자일 경우: 즉시 COMPLETED
-  // - 여러 명일 경우: remoteStreams가 도착하면 COMPLETED
+  // - 여러 명일 경우: 모든 peer와 연결되면 COMPLETED
   useEffect(() => {
     if (connectionStatus !== 'PENDING') return;
 
     const isAlone = onlineAccountIds.size <= 1;
-    const hasRemoteStreams = remoteStreams.length > 0;
+    const allPeersConnected = remoteStreams.length >= onlineAccountIds.size - 1;
 
-    if (isAlone || hasRemoteStreams) {
+    if (isAlone || allPeersConnected) {
       setConnectionStatus('COMPLETED');
+      onConnectionCompleted?.();
     }
-  }, [connectionStatus, onlineAccountIds.size, remoteStreams.length]);
+  }, [connectionStatus, onlineAccountIds.size, remoteStreams.length, onConnectionCompleted]);
 
   return {
     /** 음성 연결 상태 (NOT_STARTED | PENDING | COMPLETED | FAILED) */
