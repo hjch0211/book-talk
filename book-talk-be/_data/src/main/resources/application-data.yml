@@ -4,6 +4,13 @@ spring:
     username: ${DB_USER}
     password: ${DB_PASSWORD}
     driver-class-name: org.postgresql.Driver
+    # refer https://github.com/brettwooldridge/HikariCP/wiki/About-Pool-Sizing
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 3
+      idle-timeout: 1000
+      connection-timeout: 1000
+      max-lifetime: 1800000
 
   data:
     redis:
