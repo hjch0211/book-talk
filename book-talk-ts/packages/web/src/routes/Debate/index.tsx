@@ -31,13 +31,12 @@ function DebatePageContent({ debateId }: Props) {
     chat,
     showRoundStartBackdrop,
     closeRoundStartBackdrop,
+    handleStartDebate,
   } = useDebate({ debateId });
 
-  const handleStartDebate = async () => {
-    if (!debateId) return;
-
+  const onStartDebateConfirm = () => {
     setShowStartModal(false);
-    await round.handlePresentationRound();
+    handleStartDebate();
   };
 
   const handleEndPresentation = () => {
@@ -109,7 +108,7 @@ function DebatePageContent({ debateId }: Props) {
         <StartDebateModal
           open={showStartModal}
           onClose={() => setShowStartModal(false)}
-          onConfirm={handleStartDebate}
+          onConfirm={onStartDebateConfirm}
           isLoading={round.createRoundMutation.isPending}
         />
 

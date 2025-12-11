@@ -1,12 +1,9 @@
 import { meQueryOption } from '@src/apis/account';
 import { findOneDebateQueryOptions, joinDebate } from '@src/apis/debate';
+import { useDebateChat, useDebateRound, useDebateVoiceChat, useDebateWebSocket } from '@src/hooks';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useDebateChat } from './useDebateChat.ts';
-import { useDebateRound } from './useDebateRound.ts';
-import { useDebateVoiceChat } from './useDebateVoiceChat.ts';
-import { useDebateWebSocket } from './useDebateWebSocket.tsx';
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
@@ -40,6 +37,9 @@ export const useDebate = ({ debateId }: Props) => {
   const { data: debate } = useSuspenseQuery(findOneDebateQueryOptions(debateId));
   const { data: _me } = useSuspenseQuery(meQueryOption);
   const joinAttempted = useRef<Set<string>>(new Set());
+
+  /** 토론 시작 대기 플래그 */
+  const pendingStartDebateRef = useRef(false);
 
   const myMemberInfo = debate.members.find((m) => m.id === _me?.id);
 
@@ -134,6 +134,26 @@ export const useDebate = ({ debateId }: Props) => {
     { onRoundStartBackdrop: handleRoundStartBackdrop }
   );
 
+  /** Voice connection 완료 시 토론 시작 처리 */
+  const handleVoiceConnectionCompleted = useCallback(() => {
+    if (pendingStartDebateRef.current) {
+      pendingStartDebateRef.current = false;
+      void round.handlePresentationRound();
+    }
+  }, [round.handlePresentationRound]);
+
+  /** 토론 시작 (혼자면 즉시, 여럿이면 voice connection 완료 후 handlePresentationRound 호출) */
+  const handleStartDebate = useCallback(() => {
+    if (!debateId) return;
+
+    const isAlone = websocket.onlineAccountIds.size <= 1;
+    if (isAlone) {
+      void round.handlePresentationRound();
+    } else {
+      pendingStartDebateRef.current = true;
+    }
+  }, [debateId, websocket.onlineAccountIds.size, round.handlePresentationRound]);
+
   /**
    * 음성 채팅 기능
    * - PREPARATION 라운드가 아닐 것
@@ -150,7 +170,10 @@ export const useDebate = ({ debateId }: Props) => {
     voiceMessage: websocket.lastVoiceMessage,
     onlineAccountIds: websocket.onlineAccountIds,
     enabled:
-      currentRoundInfo.type !== 'PREPARATION' && !!myMemberData.id && websocket.isDebateJoined,
+      (currentRoundInfo.type !== 'PREPARATION' || pendingStartDebateRef.current) &&
+      !!myMemberData.id &&
+      websocket.isDebateJoined,
+    onConnectionCompleted: handleVoiceConnectionCompleted,
   });
 
   /** 채팅 기능 (FREE 라운드에서만 동작) */
@@ -180,5 +203,7 @@ export const useDebate = ({ debateId }: Props) => {
     showRoundStartBackdrop,
     /** 라운드 시작 백드롭 닫기 */
     closeRoundStartBackdrop,
+    /** 토론 시작 (voice connection 완료 후 실행) */
+    handleStartDebate,
   };
 };
