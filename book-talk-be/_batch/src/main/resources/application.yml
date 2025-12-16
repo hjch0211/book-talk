@@ -1,0 +1,11 @@
+logging:
+  level:
+    root: info
+
+spring:
+  main:
+    web-application-type: none
+  config:
+    import:
+      - classpath:application-data.yml
+      - classpath:application-lib.yml

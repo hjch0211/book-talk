@@ -2,12 +2,10 @@ package kr.co.booktalk
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
-import org.springframework.scheduling.annotation.EnableScheduling
 
 @SpringBootApplication
-@EnableScheduling
-class BookTalkApplication
+class BookTalkApiApplication
 
 fun main(args: Array<String>) {
-    runApplication<BookTalkApplication>(*args)
+    runApplication<BookTalkApiApplication>(*args)
 }
