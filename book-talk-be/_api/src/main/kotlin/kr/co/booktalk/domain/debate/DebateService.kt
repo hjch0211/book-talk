@@ -84,7 +84,6 @@ class DebateService(
         presentationRepository.save(PresentationEntity(debate, account, "{}"))
     }
 
-    /** Scheduler - 만료된 발표자를 처리하여 다음 발표자로 자동 전환 */
     @Transactional
     fun handleExpiredSpeaker(speaker: DebateRoundSpeakerEntity) {
         val round = speaker.debateRound
@@ -140,7 +139,6 @@ class DebateService(
         }
     }
 
-    /** Scheduler - 생성된 지 24시간이 지난 토론 자동 종료 */
     @Transactional
     fun closeExpiredDebates() {
         val expiredDebates = debateRepository.findAllByCreatedAtBeforeAndClosedAtIsNull(

@@ -14,7 +14,10 @@ class DebateScheduler(
 ) {
     private val logger = KotlinLogging.logger {}
 
-    /** 1초마다 만료된 발표자 체크 및 자동 전환 */
+    /**
+     * 1초마다 만료된 발표자 체크 및 자동 전환
+     * transaction latency: 0.03 ~ 0.05s
+     */
     @Scheduled(fixedDelay = 1000)
     fun checkExpiredSpeakers() {
         val expiredSpeakers = debateRoundSpeakerRepository.findAllByIsActiveAndEndedAtBefore(true, Instant.now())
@@ -29,8 +32,8 @@ class DebateScheduler(
         }
     }
 
-    /** 24시간마다 생성된 지 24시간이 지난 토론 자동 종료 */
-    @Scheduled(fixedDelay = 24 * 60 * 60 * 1000)
+    /** 매일 0시에 생성된 지 24시간이 지난 토론 자동 종료 */
+    @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     fun closeExpiredDebates() {
         try {
