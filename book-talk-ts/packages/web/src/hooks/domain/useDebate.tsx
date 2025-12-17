@@ -38,9 +38,6 @@ export const useDebate = ({ debateId }: Props) => {
   const { data: _me } = useSuspenseQuery(meQueryOption);
   const joinAttempted = useRef<Set<string>>(new Set());
 
-  /** 토론 시작 대기 플래그 */
-  const pendingStartDebateRef = useRef(false);
-
   const myMemberInfo = debate.members.find((m) => m.id === _me?.id);
 
   /** RoundStartBackdrop UI 상태 */
@@ -136,32 +133,13 @@ export const useDebate = ({ debateId }: Props) => {
 
   /** Voice connection 완료 시 토론 시작 처리 */
   const handleVoiceConnectionCompleted = useCallback(() => {
-    if (pendingStartDebateRef.current) {
-      pendingStartDebateRef.current = false;
-      void round.handlePresentationRound();
-    }
+    void round.handlePresentationRound();
   }, [round.handlePresentationRound]);
-
-  /** 토론 시작 (혼자면 즉시, 여럿이면 voice connection 완료 후 handlePresentationRound 호출) */
-  const handleStartDebate = useCallback(() => {
-    if (!debateId) return;
-
-    const isAlone = websocket.onlineAccountIds.size <= 1;
-    if (isAlone) {
-      void round.handlePresentationRound();
-    } else {
-      pendingStartDebateRef.current = true;
-    }
-  }, [debateId, websocket.onlineAccountIds.size, round.handlePresentationRound]);
 
   /**
    * 음성 채팅 기능
-   * - PREPARATION 라운드가 아닐 것
-   * - myId가 있을 것
-   * - WebSocket 토론 참여 완료(S_JOIN_SUCCESS)되었을 것
-   *
-   * 중요: isDebateJoined 조건으로 Race Condition 방지
-   * (C_VOICE_JOIN이 C_JOIN_DEBATE보다 먼저 도착하면 백엔드에서 거부됨)
+   * - 방장이 토론 시작 시 join() 호출
+   * - 다른 참여자는 S_VOICE_JOIN 수신 시 자동으로 join() 호출
    */
   const voiceChat = useDebateVoiceChat({
     myId: myMemberData.id ?? '',
@@ -169,12 +147,34 @@ export const useDebate = ({ debateId }: Props) => {
     sendVoiceMessage: websocket.sendVoiceMessage,
     voiceMessage: websocket.lastVoiceMessage,
     onlineAccountIds: websocket.onlineAccountIds,
-    enabled:
-      (currentRoundInfo.type !== 'PREPARATION' || pendingStartDebateRef.current) &&
-      !!myMemberData.id &&
-      websocket.isDebateJoined,
+    onError: (err) => {
+      console.error(err);
+    },
     onConnectionCompleted: handleVoiceConnectionCompleted,
   });
+
+  /** 토론 진행 중 입장 시 자동 voice chat 참여 */
+  useEffect(() => {
+    if (
+      currentRoundInfo.type !== 'PREPARATION' &&
+      websocket.isDebateJoined &&
+      voiceChat.connectionStatus === 'NOT_STARTED'
+    ) {
+      void voiceChat.join();
+    }
+  }, [currentRoundInfo.type, websocket.isDebateJoined, voiceChat.connectionStatus, voiceChat.join]);
+
+  /** 토론 시작 */
+  const handleStartDebate = useCallback(() => {
+    if (!debateId) return;
+
+    const isAlone = websocket.onlineAccountIds.size <= 1;
+    if (isAlone) {
+      void round.handlePresentationRound();
+    } else {
+      void voiceChat.join();
+    }
+  }, [debateId, websocket.onlineAccountIds.size, round.handlePresentationRound, voiceChat.join]);
 
   /** 채팅 기능 (FREE 라운드에서만 동작) */
   const chat = useDebateChat(

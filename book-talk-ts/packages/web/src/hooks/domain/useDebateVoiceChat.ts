@@ -24,12 +24,10 @@ export interface UseDebateVoiceChatOptions {
   voiceMessage: WebSocketMessage | null;
   /** 현재 접속 중인 계정 ID 목록 */
   onlineAccountIds: Set<string>;
-  /** 활성화 여부 (기본: true) */
-  enabled?: boolean;
   /** 에러 콜백 */
   onError?: (error: Error) => void;
   /** 모든 peer 연결 완료 콜백 */
-  onConnectionCompleted?: () => void;
+  onConnectionCompleted: () => void;
 }
 
 /**
@@ -47,7 +45,6 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
     sendVoiceMessage,
     voiceMessage,
     onlineAccountIds,
-    enabled = true,
     onError,
     onConnectionCompleted,
   } = options;
@@ -94,7 +91,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
 
   /** 음성 채팅 참여 */
   const join = useCallback(async () => {
-    if (connectionStatusRef.current === 'COMPLETED' || !myId) return;
+    if (connectionStatusRef.current !== 'NOT_STARTED' || !myId) return;
 
     setConnectionStatus('PENDING');
 
@@ -151,7 +148,12 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
         /** 새 참가자 입장 → Offer 전송 */
         case 'S_VOICE_JOIN': {
           const fromId = message.fromId;
-          if (fromId === myId || !isConnectable) return;
+          if (fromId === myId) return;
+
+          // NOT_STARTED면 먼저 join()
+          if (status === 'NOT_STARTED') {
+            await join();
+          }
 
           const offer = await createOffer(fromId);
           if (offer) {
@@ -193,7 +195,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
         }
       }
     },
-    [myId, debateId, createOffer, handleOffer, handleAnswer, sendVoiceMessage]
+    [myId, debateId, join, createOffer, handleOffer, handleAnswer, sendVoiceMessage]
   );
 
   /** AudioContext 초기화 및 autoplay 허용 여부 확인 */
@@ -215,16 +217,6 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
     }
   }, [voiceMessage, processVoiceMessage]);
 
-  // enabled 상태에 따라 자동 참여/퇴장
-  useEffect(() => {
-    if (enabled) {
-      void join();
-    } else {
-      leave();
-    }
-    return () => leave();
-  }, [enabled, join, leave]);
-
   // PENDING 상태에서 COMPLETED로 전이
   // - 혼자일 경우: 즉시 COMPLETED
   // - 여러 명일 경우: 모든 peer와 연결되면 COMPLETED
@@ -236,7 +228,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
 
     if (isAlone || allPeersConnected) {
       setConnectionStatus('COMPLETED');
-      onConnectionCompleted?.();
+      onConnectionCompleted();
     }
   }, [connectionStatus, onlineAccountIds.size, remoteStreams.length, onConnectionCompleted]);
 
@@ -251,6 +243,8 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
     localStream,
     /** 원격 오디오 스트림 목록 */
     remoteStreams,
+    /** 음성 채팅 참여 (방장이 토론 시작 시 호출) */
+    join,
     /** 음성 채팅 퇴장 */
     leave,
     /** 음소거 토글 */
