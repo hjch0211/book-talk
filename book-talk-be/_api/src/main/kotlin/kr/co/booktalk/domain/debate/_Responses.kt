@@ -47,8 +47,9 @@ data class FindOneResponse(
     data class RoundInfo(
         val id: Long,
         val type: DebateRoundType,
-        val currentSpeakerId: String? = null,
-        val nextSpeakerId: String? = null,
+        val currentSpeakerId: Long? = null,
+        val currentSpeakerAccountId: String? = null,
+        val nextSpeakerAccountId: String? = null,
         val currentSpeakerEndedAt: Instant? = null,
         val createdAt: Instant,
         val endedAt: Instant? = null,

@@ -9,20 +9,16 @@ import {
   CreateChatResponseSchema,
   type CreateDebateRequest,
   CreateDebateRequestSchema,
-  type CreateRoundRequest,
-  CreateRoundRequestSchema,
-  type CreateRoundResponse,
-  CreateRoundResponseSchema,
   type CreateRoundSpeakerRequest,
   CreateRoundSpeakerRequestSchema,
   type FindOneDebateResponse,
   FindOneDebateResponseSchema,
   type JoinDebateRequest,
   JoinDebateRequestSchema,
-  type PatchRoundRequest,
-  PatchRoundRequestSchema,
   type PatchRoundSpeakerRequest,
   PatchRoundSpeakerRequestSchema,
+  type UpdateDebateRequest,
+  UpdateDebateRequestSchema,
 } from './schema';
 
 /** 토론 생성 */
@@ -44,17 +40,10 @@ export const joinDebate = async (request: JoinDebateRequest): Promise<void> => {
   await authApiClient.post('/debates/participants', validatedData);
 };
 
-/** 토론 라운드 생성(시작) */
-export const createRound = async (request: CreateRoundRequest): Promise<CreateRoundResponse> => {
-  const validatedData = CreateRoundRequestSchema.parse(request);
-  const response = await authApiClient.post('/debates/round', validatedData);
-  return CreateRoundResponseSchema.parse(response.data.data);
-};
-
-/** 토론 라운드 변경 */
-export const patchRound = async (request: PatchRoundRequest): Promise<void> => {
-  const validatedData = PatchRoundRequestSchema.parse(request);
-  await authApiClient.patch('/debates/round', validatedData);
+/** 토론 라운드 전환 */
+export const updateDebate = async (request: UpdateDebateRequest): Promise<void> => {
+  const validatedData = UpdateDebateRequestSchema.parse(request);
+  await authApiClient.put('/debates', validatedData);
 };
 
 /** 발언자 생성 */

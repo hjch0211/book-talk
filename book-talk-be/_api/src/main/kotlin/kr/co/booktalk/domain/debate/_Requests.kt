@@ -18,6 +18,11 @@ data class JoinRequest(
     val debateId: String,
 )
 
+data class UpdateRequest(
+    val debateId: String,
+    val roundType: DebateRoundType,
+)
+
 data class CreateRoundRequest(
     val debateId: String,
     val type: DebateRoundType,
@@ -121,5 +126,16 @@ data class WS_VoiceAnswerRequest(
     val answer: Map<String, Any>
 ) : WebSocketMessage {
     override val type: String = "C_VOICE_ANSWER"
+    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+}
+
+/** Trickle ICE: ICE Candidate 전송 */
+data class WS_VoiceIceCandidateRequest(
+    val debateId: String,
+    val fromId: String,
+    val toId: String,
+    val candidate: Map<String, Any>
+) : WebSocketMessage {
+    override val type: String = "C_VOICE_ICE_CANDIDATE"
     override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
 }

@@ -8,19 +8,12 @@ import kr.co.booktalk.domain.webSocket.ApiWebSocketHandler
 import kr.co.booktalk.httpBadRequest
 import kr.co.booktalk.httpForbidden
 import kr.co.booktalk.toUUID
+import org.openapitools.jackson.nullable.JsonNullable
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 
-/**
- * 토론 발표자 관리 서비스
- *
- * 주요 기능:
- * - 발표자 생성/수정 시 해당 토론방의 모든 WebSocket 클라이언트에게 실시간 브로드캐스트
- * - 현재 발표자 정보 조회 (endedAt > now() 조건으로 유효한 발표자만)
- * - 단일 서버 환경에서 동작 (분산 환경 지원 없음)
- */
 @Service
 class DebateRoundSpeakerService(
     private val accountRepository: AccountRepository,
@@ -29,7 +22,8 @@ class DebateRoundSpeakerService(
     private val appConfigService: AppConfigService,
     private val debateMemberRepository: DebateMemberRepository,
     private val objectMapper: ObjectMapper,
-    private val apiWebSocketHandler: ApiWebSocketHandler
+    private val apiWebSocketHandler: ApiWebSocketHandler,
+    private val debateRoundService: DebateRoundService
 ) {
     private val logger = KotlinLogging.logger {}
 
@@ -83,16 +77,77 @@ class DebateRoundSpeakerService(
             updated = true
         }
 
-        // 변경사항이 있을 때만 WebSocket 브로드캐스트
         if (updated) {
             val debateId = speaker.debateRound.debate.id.toString()
+
+            if (speaker.debateRound.type == DebateRoundType.PRESENTATION) {
+                setNextSpeaker(speaker)
+            }
+
             broadcastSpeakerUpdate(debateId)
         }
     }
 
     /**
-     * 현재 발표자 정보를 조회합니다
+     * PRESENTATION 라운드에서 발언 종료 시 다음 발표자 설정
+     * - 다음 발표자가 있으면 새 발표자 생성 및 대기 발표자 설정
+     * - 마지막 발표자면 FREE 라운드로 전환
      */
+    private fun setNextSpeaker(currentSpeaker: DebateRoundSpeakerEntity) {
+        val round = currentSpeaker.debateRound
+        val debate = round.debate
+
+        val members = debateMemberRepository.findAllByDebateOrderByCreatedAtAsc(debate)
+        if (members.isEmpty()) return
+
+        val currentIndex = members.indexOfFirst { it.account.id == currentSpeaker.account.id }
+        if (currentIndex == -1) return
+
+        // 마지막 발표자인 경우 FREE 라운드로 전환
+        if (currentIndex >= members.size - 1) {
+            logger.info { "마지막 발표자 종료, FREE 라운드로 전환: debateId=${debate.id}" }
+            val freeRound = debateRoundService.create(CreateRoundRequest(debate.id.toString(), DebateRoundType.FREE))
+            val freeRoundEntity = debateRoundRepository.findByIdOrNull(freeRound.id)!!
+            val firstSpeaker = members[0].account
+            debateRoundSpeakerRepository.save(
+                DebateRoundSpeakerEntity(
+                    account = firstSpeaker,
+                    debateRound = freeRoundEntity,
+                    endedAt = Instant.now().plusSeconds(appConfigService.debateRoundSpeakerSeconds()),
+                    isActive = true
+                )
+            )
+            logger.info { "FREE 라운드 첫 발언자 생성: accountId=${firstSpeaker.id}, debateRoundId=${freeRoundEntity.id}" }
+            return
+        }
+
+        // 다음 발표자 생성
+        val nextSpeaker = members[currentIndex + 1].account
+        debateRoundSpeakerRepository.save(
+            DebateRoundSpeakerEntity(
+                account = nextSpeaker,
+                debateRound = round,
+                endedAt = Instant.now().plusSeconds(appConfigService.debateRoundSpeakerSeconds()),
+                isActive = true
+            )
+        )
+        logger.info { "다음 발표자 생성: accountId=${nextSpeaker.id}, debateRoundId=${round.id}" }
+
+        // 다음 발표자 예약
+        val nextWaitingSpeakerId = if (currentIndex < members.size - 2) {
+            members[currentIndex + 2].account.id?.toString()
+        } else {
+            null
+        }
+        debateRoundService.patch(
+            PatchRoundRequest(
+                debateRoundId = round.id,
+                nextSpeakerId = JsonNullable.of(nextWaitingSpeakerId)
+            )
+        )
+    }
+
+    /** 현재 발표자 정보를 조회합니다 */
     fun getCurrentSpeaker(debateId: String): WS_SpeakerUpdateResponse? {
         return try {
             val debateUUID = java.util.UUID.fromString(debateId)
@@ -122,9 +177,7 @@ class DebateRoundSpeakerService(
         }
     }
 
-    /**
-     * 발표자 정보 변경을 해당 토론방의 모든 WebSocket 클라이언트에게 직접 브로드캐스트합니다
-     */
+    /** 발표자 정보 변경을 해당 토론방의 모든 WebSocket 클라이언트에게 직접 브로드캐스트합니다 */
     private fun broadcastSpeakerUpdate(debateId: String) {
         try {
             val response = getCurrentSpeaker(debateId) ?: return

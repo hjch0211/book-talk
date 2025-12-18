@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.*
 @RestController
 class DebateController(
     private val debateService: DebateService,
-    private val debateRoundService: DebateRoundService,
     private val debateRoundSpeakerService: DebateRoundSpeakerService,
     private val debateChatService: DebateChatService
 ) {
@@ -32,21 +31,11 @@ class DebateController(
         debateService.join(request, authAccount)
     }
 
-    /** 토론 라운드 생성(시작) */
-    @PostMapping("/debates/round")
-    fun createRound(
-        @RequestBody request: CreateRoundRequest,
-        authAccount: AuthAccount
-    ): ApiResult<CreateRoundResponse> {
+    /** 토론 라운드 전환 */
+    @PutMapping("/debates")
+    fun updateDebate(@RequestBody request: UpdateRequest, authAccount: AuthAccount) {
         request.validate()
-        return debateRoundService.create(request).toResult()
-    }
-
-    /** 토론 라운드 변경 */
-    @PatchMapping("/debates/round")
-    fun patchRound(@RequestBody request: PatchRoundRequest, authAccount: AuthAccount) {
-        request.validate()
-        debateRoundService.patch(request)
+        debateService.update(request)
     }
 
     /** 발언자 생성 */

@@ -17,6 +17,11 @@ export const JoinDebateRequestSchema = z.object({
   debateId: z.string().min(1, '토론 ID를 입력해주세요'),
 });
 
+export const UpdateDebateRequestSchema = z.object({
+  debateId: z.string().min(1, '토론 ID를 입력해주세요'),
+  roundType: z.enum(['PRESENTATION', 'FREE']),
+});
+
 export const MemberInfoSchema = z.object({
   id: z.string(),
   name: z.string(),
@@ -31,8 +36,9 @@ export const PresentationInfoSchema = z.object({
 export const RoundInfoSchema = z.object({
   id: z.number(),
   type: z.enum(['PRESENTATION', 'FREE']),
-  currentSpeakerId: z.string().nullable().optional(),
-  nextSpeakerId: z.string().nullable().optional(),
+  currentSpeakerId: z.number().nullable().optional(),
+  currentSpeakerAccountId: z.string().nullable().optional(),
+  nextSpeakerAccountId: z.string().nullable().optional(),
   currentSpeakerEndedAt: z.string().nullable().optional(),
   createdAt: z.string(),
   endedAt: z.string().nullable().optional(),
@@ -110,6 +116,7 @@ export const ChatResponseSchema = z.object({
 
 export type CreateDebateRequest = z.infer<typeof CreateDebateRequestSchema>;
 export type JoinDebateRequest = z.infer<typeof JoinDebateRequestSchema>;
+export type UpdateDebateRequest = z.infer<typeof UpdateDebateRequestSchema>;
 export type FindOneDebateResponse = z.infer<typeof FindOneDebateResponseSchema>;
 export type BookInfo = z.infer<typeof BookInfoSchema>;
 export type MemberInfo = z.infer<typeof MemberInfoSchema>;

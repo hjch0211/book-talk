@@ -1,7 +1,6 @@
 package kr.co.booktalk.domain.debate
 
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kr.co.booktalk.domain.DebateMemberRepository
 import kr.co.booktalk.domain.DebateRoundSpeakerRepository
 import kr.co.booktalk.domain.DebateRoundType
 import org.springframework.scheduling.annotation.Scheduled
@@ -12,8 +11,6 @@ import java.time.Instant
 @Component
 class DebateScheduler(
     private val debateRoundSpeakerRepository: DebateRoundSpeakerRepository,
-    private val debateMemberRepository: DebateMemberRepository,
-    private val debateRoundService: DebateRoundService,
     private val debateRoundSpeakerService: DebateRoundSpeakerService,
     private val debateService: DebateService,
 ) {
@@ -21,8 +18,8 @@ class DebateScheduler(
 
     /**
      * PRESENTATION 라운드 핸들링
-     * - 다음 발표자 설정
-     * - Free 라운드 설정
+     * - 만료된 발표자 종료 → patch(ended=true) 호출
+     * - 다음 발표자 설정 또는 FREE 라운드 전환은 patch 내부에서 처리
      * transaction latency: 0.03 ~ 0.05s
      */
     @Scheduled(fixedDelay = 1000)
@@ -36,26 +33,12 @@ class DebateScheduler(
 
         expiredSpeakers.forEach { speaker ->
             try {
-                val debate = speaker.debateRound.debate
-                val members = debateMemberRepository.findAllByDebateOrderByCreatedAtAsc(debate)
-                val currentIndex = members.indexOfFirst { it.account.id == speaker.account.id }
-
-                val hasNextSpeaker = currentIndex != -1 && currentIndex < members.size - 1
-                if (hasNextSpeaker) {
-                    /** 다음 발표자가 있으면 → 다음 발표자 설정 */
-                    debateService.setNextSpeaker(speaker)
-                } else {
-                    /** 마지막 발표자면 → FREE 라운드 생성 */
-                    val firstSpeakerId = members.firstOrNull()?.account?.id?.toString()
-                    val roundResponse = debateRoundService.create(
-                        CreateRoundRequest(debate.id.toString(), DebateRoundType.FREE)
+                debateRoundSpeakerService.patch(
+                    PatchRoundSpeakerRequest(
+                        debateRoundSpeakerId = speaker.id,
+                        ended = true
                     )
-                    if (firstSpeakerId != null) {
-                        debateRoundSpeakerService.create(
-                            CreateRoundSpeakerRequest(roundResponse.id, firstSpeakerId)
-                        )
-                    }
-                }
+                )
             } catch (e: Exception) {
                 logger.error(e) { "발표자 만료 처리 실패: speakerId=${speaker.id}, accountId=${speaker.account.id}, debateId=${speaker.debateRound.debate.id}" }
             }

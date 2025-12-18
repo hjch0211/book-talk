@@ -92,6 +92,11 @@ class ApiWebSocketHandler(
                     handleVoiceAnswer(session, request)
                 }
 
+                "C_VOICE_ICE_CANDIDATE" -> {
+                    val request = objectMapper.readValue<WS_VoiceIceCandidateRequest>(message.payload)
+                    handleVoiceIceCandidate(session, request)
+                }
+
                 else -> logger.warn { "알 수 없는 메시지 타입: $messageType" }
             }
         } catch (e: Exception) {
@@ -510,6 +515,47 @@ class ApiWebSocketHandler(
             }
         } catch (e: Exception) {
             logger.error(e) { "Answer 전달 실패: from=${request.fromId}, to=${request.toId}" }
+        }
+    }
+
+    /** Trickle ICE: ICE Candidate를 특정 피어에게 전달합니다. */
+    private fun handleVoiceIceCandidate(session: WebSocketSession, request: WS_VoiceIceCandidateRequest) {
+        val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
+        if (!validateAccountIdMatch(authenticatedAccountId, request.fromId)) {
+            return
+        }
+
+        val sessionDebateId = session.attributes["debateId"] as? String
+        if (sessionDebateId != request.debateId) {
+            logger.error { "ICE Candidate 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}" }
+            return
+        }
+
+        try {
+            logger.debug { "ICE Candidate 전달: from=${request.fromId}, to=${request.toId}" }
+
+            // toId에 해당하는 세션에만 전달
+            val targetSession = localSessions.values.find { targetSession ->
+                targetSession.attributes["accountId"] == request.toId &&
+                targetSession.attributes["debateId"] == request.debateId
+            }
+
+            if (targetSession != null) {
+                val relayedMessage = mapOf(
+                    "type" to "S_VOICE_ICE_CANDIDATE",
+                    "provider" to "API",
+                    "debateId" to request.debateId,
+                    "fromId" to request.fromId,
+                    "toId" to request.toId,
+                    "candidate" to request.candidate
+                )
+                val messageJson = objectMapper.writeValueAsString(relayedMessage)
+                sendTextMessage(targetSession, messageJson)
+            } else {
+                logger.warn { "ICE Candidate 전달 실패: 대상 세션을 찾을 수 없음 toId=${request.toId}" }
+            }
+        } catch (e: Exception) {
+            logger.error(e) { "ICE Candidate 전달 실패: from=${request.fromId}, to=${request.toId}" }
         }
     }
 }

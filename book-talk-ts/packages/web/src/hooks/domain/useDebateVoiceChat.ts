@@ -3,12 +3,17 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import type {
   WebSocketMessage,
   WS_VoiceAnswerRequest,
+  WS_VoiceIceCandidateRequest,
   WS_VoiceJoinRequest,
   WS_VoiceOfferRequest,
 } from '../../apis/websocket/schema';
 
 /** Voice 메시지 타입 (전송용) */
-type VoiceMessage = WS_VoiceJoinRequest | WS_VoiceOfferRequest | WS_VoiceAnswerRequest;
+type VoiceMessage =
+  | WS_VoiceJoinRequest
+  | WS_VoiceOfferRequest
+  | WS_VoiceAnswerRequest
+  | WS_VoiceIceCandidateRequest;
 
 /** Voice chat 연결 상태 */
 export type VoiceConnectionStatus = 'NOT_STARTED' | 'PENDING' | 'COMPLETED' | 'FAILED';
@@ -26,8 +31,6 @@ export interface UseDebateVoiceChatOptions {
   onlineAccountIds: Set<string>;
   /** 에러 콜백 */
   onError?: (error: Error) => void;
-  /** 모든 peer 연결 완료 콜백 */
-  onConnectionCompleted: () => void;
 }
 
 /**
@@ -39,22 +42,13 @@ export interface UseDebateVoiceChatOptions {
  * @internal useDebate 내부에서만 사용
  */
 export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
-  const {
-    myId,
-    debateId,
-    sendVoiceMessage,
-    voiceMessage,
-    onlineAccountIds,
-    onError,
-    onConnectionCompleted,
-  } = options;
+  const { myId, debateId, sendVoiceMessage, voiceMessage, onlineAccountIds, onError } = options;
 
   const [connectionStatus, setConnectionStatus] = useState<VoiceConnectionStatus>('NOT_STARTED');
   const [isMuted, setIsMuted] = useState(false);
-  const [isAudioActive, setIsAudioActive] = useState(false);
-
-  /** AudioContext로 autoplay policy 관리 */
-  const audioContextRef = useRef<AudioContext | null>(null);
+  const [isAudioActive, setIsAudioActive] = useState(true);
+  /** 실제 P2P 연결이 완료된 peer ID 목록 */
+  const [connectedPeerIds, setConnectedPeerIds] = useState<Set<string>>(new Set());
 
   /** 최신 상태를 ref로 유지 (useEffect 내에서 사용) */
   const connectionStatusRef = useRef(connectionStatus);
@@ -70,8 +64,10 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
     createOffer,
     handleOffer,
     handleAnswer,
+    addIceCandidate,
     disconnect,
   } = useWebRTC({
+    myId,
     onError: (error) => {
       setConnectionStatus('FAILED');
       onError?.(error);
@@ -79,7 +75,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
     onReconnectNeeded: () => {
       if (connectionStatusRef.current !== 'COMPLETED' || !myId) return;
       setConnectionStatus('PENDING');
-      // 연결 실패 시 C_VOICE_JOIN을 다시 전송하여 재연결
+      setConnectedPeerIds(new Set());
       sendVoiceMessage({
         type: 'C_VOICE_JOIN',
         provider: 'CLIENT',
@@ -87,13 +83,25 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
         accountId: myId,
       });
     },
+    onIceCandidate: ({ myId: fromId, peerId, candidate }) => {
+      sendVoiceMessage({
+        type: 'C_VOICE_ICE_CANDIDATE',
+        provider: 'CLIENT',
+        debateId,
+        fromId,
+        toId: peerId,
+        candidate,
+      });
+    },
+    onPeerConnected: (peerId) => {
+      console.log(`✅ P2P 연결 완료: ${peerId}`);
+      setConnectedPeerIds((prev) => new Set([...prev, peerId]));
+    },
   });
 
   /** 음성 채팅 참여 */
   const join = useCallback(async () => {
     if (connectionStatusRef.current !== 'NOT_STARTED' || !myId) return;
-
-    setConnectionStatus('PENDING');
 
     const stream = await startLocalStream({ audio: true, video: false });
     if (!stream) {
@@ -101,6 +109,8 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
       setConnectionStatus('FAILED');
       return;
     }
+
+    setConnectionStatus('PENDING');
 
     sendVoiceMessage({
       type: 'C_VOICE_JOIN',
@@ -131,11 +141,13 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
   }, [localStream, isMuted]);
 
   /** 오디오 활성화 (사용자 제스처로 autoplay policy 해제) */
-  const activateAudio = useCallback(async () => {
-    if (audioContextRef.current?.state === 'suspended') {
-      await audioContextRef.current.resume();
-    }
+  const activateAudio = useCallback(() => {
     setIsAudioActive(true);
+  }, []);
+
+  /** Autoplay 차단 시 호출 (AudioPlayer에서 전달) */
+  const onAutoplayBlocked = useCallback(() => {
+    setIsAudioActive(false);
   }, []);
 
   /** WebSocket voice message handling */
@@ -193,21 +205,26 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
           await handleAnswer(message.fromId, message.answer);
           break;
         }
+
+        /** ICE Candidate 수신 */
+        case 'S_VOICE_ICE_CANDIDATE': {
+          if (message.toId !== myId) return;
+          await addIceCandidate(message.fromId, message.candidate);
+          break;
+        }
       }
     },
-    [myId, debateId, join, createOffer, handleOffer, handleAnswer, sendVoiceMessage]
+    [
+      myId,
+      debateId,
+      join,
+      createOffer,
+      handleOffer,
+      handleAnswer,
+      addIceCandidate,
+      sendVoiceMessage,
+    ]
   );
-
-  /** AudioContext 초기화 및 autoplay 허용 여부 확인 */
-  useEffect(() => {
-    const ctx = new AudioContext();
-    audioContextRef.current = ctx;
-    setIsAudioActive(ctx.state === 'running');
-
-    return () => {
-      void ctx.close();
-    };
-  }, []);
 
   // voiceMessage가 변경되면 처리 (중복 처리 방지)
   useEffect(() => {
@@ -219,18 +236,17 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
 
   // PENDING 상태에서 COMPLETED로 전이
   // - 혼자일 경우: 즉시 COMPLETED
-  // - 여러 명일 경우: 모든 peer와 연결되면 COMPLETED
+  // - 여러 명일 경우: 모든 peer와 실제 P2P 연결이 완료되면 COMPLETED
   useEffect(() => {
     if (connectionStatus !== 'PENDING') return;
 
     const isAlone = onlineAccountIds.size <= 1;
-    const allPeersConnected = remoteStreams.length >= onlineAccountIds.size - 1;
+    const allPeersConnected = connectedPeerIds.size >= onlineAccountIds.size - 1;
 
     if (isAlone || allPeersConnected) {
       setConnectionStatus('COMPLETED');
-      onConnectionCompleted();
     }
-  }, [connectionStatus, onlineAccountIds.size, remoteStreams.length, onConnectionCompleted]);
+  }, [connectionStatus, onlineAccountIds.size, connectedPeerIds.size]);
 
   return {
     /** 음성 연결 상태 (NOT_STARTED | PENDING | COMPLETED | FAILED) */
@@ -251,5 +267,7 @@ export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
     toggleMute,
     /** 오디오 활성화 (사용자 클릭 필요) */
     activateAudio,
+    /** Autoplay 차단 콜백 (AudioPlayer에 전달) */
+    onAutoplayBlocked,
   };
 };

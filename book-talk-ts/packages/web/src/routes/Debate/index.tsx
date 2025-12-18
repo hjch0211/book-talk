@@ -39,9 +39,18 @@ function DebatePageContent({ debateId }: Props) {
     handleStartDebate();
   };
 
-  const handleEndPresentation = () => {
-    if (currentRoundInfo.type === 'PRESENTATION') {
-      void round.handlePresentationRound();
+  /** PRESENTATION 라운드에서 발언 조기 종료 */
+  const handleEndPresentation = async () => {
+    const currentSpeakerId = debate.currentRound?.currentSpeakerId;
+    if (currentRoundInfo.type !== 'PRESENTATION' || !currentSpeakerId) return;
+
+    try {
+      await round.patchRoundSpeakerMutation.mutateAsync({
+        debateRoundSpeakerId: currentSpeakerId,
+        ended: true,
+      });
+    } catch (error) {
+      console.error('Failed to end presentation:', error);
     }
   };
 
@@ -109,7 +118,7 @@ function DebatePageContent({ debateId }: Props) {
           open={showStartModal}
           onClose={() => setShowStartModal(false)}
           onConfirm={onStartDebateConfirm}
-          isLoading={round.createRoundMutation.isPending}
+          isLoading={round.updateDebateMutation.isPending}
         />
 
         <RoundStartBackdrop
@@ -127,6 +136,7 @@ function DebatePageContent({ debateId }: Props) {
                 key={rs.peerId}
                 stream={rs.stream}
                 isAudioActive={voiceChat.isAudioActive}
+                onAutoplayBlocked={voiceChat.onAutoplayBlocked}
               />
             ))}
             <AudioActivationBanner

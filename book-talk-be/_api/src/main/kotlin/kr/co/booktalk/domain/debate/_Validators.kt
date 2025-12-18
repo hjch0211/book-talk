@@ -13,6 +13,11 @@ fun JoinRequest.validate() {
     require(debateId.isNotBlank()) { "debateId는 필수입니다." }
 }
 
+fun UpdateRequest.validate() {
+    require(debateId.isNotBlank()) { "debateId는 필수입니다." }
+    requireNotNull(roundType) { "roundType은 필수입니다." }
+}
+
 fun DebateEntity.validateJoinable(): DebateEntity {
     this.validateActive()
 

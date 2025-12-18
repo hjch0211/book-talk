@@ -15,10 +15,11 @@ export interface CurrentRoundInfo {
   id: number | null;
   type: 'PRESENTATION' | 'FREE' | 'PREPARATION';
   currentPresentationId?: string;
-  currentSpeakerId?: string | null;
+  currentSpeakerId?: number | null;
+  currentSpeakerAccountId?: string | null;
   createdAt: string | null;
-  nextSpeakerId?: string | null | undefined;
-  endedAt?: string | null | undefined;
+  nextSpeakerAccountId?: string | null;
+  endedAt?: string | null;
   isEditable: boolean;
 }
 
@@ -99,7 +100,7 @@ export const useDebate = ({ debateId }: Props) => {
     // 기존 라운드가 있으면 그대로 반환
     if (debate.currentRound) {
       const currentSpeakerPresentationId = debate.presentations.find(
-        (p) => p.accountId === debate.currentRound?.currentSpeakerId
+        (p) => p.accountId === debate.currentRound?.currentSpeakerAccountId
       )?.id;
       return {
         ...debate.currentRound,
@@ -131,11 +132,6 @@ export const useDebate = ({ debateId }: Props) => {
     { onRoundStartBackdrop: handleRoundStartBackdrop }
   );
 
-  /** Voice connection 완료 시 토론 시작 처리 */
-  const handleVoiceConnectionCompleted = useCallback(() => {
-    void round.handlePresentationRound();
-  }, [round.handlePresentationRound]);
-
   /**
    * 음성 채팅 기능
    * - 방장이 토론 시작 시 join() 호출
@@ -150,7 +146,6 @@ export const useDebate = ({ debateId }: Props) => {
     onError: (err) => {
       console.error(err);
     },
-    onConnectionCompleted: handleVoiceConnectionCompleted,
   });
 
   /** 토론 진행 중 입장 시 자동 voice chat 참여 */
@@ -165,16 +160,16 @@ export const useDebate = ({ debateId }: Props) => {
   }, [currentRoundInfo.type, websocket.isDebateJoined, voiceChat.connectionStatus, voiceChat.join]);
 
   /** 토론 시작 */
-  const handleStartDebate = useCallback(() => {
+  const handleStartDebate = useCallback(async () => {
     if (!debateId) return;
 
+    await round.startPresentationRound();
+
     const isAlone = websocket.onlineAccountIds.size <= 1;
-    if (isAlone) {
-      void round.handlePresentationRound();
-    } else {
+    if (!isAlone) {
       void voiceChat.join();
     }
-  }, [debateId, websocket.onlineAccountIds.size, round.handlePresentationRound, voiceChat.join]);
+  }, [debateId, websocket.onlineAccountIds.size, round.startPresentationRound, voiceChat.join]);
 
   /** 채팅 기능 (FREE 라운드에서만 동작) */
   const chat = useDebateChat(
@@ -203,7 +198,7 @@ export const useDebate = ({ debateId }: Props) => {
     showRoundStartBackdrop,
     /** 라운드 시작 백드롭 닫기 */
     closeRoundStartBackdrop,
-    /** 토론 시작 (voice connection 완료 후 실행) */
+    /** 토론 시작 */
     handleStartDebate,
   };
 };

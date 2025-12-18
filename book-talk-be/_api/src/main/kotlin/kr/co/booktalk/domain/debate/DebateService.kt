@@ -57,10 +57,11 @@ class DebateService(
         val currentRound = debateRoundRepository.findByDebateIdAndEndedAtIsNull(debate.id!!)
         val currentSpeaker = currentRound
             ?.let { debateRoundSpeakerRepository.findByDebateRoundAndIsActive(it, true) }
-        val currentSpeakerId = currentSpeaker?.account?.id?.toString()
+        val currentSpeakerId = currentSpeaker?.id
+        val currentSpeakerAccountId = currentSpeaker?.account?.id?.toString()
         val currentSpeakerEndedAt = currentSpeaker?.endedAt
 
-        return debate.toResponse(members, presentations, currentRound, currentSpeakerId, currentSpeakerEndedAt)
+        return debate.toResponse(members, presentations, currentRound, currentSpeakerId, currentSpeakerAccountId, currentSpeakerEndedAt)
     }
 
     @Transactional
@@ -84,32 +85,40 @@ class DebateService(
         presentationRepository.save(PresentationEntity(debate, account, "{}"))
     }
 
+    /** 토론 라운드 전환 */
     @Transactional
-    fun setNextSpeaker(speaker: DebateRoundSpeakerEntity) {
-        val round = speaker.debateRound
-        val debate = round.debate
-
+    fun update(request: UpdateRequest) {
+        val debate = debateRepository.findByIdOrNull(request.debateId.toUUID())
+            ?: httpBadRequest("존재하지 않는 토론방입니다.")
         val members = debateMemberRepository.findAllByDebateOrderByCreatedAtAsc(debate)
-        if (members.isEmpty()) return
+        if (members.isEmpty()) httpBadRequest("토론 참여자가 없습니다.")
 
-        val currentIndex = members.indexOfFirst { it.account.id == speaker.account.id }
-        if (currentIndex == -1) return
+        val currentRound = debateRoundRepository.findByDebateIdAndEndedAtIsNull(debate.id!!)
+        val currentRoundType = currentRound?.type
 
-        val nextSpeakerId = members[currentIndex + 1].account.id!!.toString()
-        val nextWaitingSpeakerId = if (currentIndex < members.size - 2) {
-            members[currentIndex + 2].account.id?.toString()
-        } else {
-            null
+        // 라운드 전환 검증
+        when {
+            request.roundType == DebateRoundType.PRESENTATION && currentRoundType != null ->
+                httpBadRequest("이미 라운드가 시작되었습니다.")
+            request.roundType == DebateRoundType.FREE && currentRoundType != DebateRoundType.PRESENTATION ->
+                httpBadRequest("PRESENTATION 라운드에서만 FREE 라운드로 전환할 수 있습니다.")
         }
 
-        debateRoundSpeakerService.create(CreateRoundSpeakerRequest(round.id, nextSpeakerId))
-        debateRoundService.patch(
-            PatchRoundRequest(
-                debateRoundId = round.id,
-                nextSpeakerId = JsonNullable.of(nextWaitingSpeakerId)
+        val roundResponse = debateRoundService.create(CreateRoundRequest(debate.id.toString(), request.roundType))
+        val firstSpeakerId = members[0].account.id!!.toString()
+        debateRoundSpeakerService.create(CreateRoundSpeakerRequest(roundResponse.id, firstSpeakerId))
+
+        if (request.roundType == DebateRoundType.PRESENTATION) {
+            val nextSpeakerId = if (members.size > 1) members[1].account.id?.toString() else null
+            debateRoundService.patch(
+                PatchRoundRequest(
+                    debateRoundId = roundResponse.id,
+                    nextSpeakerId = JsonNullable.of(nextSpeakerId)
+                )
             )
-        )
+        }
     }
+
 
     @Transactional
     fun closeExpiredDebates() {

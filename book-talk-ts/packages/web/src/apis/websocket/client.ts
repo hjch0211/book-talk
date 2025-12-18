@@ -245,7 +245,7 @@ export class DebateWebSocketClient {
       case 'S_VOICE_JOIN':
       case 'S_VOICE_OFFER':
       case 'S_VOICE_ANSWER':
-      case 'S_VOICE_ICE':
+      case 'S_VOICE_ICE_CANDIDATE':
         if (this.handlers.onVoiceSignaling) {
           this.handlers.onVoiceSignaling(message);
         }

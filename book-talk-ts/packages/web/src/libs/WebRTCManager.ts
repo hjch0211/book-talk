@@ -7,6 +7,13 @@ export interface RemoteStream {
   stream: MediaStream;
 }
 
+/** ICE Candidate 정보 (Trickle ICE) */
+export interface IceCandidateInfo {
+  myId: string;
+  peerId: string;
+  candidate: RTCIceCandidateInit;
+}
+
 /** 기본 STUN 서버 (fallback) */
 const DEFAULT_ICE_SERVERS: RTCIceServer[] = [
   { urls: 'stun:stun.l.google.com:19302' },
@@ -16,11 +23,8 @@ const DEFAULT_ICE_SERVERS: RTCIceServer[] = [
 /** WebRTC 재연결 최대 횟수 */
 const MAX_RETRIES = 5;
 
-/** ICE Gathering 타임아웃 (ms) */
-const ICE_GATHERING_TIMEOUT = 5000;
-
 /**
- * WebRTC Mesh 연결 관리 클래스
+ * WebRTC Mesh 연결 관리 클래스 (with Trickle ICE)
  */
 export class WebRTCManager {
   /** PeerConnection Map (peerId : connection) */
@@ -28,16 +32,26 @@ export class WebRTCManager {
 
   /** 재연결 시도 횟수 (peerId : count) */
   private retryCount = new Map<string, number>();
+
   /** Remote streams 목록 */
   private _remoteStreams: RemoteStream[] = [];
 
+  /** 전송 대기 중인 ICE Candidate (remoteDescription 설정 전 수집) */
+  private pendingIceCandidates = new Map<string, RTCIceCandidateInit[]>();
+
   constructor(
+    /** 내 계정 ID */
+    private readonly myId: string,
     /** Remote streams 변경 콜백 */
-    private readonly onRemoteStreamsChange?: (streams: RemoteStream[]) => void,
+    private readonly onRemoteStreamsChange: (streams: RemoteStream[]) => void,
     /** 에러 콜백 */
-    private onError?: (error: Error) => void,
+    private readonly onError: (error: Error) => void,
     /** 재연결 필요 콜백 (연결 실패 시 호출) */
-    private onReconnectNeeded?: () => void
+    private readonly onReconnectNeeded: () => void,
+    /** Trickle ICE: ICE Candidate 전송 콜백 */
+    private readonly onIceCandidate: (info: IceCandidateInfo) => void,
+    /** P2P 연결 완료 콜백 */
+    private readonly onPeerConnected: (peerId: string) => void
   ) {}
 
   /** 내 Local media stream */
@@ -65,19 +79,19 @@ export class WebRTCManager {
       return stream;
     } catch (err) {
       console.error('미디어 권한 요청 실패:', err);
-      this.onError?.(err as Error);
+      this.onError(err as Error);
     }
   }
 
-  /** Offer 생성 (연결 시작) → ICE Gathering 완료 후 Offer 반환 */
+  /** Offer 생성 (연결 시작) */
   async createOffer(peerId: string): Promise<RTCSessionDescriptionInit | undefined> {
     if (!this._localStream) {
       console.error('로컬 스트림이 없습니다. startLocalStream을 먼저 호출하세요.');
       return;
     }
 
-    // 기존 연결이 있어도 정리하고 새로 생성 -> 재연결 전략
     this.cleanupPeerConnection(peerId);
+    this.pendingIceCandidates.set(peerId, []);
 
     const pc = await this.createPeerConnection(peerId);
 
@@ -88,10 +102,7 @@ export class WebRTCManager {
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
 
-    // ICE Gathering 완료까지 대기
-    await this.waitForIceGatheringComplete(pc);
-
-    return pc.localDescription!;
+    return offer;
   }
 
   /** Offer 수신 → Answer 반환 */
@@ -99,7 +110,20 @@ export class WebRTCManager {
     peerId: string,
     offer: RTCSessionDescriptionInit
   ): Promise<RTCSessionDescriptionInit | undefined> {
+    const existingPc = this.peerConnections.get(peerId);
+    if (existingPc) {
+      // 이미 연결 중이거나 연결된 상태면 offer 무시
+      const connectionState = existingPc.connectionState;
+      if (
+        connectionState === 'connecting' ||
+        connectionState === 'connected'
+      ) {
+        return;
+      }
+    }
+
     this.cleanupPeerConnection(peerId);
+    this.pendingIceCandidates.set(peerId, []);
 
     const pc = await this.createPeerConnection(peerId);
 
@@ -111,10 +135,9 @@ export class WebRTCManager {
     const answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
 
-    // ICE Gathering 완료까지 대기
-    await this.waitForIceGatheringComplete(pc);
+    this.flushPendingCandidates(peerId);
 
-    return pc.localDescription!;
+    return answer;
   }
 
   /** Answer 수신 */
@@ -122,6 +145,19 @@ export class WebRTCManager {
     const pc = this.peerConnections.get(peerId);
     if (pc?.signalingState === 'have-local-offer') {
       await pc.setRemoteDescription(new RTCSessionDescription(answer));
+      this.flushPendingCandidates(peerId);
+    }
+  }
+
+  /** 수신된 ICE Candidate 추가 */
+  async addIceCandidate(peerId: string, candidate: RTCIceCandidateInit): Promise<void> {
+    const pc = this.peerConnections.get(peerId);
+    if (!pc) return;
+
+    try {
+      await pc.addIceCandidate(new RTCIceCandidate(candidate));
+    } catch (err) {
+      console.error('ICE Candidate 추가 실패:', err);
     }
   }
 
@@ -144,31 +180,16 @@ export class WebRTCManager {
       existingPc.close();
       this.peerConnections.delete(peerId);
     }
+    this.pendingIceCandidates.delete(peerId);
   }
 
-  /** ICE Gathering 완료까지 대기 */
-  private waitForIceGatheringComplete(pc: RTCPeerConnection): Promise<void> {
-    return new Promise((resolve) => {
-      // 이미 완료된 경우 즉시 반환
-      if (pc.iceGatheringState === 'complete') {
-        resolve();
-        return;
-      }
-
-      // 타임아웃 설정
-      const timeout = setTimeout(() => {
-        console.warn('ICE Gathering 타임아웃, 현재 수집된 candidate로 진행');
-        resolve();
-      }, ICE_GATHERING_TIMEOUT);
-
-      // ICE Gathering 상태 변경 감지
-      pc.onicegatheringstatechange = () => {
-        if (pc.iceGatheringState === 'complete') {
-          clearTimeout(timeout);
-          resolve();
-        }
-      };
+  /** 수집된 ICE Candidate 전송 */
+  private flushPendingCandidates(peerId: string): void {
+    const candidates = this.pendingIceCandidates.get(peerId) ?? [];
+    candidates.forEach((candidate) => {
+      this.onIceCandidate({ myId: this.myId, peerId, candidate });
     });
+    this.pendingIceCandidates.delete(peerId);
   }
 
   /** ICE 서버 설정 가져오기 (TURN 포함) */
@@ -207,10 +228,27 @@ export class WebRTCManager {
       }
     };
 
+    /** ICE Candidate 발견 시 (Trickle ICE) */
+    pc.onicecandidate = (event) => {
+      if (event.candidate) {
+        const candidateInit = event.candidate.toJSON();
+        // remoteDescription이 있으면 바로 전송, 없으면 pending에 저장
+        if (pc.remoteDescription) {
+          this.onIceCandidate({ myId: this.myId, peerId, candidate: candidateInit });
+        } else {
+          const pending = this.pendingIceCandidates.get(peerId) ?? [];
+          pending.push(candidateInit);
+          this.pendingIceCandidates.set(peerId, pending);
+        }
+      }
+    };
+
     /** Connection 변경 시 */
     pc.onconnectionstatechange = () => {
+      console.log(`🔗 [${peerId}] connectionState: ${pc.connectionState}`);
       if (pc.connectionState === 'connected') {
         this.retryCount.delete(peerId);
+        this.onPeerConnected(peerId);
       } else if (pc.connectionState === 'failed') {
         this.cleanupPeerConnection(peerId);
         this.updateRemoteStreams(this._remoteStreams.filter((rs) => rs.peerId !== peerId));
@@ -219,11 +257,11 @@ export class WebRTCManager {
         this.retryCount.set(peerId, currentRetry);
 
         if (currentRetry <= MAX_RETRIES) {
-          this.onReconnectNeeded?.();
+          this.onReconnectNeeded();
         } else {
           console.error(`피어 ${peerId} 재연결 실패: 최대 재시도 횟수(${MAX_RETRIES}) 초과`);
           this.retryCount.delete(peerId);
-          this.onError?.(new Error(`재연결 실패: 최대 재시도 횟수(${MAX_RETRIES}) 초과`));
+          this.onError(new Error(`재연결 실패: 최대 재시도 횟수(${MAX_RETRIES}) 초과`));
         }
       } else if (pc.connectionState === 'closed') {
         this.peerConnections.delete(peerId);
@@ -239,6 +277,6 @@ export class WebRTCManager {
   /** Remote streams 업데이트 및 콜백 호출 */
   private updateRemoteStreams(streams: RemoteStream[]): void {
     this._remoteStreams = streams;
-    this.onRemoteStreamsChange?.(streams);
+    this.onRemoteStreamsChange(streams);
   }
 }

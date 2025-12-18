@@ -15,7 +15,8 @@ fun DebateEntity.toResponse(
     members: List<DebateMemberEntity>,
     presentations: List<PresentationEntity>,
     currentRound: DebateRoundEntity? = null,
-    currentSpeakerId: String? = null,
+    currentSpeakerId: Long? = null,
+    currentSpeakerAccountId: String? = null,
     currentSpeakerEndedAt: java.time.Instant? = null
 ): FindOneResponse {
     return FindOneResponse(
@@ -27,7 +28,7 @@ fun DebateEntity.toResponse(
                 it.account.id.toString()
             )
         },
-        currentRound = currentRound?.toRoundInfo(currentSpeakerId, currentSpeakerEndedAt),
+        currentRound = currentRound?.toRoundInfo(currentSpeakerId, currentSpeakerAccountId, currentSpeakerEndedAt),
         bookInfo = FindOneResponse.BookInfo(
             title = book.title,
             author = book.author,
@@ -44,14 +45,16 @@ fun DebateEntity.toResponse(
 }
 
 fun DebateRoundEntity.toRoundInfo(
-    currentSpeakerId: String? = null,
+    currentSpeakerId: Long? = null,
+    currentSpeakerAccountId: String? = null,
     currentSpeakerEndedAt: java.time.Instant? = null
 ): FindOneResponse.RoundInfo {
     return FindOneResponse.RoundInfo(
         id = id,
         type = type,
         currentSpeakerId = currentSpeakerId,
-        nextSpeakerId = nextSpeaker?.id.toString(),
+        currentSpeakerAccountId = currentSpeakerAccountId,
+        nextSpeakerAccountId = nextSpeaker?.id.toString(),
         currentSpeakerEndedAt = currentSpeakerEndedAt,
         createdAt = createdAt,
         endedAt = endedAt,
