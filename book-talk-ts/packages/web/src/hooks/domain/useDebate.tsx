@@ -123,41 +123,48 @@ export const useDebate = ({ debateId }: Props) => {
 
   const round = useDebateRound(debate, debateId, currentRoundInfo);
 
-  /** WebSocket 연결 (먼저 생성 - voiceChat에서 사용) */
+  /** WebSocket 연결 및 WebRTC 음성 채팅 */
   const websocket = useDebateWebSocket(
     debateId || null,
     debate.members,
     myMemberData.id,
     currentRoundInfo.type === 'FREE',
-    { onRoundStartBackdrop: handleRoundStartBackdrop }
+    {
+      onRoundStartBackdrop: handleRoundStartBackdrop,
+      onVoiceChatError: (err) => {
+        console.error('Voice chat error:', err);
+      },
+    }
   );
 
-  /**
-   * 음성 채팅 기능
-   * - 방장이 토론 시작 시 join() 호출
-   * - 다른 참여자는 S_VOICE_JOIN 수신 시 자동으로 join() 호출
-   */
-  const voiceChat = useDebateVoiceChat({
-    myId: myMemberData.id ?? '',
-    debateId: debateId ?? '',
-    sendVoiceMessage: websocket.sendVoiceMessage,
-    voiceMessage: websocket.lastVoiceMessage,
-    onlineAccountIds: websocket.onlineAccountIds,
-    onError: (err) => {
-      console.error(err);
-    },
+  /** 음성 채팅 UI 상태 관리 (음소거, 오디오 활성화) */
+  const voiceChatUI = useDebateVoiceChat({
+    localStream: websocket.localStream,
   });
+
+  /** 음성 채팅 통합 객체 */
+  const voiceChat = useMemo(
+    () => ({
+      connectionStatus: websocket.voiceConnectionStatus,
+      localStream: websocket.localStream,
+      remoteStreams: websocket.remoteStreams,
+      join: websocket.joinVoiceChat,
+      leave: websocket.leaveVoiceChat,
+      ...voiceChatUI,
+    }),
+    [websocket, voiceChatUI]
+  );
 
   /** 토론 진행 중 입장 시 자동 voice chat 참여 */
   useEffect(() => {
     if (
       currentRoundInfo.type !== 'PREPARATION' &&
       websocket.isDebateJoined &&
-      voiceChat.connectionStatus === 'NOT_STARTED'
+      websocket.voiceConnectionStatus === 'NOT_STARTED'
     ) {
-      void voiceChat.join();
+      void websocket.joinVoiceChat();
     }
-  }, [currentRoundInfo.type, websocket.isDebateJoined, voiceChat.connectionStatus, voiceChat.join]);
+  }, [currentRoundInfo.type, websocket.isDebateJoined, websocket.voiceConnectionStatus, websocket.joinVoiceChat]);
 
   /** 토론 시작 */
   const handleStartDebate = useCallback(async () => {
@@ -167,9 +174,9 @@ export const useDebate = ({ debateId }: Props) => {
 
     const isAlone = websocket.onlineAccountIds.size <= 1;
     if (!isAlone) {
-      void voiceChat.join();
+      void websocket.joinVoiceChat();
     }
-  }, [debateId, websocket.onlineAccountIds.size, round.startPresentationRound, voiceChat.join]);
+  }, [debateId, websocket.onlineAccountIds.size, round.startPresentationRound, websocket.joinVoiceChat]);
 
   /** 채팅 기능 (FREE 라운드에서만 동작) */
   const chat = useDebateChat(

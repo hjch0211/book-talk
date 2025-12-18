@@ -6,13 +6,16 @@ import {
   type WS_DebateRoundUpdateResponse,
   type WS_SpeakerUpdateResponse,
 } from '@src/apis/websocket';
+import { useWebRTC } from '@src/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import type { VoiceConnectionStatus } from './useDebateVoiceChat';
 
 type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
 interface UseDebateWebSocketOptions {
-  onRoundStartBackdrop?: (roundType: RoundType) => void;
+  onRoundStartBackdrop: (roundType: RoundType) => void;
+  onVoiceChatError: (error: Error) => void;
 }
 
 export interface MemberWithPresence extends MemberInfo {
@@ -23,9 +26,10 @@ export interface MemberWithPresence extends MemberInfo {
  * WebSocket 연결 및 실시간 통신 관리
  * - WebSocket 연결/해제
  * - 메시지 송수신
- * - 상태 관리 (온라인, 손들기, 음성 메시지)
+ * - 상태 관리 (온라인, 손들기)
  * - 비즈니스 로직 (Query 갱신, UI 이벤트)
  * - 온라인 멤버 목록 계산
+ * - WebRTC P2P 음성 채팅 연결 관리
  *
  * @internal useDebate 내부에서만 사용
  */
@@ -34,20 +38,179 @@ export const useDebateWebSocket = (
   members: MemberInfo[],
   myAccountId: string | undefined,
   isFreeRound: boolean,
-  options?: UseDebateWebSocketOptions
+  options: UseDebateWebSocketOptions
 ) => {
   const queryClient = useQueryClient();
   const [onlineAccountIds, setOnlineAccountIds] = useState<Set<string>>(new Set());
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isDebateJoined, setIsDebateJoined] = useState<boolean>(false);
   const [raisedHands, setRaisedHands] = useState<RaisedHandInfo[]>([]);
-  const [lastVoiceMessage, setLastVoiceMessage] = useState<WebSocketMessage | null>(null);
   const wsClientRef = useRef<DebateWebSocketClient | null>(null);
   const heartbeatIntervalRef = useRef<number | null>(null);
 
-  // onRoundStartBackdrop만 ref로 관리 (단순화)
-  const onRoundStartBackdropRef = useRef(options?.onRoundStartBackdrop);
-  onRoundStartBackdropRef.current = options?.onRoundStartBackdrop;
+  const [voiceConnectionStatus, setVoiceConnectionStatus] = useState<VoiceConnectionStatus>('NOT_STARTED');
+  /** 실제 P2P 연결이 완료된 peer ID 목록 */
+  const [connectedPeerIds, setConnectedPeerIds] = useState<Set<string>>(new Set());
+
+  /** 음성 메시지 전송 */
+  const sendVoiceMessage = useCallback((message: WebSocketMessage) => {
+    console.log('🎙️ sendVoiceMessage 호출:', message.type);
+    if (wsClientRef.current?.isConnected()) {
+      console.log('  ✅ WebSocket 연결됨, 메시지 전송');
+      wsClientRef.current.sendVoiceMessage(message);
+    } else {
+      console.error('  ❌ WebSocket 연결 안됨!');
+    }
+  }, []);
+
+  const {
+    localStream,
+    remoteStreams,
+    startLocalStream,
+    createOffer,
+    handleOffer,
+    handleAnswer,
+    addIceCandidate,
+    disconnect: disconnectWebRTC,
+  } = useWebRTC({
+    myId: myAccountId ?? '',
+    onError: (error) => {
+      setVoiceConnectionStatus('FAILED');
+      options.onVoiceChatError(error);
+    },
+    onReconnectNeeded: () => {
+      if (!myAccountId || !debateId) return;
+      setVoiceConnectionStatus('PENDING');
+      setConnectedPeerIds(new Set());
+      sendVoiceMessage({
+        type: 'C_VOICE_JOIN',
+        provider: 'CLIENT',
+        debateId,
+        accountId: myAccountId,
+      });
+    },
+    onIceCandidate: ({ myId: fromId, peerId, candidate }) => {
+      if (!debateId) return;
+      sendVoiceMessage({
+        type: 'C_VOICE_ICE_CANDIDATE',
+        provider: 'CLIENT',
+        debateId,
+        fromId,
+        toId: peerId,
+        candidate,
+      });
+    },
+    onPeerConnected: (peerId) => {
+      console.log(`✅ P2P 연결 완료: ${peerId}`);
+      setConnectedPeerIds((prev) => new Set([...prev, peerId]));
+    },
+  });
+
+  /** 음성 채팅 참여 */
+  const joinVoiceChat = useCallback(async () => {
+    if (voiceConnectionStatus !== 'NOT_STARTED' || !myAccountId || !debateId) return;
+
+    const stream = await startLocalStream({ audio: true, video: false });
+    if (!stream) {
+      console.error('로컬 스트림 생성 실패');
+      setVoiceConnectionStatus('FAILED');
+      return;
+    }
+
+    setVoiceConnectionStatus('PENDING');
+
+    sendVoiceMessage({
+      type: 'C_VOICE_JOIN',
+      provider: 'CLIENT',
+      debateId,
+      accountId: myAccountId,
+    });
+  }, [voiceConnectionStatus, myAccountId, debateId, sendVoiceMessage, startLocalStream]);
+
+  /** 음성 채팅 퇴장 */
+  const leaveVoiceChat = useCallback(() => {
+    if (voiceConnectionStatus !== 'COMPLETED') return;
+
+    disconnectWebRTC();
+    setVoiceConnectionStatus('NOT_STARTED');
+  }, [voiceConnectionStatus, disconnectWebRTC]);
+
+  /** WebSocket voice message handling */
+  const handleVoiceMessage = useCallback(
+    async (message: WebSocketMessage) => {
+      if (!myAccountId || !debateId) return;
+      const isConnectable = voiceConnectionStatus === 'PENDING' || voiceConnectionStatus === 'COMPLETED';
+
+      switch (message.type) {
+        /** 새 참가자 입장 → Offer 전송 */
+        case 'S_VOICE_JOIN': {
+          const fromId = message.fromId;
+          if (fromId === myAccountId) return;
+
+          // NOT_STARTED면 먼저 join()
+          if (voiceConnectionStatus === 'NOT_STARTED') {
+            await joinVoiceChat();
+          }
+
+          const offer = await createOffer(fromId);
+          if (offer) {
+            sendVoiceMessage({
+              type: 'C_VOICE_OFFER',
+              provider: 'CLIENT',
+              debateId,
+              fromId: myAccountId,
+              toId: fromId,
+              offer,
+            });
+          }
+          break;
+        }
+
+        /** Offer 수신 → Answer 응답 */
+        case 'S_VOICE_OFFER': {
+          if (message.toId !== myAccountId || !isConnectable) return;
+
+          const answer = await handleOffer(message.fromId, message.offer);
+          if (answer) {
+            sendVoiceMessage({
+              type: 'C_VOICE_ANSWER',
+              provider: 'CLIENT',
+              debateId,
+              fromId: myAccountId,
+              toId: message.fromId,
+              answer,
+            });
+          }
+          break;
+        }
+
+        /** Answer 수신 → 연결 완료 */
+        case 'S_VOICE_ANSWER': {
+          if (message.toId !== myAccountId) return;
+          await handleAnswer(message.fromId, message.answer);
+          break;
+        }
+
+        /** ICE Candidate 수신 */
+        case 'S_VOICE_ICE_CANDIDATE': {
+          if (message.toId !== myAccountId) return;
+          await addIceCandidate(message.fromId, message.candidate);
+          break;
+        }
+      }
+    },
+    [
+      voiceConnectionStatus,
+      myAccountId,
+      debateId,
+      joinVoiceChat,
+      createOffer,
+      handleOffer,
+      handleAnswer,
+      addIceCandidate,
+      sendVoiceMessage,
+    ]
+  );
 
   /** 발언자 업데이트 콜백*/
   const handleSpeakerUpdate = useCallback(
@@ -74,17 +237,20 @@ export const useDebateWebSocket = (
 
       const roundType = roundInfo.round.type as RoundType;
       if (roundType === 'PRESENTATION' || roundType === 'FREE') {
-        onRoundStartBackdropRef.current?.(roundType);
+        options.onRoundStartBackdrop(roundType);
       }
     },
-    [debateId, queryClient]
+    [debateId, queryClient, options.onRoundStartBackdrop]
   );
 
   /** 음성 시그널링 */
-  const handleVoiceSignaling = useCallback((message: WebSocketMessage) => {
-    console.log('Voice signaling message received:', message);
-    setLastVoiceMessage(message);
-  }, []);
+  const handleVoiceSignaling = useCallback(
+    (message: WebSocketMessage) => {
+      console.log('Voice signaling message received:', message);
+      void handleVoiceMessage(message);
+    },
+    [handleVoiceMessage]
+  );
 
   const combinedHandlers = useMemo(
     () => ({
@@ -163,7 +329,7 @@ export const useDebateWebSocket = (
   useEffect(() => {
     if (isConnected && wsClientRef.current) {
       // 30초마다 하트비트 전송
-      heartbeatIntervalRef.current = setInterval(() => {
+      heartbeatIntervalRef.current = window.setInterval(() => {
         console.log('Sending heartbeat...');
         wsClientRef.current?.sendHeartbeat();
       }, 30000);
@@ -205,23 +371,26 @@ export const useDebateWebSocket = (
     [raisedHands]
   );
 
-  /** 음성 메시지 전송 */
-  const sendVoiceMessage = useCallback((message: Omit<WebSocketMessage, 'debateId'>) => {
-    console.log('🎙️ sendVoiceMessage 호출:', message.type);
-    if (wsClientRef.current?.isConnected()) {
-      console.log('  ✅ WebSocket 연결됨, 메시지 전송');
-      wsClientRef.current.sendVoiceMessage(message);
-    } else {
-      console.error('  ❌ WebSocket 연결 안됨!');
-    }
-  }, []);
-
   /** 채팅 메시지 전송 */
   const sendChatMessage = useCallback((chatId: number) => {
     if (wsClientRef.current?.isConnected()) {
       wsClientRef.current.sendChatMessage(chatId);
     }
   }, []);
+
+  // PENDING 상태에서 COMPLETED로 전이
+  // - 혼자일 경우: 즉시 COMPLETED
+  // - 여러 명일 경우: 모든 peer와 실제 P2P 연결이 완료되면 COMPLETED
+  useEffect(() => {
+    if (voiceConnectionStatus !== 'PENDING') return;
+
+    const isAlone = onlineAccountIds.size <= 1;
+    const allPeersConnected = connectedPeerIds.size >= onlineAccountIds.size - 1;
+
+    if (isAlone || allPeersConnected) {
+      setVoiceConnectionStatus('COMPLETED');
+    }
+  }, [voiceConnectionStatus, onlineAccountIds.size, connectedPeerIds.size]);
 
   return {
     onlineAccountIds,
@@ -231,10 +400,14 @@ export const useDebateWebSocket = (
     raisedHands,
     toggleHand,
     isHandRaised,
-    /** 마지막으로 수신한 음성 시그널링 메시지 */
-    lastVoiceMessage,
     sendVoiceMessage,
     sendChatMessage,
     membersWithPresence,
+    /** Voice chat 관련 */
+    voiceConnectionStatus,
+    localStream,
+    remoteStreams,
+    joinVoiceChat,
+    leaveVoiceChat,
   };
 };

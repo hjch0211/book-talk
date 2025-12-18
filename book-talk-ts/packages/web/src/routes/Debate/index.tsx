@@ -36,7 +36,7 @@ function DebatePageContent({ debateId }: Props) {
 
   const onStartDebateConfirm = () => {
     setShowStartModal(false);
-    handleStartDebate();
+    void handleStartDebate();
   };
 
   /** PRESENTATION 라운드에서 발언 조기 종료 */
