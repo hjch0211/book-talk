@@ -189,8 +189,8 @@ export const useDebateRound = (
 
     const currentIndex = debate.members.findIndex((m) => m.id === currentSpeaker.accountId);
 
+    // 다음 발표자가 있으면 수동 전환
     if (currentIndex !== -1 && currentIndex < debate.members.length - 1) {
-      // 다음 발표자로 넘기기
       const nextSpeakerId = debate.members[currentIndex + 1].id;
       await createRoundSpeakerMutation.mutateAsync({
         debateRoundId: currentRoundInfo.id,
@@ -206,24 +206,11 @@ export const useDebateRound = (
             nextSpeakerId: nextWaitingSpeakerId,
           });
         } else {
-          // 다음 다음 발언자가 없는 경우 null로 설정
           await patchRoundMutation.mutateAsync({
             debateRoundId: debate.currentRound.id,
             nextSpeakerId: null,
           });
         }
-      }
-    } else {
-      // PRESENTATION 라운드 끝 -> FREE 라운드 생성
-      // 1. FREE 라운드 생성
-      const roundResponse = await createRoundMutation.mutateAsync({ debateId, type: 'FREE' });
-      if (roundResponse?.id && debate.members.length > 0) {
-        // 2. 첫 번째 발언자 생성
-        const firstSpeakerId = debate.members[0].id;
-        await createRoundSpeakerMutation.mutateAsync({
-          debateRoundId: roundResponse.id,
-          nextSpeakerId: firstSpeakerId,
-        });
       }
     }
   }, [

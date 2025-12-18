@@ -85,12 +85,9 @@ class DebateService(
     }
 
     @Transactional
-    fun handleExpiredSpeaker(speaker: DebateRoundSpeakerEntity) {
+    fun setNextSpeaker(speaker: DebateRoundSpeakerEntity) {
         val round = speaker.debateRound
         val debate = round.debate
-
-        // PRESENTATION 라운드가 아니거나 이미 종료된 라운드는 무시
-        if (round.type != DebateRoundType.PRESENTATION || round.endedAt != null) return
 
         val members = debateMemberRepository.findAllByDebateOrderByCreatedAtAsc(debate)
         if (members.isEmpty()) return
@@ -98,45 +95,20 @@ class DebateService(
         val currentIndex = members.indexOfFirst { it.account.id == speaker.account.id }
         if (currentIndex == -1) return
 
-        // 다음 발표자가 있는 경우
-        if (currentIndex < members.size - 1) {
-            /** 다음 발표자로 전환 */
-            val nextSpeakerId = members[currentIndex + 1].account.id!!.toString()
-            val nextWaitingSpeakerId = if (currentIndex < members.size - 2) {
-                members[currentIndex + 2].account.id?.toString()
-            } else {
-                null
-            }
-
-            // 다음 발표자 생성
-            debateRoundSpeakerService.create(CreateRoundSpeakerRequest(round.id, nextSpeakerId))
-
-            // 그 다음 대기 발표자 설정
-            debateRoundService.patch(
-                PatchRoundRequest(
-                    debateRoundId = round.id,
-                    nextSpeakerId = JsonNullable.of(nextWaitingSpeakerId)
-                )
-            )
+        val nextSpeakerId = members[currentIndex + 1].account.id!!.toString()
+        val nextWaitingSpeakerId = if (currentIndex < members.size - 2) {
+            members[currentIndex + 2].account.id?.toString()
         } else {
-            /** PRESENTATION 라운드 완료 후 FREE 라운드로 전환 */
-            val firstSpeakerId = members.firstOrNull()?.account?.id?.toString()
-
-            // FREE 라운드 생성 (기존 PRESENTATION 라운드는 create 메서드 내부에서 자동으로 종료됨)
-            val roundResponse = debateRoundService.create(
-                CreateRoundRequest(debate.id.toString(), DebateRoundType.FREE)
-            )
-
-            // 첫 번째 멤버를 현재 발언자로 지정
-            if (firstSpeakerId != null) {
-                debateRoundSpeakerService.create(
-                    CreateRoundSpeakerRequest(
-                        debateRoundId = roundResponse.id,
-                        nextSpeakerId = firstSpeakerId
-                    )
-                )
-            }
+            null
         }
+
+        debateRoundSpeakerService.create(CreateRoundSpeakerRequest(round.id, nextSpeakerId))
+        debateRoundService.patch(
+            PatchRoundRequest(
+                debateRoundId = round.id,
+                nextSpeakerId = JsonNullable.of(nextWaitingSpeakerId)
+            )
+        )
     }
 
     @Transactional
