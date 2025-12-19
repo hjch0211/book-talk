@@ -248,6 +248,13 @@ export type WS_VoiceOfferRequest = z.infer<typeof WS_VoiceOfferRequestSchema>;
 export type WS_VoiceAnswerRequest = z.infer<typeof WS_VoiceAnswerRequestSchema>;
 export type WS_VoiceIceCandidateRequest = z.infer<typeof WS_VoiceIceCandidateRequestSchema>;
 
+/** 음성 메시지 페이로드 (debateId 제외 - 클라이언트가 자동 추가) */
+export type VoiceMessagePayload =
+  | Omit<WS_VoiceJoinRequest, 'debateId'>
+  | Omit<WS_VoiceOfferRequest, 'debateId'>
+  | Omit<WS_VoiceAnswerRequest, 'debateId'>
+  | Omit<WS_VoiceIceCandidateRequest, 'debateId'>;
+
 // Voice - Server types
 export type WS_VoiceJoinResponse = z.infer<typeof WS_VoiceJoinResponseSchema>;
 export type WS_VoiceOfferResponse = z.infer<typeof WS_VoiceOfferResponseSchema>;

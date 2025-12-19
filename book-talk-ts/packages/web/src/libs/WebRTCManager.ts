@@ -90,6 +90,16 @@ export class WebRTCManager {
       return;
     }
 
+    // 이미 연결 중이거나 연결된 상태면 무시
+    const existingPc = this.peerConnections.get(peerId);
+    if (existingPc) {
+      const connectionState = existingPc.connectionState;
+      if (connectionState === 'connecting' || connectionState === 'connected') {
+        console.log(`[${peerId}] 이미 연결 중 (${connectionState}), offer 생성 건너뜀`);
+        return;
+      }
+    }
+
     this.cleanupPeerConnection(peerId);
     this.pendingIceCandidates.set(peerId, []);
 

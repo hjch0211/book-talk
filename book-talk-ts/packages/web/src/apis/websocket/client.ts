@@ -1,5 +1,6 @@
 import {
   type RaisedHandInfo,
+  type VoiceMessagePayload,
   type WebSocketMessage,
   WebSocketMessageSchema,
   type WS_DebateRoundUpdateResponse,
@@ -13,8 +14,6 @@ export class DebateWebSocketClient {
   private maxReconnectAttempts = 2;
   private reconnectDelay = 3000;
   private handlers: WebSocketHandlers = {};
-
-  constructor() {}
 
   connect(debateId: string, handlers: WebSocketHandlers) {
     this.debateId = debateId;
@@ -73,7 +72,7 @@ export class DebateWebSocketClient {
     return this.ws?.readyState === WebSocket.OPEN;
   }
 
-  sendVoiceMessage(message: Omit<WebSocketMessage, 'debateId'>): void {
+  sendVoiceMessage(message: VoiceMessagePayload): void {
     if (this.ws?.readyState === WebSocket.OPEN && this.debateId) {
       const voiceMessage = {
         ...message,
@@ -193,11 +192,11 @@ export class DebateWebSocketClient {
   private handleMessage(message: WebSocketMessage) {
     switch (message.type) {
       case 'S_PRESENCE_UPDATE':
-        if (this.handlers.onPresenceUpdate) {
+        if (this.handlers.onOnlineMembersUpdate) {
           const onlineIds = new Set<string>(
             message.onlineAccounts.map((account) => account.accountId)
           );
-          this.handlers.onPresenceUpdate(onlineIds);
+          this.handlers.onOnlineMembersUpdate(onlineIds);
         }
         break;
       case 'S_SPEAKER_UPDATE':
@@ -283,7 +282,7 @@ export class DebateWebSocketClient {
 }
 
 export interface WebSocketHandlers {
-  onPresenceUpdate?: (onlineAccountIds: Set<string>) => void;
+  onOnlineMembersUpdate?: (onlineAccountIds: Set<string>) => void;
   onConnectionStatus?: (connected: boolean) => void;
   onJoinSuccess?: () => void;
   onSpeakerUpdate?: (speakerInfo: WS_SpeakerUpdateResponse) => void;

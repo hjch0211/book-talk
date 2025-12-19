@@ -1,8 +1,13 @@
 import { meQueryOption } from '@src/apis/account';
 import { findOneDebateQueryOptions, joinDebate } from '@src/apis/debate';
-import { useDebateChat, useDebateRound, useDebateVoiceChat, useDebateWebSocket } from '@src/hooks';
+import {
+  useDebateChat,
+  useDebateRealtimeConnection,
+  useDebateRound,
+  useDebateVoiceChat,
+} from '@src/hooks';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
-import { useCallback, useEffect, useEffectEvent, useMemo } from 'react';
+import { useEffect, useEffectEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDebateRoundStartBackdrop } from './useDebateRoundStartBackdrop';
 
@@ -14,10 +19,9 @@ interface Props {
  * 토론 참여 및 전체 관리
  * - 토론 기본 정보 제공
  * - 라운드/발언자 관리 (useDebateRound)
- * - WebSocket 연결 관리 (useDebateWebSocket)
+ * - 실시간 연결 관리 (useDebateRealtimeConnection)
  * - 자동 참여 처리
  * - UI 상태 관리 (백드롭)
- * - VoiceChat 관리
  */
 export const useDebate = ({ debateId }: Props) => {
   const queryClient = useQueryClient();
@@ -42,89 +46,62 @@ export const useDebate = ({ debateId }: Props) => {
     joinDebateMutation.mutate(targetDebateId);
   });
 
-  /** 멤버가 아니면 자동으로 가입 시도 */
+  /** 멤버가 아니면 자동으로 가입 시도 (isIdle: mutation이 한 번도 호출되지 않은 상태) */
   useEffect(() => {
-    if (debateId && _me?.id && !debate.myMemberInfo && !joinDebateMutation.isPending) {
+    if (debateId && _me?.id && !debate.myMemberInfo && joinDebateMutation.isIdle) {
       onAutoJoin(debateId);
     }
-  }, [debateId, _me?.id, debate.myMemberInfo, joinDebateMutation.isPending]);
+  }, [debateId, _me?.id, debate.myMemberInfo, joinDebateMutation.isIdle]);
 
-  const round = useDebateRound(debate, debateId, debate.currentRoundInfo);
+  const round = useDebateRound({ debate, debateId, currentRoundInfo: debate.currentRoundInfo });
 
   /** 라운드 시작 백드롭 UI */
   const roundStartBackdrop = useDebateRoundStartBackdrop();
 
-  /** WebSocket 연결 및 WebRTC 음성 채팅 */
-  const websocket = useDebateWebSocket(
-    debateId || null,
-    debate.members,
-    debate.myMemberInfo?.id,
-    debate.currentRoundInfo.type === 'FREE',
-    {
-      onRoundStartBackdrop: roundStartBackdrop.open,
-      onVoiceChatError: (err) => {
-        console.error('Voice chat error:', err);
-      },
-    }
-  );
+  /** 실시간 연결 (WebSocket + WebRTC) */
+  const connection = useDebateRealtimeConnection({
+    debateId: debateId || null,
+    debate,
+    onRoundStartBackdrop: roundStartBackdrop.open,
+  });
 
   /** 음성 채팅 UI 상태 관리 (음소거, 오디오 활성화) */
-  const voiceChatUI = useDebateVoiceChat({
-    localStream: websocket.localStream,
-  });
-
-  /** 음성 채팅 통합 객체 */
-  const voiceChat = useMemo(
-    () => ({
-      connectionStatus: websocket.voiceConnectionStatus,
-      localStream: websocket.localStream,
-      remoteStreams: websocket.remoteStreams,
-      join: websocket.joinVoiceChat,
-      leave: websocket.leaveVoiceChat,
-      ...voiceChatUI,
-    }),
-    [websocket, voiceChatUI]
-  );
-
-  const onAutoJoinVoiceChat = useEffectEvent(() => {
-    void websocket.joinVoiceChat();
-  });
+  const voiceChatUI = useDebateVoiceChat({ localStream: connection.localStream });
 
   /** 토론 진행 중 입장 시 자동 voice chat 참여 */
+  const onAutoJoinVoiceChat = useEffectEvent(() => {
+    void connection.joinVoiceChat();
+  });
+
   useEffect(() => {
     if (
       debate.currentRoundInfo.type !== 'PREPARATION' &&
-      websocket.isDebateJoined &&
-      websocket.voiceConnectionStatus === 'NOT_STARTED'
+      connection.isDebateJoined &&
+      connection.voiceConnectionStatus === 'NOT_STARTED'
     ) {
       onAutoJoinVoiceChat();
     }
-  }, [debate.currentRoundInfo.type, websocket.isDebateJoined, websocket.voiceConnectionStatus]);
+  }, [debate.currentRoundInfo.type, connection.isDebateJoined, connection.voiceConnectionStatus]);
 
   /** 토론 시작 */
-  const handleStartDebate = useCallback(async () => {
+  const handleStartDebate = useEffectEvent(async () => {
     if (!debateId) return;
 
     await round.startPresentationRound();
 
-    const isAlone = websocket.onlineAccountIds.size <= 1;
+    const isAlone = connection.onlineMembers.length <= 1;
     if (!isAlone) {
-      void websocket.joinVoiceChat();
+      void connection.joinVoiceChat();
     }
-  }, [
-    debateId,
-    websocket.onlineAccountIds.size,
-    round.startPresentationRound,
-    websocket.joinVoiceChat,
-  ]);
+  });
 
   /** 채팅 기능 (FREE 라운드에서만 동작) */
-  const chat = useDebateChat(
+  const chat = useDebateChat({
     debateId,
-    websocket.sendChatMessage,
-    debate.currentRoundInfo.type === 'FREE',
-    !!debate.myMemberInfo
-  );
+    sendChatMessage: connection.sendChatMessage,
+    isFreeRound: debate.currentRoundInfo.type === 'FREE',
+    hasMyMemberInfo: !!debate.myMemberInfo,
+  });
 
   return {
     /** 토론 기본 정보 */
@@ -135,12 +112,12 @@ export const useDebate = ({ debateId }: Props) => {
     currentRoundInfo: debate.currentRoundInfo,
     /** 라운드 & 발언자 관리 */
     round,
-    /** WebSocket 연결 및 실시간 통신 */
-    websocket,
+    /** 실시간 연결 (WebSocket + WebRTC) */
+    connection,
     /** 채팅 기능 (FREE 라운드 전용) */
     chat,
-    /** 음성 채팅 기능 */
-    voiceChat,
+    /** 음성 채팅 UI */
+    voiceChatUI,
     /** 라운드 시작 백드롭 UI */
     roundStartBackdrop,
     /** 토론 시작 */

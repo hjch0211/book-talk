@@ -6,6 +6,7 @@ import {
   DialogTitle,
   TextField,
 } from '@mui/material';
+import { usePresentation } from '@src/hooks';
 import Heading from '@tiptap/extension-heading';
 import Placeholder from '@tiptap/extension-placeholder';
 import Youtube from '@tiptap/extension-youtube';
@@ -13,7 +14,6 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useCallback, useEffect, useState } from 'react';
 import type { CurrentRoundInfo } from '../../../hooks/domain/useDebate.tsx';
-import { usePresentation } from '../../../hooks/domain/usePresentation.tsx';
 import { MainContent, PresentationArea } from '../style.ts';
 import { ChatInput } from './chat/ChatInput.tsx';
 import { ChatMessageList } from './chat/ChatMessageList.tsx';
@@ -59,9 +59,9 @@ export function DebatePresentation({
   const [imageUrl, setImageUrl] = useState('');
 
   // 발표 페이지 데이터 및 자동 저장 함수
-  const { currentPresentation, autoSave, lastSavedAt, isSaving } = usePresentation(
-    currentRoundInfo.currentPresentationId
-  );
+  const { currentPresentation, autoSave, lastSavedAt, isSaving } = usePresentation({
+    presentationId: currentRoundInfo.currentPresentationId,
+  });
 
   // 에디터 콜백들
   const addImage = useCallback(() => {

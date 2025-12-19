@@ -1,6 +1,6 @@
 import { queryOptions } from '@tanstack/react-query';
 import { findOneDebate, getChats } from './api';
-import type { FindOneDebateResponse } from './schema';
+import type { FindOneDebateResponse, MemberInfo } from './schema';
 
 /** 프론트에서 사용하는 라운드 타입 (서버의 null을 PREPARATION으로 변환) */
 export type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
@@ -17,6 +17,12 @@ export interface CurrentRoundInfo {
   endedAt?: string | null;
   isEditable: boolean;
 }
+
+/** select로 변환된 토론 데이터 타입 */
+export type Debate = FindOneDebateResponse & {
+  currentRoundInfo: CurrentRoundInfo;
+  myMemberInfo: MemberInfo | undefined;
+};
 
 /** 서버 응답을 CurrentRoundInfo로 변환 */
 function transformToCurrentRoundInfo(

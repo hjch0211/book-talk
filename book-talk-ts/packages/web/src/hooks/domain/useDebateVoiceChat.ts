@@ -3,7 +3,7 @@ import { useCallback, useState } from 'react';
 /** Voice chat 연결 상태 */
 export type VoiceConnectionStatus = 'NOT_STARTED' | 'PENDING' | 'COMPLETED' | 'FAILED';
 
-export interface UseDebateVoiceChatOptions {
+interface Props {
   /** 로컬 오디오 스트림 */
   localStream: MediaStream | null;
 }
@@ -15,8 +15,8 @@ export interface UseDebateVoiceChatOptions {
  *
  * @internal useDebate 내부에서만 사용
  */
-export const useDebateVoiceChat = (options: UseDebateVoiceChatOptions) => {
-  const { localStream } = options;
+export const useDebateVoiceChat = (props: Props) => {
+  const { localStream } = props;
 
   const [isMuted, setIsMuted] = useState(false);
   const [isAudioActive, setIsAudioActive] = useState(true);

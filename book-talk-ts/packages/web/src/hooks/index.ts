@@ -1,9 +1,9 @@
+export type { CurrentRoundInfo, RoundType } from '@src/apis/debate';
 export { useDebate } from './domain/useDebate';
-export { type RoundType, type CurrentRoundInfo } from '@src/apis/debate';
 export { useDebateChat } from './domain/useDebateChat';
+export { useDebateRealtimeConnection } from './domain/useDebateRealtimeConnection.tsx';
 export { useDebateRound } from './domain/useDebateRound';
 export { useDebateVoiceChat } from './domain/useDebateVoiceChat';
-export { useDebateWebSocket } from './domain/useDebateWebSocket';
 export { usePresentation } from './domain/usePresentation';
 export { useJsonPatch } from './infra/useJsonPatch';
 export { useModal } from './infra/useModal';

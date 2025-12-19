@@ -1,13 +1,13 @@
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, IconButton, Modal as MuiModal, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { usePresentation } from '@src/hooks';
 import Heading from '@tiptap/extension-heading';
 import Image from '@tiptap/extension-image';
 import Youtube from '@tiptap/extension-youtube';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useEffect } from 'react';
-import { usePresentation } from '../../../../hooks/domain/usePresentation.tsx';
 import { LinkPreview } from '../editor/LinkPreviewExtension.tsx';
 import { createMentionExtension } from '../editor/MentionExtension.tsx';
 
@@ -164,7 +164,7 @@ export function PresentationViewModal({
   presentationId,
   members = [],
 }: Props) {
-  const { currentPresentation, isLoading } = usePresentation(presentationId);
+  const { currentPresentation, isLoading } = usePresentation({ presentationId });
 
   const editor = useEditor({
     extensions: [

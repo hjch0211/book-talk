@@ -1,6 +1,6 @@
 import {
-  createRoundSpeaker,
   type CurrentRoundInfo,
+  createRoundSpeaker,
   type FindOneDebateResponse,
   findOneDebateQueryOptions,
   patchRoundSpeaker,
@@ -27,6 +27,15 @@ export interface NextSpeaker {
   accountName: string;
 }
 
+interface Props {
+  /** 토론 정보 */
+  debate: FindOneDebateResponse;
+  /** 토론 ID */
+  debateId?: string;
+  /** 현재 라운드 정보 */
+  currentRoundInfo?: CurrentRoundInfo;
+}
+
 /**
  * 토론 라운드 & 발언자 관리
  * - 현재/다음 발언자 계산
@@ -35,11 +44,8 @@ export interface NextSpeaker {
  *
  * @internal useDebate 내부에서만 사용
  */
-export const useDebateRound = (
-  debate: FindOneDebateResponse,
-  debateId?: string,
-  currentRoundInfo?: CurrentRoundInfo
-) => {
+export const useDebateRound = (props: Props) => {
+  const { debate, debateId, currentRoundInfo } = props;
   const queryClient = useQueryClient();
   const [currentTime, setCurrentTime] = useState(new Date());
 

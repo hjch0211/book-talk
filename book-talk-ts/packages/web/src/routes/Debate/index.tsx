@@ -24,8 +24,8 @@ function DebatePageContent({ debateId }: Props) {
     myMemberInfo,
     currentRoundInfo,
     round,
-    websocket,
-    voiceChat,
+    connection,
+    voiceChatUI,
     chat,
     roundStartBackdrop,
     handleStartDebate,
@@ -46,8 +46,11 @@ function DebatePageContent({ debateId }: Props) {
   }
 
   // PENDING 또는 FAILED 상태일 때 스켈레톤 표시
-  if (voiceChat.connectionStatus === 'PENDING' || voiceChat.connectionStatus === 'FAILED') {
-    return <DebateSkeleton connectionStatus={voiceChat.connectionStatus} />;
+  if (
+    connection.voiceConnectionStatus === 'PENDING' ||
+    connection.voiceConnectionStatus === 'FAILED'
+  ) {
+    return <DebateSkeleton connectionStatus={connection.voiceConnectionStatus} />;
   }
 
   return (
@@ -59,17 +62,17 @@ function DebatePageContent({ debateId }: Props) {
           currentSpeaker={round.currentSpeaker}
           debateId={debateId}
           myAccountId={myMemberInfo?.id}
-          onChatMessage={websocket.sendChatMessage}
+          onChatMessage={connection.sendChatMessage}
           chat={chat}
           members={debate.members}
           presentations={debate.presentations}
         />
         <DebateMemberList
-          members={websocket.membersWithPresence}
+          members={connection.onlineMembers}
           currentSpeaker={round.currentSpeaker}
           nextSpeaker={round.nextSpeaker}
           realTimeRemainingSeconds={round.realTimeRemainingSeconds}
-          raisedHands={websocket.raisedHands}
+          raisedHands={connection.raisedHands}
           currentRoundType={currentRoundInfo.type}
           myAccountId={myMemberInfo?.id}
           onPassSpeaker={round.passSpeaker}
@@ -81,11 +84,11 @@ function DebatePageContent({ debateId }: Props) {
           isCurrentSpeaker={round.currentSpeaker?.accountId === myMemberInfo?.id}
           onStartDebate={handleOpenStartModal}
           onEndPresentation={round.endPresentation}
-          onToggleHand={websocket.toggleHand}
-          isMyHandRaised={myMemberInfo?.id ? websocket.isHandRaised(myMemberInfo.id) : false}
-          isVoiceChatJoined={voiceChat.connectionStatus === 'COMPLETED'}
-          isVoiceMuted={voiceChat.isMuted}
-          onToggleMute={voiceChat.toggleMute}
+          onToggleHand={connection.toggleHand}
+          isMyHandRaised={myMemberInfo?.id ? connection.isHandRaised(myMemberInfo.id) : false}
+          isVoiceChatJoined={connection.voiceConnectionStatus === 'COMPLETED'}
+          isVoiceMuted={voiceChatUI.isMuted}
+          onToggleMute={voiceChatUI.toggleMute}
         />
 
         <RoundStartBackdrop
@@ -98,17 +101,17 @@ function DebatePageContent({ debateId }: Props) {
         {currentRoundInfo.type !== 'PREPARATION' && (
           <>
             {/* 각 원격 스트림을 개별 audio element로 재생 (브라우저가 자동 믹싱) */}
-            {voiceChat.remoteStreams.map((rs) => (
+            {connection.remoteStreams.map((rs) => (
               <AudioPlayer
                 key={rs.peerId}
                 stream={rs.stream}
-                isAudioActive={voiceChat.isAudioActive}
-                onAutoplayBlocked={voiceChat.onAutoplayBlocked}
+                isAudioActive={voiceChatUI.isAudioActive}
+                onAutoplayBlocked={voiceChatUI.onAutoplayBlocked}
               />
             ))}
             <AudioActivationBanner
-              open={!voiceChat.isAudioActive && voiceChat.remoteStreams.length > 0}
-              onActivate={voiceChat.activateAudio}
+              open={!voiceChatUI.isAudioActive && connection.remoteStreams.length > 0}
+              onActivate={voiceChatUI.activateAudio}
             />
           </>
         )}

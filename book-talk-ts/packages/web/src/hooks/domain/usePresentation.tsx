@@ -8,8 +8,14 @@ import {
 } from '../../apis/presentation';
 import { useJsonPatch } from '../infra/useJsonPatch.tsx';
 
+interface Props {
+  /** 발표 ID */
+  presentationId?: string;
+}
+
 /** 발표 페이지를 저장 및 관리 */
-export const usePresentation = (presentationId?: string) => {
+export const usePresentation = (props: Props) => {
+  const { presentationId } = props;
   const queryClient = useQueryClient();
   const queryResult = useQuery({
     ...findOnePresentationQueryOptions(presentationId),

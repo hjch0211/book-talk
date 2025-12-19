@@ -1,4 +1,4 @@
-import { type RoundType } from '@src/apis/debate';
+import type { RoundType } from '@src/apis/debate';
 import { useState } from 'react';
 
 interface RoundStartBackdropState {
