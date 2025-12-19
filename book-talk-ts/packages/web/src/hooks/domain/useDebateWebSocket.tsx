@@ -1,4 +1,9 @@
-import { findOneDebateQueryOptions, getChatsQueryOptions, type MemberInfo } from '@src/apis/debate';
+import {
+  findOneDebateQueryOptions,
+  getChatsQueryOptions,
+  type MemberInfo,
+  type RoundType,
+} from '@src/apis/debate';
 import {
   DebateWebSocketClient,
   type RaisedHandInfo,
@@ -10,8 +15,6 @@ import { useWebRTC } from '@src/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { VoiceConnectionStatus } from './useDebateVoiceChat';
-
-type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
 interface UseDebateWebSocketOptions {
   onRoundStartBackdrop: (roundType: RoundType) => void;
@@ -48,7 +51,8 @@ export const useDebateWebSocket = (
   const wsClientRef = useRef<DebateWebSocketClient | null>(null);
   const heartbeatIntervalRef = useRef<number | null>(null);
 
-  const [voiceConnectionStatus, setVoiceConnectionStatus] = useState<VoiceConnectionStatus>('NOT_STARTED');
+  const [voiceConnectionStatus, setVoiceConnectionStatus] =
+    useState<VoiceConnectionStatus>('NOT_STARTED');
   /** 실제 P2P 연결이 완료된 peer ID 목록 */
   const [connectedPeerIds, setConnectedPeerIds] = useState<Set<string>>(new Set());
 
@@ -139,7 +143,8 @@ export const useDebateWebSocket = (
   const handleVoiceMessage = useCallback(
     async (message: WebSocketMessage) => {
       if (!myAccountId || !debateId) return;
-      const isConnectable = voiceConnectionStatus === 'PENDING' || voiceConnectionStatus === 'COMPLETED';
+      const isConnectable =
+        voiceConnectionStatus === 'PENDING' || voiceConnectionStatus === 'COMPLETED';
 
       switch (message.type) {
         /** 새 참가자 입장 → Offer 전송 */

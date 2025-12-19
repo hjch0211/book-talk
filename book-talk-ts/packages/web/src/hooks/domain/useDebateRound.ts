@@ -1,43 +1,30 @@
 import {
-  type CreateRoundSpeakerRequest,
   createRoundSpeaker,
+  type CurrentRoundInfo,
   type FindOneDebateResponse,
   findOneDebateQueryOptions,
-  type PatchRoundSpeakerRequest,
   patchRoundSpeaker,
-  type UpdateDebateRequest,
   updateDebate,
 } from '@src/apis/debate';
-import { type UseMutationResult, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
-type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
-
-interface CurrentRoundInfo {
-  id: number | null;
-  type: RoundType;
-  nextSpeakerAccountId?: string | null;
-}
-
+/** 현재 발언자 정보 */
 export interface CurrentSpeaker {
+  /** 계정 ID */
   accountId: string;
+  /** 계정 이름 */
   accountName: string;
+  /** 발언 종료 시각 (timestamp) */
   endedAt?: number;
 }
 
+/** 다음 발언자 정보 */
 export interface NextSpeaker {
+  /** 계정 ID */
   accountId: string;
+  /** 계정 이름 */
   accountName: string;
-}
-
-export interface UseDebateRoundReturn {
-  currentSpeaker: CurrentSpeaker | null;
-  nextSpeaker: NextSpeaker | null;
-  realTimeRemainingSeconds: number;
-  updateDebateMutation: UseMutationResult<void, Error, UpdateDebateRequest>;
-  createRoundSpeakerMutation: UseMutationResult<void, Error, CreateRoundSpeakerRequest>;
-  patchRoundSpeakerMutation: UseMutationResult<void, Error, PatchRoundSpeakerRequest>;
-  startPresentationRound: () => Promise<void>;
 }
 
 /**
@@ -52,7 +39,7 @@ export const useDebateRound = (
   debate: FindOneDebateResponse,
   debateId?: string,
   currentRoundInfo?: CurrentRoundInfo
-): UseDebateRoundReturn => {
+) => {
   const queryClient = useQueryClient();
   const [currentTime, setCurrentTime] = useState(new Date());
 
@@ -143,13 +130,44 @@ export const useDebateRound = (
     });
   }, [debateId, currentRoundInfo?.id, updateDebateMutation]);
 
+  /** PRESENTATION 라운드에서 발언 조기 종료 */
+  const endPresentation = useCallback(async () => {
+    const currentSpeakerId = debate.currentRound?.currentSpeakerId;
+    if (currentRoundInfo?.type !== 'PRESENTATION' || !currentSpeakerId) return;
+
+    await patchRoundSpeakerMutation.mutateAsync({
+      debateRoundSpeakerId: currentSpeakerId,
+      ended: true,
+    });
+  }, [debate.currentRound?.currentSpeakerId, currentRoundInfo?.type, patchRoundSpeakerMutation]);
+
+  /** 발언권 전달 (FREE 라운드) */
+  const passSpeaker = useCallback(
+    async (memberId: string) => {
+      if (!currentRoundInfo?.id) return;
+
+      await createRoundSpeakerMutation.mutateAsync({
+        debateRoundId: currentRoundInfo.id,
+        nextSpeakerId: memberId,
+      });
+    },
+    [currentRoundInfo?.id, createRoundSpeakerMutation]
+  );
+
   return {
+    /** 현재 발언자 */
     currentSpeaker,
+    /** 다음 발언자 */
     nextSpeaker,
+    /** 실시간 남은 발언 시간 (초) */
     realTimeRemainingSeconds,
-    updateDebateMutation,
-    createRoundSpeakerMutation,
-    patchRoundSpeakerMutation,
+    /** 토론 업데이트 중 여부 */
+    isUpdating: updateDebateMutation.isPending,
+    /** PRESENTATION 라운드 시작 */
     startPresentationRound,
+    /** 발언 조기 종료 */
+    endPresentation,
+    /** 발언권 전달 (FREE 라운드) */
+    passSpeaker,
   };
 };

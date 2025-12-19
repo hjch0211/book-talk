@@ -1,6 +1,6 @@
 import { AudioActivationBanner, AudioPlayer } from '@src/components';
-import { useDebate } from '@src/hooks';
-import { Suspense, useState } from 'react';
+import { type RoundType, useDebate, useModal } from '@src/hooks';
+import { Suspense } from 'react';
 import { useParams } from 'react-router-dom';
 import MainContainer from '../../components/templates/MainContainer';
 import { DebateHeader } from './_components/DebateHeader';
@@ -12,18 +12,16 @@ import { RoundActions } from './_components/RoundActions';
 import { RoundStartBackdrop } from './_components/RoundStartBackdrop';
 import { DebateContainer } from './style.ts';
 
-type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
-
 interface Props {
   debateId: string | undefined;
 }
 
 function DebatePageContent({ debateId }: Props) {
-  const [showStartModal, setShowStartModal] = useState(false);
+  const { openModal, closeModal } = useModal();
 
   const {
     debate,
-    myMemberData,
+    myMemberInfo,
     currentRoundInfo,
     round,
     websocket,
@@ -34,41 +32,18 @@ function DebatePageContent({ debateId }: Props) {
     handleStartDebate,
   } = useDebate({ debateId });
 
-  const onStartDebateConfirm = () => {
-    setShowStartModal(false);
-    void handleStartDebate();
-  };
-
-  /** PRESENTATION 라운드에서 발언 조기 종료 */
-  const handleEndPresentation = async () => {
-    const currentSpeakerId = debate.currentRound?.currentSpeakerId;
-    if (currentRoundInfo.type !== 'PRESENTATION' || !currentSpeakerId) return;
-
-    try {
-      await round.patchRoundSpeakerMutation.mutateAsync({
-        debateRoundSpeakerId: currentSpeakerId,
-        ended: true,
-      });
-    } catch (error) {
-      console.error('Failed to end presentation:', error);
-    }
-  };
-
-  const handlePassSpeaker = async (memberId: string) => {
-    if (!currentRoundInfo.id) return;
-
-    try {
-      await round.createRoundSpeakerMutation.mutateAsync({
-        debateRoundId: currentRoundInfo.id,
-        nextSpeakerId: memberId,
-      });
-    } catch (error) {
-      console.error('Failed to pass speaker:', error);
-    }
+  const handleOpenStartModal = () => {
+    openModal(StartDebateModal, {
+      onConfirm: () => {
+        closeModal();
+        void handleStartDebate();
+      },
+      isLoading: round.isUpdating,
+    });
   };
 
   if (!debateId) {
-    return <div>Invalid debate ID</div>;
+    return <div>유효하지 않는 id입니다.</div>;
   }
 
   // PENDING 또는 FAILED 상태일 때 스켈레톤 표시
@@ -84,7 +59,7 @@ function DebatePageContent({ debateId }: Props) {
           currentRoundInfo={currentRoundInfo}
           currentSpeaker={round.currentSpeaker}
           debateId={debateId}
-          myAccountId={myMemberData.id}
+          myAccountId={myMemberInfo?.id}
           onChatMessage={websocket.sendChatMessage}
           chat={chat}
           members={debate.members}
@@ -97,28 +72,21 @@ function DebatePageContent({ debateId }: Props) {
           realTimeRemainingSeconds={round.realTimeRemainingSeconds}
           raisedHands={websocket.raisedHands}
           currentRoundType={currentRoundInfo.type}
-          myAccountId={myMemberData.id}
-          onPassSpeaker={handlePassSpeaker}
+          myAccountId={myMemberInfo?.id}
+          onPassSpeaker={round.passSpeaker}
           presentations={debate.presentations}
         />
         <RoundActions
           roundType={currentRoundInfo.type as RoundType}
-          myRole={myMemberData.role || ''}
-          isCurrentSpeaker={round.currentSpeaker?.accountId === myMemberData.id}
-          onStartDebate={() => setShowStartModal(true)}
-          onEndPresentation={handleEndPresentation}
+          myRole={myMemberInfo?.role || ''}
+          isCurrentSpeaker={round.currentSpeaker?.accountId === myMemberInfo?.id}
+          onStartDebate={handleOpenStartModal}
+          onEndPresentation={round.endPresentation}
           onToggleHand={websocket.toggleHand}
-          isMyHandRaised={myMemberData.id ? websocket.isHandRaised(myMemberData.id) : false}
+          isMyHandRaised={myMemberInfo?.id ? websocket.isHandRaised(myMemberInfo.id) : false}
           isVoiceChatJoined={voiceChat.connectionStatus === 'COMPLETED'}
           isVoiceMuted={voiceChat.isMuted}
           onToggleMute={voiceChat.toggleMute}
-        />
-
-        <StartDebateModal
-          open={showStartModal}
-          onClose={() => setShowStartModal(false)}
-          onConfirm={onStartDebateConfirm}
-          isLoading={round.updateDebateMutation.isPending}
         />
 
         <RoundStartBackdrop
@@ -154,7 +122,7 @@ export function DebatePage() {
   const { debateId } = useParams<{ debateId: string }>();
 
   return (
-    <Suspense key={debateId} fallback={<></>}>
+    <Suspense key={debateId} fallback={<DebateSkeleton connectionStatus={'NOT_STARTED'} />}>
       <DebatePageContent debateId={debateId} />
     </Suspense>
   );

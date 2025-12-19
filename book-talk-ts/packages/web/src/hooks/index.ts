@@ -1,4 +1,5 @@
 export { useDebate } from './domain/useDebate';
+export { type RoundType, type CurrentRoundInfo } from '@src/apis/debate';
 export { useDebateChat } from './domain/useDebateChat';
 export { useDebateRound } from './domain/useDebateRound';
 export { useDebateVoiceChat } from './domain/useDebateVoiceChat';

@@ -1,7 +1,6 @@
 import { Backdrop, Box, Typography } from '@mui/material';
+import type { RoundType } from '@src/hooks';
 import type React from 'react';
-
-type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
 interface RoundStartBackdropProps {
   show: boolean;

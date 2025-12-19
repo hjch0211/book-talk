@@ -1,9 +1,8 @@
 import { Stack } from '@mui/material';
+import type { RoundType } from '@src/hooks';
 import raiseHandSvg from '../../../assets/raise-hand.svg';
 import { ActionButton } from '../style.ts';
 import { MicrophoneControlButton } from './MicrophoneControlButton.tsx';
-
-type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
 
 interface RoundActionsProps {
   /** 현재 라운드 타입 */

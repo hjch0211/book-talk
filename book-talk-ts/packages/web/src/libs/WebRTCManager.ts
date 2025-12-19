@@ -114,10 +114,7 @@ export class WebRTCManager {
     if (existingPc) {
       // 이미 연결 중이거나 연결된 상태면 offer 무시
       const connectionState = existingPc.connectionState;
-      if (
-        connectionState === 'connecting' ||
-        connectionState === 'connected'
-      ) {
+      if (connectionState === 'connecting' || connectionState === 'connected') {
         return;
       }
     }

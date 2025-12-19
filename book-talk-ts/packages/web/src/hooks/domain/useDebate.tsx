@@ -1,26 +1,12 @@
 import { meQueryOption } from '@src/apis/account';
-import { findOneDebateQueryOptions, joinDebate } from '@src/apis/debate';
+import { findOneDebateQueryOptions, joinDebate, type RoundType } from '@src/apis/debate';
 import { useDebateChat, useDebateRound, useDebateVoiceChat, useDebateWebSocket } from '@src/hooks';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-type RoundType = 'PREPARATION' | 'PRESENTATION' | 'FREE';
-
 interface Props {
   debateId?: string;
-}
-
-export interface CurrentRoundInfo {
-  id: number | null;
-  type: 'PRESENTATION' | 'FREE' | 'PREPARATION';
-  currentPresentationId?: string;
-  currentSpeakerId?: number | null;
-  currentSpeakerAccountId?: string | null;
-  createdAt: string | null;
-  nextSpeakerAccountId?: string | null;
-  endedAt?: string | null;
-  isEditable: boolean;
 }
 
 /**
@@ -35,11 +21,9 @@ export interface CurrentRoundInfo {
 export const useDebate = ({ debateId }: Props) => {
   const queryClient = useQueryClient();
   const navigate = useNavigate();
-  const { data: debate } = useSuspenseQuery(findOneDebateQueryOptions(debateId));
   const { data: _me } = useSuspenseQuery(meQueryOption);
+  const { data: debate } = useSuspenseQuery(findOneDebateQueryOptions(debateId, _me?.id));
   const joinAttempted = useRef<Set<string>>(new Set());
-
-  const myMemberInfo = debate.members.find((m) => m.id === _me?.id);
 
   /** RoundStartBackdrop UI 상태 */
   const [showRoundStartBackdrop, setShowRoundStartBackdrop] = useState<{
@@ -79,56 +63,29 @@ export const useDebate = ({ debateId }: Props) => {
     if (
       debateId &&
       _me?.id &&
-      !myMemberInfo &&
+      !debate.myMemberInfo &&
       !joinDebateMutation.isPending &&
       !joinAttempted.current.has(`${debateId}-${_me.id}`)
     ) {
       joinAttempted.current.add(`${debateId}-${_me.id}`);
       joinDebateMutation.mutate(debateId);
     }
-    // joinDebateMutation은 의도적으로 의존성에서 제외 (무한 리렌더링 방지)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debateId, _me?.id, myMemberInfo]);
+  }, [
+    debateId,
+    _me?.id,
+    debate.myMemberInfo,
+    joinDebateMutation.isPending,
+    joinDebateMutation.mutate,
+  ]);
 
-  const myMemberData = {
-    id: myMemberInfo?.id,
-    role: myMemberInfo?.role,
-  };
-
-  /** 라운드 시작 전 상태를 포함한 라운드 정보 */
-  const currentRoundInfo: CurrentRoundInfo = useMemo(() => {
-    // 기존 라운드가 있으면 그대로 반환
-    if (debate.currentRound) {
-      const currentSpeakerPresentationId = debate.presentations.find(
-        (p) => p.accountId === debate.currentRound?.currentSpeakerAccountId
-      )?.id;
-      return {
-        ...debate.currentRound,
-        currentPresentationId: currentSpeakerPresentationId,
-        isEditable: false,
-      };
-    }
-
-    // 0라운드 (준비 단계)
-    const myPresentation = debate.presentations.find((p) => p.accountId === _me?.id);
-    return {
-      id: null,
-      type: 'PREPARATION' as const,
-      currentPresentationId: myPresentation?.id,
-      currentSpeakerId: null,
-      createdAt: null,
-      isEditable: true,
-    };
-  }, [debate.currentRound, debate.presentations, _me?.id]);
-
-  const round = useDebateRound(debate, debateId, currentRoundInfo);
+  const round = useDebateRound(debate, debateId, debate.currentRoundInfo);
 
   /** WebSocket 연결 및 WebRTC 음성 채팅 */
   const websocket = useDebateWebSocket(
     debateId || null,
     debate.members,
-    myMemberData.id,
-    currentRoundInfo.type === 'FREE',
+    debate.myMemberInfo?.id,
+    debate.currentRoundInfo.type === 'FREE',
     {
       onRoundStartBackdrop: handleRoundStartBackdrop,
       onVoiceChatError: (err) => {
@@ -158,13 +115,18 @@ export const useDebate = ({ debateId }: Props) => {
   /** 토론 진행 중 입장 시 자동 voice chat 참여 */
   useEffect(() => {
     if (
-      currentRoundInfo.type !== 'PREPARATION' &&
+      debate.currentRoundInfo.type !== 'PREPARATION' &&
       websocket.isDebateJoined &&
       websocket.voiceConnectionStatus === 'NOT_STARTED'
     ) {
       void websocket.joinVoiceChat();
     }
-  }, [currentRoundInfo.type, websocket.isDebateJoined, websocket.voiceConnectionStatus, websocket.joinVoiceChat]);
+  }, [
+    debate.currentRoundInfo.type,
+    websocket.isDebateJoined,
+    websocket.voiceConnectionStatus,
+    websocket.joinVoiceChat,
+  ]);
 
   /** 토론 시작 */
   const handleStartDebate = useCallback(async () => {
@@ -176,23 +138,28 @@ export const useDebate = ({ debateId }: Props) => {
     if (!isAlone) {
       void websocket.joinVoiceChat();
     }
-  }, [debateId, websocket.onlineAccountIds.size, round.startPresentationRound, websocket.joinVoiceChat]);
+  }, [
+    debateId,
+    websocket.onlineAccountIds.size,
+    round.startPresentationRound,
+    websocket.joinVoiceChat,
+  ]);
 
   /** 채팅 기능 (FREE 라운드에서만 동작) */
   const chat = useDebateChat(
     debateId,
     websocket.sendChatMessage,
-    currentRoundInfo.type === 'FREE',
-    !!myMemberInfo
+    debate.currentRoundInfo.type === 'FREE',
+    !!debate.myMemberInfo
   );
 
   return {
     /** 토론 기본 정보 */
     debate,
-    /** 내 멤버 정보 (id, role) */
-    myMemberData,
+    /** 내 멤버 정보 */
+    myMemberInfo: debate.myMemberInfo,
     /** 현재 라운드 정보 */
-    currentRoundInfo,
+    currentRoundInfo: debate.currentRoundInfo,
     /** 라운드 & 발언자 관리 */
     round,
     /** WebSocket 연결 및 실시간 통신 */
