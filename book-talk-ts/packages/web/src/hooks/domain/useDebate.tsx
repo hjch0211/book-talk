@@ -1,9 +1,10 @@
 import { meQueryOption } from '@src/apis/account';
-import { findOneDebateQueryOptions, joinDebate, type RoundType } from '@src/apis/debate';
+import { findOneDebateQueryOptions, joinDebate } from '@src/apis/debate';
 import { useDebateChat, useDebateRound, useDebateVoiceChat, useDebateWebSocket } from '@src/hooks';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useEffectEvent, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useDebateRoundStartBackdrop } from './useDebateRoundStartBackdrop';
 
 interface Props {
   debateId?: string;
@@ -23,27 +24,6 @@ export const useDebate = ({ debateId }: Props) => {
   const navigate = useNavigate();
   const { data: _me } = useSuspenseQuery(meQueryOption);
   const { data: debate } = useSuspenseQuery(findOneDebateQueryOptions(debateId, _me?.id));
-  const joinAttempted = useRef<Set<string>>(new Set());
-
-  /** RoundStartBackdrop UI 상태 */
-  const [showRoundStartBackdrop, setShowRoundStartBackdrop] = useState<{
-    show: boolean;
-    type: RoundType | null;
-  }>({ show: false, type: null });
-
-  const closeRoundStartBackdrop = useCallback(() => {
-    setShowRoundStartBackdrop({ show: false, type: null });
-  }, []);
-
-  const handleRoundStartBackdrop = useCallback(
-    (roundType: RoundType) => {
-      setShowRoundStartBackdrop({ show: true, type: roundType });
-      setTimeout(() => {
-        closeRoundStartBackdrop();
-      }, 5000);
-    },
-    [closeRoundStartBackdrop]
-  );
 
   /** 토론 참여 */
   const joinDebateMutation = useMutation({
@@ -58,27 +38,21 @@ export const useDebate = ({ debateId }: Props) => {
     },
   });
 
-  /** 멤버가 아니면 자동으로 가입 시도 (한 번만) */
+  const onAutoJoin = useEffectEvent((targetDebateId: string) => {
+    joinDebateMutation.mutate(targetDebateId);
+  });
+
+  /** 멤버가 아니면 자동으로 가입 시도 */
   useEffect(() => {
-    if (
-      debateId &&
-      _me?.id &&
-      !debate.myMemberInfo &&
-      !joinDebateMutation.isPending &&
-      !joinAttempted.current.has(`${debateId}-${_me.id}`)
-    ) {
-      joinAttempted.current.add(`${debateId}-${_me.id}`);
-      joinDebateMutation.mutate(debateId);
+    if (debateId && _me?.id && !debate.myMemberInfo && !joinDebateMutation.isPending) {
+      onAutoJoin(debateId);
     }
-  }, [
-    debateId,
-    _me?.id,
-    debate.myMemberInfo,
-    joinDebateMutation.isPending,
-    joinDebateMutation.mutate,
-  ]);
+  }, [debateId, _me?.id, debate.myMemberInfo, joinDebateMutation.isPending]);
 
   const round = useDebateRound(debate, debateId, debate.currentRoundInfo);
+
+  /** 라운드 시작 백드롭 UI */
+  const roundStartBackdrop = useDebateRoundStartBackdrop();
 
   /** WebSocket 연결 및 WebRTC 음성 채팅 */
   const websocket = useDebateWebSocket(
@@ -87,7 +61,7 @@ export const useDebate = ({ debateId }: Props) => {
     debate.myMemberInfo?.id,
     debate.currentRoundInfo.type === 'FREE',
     {
-      onRoundStartBackdrop: handleRoundStartBackdrop,
+      onRoundStartBackdrop: roundStartBackdrop.open,
       onVoiceChatError: (err) => {
         console.error('Voice chat error:', err);
       },
@@ -112,6 +86,10 @@ export const useDebate = ({ debateId }: Props) => {
     [websocket, voiceChatUI]
   );
 
+  const onAutoJoinVoiceChat = useEffectEvent(() => {
+    void websocket.joinVoiceChat();
+  });
+
   /** 토론 진행 중 입장 시 자동 voice chat 참여 */
   useEffect(() => {
     if (
@@ -119,14 +97,9 @@ export const useDebate = ({ debateId }: Props) => {
       websocket.isDebateJoined &&
       websocket.voiceConnectionStatus === 'NOT_STARTED'
     ) {
-      void websocket.joinVoiceChat();
+      onAutoJoinVoiceChat();
     }
-  }, [
-    debate.currentRoundInfo.type,
-    websocket.isDebateJoined,
-    websocket.voiceConnectionStatus,
-    websocket.joinVoiceChat,
-  ]);
+  }, [debate.currentRoundInfo.type, websocket.isDebateJoined, websocket.voiceConnectionStatus]);
 
   /** 토론 시작 */
   const handleStartDebate = useCallback(async () => {
@@ -168,10 +141,8 @@ export const useDebate = ({ debateId }: Props) => {
     chat,
     /** 음성 채팅 기능 */
     voiceChat,
-    /** 라운드 시작 백드롭 UI 상태 */
-    showRoundStartBackdrop,
-    /** 라운드 시작 백드롭 닫기 */
-    closeRoundStartBackdrop,
+    /** 라운드 시작 백드롭 UI */
+    roundStartBackdrop,
     /** 토론 시작 */
     handleStartDebate,
   };

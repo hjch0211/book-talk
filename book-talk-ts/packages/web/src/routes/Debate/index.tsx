@@ -27,8 +27,7 @@ function DebatePageContent({ debateId }: Props) {
     websocket,
     voiceChat,
     chat,
-    showRoundStartBackdrop,
-    closeRoundStartBackdrop,
+    roundStartBackdrop,
     handleStartDebate,
   } = useDebate({ debateId });
 
@@ -90,9 +89,9 @@ function DebatePageContent({ debateId }: Props) {
         />
 
         <RoundStartBackdrop
-          show={showRoundStartBackdrop.show}
-          roundType={showRoundStartBackdrop.type}
-          onClose={closeRoundStartBackdrop}
+          show={roundStartBackdrop.show}
+          roundType={roundStartBackdrop.type}
+          onClose={roundStartBackdrop.close}
         />
 
         {/* 음성 채팅 (PREPARATION 라운드 제외) */}
