@@ -21,6 +21,7 @@ interface CacheClient {
     fun hashSetAll(key: String, map: Map<String, String>, ttl: Duration? = null)
     fun hashGet(key: String, field: String): String?
     fun hashGetAll(key: String): Map<String, String>
+    fun hashDelete(key: String, field: String)
 }
 
 class RedisCacheClient(
@@ -106,6 +107,14 @@ class RedisCacheClient(
             emptyMap()
         }
     }
+
+    override fun hashDelete(key: String, field: String) {
+        try {
+            redisTemplate.opsForHash<String, String>().delete(key, field)
+        } catch (e: Exception) {
+            logger.warn(e) { "Redis hashDelete 실패 - key: $key, field: $field" }
+        }
+    }
 }
 
 class NoOpCacheClient : CacheClient {
@@ -162,5 +171,9 @@ class NoOpCacheClient : CacheClient {
     override fun hashGetAll(key: String): Map<String, String> {
         logger.warn { "[NoOp] hashGetAll - key: $key" }
         return emptyMap()
+    }
+
+    override fun hashDelete(key: String, field: String) {
+        logger.warn { "[NoOp] hashDelete - key: $key, field: $field" }
     }
 }

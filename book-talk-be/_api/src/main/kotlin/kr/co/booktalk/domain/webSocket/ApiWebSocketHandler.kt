@@ -7,6 +7,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kr.co.booktalk.cache.CacheClient
+import kr.co.booktalk.cache.CacheProperties
 import kr.co.booktalk.domain.debate.*
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.CloseStatus
@@ -19,15 +21,14 @@ import java.util.concurrent.ConcurrentHashMap
 @Component
 class ApiWebSocketHandler(
     private val presenceService: PresenceService,
+    private val cacheClient: CacheClient,
+    private val cacheProperties: CacheProperties,
     private val objectMapper: ObjectMapper
 ) : TextWebSocketHandler() {
     private val logger = KotlinLogging.logger {}
 
-    /** WebSocketSession을 in-memory로 관리 */
+    /** WebSocketSession을 in-memory로 관리 [Todo] 영속화 */
     private val localSessions = ConcurrentHashMap<String, WebSocketSession>()
-
-    /** 토론방별 손든 사용자 정보를 in-memory로 관리 (debateId -> (accountId -> RaisedHandInfo)) */
-    private val raisedHands = ConcurrentHashMap<String, ConcurrentHashMap<String, RaisedHandInfo>>()
 
     /** 비동기 작업용 CoroutineScope */
     private val scope = CoroutineScope(Dispatchers.Default)
@@ -318,23 +319,26 @@ class ApiWebSocketHandler(
         }
 
         try {
-            val debateHands = raisedHands.getOrPut(request.debateId) { ConcurrentHashMap() }
+            val handsKey = cacheProperties.handRaise.handsKey(request.debateId)
+            val existing = cacheClient.hashGet(handsKey, authenticatedAccountId)
 
-            if (debateHands.containsKey(authenticatedAccountId)) {
-                // 손 내리기: 메모리에서 삭제
-                debateHands.remove(authenticatedAccountId)
+            if (existing != null) {
+                // 손 내리기: Redis에서 삭제
+                cacheClient.hashDelete(handsKey, authenticatedAccountId)
             } else {
-                // 손들기: 메모리에 저장
-                debateHands[authenticatedAccountId] = RaisedHandInfo(
+                // 손들기: Redis에 저장
+                val handInfo = RaisedHandInfo(
                     accountId = authenticatedAccountId,
                     accountName = request.accountName,
                     raisedAt = System.currentTimeMillis()
                 )
+                cacheClient.hashSet(handsKey, authenticatedAccountId, objectMapper.writeValueAsString(handInfo))
+                cacheClient.expire(handsKey, cacheProperties.handRaise.handRaiseTtl)
 
                 // 3초 후 자동으로 손 내리기
                 scope.launch {
                     delay(3000)
-                    debateHands.remove(authenticatedAccountId)
+                    cacheClient.hashDelete(handsKey, authenticatedAccountId)
                     publishHandRaiseUpdate(request.debateId)
                 }
             }
@@ -350,15 +354,22 @@ class ApiWebSocketHandler(
     /** 손들기 상태 업데이트를 토론방 모든 참가자에게 브로드캐스트합니다. */
     private fun publishHandRaiseUpdate(debateId: String) {
         try {
-            // 메모리에서 현재 손든 사용자 목록 조회
-            val debateHands = raisedHands[debateId] ?: emptyMap()
+            // Redis에서 현재 손든 사용자 목록 조회
+            val handsKey = cacheProperties.handRaise.handsKey(debateId)
+            val handsMap = cacheClient.hashGetAll(handsKey)
 
-            val raisedHandsList = debateHands.values.map { handInfo ->
-                WS_HandRaiseUpdateResponse.RaisedHandInfo(
-                    accountId = handInfo.accountId,
-                    accountName = handInfo.accountName,
-                    raisedAt = handInfo.raisedAt
-                )
+            val raisedHandsList = handsMap.values.mapNotNull { json ->
+                try {
+                    val handInfo = objectMapper.readValue<RaisedHandInfo>(json)
+                    WS_HandRaiseUpdateResponse.RaisedHandInfo(
+                        accountId = handInfo.accountId,
+                        accountName = handInfo.accountName,
+                        raisedAt = handInfo.raisedAt
+                    )
+                } catch (e: Exception) {
+                    logger.warn(e) { "손들기 정보 파싱 실패: $json" }
+                    null
+                }
             }
 
             val response = WS_HandRaiseUpdateResponse(
