@@ -50,7 +50,16 @@ function DebatePageContent({ debateId }: Props) {
     connection.voiceConnectionStatus === 'PENDING' ||
     connection.voiceConnectionStatus === 'FAILED'
   ) {
-    return <DebateSkeleton connectionStatus={connection.voiceConnectionStatus} />;
+    return (
+      <>
+        <RoundStartBackdrop
+          show={roundStartBackdrop.show}
+          roundType={roundStartBackdrop.type}
+          onClose={roundStartBackdrop.close}
+        />
+        <DebateSkeleton connectionStatus={connection.voiceConnectionStatus} />
+      </>
+    );
   }
 
   return (
