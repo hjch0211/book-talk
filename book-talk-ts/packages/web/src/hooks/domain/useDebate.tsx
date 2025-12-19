@@ -86,13 +86,7 @@ export const useDebate = ({ debateId }: Props) => {
   /** 토론 시작 */
   const handleStartDebate = useEffectEvent(async () => {
     if (!debateId) return;
-
     await round.startPresentationRound();
-
-    const isAlone = connection.onlineMembers.length <= 1;
-    if (!isAlone) {
-      void connection.joinVoiceChat();
-    }
   });
 
   /** 채팅 기능 (FREE 라운드에서만 동작) */

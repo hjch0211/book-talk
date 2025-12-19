@@ -100,13 +100,13 @@ export const useDebateRealtimeConnection = (props: Props) => {
   const joinVoiceChat = useEffectEvent(async () => {
     if (voiceConnectionStatus !== 'NOT_STARTED' || !debate.myMemberInfo?.id || !debateId) return;
 
+    setVoiceConnectionStatus('PENDING');
+
     const stream = await webRTC.startLocalStream({ audio: true, video: false });
     if (!stream) {
       setVoiceConnectionStatus('FAILED');
       return;
     }
-
-    setVoiceConnectionStatus('PENDING');
 
     wsClientRef.current?.sendVoiceMessage({
       type: 'C_VOICE_JOIN',
