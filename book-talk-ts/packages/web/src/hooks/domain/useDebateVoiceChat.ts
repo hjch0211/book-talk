@@ -1,8 +1,5 @@
 import { useCallback, useState } from 'react';
 
-/** Voice chat 연결 상태 */
-export type VoiceConnectionStatus = 'NOT_STARTED' | 'PENDING' | 'COMPLETED' | 'FAILED';
-
 interface Props {
   /** 로컬 오디오 스트림 */
   localStream: MediaStream | null;

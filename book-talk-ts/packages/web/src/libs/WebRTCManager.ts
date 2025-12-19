@@ -24,7 +24,7 @@ const DEFAULT_ICE_SERVERS: RTCIceServer[] = [
 const MAX_RETRIES = 5;
 
 /**
- * WebRTC Mesh 연결 관리 클래스 (with Trickle ICE)
+ * WebRTC Mesh 연결 관리 클래스 (with Trickle ICE + Perfect Negotiation)
  */
 export class WebRTCManager {
   /** PeerConnection Map (peerId : connection) */
@@ -38,6 +38,12 @@ export class WebRTCManager {
 
   /** 전송 대기 중인 ICE Candidate (remoteDescription 설정 전 수집) */
   private pendingIceCandidates = new Map<string, RTCIceCandidateInit[]>();
+
+  /** Offer 생성 중 여부 (peerId : boolean) */
+  private makingOffer = new Map<string, boolean>();
+
+  /** Impolite peer가 상대 Offer를 무시했는지 여부 (peerId : boolean) */
+  private ignoreOffer = new Map<string, boolean>();
 
   constructor(
     /** 내 계정 ID */
@@ -83,6 +89,11 @@ export class WebRTCManager {
     }
   }
 
+  /** Polite peer 여부 (낮은 ID가 Polite) */
+  private isPolite(peerId: string): boolean {
+    return this.myId < peerId;
+  }
+
   /** Offer 생성 (연결 시작) */
   async createOffer(peerId: string): Promise<RTCSessionDescriptionInit | undefined> {
     if (!this._localStream) {
@@ -90,18 +101,15 @@ export class WebRTCManager {
       return;
     }
 
-    // 이미 연결 중이거나 연결된 상태면 무시
     const existingPc = this.peerConnections.get(peerId);
-    if (existingPc) {
-      const connectionState = existingPc.connectionState;
-      if (connectionState === 'connecting' || connectionState === 'connected') {
-        console.log(`[${peerId}] 이미 연결 중 (${connectionState}), offer 생성 건너뜀`);
-        return;
-      }
+    if (existingPc?.connectionState === 'connected') {
+      console.log(`[${peerId}] 이미 연결됨, offer 생성 건너뜀`);
+      return;
     }
 
     this.cleanupPeerConnection(peerId);
     this.pendingIceCandidates.set(peerId, []);
+    this.ignoreOffer.set(peerId, false);
 
     const pc = await this.createPeerConnection(peerId);
 
@@ -109,10 +117,14 @@ export class WebRTCManager {
       pc.addTrack(track, this._localStream!);
     });
 
-    const offer = await pc.createOffer();
-    await pc.setLocalDescription(offer);
-
-    return offer;
+    try {
+      this.makingOffer.set(peerId, true);
+      const offer = await pc.createOffer();
+      await pc.setLocalDescription(offer);
+      return offer;
+    } finally {
+      this.makingOffer.set(peerId, false);
+    }
   }
 
   /** Offer 수신 → Answer 반환 */
@@ -121,16 +133,31 @@ export class WebRTCManager {
     offer: RTCSessionDescriptionInit
   ): Promise<RTCSessionDescriptionInit | undefined> {
     const existingPc = this.peerConnections.get(peerId);
-    if (existingPc) {
-      // 이미 연결 중이거나 연결된 상태면 offer 무시
-      const connectionState = existingPc.connectionState;
-      if (connectionState === 'connecting' || connectionState === 'connected') {
-        return;
-      }
+
+    if (existingPc?.connectionState === 'connected') {
+      return;
     }
 
+    const makingOffer = this.makingOffer.get(peerId) ?? false;
+    const offerCollision =
+      makingOffer || (existingPc != null && existingPc.signalingState !== 'stable');
+
+    if (offerCollision) {
+      const polite = this.isPolite(peerId);
+
+      if (!polite) {
+        // Impolite: 상대 Offer 무시, 내 Offer 유지
+        this.ignoreOffer.set(peerId, true);
+        return;
+      }
+
+      // Polite: 기존 연결 정리 후 상대 Offer 수락 (rollback)
+    }
+
+    // 기존 연결 정리 및 새 연결 생성
     this.cleanupPeerConnection(peerId);
     this.pendingIceCandidates.set(peerId, []);
+    this.ignoreOffer.set(peerId, false);
 
     const pc = await this.createPeerConnection(peerId);
 
@@ -164,7 +191,10 @@ export class WebRTCManager {
     try {
       await pc.addIceCandidate(new RTCIceCandidate(candidate));
     } catch (err) {
-      console.error('ICE Candidate 추가 실패:', err);
+      // Impolite peer가 무시한 Offer의 ICE Candidate 에러는 무시
+      if (!this.ignoreOffer.get(peerId)) {
+        console.error('ICE Candidate 추가 실패:', err);
+      }
     }
   }
 
@@ -173,6 +203,9 @@ export class WebRTCManager {
     this.peerConnections.forEach((pc) => pc.close());
     this.peerConnections.clear();
     this.retryCount.clear();
+    this.pendingIceCandidates.clear();
+    this.makingOffer.clear();
+    this.ignoreOffer.clear();
 
     this._localStream?.getTracks().forEach((track) => track.stop());
     this._localStream = null;
@@ -188,6 +221,8 @@ export class WebRTCManager {
       this.peerConnections.delete(peerId);
     }
     this.pendingIceCandidates.delete(peerId);
+    this.makingOffer.delete(peerId);
+    this.ignoreOffer.delete(peerId);
   }
 
   /** 수집된 ICE Candidate 전송 */

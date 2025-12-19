@@ -118,4 +118,8 @@ sequenceDiagram
 
     note over p1, p2: 더 좋은 candidate pair 발견 시 자동 전환
     note over p1, p2: 연결 실패 시 최대 5번까지 C_VOICE_JOIN 재시도
+
+    note over p1, p2: [Perfect Negotiation] Offer Collision 발생 시
+    note over p1, p2: - Polite (낮은 ID): 상대 Offer 수락, 내 Offer rollback
+    note over p1, p2: - Impolite (높은 ID): 상대 Offer 무시, 내 Offer 유지
 ```
