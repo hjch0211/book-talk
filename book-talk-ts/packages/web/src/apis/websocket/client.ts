@@ -78,7 +78,6 @@ export class DebateWebSocketClient {
         ...message,
         debateId: this.debateId,
       };
-      console.log('📤 WebSocket 전송:', message.type, voiceMessage);
       this.ws.send(JSON.stringify(voiceMessage));
     } else {
       console.error('❌ WebSocket 전송 실패:', {
@@ -124,12 +123,10 @@ export class DebateWebSocketClient {
     if (!this.debateId) return;
 
     const wsUrl = this.getWebSocketUrl();
-    console.log('Connecting to WebSocket:', wsUrl);
 
     this.ws = new WebSocket(wsUrl);
 
     this.ws.onopen = () => {
-      console.log('Debate WebSocket connected, joining debate');
       this.reconnectAttempts = 0;
       this.handlers.onConnectionStatus?.(true);
       this.sendJoinMessage();
@@ -139,15 +136,13 @@ export class DebateWebSocketClient {
       try {
         const rawMessage = JSON.parse(event.data);
         const message = WebSocketMessageSchema.parse(rawMessage);
-        console.log('WebSocket message received:', message);
         this.handleMessage(message);
       } catch (error) {
         console.error('Failed to parse WebSocket message:', error);
       }
     };
 
-    this.ws.onclose = (event) => {
-      console.log('Debate WebSocket closed:', event.code, event.reason);
+    this.ws.onclose = () => {
       this.handlers.onConnectionStatus?.(false);
       this.attemptReconnect();
     };
@@ -176,7 +171,6 @@ export class DebateWebSocketClient {
             accountId: payload.sub,
             accountName: payload.name || 'User',
           };
-          console.log('Sending C_JOIN_DEBATE message:', joinMessage);
 
           // 약간의 지연 후 메시지 전송
           setTimeout(() => {
@@ -205,25 +199,18 @@ export class DebateWebSocketClient {
         }
         break;
       case 'S_JOIN_SUCCESS':
-        console.log('Successfully joined debate:', message);
         if (this.handlers.onJoinSuccess) {
           this.handlers.onJoinSuccess();
         }
         break;
       case 'S_HEARTBEAT_ACK':
-        console.log('Heartbeat acknowledged:', message);
         break;
       case 'S_DEBATE_ROUND_UPDATE':
         if (this.handlers.onDebateRoundUpdate) {
-          console.log('Debate round updated:', message);
           this.handlers.onDebateRoundUpdate(message);
 
           // currentSpeaker 정보가 있으면 SPEAKER_UPDATE로도 처리
           if (this.handlers.onSpeakerUpdate && message.currentSpeaker) {
-            console.log(
-              'Processing currentSpeaker from S_DEBATE_ROUND_UPDATE:',
-              message.currentSpeaker
-            );
             const speakerUpdate: WS_SpeakerUpdateResponse = {
               type: 'S_SPEAKER_UPDATE',
               debateId: message.debateId,
@@ -256,12 +243,10 @@ export class DebateWebSocketClient {
         break;
       case 'S_CHAT_MESSAGE':
         if (this.handlers.onChatMessage) {
-          console.log('Chat message received:', message.chatId);
           this.handlers.onChatMessage(message.chatId);
         }
         break;
       default:
-        console.log('Unknown message type:', message.type);
     }
   }
 
@@ -270,9 +255,6 @@ export class DebateWebSocketClient {
       this.reconnectAttempts++;
 
       setTimeout(() => {
-        console.log(
-          `Attempting to reconnect... (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
-        );
         this.establishConnection();
       }, this.reconnectDelay);
     } else {

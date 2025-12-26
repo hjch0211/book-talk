@@ -103,7 +103,6 @@ export class WebRTCManager {
 
     const existingPc = this.peerConnections.get(peerId);
     if (existingPc?.connectionState === 'connected') {
-      console.log(`[${peerId}] 이미 연결됨, offer 생성 건너뜀`);
       return;
     }
 
@@ -287,7 +286,6 @@ export class WebRTCManager {
 
     /** Connection 변경 시 */
     pc.onconnectionstatechange = () => {
-      console.log(`🔗 [${peerId}] connectionState: ${pc.connectionState}`);
       if (pc.connectionState === 'connected') {
         this.retryCount.delete(peerId);
         this.onPeerConnected(peerId);

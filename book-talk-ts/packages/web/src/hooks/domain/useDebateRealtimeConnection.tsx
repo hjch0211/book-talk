@@ -10,7 +10,6 @@ import {
   type RaisedHandInfo,
   type WebSocketMessage,
   type WS_DebateRoundUpdateResponse,
-  type WS_SpeakerUpdateResponse,
 } from '@src/apis/websocket';
 import { useWebRTC } from '@src/hooks';
 import { useQueryClient } from '@tanstack/react-query';
@@ -87,9 +86,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
     },
     onPeerConnected: (peerId) => {
       setOnlineMembers((prev) =>
-        prev.map((member) =>
-          member.id === peerId ? { ...member, isConnecting: false } : member
-        )
+        prev.map((member) => (member.id === peerId ? { ...member, isConnecting: false } : member))
       );
       const newConnectedPeerIds = new Set([...connectedPeerIds, peerId]);
       setConnectedPeerIds(newConnectedPeerIds);
@@ -103,9 +100,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
     },
     onPeerConnecting: (peerId) => {
       setOnlineMembers((prev) =>
-        prev.map((member) =>
-          member.id === peerId ? { ...member, isConnecting: true } : member
-        )
+        prev.map((member) => (member.id === peerId ? { ...member, isConnecting: true } : member))
       );
     },
   });
@@ -198,10 +193,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
 
   /** 온라인 멤버 목록 업데이트 */
   const onOnlineMembersUpdate = useEffectEvent((onlineIds: Set<string>) => {
-    console.log('Received online account IDs:', onlineIds);
-    const connectingIds = new Set(
-      onlineMembers.filter((m) => m.isConnecting).map((m) => m.id)
-    );
+    const connectingIds = new Set(onlineMembers.filter((m) => m.isConnecting).map((m) => m.id));
 
     const members = debate.members
       .filter((member) => onlineIds.has(member.id))
@@ -227,8 +219,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
   });
 
   /** 발언자 업데이트 */
-  const onSpeakerUpdate = useEffectEvent((speakerInfo: WS_SpeakerUpdateResponse) => {
-    console.log('Speaker updated via WebSocket:', speakerInfo);
+  const onSpeakerUpdate = useEffectEvent(() => {
     if (debateId) {
       void queryClient.invalidateQueries({
         queryKey: findOneDebateQueryOptions(debateId).queryKey,
@@ -251,8 +242,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
   });
 
   /** 채팅 메시지 수신 */
-  const onChatMessage = useEffectEvent((chatId: number) => {
-    console.log('Received chat message:', chatId);
+  const onChatMessage = useEffectEvent(() => {
     if (debateId) {
       void queryClient.invalidateQueries({
         queryKey: getChatsQueryOptions(debateId, debate.currentRoundInfo.type === 'FREE', true)
@@ -270,19 +260,15 @@ export const useDebateRealtimeConnection = (props: Props) => {
     wsClient.connect(debateId, {
       onOnlineMembersUpdate,
       onConnectionStatus: (connected: boolean) => {
-        console.log('Connection status changed:', connected);
         setIsConnected(connected);
         if (!connected) {
-          console.log('🔌 WebSocket disconnected - resetting debate join status');
           setIsDebateJoined(false);
         }
       },
       onJoinSuccess: () => {
-        console.log('Debate join success - ready for voice chat');
         setIsDebateJoined(true);
       },
       onHandRaiseUpdate: (hands: RaisedHandInfo[]) => {
-        console.log('Received raised hands update:', hands);
         setRaisedHands(hands);
       },
       onSpeakerUpdate,
@@ -302,7 +288,6 @@ export const useDebateRealtimeConnection = (props: Props) => {
     if (!isConnected || !wsClientRef.current) return;
 
     const intervalId = window.setInterval(() => {
-      console.log('Sending heartbeat...');
       wsClientRef.current?.sendHeartbeat();
     }, 30000);
 
