@@ -5,17 +5,16 @@ const hasSendableContent = (doc?: JSONContent | null): boolean => {
   if (!doc || !doc.content) return false;
 
   return doc.content.some((node) => {
-    if (node.type === 'paragraph') {
-      return (
-        node.content?.some((child) => {
-          if (child.type !== 'text') {
-            return true;
-          }
-          return !!child.text?.trim();
-        }) ?? false
-      );
-    }
-    return true;
+    if (node.type !== 'paragraph') return true;
+
+    return (
+      node.content?.some((child) => {
+        if (child.type !== 'text') {
+          return true;
+        }
+        return !!child.text?.trim();
+      }) ?? false
+    );
   });
 };
 
@@ -32,7 +31,6 @@ export const createEnterToSendExtension = (
 ) =>
   Extension.create({
     name: 'enterToSend',
-
     // StarterKit(100)보다 높고 SlashCommand(200)보다 낮게 설정
     priority: 150,
 
@@ -46,7 +44,6 @@ export const createEnterToSendExtension = (
           const json = this.editor.getJSON();
           if (!hasSendableContent(json)) return false;
 
-          // JSON을 문자열로 변환하여 전송
           onSend(JSON.stringify(json));
           this.editor.commands.clearContent();
 
@@ -57,7 +54,7 @@ export const createEnterToSendExtension = (
 
           return true;
         },
-        // Shift+Enter는 기본 동작 (줄바꿈)
+        /** Shift+Enter는 기본 동작 (줄바꿈) */
         'Shift-Enter': () => false,
       };
     },

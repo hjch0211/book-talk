@@ -47,7 +47,7 @@ export function ChatMessage({ chat, isMyMessage, members, presentations }: ChatM
 
   const editor = useEditor({
     extensions: [
-      createMentionExtension(members, handleMentionClick, false), // 읽기 전용, 클릭 가능
+      createMentionExtension(members, handleMentionClick),
       StarterKit.configure({ heading: false }),
       Heading.configure({ levels: [1] }),
       ImageWithPaste.configure({

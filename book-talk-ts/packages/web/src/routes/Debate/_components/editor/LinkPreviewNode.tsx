@@ -9,10 +9,10 @@ import {
   Link,
   Typography,
 } from '@mui/material';
+import type { FetchOpenGraphResponse } from '@src/apis/presentation';
+import { fetchOpenGraph } from '@src/apis/presentation';
 import { type NodeViewProps, NodeViewWrapper } from '@tiptap/react';
 import { useEffect, useState } from 'react';
-import type { FetchOpenGraphResponse } from '../../../../apis/presentation';
-import { fetchOpenGraph } from '../../../../apis/presentation';
 
 interface LinkPreviewAttrs {
   url: string;

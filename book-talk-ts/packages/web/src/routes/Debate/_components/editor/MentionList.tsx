@@ -12,14 +12,14 @@ interface MentionListProps {
 }
 
 const MentionSuggestionsContainer = styled('div')`
-    background: white;
-    border: 1px solid #E2E8F0;
-    border-radius: 8px;
-    box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.1);
-    padding: 8px 0;
-    max-height: 200px;
-    overflow-y: auto;
-    z-index: 1000;
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 8px 0;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
 `;
 
 const MentionItemButton = styled('button')<{ $isSelected: boolean }>`
@@ -64,7 +64,7 @@ export const MentionList = forwardRef<any, MentionListProps>((props, ref) => {
 
   useEffect(() => {
     setSelectedIndex(0);
-  }, [props.items]);
+  }, []);
 
   useImperativeHandle(ref, () => ({
     onKeyDown: ({ event }: any) => {

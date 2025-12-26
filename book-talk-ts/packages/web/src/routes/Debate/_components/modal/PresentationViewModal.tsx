@@ -20,53 +20,53 @@ interface Props {
 }
 
 const ModalContainer = styled(Box)`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 0px 80px 80px;
-    position: relative;
-    width: 1020px;
-    background: #FFFFFF;
-    box-shadow: 0px 2px 50px 10px #7B7B7B;
-    border-radius: 24px;
-    outline: none;
-    overflow-y: auto;
-    overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 80px 80px;
+  position: relative;
+  width: 1020px;
+  background: #FFFFFF;
+  box-shadow: 0 2px 50px 10px #7B7B7B;
+  border-radius: 24px;
+  outline: none;
+  overflow-y: auto;
+  overflow-x: hidden;
 
-    /* Hide scrollbar for Chrome, Safari and Opera */
+  /* Hide scrollbar for Chrome, Safari and Opera */
 
-    &::-webkit-scrollbar {
-        display: none;
-    }
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
-    /* Hide scrollbar for IE, Edge and Firefox */
-    -ms-overflow-style: none;
-    scrollbar-width: none;
+  /* Hide scrollbar for IE, Edge and Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 `;
 
 const ModalHeader = styled(Box)`
-    position: sticky;
-    top: 0;
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    padding: 40px 0px 32px;
-    isolation: isolate;
-    width: 1020px;
-    height: 96px;
-    margin: 0 -80px;
-    background: linear-gradient(180deg, #F7F8FF 70.84%, rgba(247, 248, 255, 0) 100%);
-    border-radius: 24px 24px 0px 0px;
-    flex: none;
-    order: 0;
-    flex-grow: 0;
-    z-index: 10;
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 40px 0 32px;
+  isolation: isolate;
+  width: 1020px;
+  height: 96px;
+  margin: 0 -80px;
+  background: linear-gradient(180deg, #F7F8FF 70.84%, rgba(247, 248, 255, 0) 100%);
+  border-radius: 24px 24px 0 0;
+  flex: none;
+  order: 0;
+  flex-grow: 0;
+  z-index: 10;
 `;
 
 const ModalTitle = styled(Typography)`
     height: 24px;
-    font-family: 'S-Core Dream';
+    font-family: 'S-Core Dream',serif;
     font-style: normal;
     font-weight: 500;
     font-size: 16px;
@@ -95,66 +95,66 @@ const CloseButton = styled(IconButton)`
 `;
 
 const EditorContainer = styled(Box)`
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 70px 0px 0px;
-    width: 860px;
-    height: 594px;
-    overflow-y: auto;
-    overflow-x: hidden;
-    flex: none;
-    order: 1;
-    flex-grow: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 70px 0 0;
+  width: 860px;
+  height: 594px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  flex: none;
+  order: 1;
+  flex-grow: 0;
 
-    /* Hide scrollbar for Chrome, Safari and Opera */
+  /* Hide scrollbar for Chrome, Safari and Opera */
 
-    &::-webkit-scrollbar {
-        display: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Hide scrollbar for IE, Edge and Firefox */
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+
+  .presentation-editor {
+    outline: none;
+    font-family: 'S-Core Dream', serif;
+    font-style: normal;
+    font-weight: 200;
+    font-size: 18px;
+    line-height: 180%;
+    letter-spacing: 0.3px;
+    color: #262626;
+
+    h1 {
+      font-size: 32px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: #262626;
     }
 
-    /* Hide scrollbar for IE, Edge and Firefox */
-    -ms-overflow-style: none;
-    scrollbar-width: none;
-
-    .presentation-editor {
-        outline: none;
-        font-family: 'S-Core Dream';
-        font-style: normal;
-        font-weight: 200;
-        font-size: 18px;
-        line-height: 180%;
-        letter-spacing: 0.3px;
-        color: #262626;
-
-        h1 {
-            font-size: 32px;
-            font-weight: 600;
-            margin-bottom: 16px;
-            color: #262626;
-        }
-
-        p {
-            font-size: 18px;
-            line-height: 180%;
-            letter-spacing: 0.3px;
-            color: #262626;
-            margin-bottom: 12px;
-        }
-
-        .presentation-image {
-            max-width: 100%;
-            height: auto;
-            border-radius: 8px;
-            margin: 16px 0;
-        }
-
-        .presentation-video {
-            margin: 16px 0;
-            border-radius: 8px;
-            overflow: hidden;
-        }
+    p {
+      font-size: 18px;
+      line-height: 180%;
+      letter-spacing: 0.3px;
+      color: #262626;
+      margin-bottom: 12px;
     }
+
+    .presentation-image {
+      max-width: 100%;
+      height: auto;
+      border-radius: 8px;
+      margin: 16px 0;
+    }
+
+    .presentation-video {
+      margin: 16px 0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+  }
 `;
 
 export function PresentationViewModal({
@@ -168,8 +168,7 @@ export function PresentationViewModal({
 
   const editor = useEditor({
     extensions: [
-      // Mention Extension for read-only mode (no click handler, editable=false)
-      createMentionExtension(members, undefined, false),
+      createMentionExtension(members, undefined),
       StarterKit.configure({ heading: false }),
       Heading.configure({ levels: [1] }),
       Image.configure({ HTMLAttributes: { class: 'presentation-image' } }),

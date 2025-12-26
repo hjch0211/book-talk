@@ -1,5 +1,5 @@
 import { CircularProgress } from '@mui/material';
-import type { VoiceConnectionStatus } from '@src/hooks/domain/useDebateVoiceChat';
+import type { VoiceConnectionStatus } from '@src/hooks/domain/useDebateRealtimeConnection.tsx';
 import MainContainer from '../../../components/templates/MainContainer';
 import {
   LoadingOverlay,

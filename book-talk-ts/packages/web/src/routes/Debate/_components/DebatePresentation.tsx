@@ -6,14 +6,13 @@ import {
   DialogTitle,
   TextField,
 } from '@mui/material';
-import { usePresentation } from '@src/hooks';
+import { type CurrentRoundInfo, usePresentation } from '@src/hooks';
 import Heading from '@tiptap/extension-heading';
 import Placeholder from '@tiptap/extension-placeholder';
 import Youtube from '@tiptap/extension-youtube';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useCallback, useEffect, useState } from 'react';
-import type { CurrentRoundInfo } from '../../../hooks/domain/useDebate.tsx';
 import { MainContent, PresentationArea } from '../style.ts';
 import { ChatInput } from './chat/ChatInput.tsx';
 import { ChatMessageList } from './chat/ChatMessageList.tsx';
