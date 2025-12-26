@@ -11,7 +11,7 @@
     "format": "biome format --write ."
   },
   "dependencies": {
-    "@langchain/core": "^1.0.0",
+    "@langchain/core": "^1.1.8",
     "@langchain/langgraph": "^1.0.0",
     "@langchain/openai": "^1.0.0",
     "@nestjs/common": "^11.0.0",
