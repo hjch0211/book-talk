@@ -1,14 +1,6 @@
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import LinkIcon from '@mui/icons-material/Link';
-import {
-  Box,
-  Card,
-  CardContent,
-  CardMedia,
-  CircularProgress,
-  Link,
-  Typography,
-} from '@mui/material';
+import { Box, Card, CardContent, CircularProgress, Link, Typography } from '@mui/material';
 import type { FetchOpenGraphResponse } from '@src/apis/presentation';
 import { fetchOpenGraph } from '@src/apis/presentation';
 import { type NodeViewProps, NodeViewWrapper } from '@tiptap/react';
@@ -167,46 +159,111 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
   // 정상적인 링크 미리보기
   return (
     <NodeViewWrapper>
-      <Card
+      <Box
         sx={{
-          maxWidth: 720,
-          margin: '16px 0',
-          cursor: 'pointer',
-          transition: 'box-shadow 0.3s',
           display: 'flex',
           flexDirection: 'row',
+          alignItems: 'center',
+          padding: '0px 0px 0px 32px',
+          gap: '20px',
+          width: '720px',
+          height: '120px',
+          background: '#FFFFFF',
+          border: '1px solid #E8EBFF',
+          borderRadius: '12px',
+          position: 'relative',
+          cursor: 'pointer',
+          boxSizing: 'border-box',
+          transition: 'background-color 0.2s ease-in-out',
           '&:hover': {
-            boxShadow: 4,
+            backgroundColor: '#F7F8FF',
           },
         }}
         onClick={() => window.open(url, '_blank', 'noopener,noreferrer')}
       >
-        {image && (
-          <CardMedia
-            component="img"
-            image={image}
-            alt={title || 'Link preview'}
-            sx={{
-              width: 100,
-              height: 100,
-              minWidth: 100,
-              objectFit: 'cover',
-            }}
-          />
-        )}
-        <CardContent
-          sx={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'flex-start',
+            padding: '0px',
+            width: '520px',
+            flex: 'none',
+            order: 0,
+            flexGrow: 0,
+          }}
         >
-          {siteName && (
-            <Typography variant="caption" color="text.secondary" gutterBottom>
-              {siteName}
-            </Typography>
-          )}
-          <Typography variant="h6" component="div">
+          <Typography
+            sx={{
+              fontFamily: 'S-Core Dream',
+              fontWeight: 500,
+              fontSize: '16px',
+              letterSpacing: '1px',
+              color: '#434343',
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              textOverflow: 'ellipsis',
+            }}
+          >
             {title}
           </Typography>
-        </CardContent>
-      </Card>
+          <Typography
+            sx={{
+              fontWeight: 200,
+              fontSize: '14px',
+              letterSpacing: '0.3px',
+              color: '#7B7B7B',
+              overflow: 'hidden',
+              whiteSpace: 'nowrap',
+              textOverflow: 'ellipsis',
+            }}
+          >
+            {siteName}
+          </Typography>
+        </Box>
+
+        <Box
+          sx={{
+            width: '148px',
+            background: '#000000',
+            borderRadius: '0px 12px 12px 0px',
+            flex: 'none',
+            order: 1,
+            alignSelf: 'stretch',
+            flexGrow: 1,
+            position: 'relative',
+            overflow: 'hidden',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          {image ? (
+            <Box
+              component="img"
+              src={image}
+              alt={title || 'Link preview'}
+              sx={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover',
+              }}
+            />
+          ) : (
+            <Typography
+              sx={{
+                fontWeight: 500,
+                fontSize: '14px',
+                lineHeight: '20px',
+                letterSpacing: '0.3px',
+                color: '#FFFFFF',
+              }}
+            >
+              사진
+            </Typography>
+          )}
+        </Box>
+      </Box>
     </NodeViewWrapper>
   );
 }
