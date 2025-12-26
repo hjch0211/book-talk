@@ -106,7 +106,10 @@ export function RoundStartBackdrop({ show, roundType, onClose }: RoundStartBackd
       sx={{
         zIndex: 9999,
         backgroundColor: 'rgba(0, 0, 0, 0.4)',
-        transition: 'opacity 300ms ease-out, visibility 300ms ease-out',
+        transitionProperty: 'opacity, visibility',
+        transitionTimingFunction: 'ease-out',
+        transitionDuration: show ? '500ms' : '300ms',
+        transitionDelay: show ? '300ms' : '5000ms',
       }}
     >
       <Box
@@ -117,9 +120,14 @@ export function RoundStartBackdrop({ show, roundType, onClose }: RoundStartBackd
           gap: '30px',
           width: '732px',
           height: '332px',
-          transition: 'opacity 300ms ease-out, transform 300ms ease-out',
+
           opacity: show ? 1 : 0,
           transform: show ? 'scale(1)' : 'scale(0.9)',
+
+          transitionProperty: 'opacity, transform',
+          transitionTimingFunction: 'ease-out',
+          transitionDuration: show ? '500ms' : '300ms',
+          transitionDelay: show ? '300ms' : '5000ms',
         }}
       >
         <Title>{content.title}</Title>
