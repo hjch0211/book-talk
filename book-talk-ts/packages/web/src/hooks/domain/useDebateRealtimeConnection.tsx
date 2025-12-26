@@ -18,6 +18,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
 export interface OnlineMember extends MemberInfo {
   isMe: boolean;
+  isConnecting: boolean;
 }
 
 export type VoiceConnectionStatus = 'NOT_STARTED' | 'PENDING' | 'COMPLETED' | 'FAILED';
@@ -67,6 +68,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
       if (!debate.myMemberInfo?.id || !debateId) return;
       setVoiceConnectionStatus('PENDING');
       setConnectedPeerIds(new Set());
+      setOnlineMembers((prev) => prev.map((m) => ({ ...m, isConnecting: false })));
       wsClientRef.current?.sendVoiceMessage({
         type: 'C_VOICE_JOIN',
         provider: 'CLIENT',
@@ -83,7 +85,12 @@ export const useDebateRealtimeConnection = (props: Props) => {
         candidate,
       });
     },
-    onPeerConnected: (peerId: string) => {
+    onPeerConnected: (peerId) => {
+      setOnlineMembers((prev) =>
+        prev.map((member) =>
+          member.id === peerId ? { ...member, isConnecting: false } : member
+        )
+      );
       const newConnectedPeerIds = new Set([...connectedPeerIds, peerId]);
       setConnectedPeerIds(newConnectedPeerIds);
 
@@ -93,6 +100,13 @@ export const useDebateRealtimeConnection = (props: Props) => {
           setVoiceConnectionStatus('COMPLETED');
         }
       }
+    },
+    onPeerConnecting: (peerId) => {
+      setOnlineMembers((prev) =>
+        prev.map((member) =>
+          member.id === peerId ? { ...member, isConnecting: true } : member
+        )
+      );
     },
   });
 
@@ -185,11 +199,16 @@ export const useDebateRealtimeConnection = (props: Props) => {
   /** 온라인 멤버 목록 업데이트 */
   const onOnlineMembersUpdate = useEffectEvent((onlineIds: Set<string>) => {
     console.log('Received online account IDs:', onlineIds);
+    const connectingIds = new Set(
+      onlineMembers.filter((m) => m.isConnecting).map((m) => m.id)
+    );
+
     const members = debate.members
       .filter((member) => onlineIds.has(member.id))
       .map((member) => ({
         ...member,
         isMe: member.id === debate.myMemberInfo?.id,
+        isConnecting: connectingIds.has(member.id),
       }));
     setOnlineMembers(members);
 

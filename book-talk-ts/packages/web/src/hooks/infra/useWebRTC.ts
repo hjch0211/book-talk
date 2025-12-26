@@ -13,10 +13,13 @@ interface Props {
   onIceCandidate: (info: IceCandidateInfo) => void;
   /** P2P 연결 완료 콜백 */
   onPeerConnected: (peerId: string) => void;
+  /** P2P 연결 시도 중 콜백 */
+  onPeerConnecting?: (peerId: string) => void;
 }
 
 export const useWebRTC = (props: Props) => {
-  const { myId, onError, onReconnectNeeded, onIceCandidate, onPeerConnected } = props;
+  const { myId, onError, onReconnectNeeded, onIceCandidate, onPeerConnected, onPeerConnecting } =
+    props;
   const [remoteStreams, setRemoteStreams] = useState<RemoteStream[]>([]);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const managerRef = useRef<WebRTCManager | null>(null);
@@ -56,10 +59,15 @@ export const useWebRTC = (props: Props) => {
     return stream;
   };
 
-  const createOffer = (peerId: string) => managerRef.current!.createOffer(peerId);
+  const createOffer = (peerId: string) => {
+    onPeerConnecting?.(peerId);
+    return managerRef.current!.createOffer(peerId);
+  };
 
-  const handleOffer = (peerId: string, offer: RTCSessionDescriptionInit) =>
-    managerRef.current!.handleOffer(peerId, offer);
+  const handleOffer = (peerId: string, offer: RTCSessionDescriptionInit) => {
+    onPeerConnecting?.(peerId);
+    return managerRef.current!.handleOffer(peerId, offer);
+  };
 
   const handleAnswer = (peerId: string, answer: RTCSessionDescriptionInit) =>
     managerRef.current!.handleAnswer(peerId, answer);
