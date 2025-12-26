@@ -18,12 +18,10 @@ import { MentionList } from './MentionList.tsx';
  *
  * @param members - 토론 참여자 목록
  * @param onMentionClick - 멘션 클릭 시 콜백 (제공되면 클릭 가능)
- * @param editable - 편집 가능 여부 (false면 @ 입력 불가, 클릭은 가능)
  */
 export const createMentionExtension = (
   members: Array<{ id: string; name: string }>,
-  onMentionClick?: (accountId: string) => void,
-  editable = true
+  onMentionClick?: (accountId: string) => void
 ) => {
   return Mention.extend({
     // SlashCommand와 동일한 우선순위 설정 (EnterToSend보다 높음)

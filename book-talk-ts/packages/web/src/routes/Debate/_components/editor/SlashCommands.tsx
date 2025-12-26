@@ -110,7 +110,7 @@ export const SlashCommands = forwardRef<any, SlashCommandsProps>((props, ref) =>
     selectItem(selectedIndex);
   };
 
-  useEffect(() => setSelectedIndex(0), [props.items]);
+  useEffect(() => setSelectedIndex(0), []);
 
   useImperativeHandle(ref, () => ({
     onKeyDown: ({ event }: { event: KeyboardEvent }) => {
@@ -139,7 +139,7 @@ export const SlashCommands = forwardRef<any, SlashCommandsProps>((props, ref) =>
         {props.items.length ? (
           props.items.map((item, index) => (
             <CommandItem
-              key={index}
+              key={`${index + 1}`}
               className={index === selectedIndex ? 'selected' : ''}
               onClick={() => selectItem(index)}
             >

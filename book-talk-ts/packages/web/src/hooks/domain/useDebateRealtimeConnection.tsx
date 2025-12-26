@@ -10,7 +10,6 @@ import {
   type RaisedHandInfo,
   type WebSocketMessage,
   type WS_DebateRoundUpdateResponse,
-  type WS_SpeakerUpdateResponse,
 } from '@src/apis/websocket';
 import { useWebRTC } from '@src/hooks';
 import { useQueryClient } from '@tanstack/react-query';
@@ -18,6 +17,7 @@ import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
 export interface OnlineMember extends MemberInfo {
   isMe: boolean;
+  isConnecting: boolean;
 }
 
 export type VoiceConnectionStatus = 'NOT_STARTED' | 'PENDING' | 'COMPLETED' | 'FAILED';
@@ -67,6 +67,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
       if (!debate.myMemberInfo?.id || !debateId) return;
       setVoiceConnectionStatus('PENDING');
       setConnectedPeerIds(new Set());
+      setOnlineMembers((prev) => prev.map((m) => ({ ...m, isConnecting: false })));
       wsClientRef.current?.sendVoiceMessage({
         type: 'C_VOICE_JOIN',
         provider: 'CLIENT',
@@ -83,7 +84,10 @@ export const useDebateRealtimeConnection = (props: Props) => {
         candidate,
       });
     },
-    onPeerConnected: (peerId: string) => {
+    onPeerConnected: (peerId) => {
+      setOnlineMembers((prev) =>
+        prev.map((member) => (member.id === peerId ? { ...member, isConnecting: false } : member))
+      );
       const newConnectedPeerIds = new Set([...connectedPeerIds, peerId]);
       setConnectedPeerIds(newConnectedPeerIds);
 
@@ -93,6 +97,11 @@ export const useDebateRealtimeConnection = (props: Props) => {
           setVoiceConnectionStatus('COMPLETED');
         }
       }
+    },
+    onPeerConnecting: (peerId) => {
+      setOnlineMembers((prev) =>
+        prev.map((member) => (member.id === peerId ? { ...member, isConnecting: true } : member))
+      );
     },
   });
 
@@ -184,12 +193,14 @@ export const useDebateRealtimeConnection = (props: Props) => {
 
   /** 온라인 멤버 목록 업데이트 */
   const onOnlineMembersUpdate = useEffectEvent((onlineIds: Set<string>) => {
-    console.log('Received online account IDs:', onlineIds);
+    const connectingIds = new Set(onlineMembers.filter((m) => m.isConnecting).map((m) => m.id));
+
     const members = debate.members
       .filter((member) => onlineIds.has(member.id))
       .map((member) => ({
         ...member,
         isMe: member.id === debate.myMemberInfo?.id,
+        isConnecting: connectingIds.has(member.id),
       }));
     setOnlineMembers(members);
 
@@ -208,8 +219,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
   });
 
   /** 발언자 업데이트 */
-  const onSpeakerUpdate = useEffectEvent((speakerInfo: WS_SpeakerUpdateResponse) => {
-    console.log('Speaker updated via WebSocket:', speakerInfo);
+  const onSpeakerUpdate = useEffectEvent(() => {
     if (debateId) {
       void queryClient.invalidateQueries({
         queryKey: findOneDebateQueryOptions(debateId).queryKey,
@@ -232,8 +242,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
   });
 
   /** 채팅 메시지 수신 */
-  const onChatMessage = useEffectEvent((chatId: number) => {
-    console.log('Received chat message:', chatId);
+  const onChatMessage = useEffectEvent(() => {
     if (debateId) {
       void queryClient.invalidateQueries({
         queryKey: getChatsQueryOptions(debateId, debate.currentRoundInfo.type === 'FREE', true)
@@ -251,19 +260,15 @@ export const useDebateRealtimeConnection = (props: Props) => {
     wsClient.connect(debateId, {
       onOnlineMembersUpdate,
       onConnectionStatus: (connected: boolean) => {
-        console.log('Connection status changed:', connected);
         setIsConnected(connected);
         if (!connected) {
-          console.log('🔌 WebSocket disconnected - resetting debate join status');
           setIsDebateJoined(false);
         }
       },
       onJoinSuccess: () => {
-        console.log('Debate join success - ready for voice chat');
         setIsDebateJoined(true);
       },
       onHandRaiseUpdate: (hands: RaisedHandInfo[]) => {
-        console.log('Received raised hands update:', hands);
         setRaisedHands(hands);
       },
       onSpeakerUpdate,
@@ -283,7 +288,6 @@ export const useDebateRealtimeConnection = (props: Props) => {
     if (!isConnected || !wsClientRef.current) return;
 
     const intervalId = window.setInterval(() => {
-      console.log('Sending heartbeat...');
       wsClientRef.current?.sendHeartbeat();
     }, 30000);
 

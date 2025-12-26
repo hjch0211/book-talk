@@ -26,35 +26,32 @@ import {
 } from '../style.ts';
 import { PresentationViewModal } from './modal/PresentationViewModal.tsx';
 
-interface CurrentSpeaker {
-  accountId: string;
-  accountName: string;
-  endedAt?: number;
-}
-
-interface NextSpeaker {
-  accountId: string;
-  accountName: string;
-}
-
 interface Props {
   members: Array<{
     id: string;
     name: string;
     role: 'HOST' | 'MEMBER';
     isMe?: boolean;
+    isConnecting: boolean;
   }>;
-  currentSpeaker?: CurrentSpeaker | null;
-  nextSpeaker?: NextSpeaker | null;
+  currentSpeaker: {
+    accountId: string;
+    accountName: string;
+    endedAt?: number;
+  } | null;
+  nextSpeaker: {
+    accountId: string;
+    accountName: string;
+  } | null;
   realTimeRemainingSeconds: number;
-  raisedHands?: Array<{
+  raisedHands: Array<{
     accountId: string;
     accountName: string;
     raisedAt: number;
   }>;
-  currentRoundType?: 'PREPARATION' | 'PRESENTATION' | 'FREE';
+  currentRoundType: 'PREPARATION' | 'PRESENTATION' | 'FREE';
   myAccountId?: string;
-  onPassSpeaker?: (memberId: string) => void;
+  onPassSpeaker: (memberId: string) => void;
   presentations: Array<{
     id: string;
     accountId: string;
@@ -84,22 +81,17 @@ export function DebateMemberList({
     memberName: string;
   } | null>(null);
 
-  const isCurrentSpeaker = (memberId: string) => currentSpeaker?.accountId === memberId;
-  const isNextSpeaker = (memberId: string) => nextSpeaker?.accountId === memberId;
-  const isHandRaised = (memberId: string) =>
-    raisedHands.some((hand) => hand.accountId === memberId);
-
   const handleMenuOpen = (memberId: string) => (event: MouseEvent<HTMLElement>) => {
     setMenuAnchorEl((prev) => ({ ...prev, [memberId]: event.currentTarget }));
   };
 
-  const handleMenuClose = (memberId: string) => () => {
+  const handleMenuClose = (memberId: string) => {
     setMenuAnchorEl((prev) => ({ ...prev, [memberId]: null }));
   };
 
   const handlePassSpeaker = (memberId: string) => () => {
-    onPassSpeaker?.(memberId);
-    handleMenuClose(memberId)();
+    onPassSpeaker(memberId);
+    handleMenuClose(memberId);
   };
 
   const handleViewPresentation = (memberId: string) => () => {
@@ -110,7 +102,7 @@ export function DebateMemberList({
         memberName: member.name,
       });
     }
-    handleMenuClose(memberId)();
+    handleMenuClose(memberId);
   };
 
   const shouldShowMenu = (memberId: string) => {
@@ -128,9 +120,10 @@ export function DebateMemberList({
 
       <MemberList>
         {members.map((member, index) => {
-          const isCurrent = isCurrentSpeaker(member.id);
-          const isNext = isNextSpeaker(member.id);
-          const hasRaisedHand = isHandRaised(member.id);
+          const isCurrent = currentSpeaker?.accountId === member.id;
+          const isNext = nextSpeaker?.accountId === member.id;
+          const hasRaisedHand = raisedHands.some((hand) => hand.accountId === member.id);
+          const isConnectingVoice = member.isConnecting;
 
           return (
             <MemberItem key={member.id}>
@@ -159,6 +152,7 @@ export function DebateMemberList({
                       {member.name}
                       {member.isMe && <CurrentUserIndicator>(나)</CurrentUserIndicator>}
                     </MemberName>
+                    {isConnectingVoice && <MemberStatus>연결중...</MemberStatus>}
                     {isCurrent && <MemberStatus>발표중...</MemberStatus>}
                     {isNext && <MemberStatus>다음 발표자</MemberStatus>}
                   </MemberInfo>
@@ -175,7 +169,7 @@ export function DebateMemberList({
                     <Menu
                       anchorEl={menuAnchorEl[member.id]}
                       open={Boolean(menuAnchorEl[member.id])}
-                      onClose={handleMenuClose(member.id)}
+                      onClose={() => handleMenuClose(member.id)}
                       anchorOrigin={{
                         vertical: 'bottom',
                         horizontal: 'right',

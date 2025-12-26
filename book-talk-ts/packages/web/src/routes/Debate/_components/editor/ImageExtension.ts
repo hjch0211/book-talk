@@ -32,7 +32,6 @@ export const ImageWithPaste = Image.extend({
         type: this.type,
         getAttributes: (match) => {
           const src = match[0];
-          console.log('[ImageWithPaste] Matched image URL:', src);
           return { src };
         },
       }),

@@ -86,7 +86,6 @@ export const LinkPreview = Node.create({
         type: this.type,
         getAttributes: (match) => {
           const url = match[0];
-          console.log('[LinkPreview] Matched general URL:', url);
           // Extension 배열 순서상 ImageWithPaste, Youtube보다 나중에 실행되므로
           // 여기 도달한 URL은 일반 URL임
           return {

@@ -15,7 +15,7 @@ import Placeholder from '@tiptap/extension-placeholder';
 import Youtube from '@tiptap/extension-youtube';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { ChatInputBox, ChatInputContainer } from '../../style.ts';
 import { createEnterToSendExtension } from '../editor/EnterToSendExtension.ts';
 import { ImageWithPaste } from '../editor/ImageExtension.ts';
@@ -99,16 +99,10 @@ export function ChatInput({ isSending, onSend, members, presentations }: ChatInp
     [members]
   );
 
-  // Enter 키로 전송하는 Extension 생성 (한 번만 생성)
-  const enterToSendExtension = useMemo(
-    () => createEnterToSendExtension(stateRef),
-    [] // 빈 배열 - 한 번만 생성
-  );
-
   const editor = useEditor({
     extensions: [
       // Mention Extension (가장 먼저 추가)
-      createMentionExtension(members, handleMentionClick, true),
+      createMentionExtension(members, handleMentionClick),
       StarterKit.configure({ heading: false }),
       Heading.configure({ levels: [1] }),
       ImageWithPaste.configure({
@@ -134,7 +128,7 @@ export function ChatInput({ isSending, onSend, members, presentations }: ChatInp
           '메시지를 입력하세요... (Enter로 전송, Shift+Enter로 줄바꿈, @로 멘션, /로 이미지/영상 추가)',
       }),
       createSlashCommandExtension(addImage, addYoutube),
-      enterToSendExtension, // SlashCommand 이후에 추가하여 낮은 우선순위
+      createEnterToSendExtension(stateRef), // SlashCommand 이후에 추가하여 낮은 우선순위
     ],
     editable: !isSending,
     immediatelyRender: false,
