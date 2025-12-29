@@ -1,11 +1,16 @@
-export interface CreateRequest {
-  /** 토론방 ID */
-  debateId: string;
-}
+import { z } from 'zod';
 
-export interface ChatRequest {
+export const CreateRequestSchema = z.object({
+  /** 토론방 ID */
+  debateId: z.string(),
+});
+
+export const ChatRequestSchema = z.object({
   /** 사용자 메시지 */
-  message: string;
+  message: z.string(),
   /** 채팅방 ID */
-  chatId: string;
-}
+  chatId: z.string(),
+});
+
+export type CreateRequest = z.infer<typeof CreateRequestSchema>;
+export type ChatRequest = z.infer<typeof ChatRequestSchema>;

@@ -11,8 +11,6 @@ import { type ApiResult, toErrorResult } from './api-result';
 
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
-  private readonly logger = new Logger(GlobalExceptionFilter.name);
-
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
@@ -25,7 +23,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
   private handleException(
     exception: unknown,
-    request: { method: string; url: string },
+    request: { method: string; url: string }
   ): { status: number; result: ApiResult<null> } {
     if (exception instanceof HttpException) {
       return this.handleHttpException(exception, request);
@@ -34,22 +32,15 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     return this.handleInternalServerError(exception, request);
   }
 
+  /** HttpException 예외 처리 */
   private handleHttpException(
     exception: HttpException,
-    request: { method: string; url: string },
+    request: { method: string; url: string }
   ): { status: number; result: ApiResult<null> } {
     const status = exception.getStatus();
-    const exceptionResponse = exception.getResponse();
+    const message = exception.message;
 
-    const message =
-      typeof exceptionResponse === 'string'
-        ? exceptionResponse
-        : (exceptionResponse as { message?: string }).message ??
-          exception.message;
-
-    this.logger.warn(
-      `[${request.method}] ${request.url} - ${status}: ${message}`,
-    );
+    Logger.warn(`[${request.method}] ${request.url} - ${status}: ${message}`);
 
     return {
       status,
@@ -57,17 +48,17 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     };
   }
 
+  /** Internal Server Error 예외 처리 */
   private handleInternalServerError(
     exception: unknown,
-    request: { method: string; url: string },
+    request: { method: string; url: string }
   ): { status: number; result: ApiResult<null> } {
     const status = HttpStatus.INTERNAL_SERVER_ERROR;
-    const message =
-      exception instanceof Error ? exception.message : 'Internal Server Error';
+    const message = exception instanceof Error ? exception.message : 'Internal Server Error';
 
-    this.logger.error(
+    Logger.error(
       `[${request.method}] ${request.url} - ${status}: ${message}`,
-      exception instanceof Error ? exception.stack : undefined,
+      exception instanceof Error ? exception.stack : undefined
     );
 
     return {
