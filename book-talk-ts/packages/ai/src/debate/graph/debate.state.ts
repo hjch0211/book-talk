@@ -1,28 +1,29 @@
-import type { BaseMessage } from '@langchain/core/messages';
-import { Annotation, END, messagesStateReducer } from '@langchain/langgraph';
+import { Annotation, END } from '@langchain/langgraph';
 import type { DebateInfo } from '@src/client';
 import type {
-  RECOMMEND_TOPIC,
-  START_DEBATE,
-  SUPERVISOR,
-  UNKNOWN_HANDLER,
-} from '../graph/constants';
+  DebateStarterNodeRequest,
+  GetDebateInfoToolNodeRequest,
+} from '@src/debate/graph/_requests';
 
-/** 노드 키 타입 */
-export type NodeKey =
-  | typeof SUPERVISOR
-  | typeof START_DEBATE
-  | typeof RECOMMEND_TOPIC
-  | typeof UNKNOWN_HANDLER;
-
-/** 다음 노드 타입 */
-export type NextNode = NodeKey | typeof END;
+export type ChatHistory = { role: 'assistant' | 'user'; content: string };
+export type Next = {
+  /** 다음 노드 */
+  node: string;
+  /** 다음 노드에 전달할 요청 데이터 */
+  request?: DebateStarterNodeRequest | GetDebateInfoToolNodeRequest;
+};
 
 export const DebateStateAnnotation = Annotation.Root({
-  /** 사용자 입력 메시지 (누적) */
-  messages: Annotation<BaseMessage[]>({
-    reducer: messagesStateReducer,
+  /** 지난 채팅 이력 (불변) */
+  chatHistory: Annotation<ChatHistory[]>({
+    reducer: (current, update) => current || update,
     default: () => [],
+  }),
+
+  /** 사용자 요청 메시지 (불변) */
+  request: Annotation<string>({
+    reducer: (current, update) => current || update,
+    default: () => '',
   }),
 
   /** 토론방 ID (불변) */
@@ -44,9 +45,9 @@ export const DebateStateAnnotation = Annotation.Root({
   }),
 
   /** 다음 노드 (라우팅용) */
-  next: Annotation<NextNode>({
+  next: Annotation<Next>({
     reducer: (_, update) => update,
-    default: () => END,
+    default: () => ({ node: END }),
   }),
 });
 

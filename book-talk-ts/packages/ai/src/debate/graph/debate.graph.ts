@@ -1,155 +1,72 @@
 import type { Callbacks } from '@langchain/core/callbacks/manager';
-import type { AIMessage } from '@langchain/core/messages';
-import { HumanMessage, ToolMessage } from '@langchain/core/messages';
 import { END, START, StateGraph } from '@langchain/langgraph';
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  DEBATE_CLIENT,
-  type DebateClient,
-  type DebateInfo,
-  PROMPT_STUDIO_AGENT,
-  type PromptStudioAgent,
-} from '@src/client';
-import {
-  RECOMMEND_TOPIC,
-  RECOMMEND_TOPIC_TOOLS,
-  START_DEBATE,
-  START_DEBATE_TOOLS,
-  SUPERVISOR,
-  UNKNOWN_HANDLER,
-} from './constants';
-import { type DebateState, DebateStateAnnotation } from './debate.state';
-import { recommendTopicNode } from './nodes/recommend-topic.node';
-import { startDebateNode } from './nodes/start-debate.node';
-import { supervisorNode } from './nodes/supervisor.node';
-import { createDebateTools, type DebateTools, type ToolResult } from './nodes/tools.node';
-import { unknownHandlerNode } from './nodes/unknown-handler.node';
+import { DEBATE_STARTER_NODE, type DebateStarterNode } from '@src/debate/graph/debate-starter.node';
+import { DEBATE_TOOL_NODE, type DebateToolNode } from '@src/debate/graph/debate-tool.node';
+import { SUPERVISOR_NODE, type SupervisorNode } from '@src/debate/graph/supervisor.node';
+import { type ChatHistory, type DebateState, DebateStateAnnotation } from './debate.state';
+import { UNKNOWN_HANDLER_NODE, type UnknownHandlerNode } from './unknown-handler.node';
 
 export const DEBATE_GRAPH = Symbol.for('DEBATE_GRAPH');
-
-/** Tool 호출 여부 확인 */
-const hasToolCalls =
-  (toolsNode: string) =>
-  (state: DebateState): string => {
-    const lastMessage = state.messages[state.messages.length - 1] as AIMessage;
-    return lastMessage?.tool_calls?.length ? toolsNode : END;
-  };
-
-/** Tool 결과에서 debateInfo 추출 */
-const extractDebateInfo = (toolResult: ToolResult): DebateInfo | null => {
-  if (toolResult.toolName === 'findDebate' && toolResult.success && toolResult.data) {
-    const data = toolResult.data as { debateInfo?: DebateInfo };
-    return data.debateInfo ?? null;
-  }
-  return null;
-};
-
-/** Tool 실행 노드 */
-const toolNode = (tools: DebateTools) => {
-  const toolMap = new Map(tools.map((t) => [t.name, t]));
-
-  return async (state: DebateState): Promise<Partial<DebateState>> => {
-    const lastMessage = state.messages[state.messages.length - 1] as AIMessage;
-    const toolCalls = lastMessage.tool_calls ?? [];
-
-    let debateInfo: DebateInfo | null = null;
-
-    const toolMessages = await Promise.all(
-      toolCalls.map(async (call) => {
-        const tool = toolMap.get(call.name);
-        const result = tool ? await tool.invoke(call.args) : `Tool ${call.name} not found`;
-
-        // Tool 결과에서 debateInfo 추출
-        try {
-          const parsed = JSON.parse(result as string) as ToolResult;
-          const extracted = extractDebateInfo(parsed);
-          if (extracted) {
-            debateInfo = extracted;
-          }
-        } catch {
-          // JSON 파싱 실패 시 무시
-        }
-
-        return new ToolMessage({
-          tool_call_id: call.id ?? '',
-          content: result,
-        });
-      })
-    );
-
-    return {
-      messages: toolMessages,
-      debateInfo,
-    };
-  };
-};
 
 @Injectable()
 export class DebateGraph {
   private readonly graph: ReturnType<typeof this.createGraph>;
 
   constructor(
-    @Inject(DEBATE_CLIENT)
-    private readonly debateClient: DebateClient,
-    @Inject(PROMPT_STUDIO_AGENT)
-    private readonly promptStudio: PromptStudioAgent
+    @Inject(SUPERVISOR_NODE)
+    private readonly supervisorNode: SupervisorNode,
+    @Inject(UNKNOWN_HANDLER_NODE)
+    private readonly unknownHandlerNode: UnknownHandlerNode,
+    @Inject(DEBATE_STARTER_NODE)
+    private readonly debateStarterNode: DebateStarterNode,
+    @Inject(DEBATE_TOOL_NODE)
+    private readonly debateToolNode: DebateToolNode
   ) {
     this.graph = this.createGraph();
   }
 
   async run(
-    message: string,
-    sessionId: string,
-    debateId?: string,
-    callbacks?: Callbacks
+    chatHistory: ChatHistory[],
+    request: string,
+    debateId: string,
+    callbacks: Callbacks
   ): Promise<string> {
-    const result = await this.graph.invoke(
-      {
-        messages: [new HumanMessage(message)],
-        debateId: debateId ?? '',
-      },
-      {
-        configurable: { thread_id: sessionId },
-        callbacks,
-      }
-    );
-
+    const result = await this.graph.invoke({ chatHistory, request, debateId }, { callbacks });
     return result.response;
   }
 
   private createGraph() {
-    const tools = createDebateTools(this.debateClient);
-    const executeTools = toolNode(tools);
-
     return new StateGraph(DebateStateAnnotation)
-      .addNode(SUPERVISOR, supervisorNode(this.promptStudio))
-      .addNode(START_DEBATE, startDebateNode(tools, this.promptStudio))
-      .addNode(START_DEBATE_TOOLS, executeTools)
-      .addNode(RECOMMEND_TOPIC, recommendTopicNode(tools, this.promptStudio))
-      .addNode(RECOMMEND_TOPIC_TOOLS, executeTools)
-      .addNode(UNKNOWN_HANDLER, unknownHandlerNode)
-
-      .addEdge(START, SUPERVISOR)
-      .addConditionalEdges(
-        SUPERVISOR,
-        ({ next }: DebateState) => {
-          if (next === START_DEBATE) return START_DEBATE;
-          if (next === RECOMMEND_TOPIC) return RECOMMEND_TOPIC;
-          return UNKNOWN_HANDLER;
-        },
-        [START_DEBATE, RECOMMEND_TOPIC, UNKNOWN_HANDLER]
+      .addNode(SUPERVISOR_NODE.description!, this.supervisorNode.process.bind(this.supervisorNode))
+      .addNode(
+        DEBATE_STARTER_NODE.description!,
+        this.debateStarterNode.process.bind(this.debateStarterNode)
       )
-      .addConditionalEdges(START_DEBATE, hasToolCalls(START_DEBATE_TOOLS), [
-        START_DEBATE_TOOLS,
+      .addNode(
+        UNKNOWN_HANDLER_NODE.description!,
+        this.unknownHandlerNode.process.bind(this.unknownHandlerNode)
+      )
+      .addNode(
+        DEBATE_TOOL_NODE.description!,
+        this.debateToolNode.getDebateStarterTool.bind(this.debateToolNode)
+      )
+      .addEdge(START, SUPERVISOR_NODE.description!)
+      .addConditionalEdges(SUPERVISOR_NODE.description!, ({ next }: DebateState) => next.node, [
+        DEBATE_STARTER_NODE.description!,
+        UNKNOWN_HANDLER_NODE.description!,
         END,
       ])
-      .addEdge(START_DEBATE_TOOLS, START_DEBATE)
-      .addConditionalEdges(RECOMMEND_TOPIC, hasToolCalls(RECOMMEND_TOPIC_TOOLS), [
-        RECOMMEND_TOPIC_TOOLS,
+      .addConditionalEdges(DEBATE_STARTER_NODE.description!, ({ next }: DebateState) => next.node, [
+        DEBATE_TOOL_NODE.description!,
+        UNKNOWN_HANDLER_NODE.description!,
         END,
       ])
-      .addEdge(RECOMMEND_TOPIC_TOOLS, RECOMMEND_TOPIC)
-      .addEdge(UNKNOWN_HANDLER, END)
+      .addConditionalEdges(DEBATE_TOOL_NODE.description!, ({ next }: DebateState) => next.node, [
+        DEBATE_STARTER_NODE.description!,
+        UNKNOWN_HANDLER_NODE.description!,
+      ])
+      .addEdge(UNKNOWN_HANDLER_NODE.description!, END)
       .compile();
   }
 }

@@ -5,5 +5,5 @@
  */
 export interface LangGraphNode<T> {
   /** 노드 작업(graph 등록용) */
-  process(state: T): Promise<Partial<T>>;
+  process(state: T): Promise<Partial<T>> | Partial<T>;
 }

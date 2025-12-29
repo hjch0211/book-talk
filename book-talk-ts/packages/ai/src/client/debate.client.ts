@@ -53,7 +53,7 @@ export interface RoundInfo {
 /** Debate Client 인터페이스 */
 export interface DebateClient {
   /** 토론방 단건 조회 */
-  findOne(debateId: string): Promise<DebateInfo | null>;
+  findOne(debateId: string): Promise<DebateInfo>;
 }
 
 /** Booktalk API 설정 */
@@ -65,22 +65,36 @@ export interface BooktalkConfig {
 export class BooktalkDebateClient implements DebateClient {
   constructor(private readonly config: BooktalkConfig) {}
 
-  async findOne(debateId: string): Promise<DebateInfo | null> {
+  async findOne(debateId: string): Promise<DebateInfo> {
     try {
       const { data } = await axios.get<{ data: DebateInfo }>(
-        `${this.config.baseUrl}/debates/${debateId}`,
+        `${this.config.baseUrl}/debates/${debateId}`
       );
       return data.data;
     } catch (error) {
       Logger.error(`토론방 조회 중 오류 발생: ${error}`);
-      return null;
+      throw error;
     }
   }
 }
 
 /** NoOp Debate Client */
 export class NoOpDebateClient implements DebateClient {
-  async findOne(_debateId: string): Promise<null> {
-    return null;
+  async findOne(_debateId: string): Promise<DebateInfo> {
+    return {
+      id: '',
+      members: [],
+      presentations: [],
+      bookInfo: {
+        title: '',
+        author: '',
+      },
+      topic: '',
+      createdAt: '',
+      updatedAt: '',
+      archivedAt: '',
+      closedAt: '',
+      description: '',
+    };
   }
 }

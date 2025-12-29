@@ -3,7 +3,7 @@ import { Column, type DataSource, Entity, JoinColumn, ManyToOne, Repository } fr
 import { AiChatEntity } from './ai-chat.entity';
 import { AuditableUuidEntity } from './base.entity';
 
-export type ChatRole = 'user' | 'assistant' | 'system';
+export type ChatRole = 'user' | 'assistant';
 
 @Entity('ai_chat_message')
 export class AiChatMessageEntity extends AuditableUuidEntity {

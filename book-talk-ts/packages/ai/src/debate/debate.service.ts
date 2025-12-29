@@ -23,7 +23,7 @@ export class DebateService {
     @Inject(AI_CHAT_REPOSITORY)
     private readonly chatRepository: AiChatRepository,
     @Inject(AI_CHAT_MESSAGE_REPOSITORY)
-    private readonly messageRepository: AiChatMessageRepository,
+    private readonly messageRepository: AiChatMessageRepository
   ) {}
 
   /** 새 토론 세션 생성 */
@@ -40,14 +40,19 @@ export class DebateService {
     const { message, chatId } = request;
 
     const chat = await this.chatRepository.findOneBy({ id: chatId });
-    if (!chat) {
+    if (!chat || !chat?.debateId) {
       throw new Error(`Chat not found: ${chatId}`);
     }
 
     await this.messageRepository.save({ chatId, role: 'user', content: message });
 
     const callbacks = this.createCallbacks(chatId);
-    const response = await this.debateGraph.run(message, chatId, chat.debateId, callbacks);
+    const response = await this.debateGraph.run(
+      chat.messages?.map((e) => ({ role: e.role, content: e.content })) || [],
+      message,
+      chat.debateId,
+      callbacks
+    );
 
     await this.messageRepository.save({ chatId, role: 'assistant', content: response });
 
