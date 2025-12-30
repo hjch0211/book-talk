@@ -6,9 +6,7 @@ import { ConfigService } from '@nestjs/config';
  */
 @Injectable()
 export class LangfuseProperties {
-  constructor(
-    @Inject(ConfigService) private readonly configService: ConfigService,
-  ) {}
+  constructor(@Inject(ConfigService) private readonly configService: ConfigService) {}
 
   /** Langfuse Public Key */
   get publicKey(): string {

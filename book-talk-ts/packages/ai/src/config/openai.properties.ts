@@ -6,9 +6,7 @@ import { ConfigService } from '@nestjs/config';
  */
 @Injectable()
 export class OpenAIProperties {
-  constructor(
-    @Inject(ConfigService) private readonly configService: ConfigService,
-  ) {}
+  constructor(@Inject(ConfigService) private readonly configService: ConfigService) {}
 
   /** OpenAI API Key */
   get apiKey(): string {

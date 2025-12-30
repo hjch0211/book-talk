@@ -3,9 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class BooktalkProperties {
-  constructor(
-    @Inject(ConfigService) private readonly configService: ConfigService,
-  ) {}
+  constructor(@Inject(ConfigService) private readonly configService: ConfigService) {}
 
   /** Booktalk API 서버 URL */
   get baseUrl(): string {

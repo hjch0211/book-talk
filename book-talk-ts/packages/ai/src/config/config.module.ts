@@ -13,17 +13,7 @@ import { OpenAIProperties } from './openai.properties';
       envFilePath: process.env.NODE_ENV === 'production' ? [] : './.env.local',
     }),
   ],
-  providers: [
-    BooktalkProperties,
-    DatabaseProperties,
-    LangfuseProperties,
-    OpenAIProperties,
-  ],
-  exports: [
-    BooktalkProperties,
-    DatabaseProperties,
-    LangfuseProperties,
-    OpenAIProperties,
-  ],
+  providers: [BooktalkProperties, DatabaseProperties, LangfuseProperties, OpenAIProperties],
+  exports: [BooktalkProperties, DatabaseProperties, LangfuseProperties, OpenAIProperties],
 })
 export class ConfigModule {}
