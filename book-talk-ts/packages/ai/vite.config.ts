@@ -12,7 +12,6 @@ export default defineConfig({
       appPath: './src/main.ts',
       exportName: 'booktalkApplication',
       tsCompiler: 'esbuild',
-      swcOptions: {},
     }),
   ],
   resolve: {
@@ -30,14 +29,13 @@ export default defineConfig({
       },
     },
   },
-  optimizeDeps: {
-    exclude: [
-      '@nestjs/microservices',
-      '@nestjs/websockets',
-      'cache-manager',
-      'class-transformer',
-      'class-validator',
-      '@nestjs/swagger',
+  ssr: {
+    noExternal: [
+      '@langchain/core',
+      '@langchain/langgraph',
+      '@langchain/openai',
+      'langfuse',
+      'langfuse-langchain',
     ],
   },
 });
