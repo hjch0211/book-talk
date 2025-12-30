@@ -12,6 +12,18 @@ export type Next = {
   /** 다음 노드에 전달할 요청 데이터 */
   request?: DebateStarterNodeRequest | GetDebateInfoToolNodeRequest;
 };
+export enum ResponseType {
+  /** 일반 텍스트 */
+  PLAIN_ANSWER = 'plain_answer',
+  /** 토론 시작 응답 */
+  DEBATE_START_ANSWER = 'debate_start_answer',
+}
+export type Response = {
+  /** 응답 타입 */
+  type: ResponseType;
+  /** 응답 내용 */
+  content: string;
+};
 
 export const DebateStateAnnotation = Annotation.Root({
   /** 지난 채팅 이력 (불변) */
@@ -39,9 +51,9 @@ export const DebateStateAnnotation = Annotation.Root({
   }),
 
   /** 최종 응답 */
-  response: Annotation<string>({
+  response: Annotation<Response>({
     reducer: (_, update) => update,
-    default: () => '',
+    default: () => ({ type: ResponseType.PLAIN_ANSWER, content: '' }),
   }),
 
   /** 다음 노드 (라우팅용) */

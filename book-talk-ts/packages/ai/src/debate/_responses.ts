@@ -1,4 +1,4 @@
 export interface ChatResponse {
-  response: string;
+  response: Response;
   chatId: string;
 }

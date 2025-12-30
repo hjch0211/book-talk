@@ -5,7 +5,7 @@ import type { z } from 'zod';
 export const validate = <T extends z.ZodTypeAny>(schema: T, data: z.input<T>): z.output<T> => {
   try {
     return schema.parse(data);
-  } catch {
-    throw new BadRequestException();
+  } catch (e: unknown) {
+    throw new BadRequestException(e);
   }
 };

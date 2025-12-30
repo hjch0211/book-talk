@@ -1,4 +1,5 @@
 import { AiResponseBaseSchema } from '@src/ai-response';
+import { ResponseType } from '@src/debate/graph/debate.state';
 import { z } from 'zod';
 
 export const SupervisorNodeResponseSchema = AiResponseBaseSchema.extend({
@@ -25,7 +26,9 @@ export const DebateStarterNodeResponseSchema = AiResponseBaseSchema.extend({
     /** 하위 agent 호출이 필요할 경우 명령 */
     command: z.enum(['get_debate_info']).optional(),
     /** 하위 agent 호출이 필요 없을 경우 응답 */
-    response: z.object({ content: z.string(), type: z.enum(['debate_start_answer']) }).optional(),
+    response: z
+      .object({ content: z.string(), type: z.enum([ResponseType.DEBATE_START_ANSWER]) })
+      .optional(),
   }),
 });
 

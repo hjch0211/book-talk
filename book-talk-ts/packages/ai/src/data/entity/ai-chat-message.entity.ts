@@ -11,7 +11,7 @@ export class AiChatMessageEntity extends AuditableUuidEntity {
   @Column({ name: 'chat_id', type: 'uuid' })
   chatId!: string;
 
-  /** 역할 (user, assistant, system) */
+  /** 역할 (user, assistant) */
   @Column({ type: 'varchar' })
   role!: ChatRole;
 

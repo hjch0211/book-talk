@@ -72,7 +72,7 @@ export class DebateStarterNode implements LangGraphNode<DebateState> {
     /** 최종 응답 */
     return {
       next: { node: END },
-      response: parsedResponse.data?.response,
+      response: parsedResponse.data.response,
     };
   }
 }

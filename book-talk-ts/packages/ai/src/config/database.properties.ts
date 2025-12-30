@@ -3,9 +3,7 @@ import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class DatabaseProperties {
-  constructor(
-    @Inject(ConfigService) private readonly configService: ConfigService,
-  ) {}
+  constructor(@Inject(ConfigService) private readonly configService: ConfigService) {}
 
   /** 데이터베이스 호스트 */
   get host(): string {

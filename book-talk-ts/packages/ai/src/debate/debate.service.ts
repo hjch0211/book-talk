@@ -54,7 +54,12 @@ export class DebateService {
       callbacks
     );
 
-    await this.messageRepository.save({ chatId, role: 'assistant', content: response });
+    // TODO: response 타입을 나누어야 함
+    await this.messageRepository.save({
+      chatId,
+      role: 'assistant',
+      content: JSON.stringify(response),
+    });
 
     return { response, chatId };
   }

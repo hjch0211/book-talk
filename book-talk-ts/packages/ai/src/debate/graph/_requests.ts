@@ -2,7 +2,7 @@ import { AiRequestBaseSchema } from '@src/ai-request';
 import { z } from 'zod';
 
 export const SupervisorNodeRequestSchema = AiRequestBaseSchema.extend({
-  /** 명령어(사회자 이기 떄문에 대화 맥락의 자연어가 들어옴) */
+  /** 명령어(사회자 이기 때문에 대화 맥락의 자연어가 들어옴) */
   command: z.string(),
   /** data */
   data: z.object({
@@ -18,7 +18,7 @@ export const DebateStarterNodeRequestSchema = AiRequestBaseSchema.extend({
   data: z.object({
     /** 토론방 ID */
     debateId: z.string().optional(),
-    /** 토로방 정보 */
+    /** 토론방 정보 */
     debateInfo: z.any().optional(),
   }),
 });
@@ -29,7 +29,7 @@ export const GetDebateInfoToolNodeRequestSchema = AiRequestBaseSchema.extend({
   /** data */
   data: z.object({
     /** 토론방 ID */
-    debateId: z.string(),
+    debateId: z.string().min(1, 'debateId는 필수입니다'),
   }),
 });
 

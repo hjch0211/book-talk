@@ -31,7 +31,7 @@ export class DebateGraph {
     request: string,
     debateId: string,
     callbacks: Callbacks
-  ): Promise<string> {
+  ): Promise<Response> {
     const result = await this.graph.invoke({ chatHistory, request, debateId }, { callbacks });
     return result.response;
   }

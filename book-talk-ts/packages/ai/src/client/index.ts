@@ -1,19 +1,19 @@
 export { ClientModule } from './client.module';
 export {
-  BooktalkDebateClient,
+  type BookInfo,
   type BooktalkConfig,
+  BooktalkDebateClient,
   DEBATE_CLIENT,
   type DebateClient,
   type DebateInfo,
-  type BookInfo,
   type MemberInfo,
+  NoOpDebateClient,
   type PresentationInfo,
   type RoundInfo,
-  NoOpDebateClient,
 } from './debate.client';
 export {
-  LangfusePromptStudioAgent,
   type LangfuseConfig,
+  LangfusePromptStudioAgent,
   NoOpPromptStudioAgent,
   PROMPT_STUDIO_AGENT,
   type PromptStudioAgent,

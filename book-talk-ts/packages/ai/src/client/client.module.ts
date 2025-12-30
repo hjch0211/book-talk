@@ -1,10 +1,4 @@
-import {
-  Global,
-  Inject,
-  Logger,
-  Module,
-  type OnModuleDestroy,
-} from '@nestjs/common';
+import { Global, Inject, Logger, Module, type OnModuleDestroy } from '@nestjs/common';
 import { BooktalkProperties, LangfuseProperties } from '@src/config';
 import {
   BooktalkDebateClient,
@@ -54,7 +48,7 @@ import {
 export class ClientModule implements OnModuleDestroy {
   constructor(
     @Inject(PROMPT_STUDIO_AGENT)
-    private readonly agent: PromptStudioAgent,
+    private readonly agent: PromptStudioAgent
   ) {}
 
   async onModuleDestroy() {
