@@ -1,15 +1,16 @@
 import type { Callbacks } from '@langchain/core/callbacks/manager';
 import { Inject, Injectable } from '@nestjs/common';
-import { PROMPT_STUDIO_AGENT, type PromptStudioAgent } from '@src/client';
+import { PROMPT_STUDIO_AGENT, type PromptStudioAgent } from '@src/client/prompt-studio.agent.js';
 import {
   AI_CHAT_MESSAGE_REPOSITORY,
   AI_CHAT_REPOSITORY,
   type AiChatMessageRepository,
   type AiChatRepository,
-} from '@src/data/data.module';
-import type { ChatRequest, CreateRequest } from './_requests';
-import type { ChatResponse } from './_responses';
-import { DEBATE_GRAPH, type DebateGraph } from './graph/debate.graph';
+} from '@src/data/data.module.js';
+import type { AiChatMessageEntity } from '@src/data/entity/ai-chat-message.entity.js';
+import type { ChatRequest, CreateRequest } from '@src/debate/_requests.js';
+import type { ChatResponse } from '@src/debate/_responses.js';
+import { DEBATE_GRAPH, type DebateGraph } from '@src/debate/graph/debate.graph.js';
 
 export const DEBATE_SERVICE = Symbol.for('DEBATE_SERVICE');
 
@@ -48,7 +49,7 @@ export class DebateService {
 
     const callbacks = this.createCallbacks(chatId);
     const response = await this.debateGraph.run(
-      chat.messages?.map((e) => ({ role: e.role, content: e.content })) || [],
+      chat.messages?.map((e: AiChatMessageEntity) => ({ role: e.role, content: e.content })) || [],
       message,
       chat.debateId,
       callbacks

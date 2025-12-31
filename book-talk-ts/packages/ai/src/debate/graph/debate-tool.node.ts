@@ -1,12 +1,12 @@
 import { Inject, Logger } from '@nestjs/common';
-import { DEBATE_CLIENT, type DebateClient } from '@src/client';
+import { DEBATE_CLIENT, type DebateClient } from '@src/client/debate.client.js';
+import type { DebateState } from '@src/debate/graph/debate.state.js';
 import {
   type GetDebateInfoToolNodeRequest,
   GetDebateInfoToolNodeRequestSchema,
-} from '@src/debate/graph/_requests';
-import { DEBATE_STARTER_NODE } from '@src/debate/graph/debate-starter.node';
-import { UNKNOWN_HANDLER_NODE } from '@src/debate/graph/unknown-handler.node';
-import type { DebateState } from './debate.state';
+} from './_requests.js';
+import { DEBATE_STARTER_NODE } from './debate-starter.node.js';
+import { UNKNOWN_HANDLER_NODE } from './unknown-handler.node.js';
 
 export const DEBATE_TOOL_NODE = Symbol.for('DEBATE_TOOL_NODE');
 

@@ -1,19 +1,19 @@
 import { Injectable } from '@nestjs/common';
-import { Column, type DataSource, Entity, OneToMany, Repository } from 'typeorm';
-import { AiChatMessageEntity } from './ai-chat-message.entity';
-import { AuditableUuidEntity } from './base.entity';
+import { AiChatMessageEntity } from '@src/data/entity/ai-chat-message.entity.js';
+import { AuditableUuidEntity } from '@src/data/entity/base.entity.js';
+import { Column, type DataSource, Entity, OneToMany, type Relation, Repository } from 'typeorm';
 
 @Entity('ai_chat')
 export class AiChatEntity extends AuditableUuidEntity {
   /** 토론방 ID */
   @Column({ name: 'debate_id', type: 'varchar', nullable: true })
-  debateId?: string;
+  debateId!: string;
 
   @OneToMany(
     () => AiChatMessageEntity,
     (message) => message.chat
   )
-  messages?: AiChatMessageEntity[];
+  messages!: Relation<AiChatMessageEntity[]>;
 }
 
 @Injectable()

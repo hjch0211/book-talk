@@ -1,9 +1,6 @@
 import { Annotation, END } from '@langchain/langgraph';
-import type { DebateInfo } from '@src/client';
-import type {
-  DebateStarterNodeRequest,
-  GetDebateInfoToolNodeRequest,
-} from '@src/debate/graph/_requests';
+import type { DebateInfo } from '@src/client/debate.client.js';
+import type { DebateStarterNodeRequest, GetDebateInfoToolNodeRequest } from './_requests.js';
 
 export type ChatHistory = { role: 'assistant' | 'user'; content: string };
 export type Next = {

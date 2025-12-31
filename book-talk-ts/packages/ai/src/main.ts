@@ -1,8 +1,8 @@
 import { NestFactory } from '@nestjs/core';
-import { GlobalExceptionFilter } from './api-exception';
-import { AppModule } from './app.module';
+import { GlobalExceptionFilter } from '@src/api-exception.js';
+import { AppModule } from '@src/app.module.js';
 
-export const booktalkApplication = NestFactory.create(AppModule).then((app) => {
+await NestFactory.create(AppModule).then((app) => {
   app.useGlobalFilters(new GlobalExceptionFilter());
-  return app;
+  void app.listen(3001);
 });

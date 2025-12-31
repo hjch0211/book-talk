@@ -259,16 +259,6 @@ reviews:
         - 제네릭 사용이 적절한가요?
         - 타입 가드가 필요한가요?"
 
-    # Vite/환경 설정
-    - path: "book-talk-ts/packages/web/vite.config.ts"
-      instructions: |
-        "Vite 설정은 아래 사항을 확인해주세요!
-        - 빌드 최적화 설정이 적절한가요?
-        - 환경 변수 처리가 올바른가요?
-        - 플러그인 설정이 적절한가요?
-        - 프록시 설정이 필요한가요?
-        - Production 빌드 설정이 최적화되어 있나요?"
-
     # 환경 변수 파일
     - path: "**/.env*"
       instructions: |

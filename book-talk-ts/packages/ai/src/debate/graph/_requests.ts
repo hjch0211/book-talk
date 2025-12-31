@@ -1,4 +1,4 @@
-import { AiRequestBaseSchema } from '@src/ai-request';
+import { AiRequestBaseSchema } from '@src/ai-request.js';
 import { z } from 'zod';
 
 export const SupervisorNodeRequestSchema = AiRequestBaseSchema.extend({

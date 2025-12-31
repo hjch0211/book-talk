@@ -1,5 +1,5 @@
-import { AiResponseBaseSchema } from '@src/ai-response';
-import { ResponseType } from '@src/debate/graph/debate.state';
+import { AiResponseBaseSchema } from '@src/ai-response.js';
+import { ResponseType } from '@src/debate/graph/debate.state.js';
 import { z } from 'zod';
 
 export const SupervisorNodeResponseSchema = AiResponseBaseSchema.extend({
@@ -12,7 +12,9 @@ export const SupervisorNodeResponseSchema = AiResponseBaseSchema.extend({
     /** 하위 agent 호출이 필요할 경우 명령 */
     command: z.enum(['debate_start']).optional(),
     /** 하위 agent 호출이 필요 없을 경우 응답 */
-    response: z.object({ content: z.string(), type: z.enum(['plain_answer']) }).optional(),
+    response: z
+      .object({ content: z.string(), type: z.enum([ResponseType.PLAIN_ANSWER]) })
+      .optional(),
   }),
 });
 

@@ -1,9 +1,9 @@
 import { Global, Module } from '@nestjs/common';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
-import { BooktalkProperties } from './booktalk.properties';
-import { DatabaseProperties } from './database.properties';
-import { LangfuseProperties } from './langfuse.properties';
-import { OpenAIProperties } from './openai.properties';
+import { BooktalkProperties } from '@src/config/booktalk.properties.js';
+import { DatabaseProperties } from '@src/config/database.properties.js';
+import { LangfuseProperties } from '@src/config/langfuse.properties.js';
+import { OpenAIProperties } from '@src/config/openai.properties.js';
 
 @Global()
 @Module({

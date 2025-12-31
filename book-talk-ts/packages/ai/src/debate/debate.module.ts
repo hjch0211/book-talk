@@ -1,13 +1,16 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { Module } from '@nestjs/common';
-import { PROMPT_STUDIO_AGENT, type PromptStudioAgent } from '@src/client';
-import { DEBATE_STARTER_NODE, DebateStarterNode } from '@src/debate/graph/debate-starter.node';
-import { DEBATE_TOOL_NODE, DebateToolNode } from '@src/debate/graph/debate-tool.node';
-import { SUPERVISOR_NODE, SupervisorNode } from '@src/debate/graph/supervisor.node';
-import { UNKNOWN_HANDLER_NODE, UnknownHandlerNode } from '@src/debate/graph/unknown-handler.node';
-import { DebateController } from './debate.controller';
-import { DEBATE_SERVICE, DebateService } from './debate.service';
-import { DEBATE_GRAPH, DebateGraph } from './graph/debate.graph';
+import { PROMPT_STUDIO_AGENT, type PromptStudioAgent } from '@src/client/prompt-studio.agent.js';
+import { DebateController } from '@src/debate/debate.controller.js';
+import { DEBATE_SERVICE, DebateService } from '@src/debate/debate.service.js';
+import { DEBATE_GRAPH, DebateGraph } from '@src/debate/graph/debate.graph.js';
+import { DEBATE_STARTER_NODE, DebateStarterNode } from '@src/debate/graph/debate-starter.node.js';
+import { DEBATE_TOOL_NODE, DebateToolNode } from '@src/debate/graph/debate-tool.node.js';
+import { SUPERVISOR_NODE, SupervisorNode } from '@src/debate/graph/supervisor.node.js';
+import {
+  UNKNOWN_HANDLER_NODE,
+  UnknownHandlerNode,
+} from '@src/debate/graph/unknown-handler.node.js';
 
 @Module({
   controllers: [DebateController],

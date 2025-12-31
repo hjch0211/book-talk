@@ -2,18 +2,12 @@ import type { BaseChatModel } from '@langchain/core/language_models/chat_models'
 import { AIMessage, HumanMessage, SystemMessage } from '@langchain/core/messages';
 import { END } from '@langchain/langgraph';
 import { Logger } from '@nestjs/common';
-import {
-  type SupervisorNodeRequest,
-  SupervisorNodeRequestSchema,
-} from '@src/debate/graph/_requests';
-import {
-  type SupervisorNodeResponse,
-  SupervisorNodeResponseSchema,
-} from '@src/debate/graph/_responses';
-import { DEBATE_STARTER_NODE } from '@src/debate/graph/debate-starter.node';
-import { UNKNOWN_HANDLER_NODE } from '@src/debate/graph/unknown-handler.node';
-import type { LangGraphNode } from '@src/lang-graph-node';
-import type { DebateState } from './debate.state';
+import type { DebateState } from '@src/debate/graph/debate.state.js';
+import type { LangGraphNode } from '@src/lang-graph-node.js';
+import { type SupervisorNodeRequest, SupervisorNodeRequestSchema } from './_requests.js';
+import { type SupervisorNodeResponse, SupervisorNodeResponseSchema } from './_responses.js';
+import { DEBATE_STARTER_NODE } from './debate-starter.node.js';
+import { UNKNOWN_HANDLER_NODE } from './unknown-handler.node.js';
 
 export const SUPERVISOR_NODE = Symbol.for('SUPERVISOR_NODE');
 

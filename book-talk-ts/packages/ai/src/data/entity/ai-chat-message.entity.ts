@@ -1,7 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { Column, type DataSource, Entity, JoinColumn, ManyToOne, Repository } from 'typeorm';
-import { AiChatEntity } from './ai-chat.entity';
-import { AuditableUuidEntity } from './base.entity';
+import { AiChatEntity } from '@src/data/entity/ai-chat.entity.js';
+import { AuditableUuidEntity } from '@src/data/entity/base.entity.js';
+import {
+  Column,
+  type DataSource,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  type Relation,
+  Repository,
+} from 'typeorm';
 
 export type ChatRole = 'user' | 'assistant';
 
@@ -25,7 +33,7 @@ export class AiChatMessageEntity extends AuditableUuidEntity {
     { onDelete: 'CASCADE' }
   )
   @JoinColumn({ name: 'chat_id' })
-  chat?: AiChatEntity;
+  chat?: Relation<AiChatEntity>;
 }
 
 @Injectable()

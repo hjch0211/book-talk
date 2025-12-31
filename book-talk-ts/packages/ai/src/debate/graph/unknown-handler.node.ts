@@ -1,6 +1,6 @@
 import { END } from '@langchain/langgraph';
-import type { LangGraphNode } from '@src/lang-graph-node';
-import { type DebateState, ResponseType } from './debate.state';
+import { type DebateState, ResponseType } from '@src/debate/graph/debate.state.js';
+import type { LangGraphNode } from '@src/lang-graph-node.js';
 
 export const UNKNOWN_HANDLER_NODE = Symbol.for('UNKNOWN_HANDLER_NODE');
 

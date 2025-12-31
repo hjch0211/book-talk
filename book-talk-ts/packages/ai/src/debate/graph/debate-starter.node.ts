@@ -6,15 +6,12 @@ import {
   type DebateStarterNodeRequest,
   DebateStarterNodeRequestSchema,
   type GetDebateInfoToolNodeRequest,
-} from '@src/debate/graph/_requests';
-import {
-  type DebateStarterNodeResponse,
-  DebateStarterNodeResponseSchema,
-} from '@src/debate/graph/_responses';
-import { DEBATE_TOOL_NODE } from '@src/debate/graph/debate-tool.node';
-import { UNKNOWN_HANDLER_NODE } from '@src/debate/graph/unknown-handler.node';
-import type { LangGraphNode } from '@src/lang-graph-node';
-import type { DebateState } from './debate.state';
+} from '@src/debate/graph/_requests.js';
+import type { DebateState } from '@src/debate/graph/debate.state.js';
+import type { LangGraphNode } from '@src/lang-graph-node.js';
+import { type DebateStarterNodeResponse, DebateStarterNodeResponseSchema } from './_responses.js';
+import { DEBATE_TOOL_NODE } from './debate-tool.node.js';
+import { UNKNOWN_HANDLER_NODE } from './unknown-handler.node.js';
 
 export const DEBATE_STARTER_NODE = Symbol.for('DEBATE_STARTER_NODE');
 

@@ -1,11 +1,22 @@
 import type { Callbacks } from '@langchain/core/callbacks/manager';
 import { END, START, StateGraph } from '@langchain/langgraph';
 import { Inject, Injectable } from '@nestjs/common';
-import { DEBATE_STARTER_NODE, type DebateStarterNode } from '@src/debate/graph/debate-starter.node';
-import { DEBATE_TOOL_NODE, type DebateToolNode } from '@src/debate/graph/debate-tool.node';
-import { SUPERVISOR_NODE, type SupervisorNode } from '@src/debate/graph/supervisor.node';
-import { type ChatHistory, type DebateState, DebateStateAnnotation } from './debate.state';
-import { UNKNOWN_HANDLER_NODE, type UnknownHandlerNode } from './unknown-handler.node';
+import {
+  type ChatHistory,
+  type DebateState,
+  DebateStateAnnotation,
+  type Response,
+} from '@src/debate/graph/debate.state.js';
+import {
+  DEBATE_STARTER_NODE,
+  type DebateStarterNode,
+} from '@src/debate/graph/debate-starter.node.js';
+import {
+  UNKNOWN_HANDLER_NODE,
+  type UnknownHandlerNode,
+} from '@src/debate/graph/unknown-handler.node.js';
+import { DEBATE_TOOL_NODE, type DebateToolNode } from './debate-tool.node.js';
+import { SUPERVISOR_NODE, type SupervisorNode } from './supervisor.node.js';
 
 export const DEBATE_GRAPH = Symbol.for('DEBATE_GRAPH');
 

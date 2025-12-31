@@ -1,9 +1,12 @@
 import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { DatabaseProperties } from '@src/config';
+import { DatabaseProperties } from '@src/config/database.properties.js';
+import { AiChatEntity, AiChatRepository } from '@src/data/entity/ai-chat.entity.js';
+import {
+  AiChatMessageEntity,
+  AiChatMessageRepository,
+} from '@src/data/entity/ai-chat-message.entity.js';
 import { DataSource } from 'typeorm';
-import { AiChatEntity, AiChatRepository } from './entity/ai-chat.entity';
-import { AiChatMessageEntity, AiChatMessageRepository } from './entity/ai-chat-message.entity';
 
 export const AI_CHAT_REPOSITORY = Symbol.for('AI_CHAT_REPOSITORY');
 export const AI_CHAT_MESSAGE_REPOSITORY = Symbol.for('AI_CHAT_MESSAGE_REPOSITORY');

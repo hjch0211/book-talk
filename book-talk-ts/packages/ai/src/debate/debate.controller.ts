@@ -1,14 +1,14 @@
 import { Body, Controller, Delete, Inject, Param, Post } from '@nestjs/common';
-import { validate } from '@src/api-validator';
-import { type ApiResult, toResult } from '../api-result';
+import { type ApiResult, toResult } from '@src/api-result.js';
+import { validate } from '@src/api-validator.js';
 import {
   type ChatRequest,
   ChatRequestSchema,
   type CreateRequest,
   CreateRequestSchema,
-} from './_requests';
-import type { ChatResponse } from './_responses';
-import { DEBATE_SERVICE, type DebateService } from './debate.service';
+} from '@src/debate/_requests.js';
+import type { ChatResponse } from '@src/debate/_responses.js';
+import { DEBATE_SERVICE, type DebateService } from '@src/debate/debate.service.js';
 
 @Controller('debate')
 export class DebateController {

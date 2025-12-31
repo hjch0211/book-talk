@@ -1,17 +1,18 @@
 import { Global, Inject, Logger, Module, type OnModuleDestroy } from '@nestjs/common';
-import { BooktalkProperties, LangfuseProperties } from '@src/config';
 import {
   BooktalkDebateClient,
   DEBATE_CLIENT,
   type DebateClient,
   NoOpDebateClient,
-} from './debate.client';
+} from '@src/client/debate.client.js';
 import {
   LangfusePromptStudioAgent,
   NoOpPromptStudioAgent,
   PROMPT_STUDIO_AGENT,
   type PromptStudioAgent,
-} from './prompt-studio.agent';
+} from '@src/client/prompt-studio.agent.js';
+import { BooktalkProperties } from '@src/config/booktalk.properties.js';
+import { LangfuseProperties } from '@src/config/langfuse.properties.js';
 
 @Global()
 @Module({

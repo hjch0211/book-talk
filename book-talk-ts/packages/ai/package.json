@@ -4,8 +4,8 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
+    "dev": "nest start --builder swc --watch",
+    "build": "nest build --builder swc",
     "lint": "biome check .",
     "lint:fix": "biome check --write .",
     "format": "biome format --write ."
@@ -29,6 +29,9 @@
     "zod": "^3.23.0"
   },
   "devDependencies": {
+    "@nestjs/cli": "^11.0.14",
+    "@swc/cli": "^0.7.9",
+    "@swc/core": "^1.15.8",
     "@types/express": "^5.0.0",
     "@types/node": "^22.0.0",
     "@types/ramda": "^0.31.1",
