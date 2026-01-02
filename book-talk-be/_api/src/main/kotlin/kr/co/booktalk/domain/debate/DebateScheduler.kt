@@ -1,6 +1,7 @@
 package kr.co.booktalk.domain.debate
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.*
 import kr.co.booktalk.client.MonitorClient
 import kr.co.booktalk.client.SendRequest
@@ -25,6 +26,11 @@ class DebateScheduler(
     private val scope = CoroutineScope(
         SupervisorJob() + Dispatchers.IO + CoroutineName("debate-scheduler")
     )
+
+    @PreDestroy
+    fun destroy() {
+        scope.cancel()
+    }
 
     /**
      * PRESENTATION 라운드 핸들링

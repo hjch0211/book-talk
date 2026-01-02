@@ -1,6 +1,7 @@
 package kr.co.booktalk
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.annotation.PreDestroy
 import jakarta.servlet.http.HttpServletRequest
 import kotlinx.coroutines.*
 import kr.co.booktalk.client.MonitorClient
@@ -19,6 +20,11 @@ class GlobalExceptionHandler(
     private val scope = CoroutineScope(
         SupervisorJob() + Dispatchers.IO + CoroutineName("exception-monitor")
     )
+
+    @PreDestroy
+    fun destroy() {
+        scope.cancel()
+    }
 
     /** Not Found Servlet Exception */
     @ExceptionHandler(NoResourceFoundException::class)
