@@ -56,22 +56,9 @@ class SlackMonitorClient(
     private fun buildBlocks(request: SendRequest): List<Any> {
         return when (request.level) {
             SendRequest.Level.ERROR -> listOf(
-                headerBlock(":rotating_light: Server Error"),
-                sectionBlock(
-                    """
-                *- message*
-                ${request.message}
-                """.trimIndent()
-                ),
-                dividerBlock(),
-                sectionBlock(
-                    """
-                *- stack trace*
-                ``` 
-                ${request.stackTrace}
-                ```
-                """.trimIndent()
-                )
+                headerBlock(":rotating_light: ${request.title}"),
+                sectionBlock("*- message*: ${request.message}".trimIndent()),
+                sectionBlock("*- stack trace*:\n```${request.stackTrace}```".trimIndent())
             )
         }
     }
@@ -93,9 +80,6 @@ class SlackMonitorClient(
                 "text" to text
             )
         )
-
-    private fun dividerBlock() =
-        mapOf("type" to "divider")
 }
 
 class NoOpMonitorClient : MonitorClient {
