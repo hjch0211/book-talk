@@ -6,8 +6,7 @@ import io.ktor.client.engine.cio.*
 import io.ktor.client.plugins.*
 import io.ktor.client.plugins.contentnegotiation.*
 import io.ktor.serialization.jackson.*
-import kr.co.booktalk.client.BookClient
-import kr.co.booktalk.client.NoOpBookClient
+import kr.co.booktalk.client.*
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
 
@@ -34,9 +33,25 @@ class HttpClientConfig {
             logger.warn { "Naver API 설정이 비었습니다. NoOpBookClient를 생성합니다." }
             return NoOpBookClient()
         } else {
-            return kr.co.booktalk.client.NaverBookClient(
+            return NaverBookClient(
                 httpClient = httpClient,
                 properties = properties.naver
+            )
+        }
+    }
+
+    @Bean
+    fun monitorClient(
+        httpClient: HttpClient,
+        properties: LibProperties
+    ): MonitorClient {
+        if (!properties.slack.isValid()) {
+            logger.warn { "Slack API 설정이 비었습니다. NoOpMonitorClient를 생성합니다." }
+            return NoOpMonitorClient()
+        } else {
+            return SlackMonitorClient(
+                httpClient = httpClient,
+                properties = properties.slack
             )
         }
     }

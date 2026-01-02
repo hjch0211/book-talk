@@ -1,6 +1,10 @@
 package kr.co.booktalk.domain.debate
 
 import io.github.oshai.kotlinlogging.KotlinLogging
+import jakarta.annotation.PreDestroy
+import kotlinx.coroutines.*
+import kr.co.booktalk.client.MonitorClient
+import kr.co.booktalk.client.SendRequest
 import kr.co.booktalk.domain.DebateRoundSpeakerRepository
 import kr.co.booktalk.domain.DebateRoundType
 import org.springframework.scheduling.annotation.Scheduled
@@ -15,9 +19,18 @@ import java.time.Instant
 @Component
 class DebateScheduler(
     private val debateRoundSpeakerRepository: DebateRoundSpeakerRepository,
-    private val debateRoundSpeakerService: DebateRoundSpeakerService
+    private val debateRoundSpeakerService: DebateRoundSpeakerService,
+    private val monitorClient: MonitorClient
 ) {
     private val logger = KotlinLogging.logger {}
+    private val scope = CoroutineScope(
+        SupervisorJob() + Dispatchers.IO + CoroutineName("debate-scheduler")
+    )
+
+    @PreDestroy
+    fun destroy() {
+        scope.cancel()
+    }
 
     /**
      * PRESENTATION 라운드 핸들링
@@ -33,19 +46,28 @@ class DebateScheduler(
             .findAllByIsActiveTrueAndEndedAtBeforeAndDebateRoundTypeAndDebateRoundEndedAtIsNull(
                 Instant.now(),
                 DebateRoundType.PRESENTATION
-            )
-        if (expiredSpeakers.isEmpty()) return
+            ).ifEmpty { return }
 
         expiredSpeakers.forEach { speaker ->
-            try {
+            runCatching {
                 debateRoundSpeakerService.patch(
                     PatchRoundSpeakerRequest(
                         debateRoundSpeakerId = speaker.id,
                         ended = true
                     )
                 )
-            } catch (e: Exception) {
+            }.onFailure { e ->
                 logger.error(e) { "발표자 만료 처리 실패: speakerId=${speaker.id}, accountId=${speaker.account.id}, debateId=${speaker.debateRound.debate.id}" }
+                scope.launch {
+                    monitorClient.send(
+                        SendRequest(
+                            title = "[book-talk-api] BATCH JOB ERROR",
+                            message = "${e.message}",
+                            stackTrace = e.stackTraceToString(),
+                            level = SendRequest.Level.ERROR
+                        )
+                    )
+                }
             }
         }
     }

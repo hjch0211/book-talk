@@ -15,3 +15,5 @@ lib:
   naver:
     client-id: ${NAVER_CLIENT_ID}
     client-secret: ${NAVER_CLIENT_SECRET}
+  slack:
+    webhook-url: ${SLACK_WEBHOOK_URL}

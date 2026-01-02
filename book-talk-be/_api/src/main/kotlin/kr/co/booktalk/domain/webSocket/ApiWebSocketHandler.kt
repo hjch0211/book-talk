@@ -3,10 +3,8 @@ package kr.co.booktalk.domain.webSocket
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
+import jakarta.annotation.PreDestroy
+import kotlinx.coroutines.*
 import kr.co.booktalk.cache.CacheClient
 import kr.co.booktalk.cache.CacheProperties
 import kr.co.booktalk.domain.debate.*
@@ -26,12 +24,16 @@ class ApiWebSocketHandler(
     private val objectMapper: ObjectMapper
 ) : TextWebSocketHandler() {
     private val logger = KotlinLogging.logger {}
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineName("api-websocket-handler"))
 
-    /** WebSocketSession을 in-memory로 관리 [Todo] 영속화 */
+    @PreDestroy
+    fun destroy() {
+        scope.cancel()
+    }
+
+    /** WebSocketSession을 in-memory로 관리 TODO: 영속화 */
     private val localSessions = ConcurrentHashMap<String, WebSocketSession>()
 
-    /** 비동기 작업용 CoroutineScope */
-    private val scope = CoroutineScope(Dispatchers.Default)
 
     data class RaisedHandInfo(
         val accountId: String,
@@ -69,7 +71,7 @@ class ApiWebSocketHandler(
 
                 "C_TOGGLE_HAND" -> {
                     val request = objectMapper.readValue<WS_ToggleHandRequest>(message.payload)
-                    handleToggleHand(session, request)
+                    scope.launch { handleToggleHand(session, request) }
                 }
 
                 "C_CHAT_MESSAGE" -> {
@@ -305,7 +307,7 @@ class ApiWebSocketHandler(
     }
 
     /** 손들기 토글 요청을 처리합니다. */
-    private fun handleToggleHand(session: WebSocketSession, request: WS_ToggleHandRequest) {
+    private suspend fun handleToggleHand(session: WebSocketSession, request: WS_ToggleHandRequest) {
         val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
 
         if (!validateAccountIdMatch(authenticatedAccountId, request.accountId)) {
@@ -336,11 +338,9 @@ class ApiWebSocketHandler(
                 cacheClient.expire(handsKey, cacheProperties.handRaise.handRaiseTtl)
 
                 // 3초 후 자동으로 손 내리기
-                scope.launch {
-                    delay(3000)
-                    cacheClient.hashDelete(handsKey, authenticatedAccountId)
-                    publishHandRaiseUpdate(request.debateId)
-                }
+                delay(3000)
+                cacheClient.hashDelete(handsKey, authenticatedAccountId)
+                publishHandRaiseUpdate(request.debateId)
             }
 
             // 손들기 상태 브로드캐스트
