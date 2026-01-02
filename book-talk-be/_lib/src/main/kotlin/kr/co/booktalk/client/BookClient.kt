@@ -5,6 +5,8 @@ import io.ktor.client.*
 import io.ktor.client.call.*
 import io.ktor.client.request.*
 import io.ktor.http.*
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kr.co.booktalk.config.LibProperties
 import java.net.URLEncoder
 
@@ -46,7 +48,7 @@ class NaverBookClient(
     private val properties: LibProperties.NaverProperties
 ) : BookClient {
     override suspend fun search(request: SearchRequest): SearchResponse {
-        val query = URLEncoder.encode(request.query, "UTF-8")
+        val query = withContext(Dispatchers.IO) { URLEncoder.encode(request.query, "UTF-8") }
         val start = (request.page - 1) * request.size + 1
         val url = "https://openapi.naver.com/v1/search/book.json?query=$query&display=${request.size}&start=$start"
 
