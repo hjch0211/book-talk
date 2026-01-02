@@ -72,6 +72,7 @@ services:
       JWT_REFRESH_EXPIRING_TIME: ${JWT_REFRESH_EXPIRING_TIME}
       NAVER_CLIENT_ID: ${NAVER_CLIENT_ID}
       NAVER_CLIENT_SECRET: ${NAVER_CLIENT_SECRET}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
     depends_on:
       postgres:
         condition: service_healthy
@@ -112,6 +113,7 @@ services:
       JWT_REFRESH_AUDIENCE: ${JWT_REFRESH_AUDIENCE}
       JWT_REFRESH_ISSUER: ${JWT_REFRESH_ISSUER}
       JWT_REFRESH_EXPIRING_TIME: ${JWT_REFRESH_EXPIRING_TIME}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
     depends_on:
       postgres:
         condition: service_healthy

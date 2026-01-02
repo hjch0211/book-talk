@@ -8,6 +8,7 @@ data class LibProperties(
     val aes: AesProperties = AesProperties(),
     val jwt: JwtProperties = JwtProperties(),
     val naver: NaverProperties = NaverProperties(),
+    val slack: SlackProperties = SlackProperties(),
 ) {
     data class AesProperties(
         val secretString: String = "",
@@ -37,5 +38,11 @@ data class LibProperties(
         val clientSecret: String = "",
     ) {
         fun isValid(): Boolean = clientId.isNotBlank() && clientSecret.isNotBlank()
+    }
+
+    data class SlackProperties(
+        val webhookUrl: String = "",
+    ) {
+        fun isValid(): Boolean = webhookUrl.isNotBlank()
     }
 }
