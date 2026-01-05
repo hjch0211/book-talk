@@ -123,9 +123,32 @@ services:
       - default
       - booktalk-internal
 
+  rabbitmq:
+    image: rabbitmq:3.5-management-alpine
+    container_name: book-talk-rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+      RABBITMQ_DEFAULT_VHOST: /
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    healthcheck:
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - default
+      - booktalk-internal
+
 volumes:
   postgres_data:
   redis_data:
+  rabbitmq_data:
 
 networks:
   booktalk-internal:
