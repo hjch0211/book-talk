@@ -46,12 +46,22 @@ export const useDebate = ({ debateId }: Props) => {
     joinDebateMutation.mutate(targetDebateId);
   });
 
-  /** 멤버가 아니면 자동으로 가입 시도 (isIdle: mutation이 한 번도 호출되지 않은 상태) */
+  const navigateToExpiredPage = useEffectEvent(() => {
+    navigate('/debate-expired');
+  });
+
   useEffect(() => {
+    /** expired 토론방의 경우 */
+    if (debate.closedAt) {
+      navigateToExpiredPage();
+      return;
+    }
+
+    /** 멤버가 아니면 자동으로 가입 시도 */
     if (debateId && _me?.id && !debate.myMemberInfo && joinDebateMutation.isIdle) {
       onAutoJoin(debateId);
     }
-  }, [debateId, _me?.id, debate.myMemberInfo, joinDebateMutation.isIdle]);
+  }, [debateId, _me?.id, debate.myMemberInfo, joinDebateMutation.isIdle, debate.closedAt]);
 
   const round = useDebateRound({ debate, debateId, currentRoundInfo: debate.currentRoundInfo });
 

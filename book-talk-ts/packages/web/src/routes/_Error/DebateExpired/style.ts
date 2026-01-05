@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 
-export const DebateFullContainer = styled.div`
+export const DebateExpiredContainer = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -32,7 +32,7 @@ export const TextWrapper = styled.div`
     flex-grow: 0;
 `;
 
-export const FullRoomTitle = styled.h1`
+export const ExpiredRoomTitle = styled.h1`
     width: 624px;
     height: 65px;
     font-style: normal;
@@ -48,7 +48,7 @@ export const FullRoomTitle = styled.h1`
     flex-grow: 0;
 `;
 
-export const FullRoomMessage = styled.p`
+export const ExpiredRoomMessage = styled.p`
     height: 34px;
     font-style: normal;
     font-weight: 500;
