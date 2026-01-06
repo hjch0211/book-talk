@@ -19,6 +19,7 @@ dependencies {
     implementation("com.github.java-json-tools:json-patch:1.13")
     implementation("org.jsoup:jsoup:1.17.2")
     implementation("org.openapitools:jackson-databind-nullable:0.2.7")
+    implementation("org.springframework.boot:spring-boot-starter-amqp")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
