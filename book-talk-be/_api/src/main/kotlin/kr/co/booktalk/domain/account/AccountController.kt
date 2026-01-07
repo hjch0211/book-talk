@@ -1,6 +1,6 @@
 package kr.co.booktalk.domain.account
 
-import kr.co.booktalk.ApiResult
+import kr.co.booktalk.HttpResult
 import kr.co.booktalk.domain.auth.AuthAccount
 import kr.co.booktalk.toResult
 import org.springframework.web.bind.annotation.GetMapping
@@ -14,7 +14,7 @@ class AccountController(
 ) {
     /** 내 계정 정보 조회 */
     @GetMapping("/accounts/me")
-    fun findMy(authAccount: AuthAccount): ApiResult<FindMyResponse> {
+    fun findMy(authAccount: AuthAccount): HttpResult<FindMyResponse> {
         return accountService.findMy(authAccount).toResult()
     }
 

@@ -1,6 +1,6 @@
 package kr.co.booktalk.domain.debate
 
-import kr.co.booktalk.ApiResult
+import kr.co.booktalk.HttpResult
 import kr.co.booktalk.domain.auth.AuthAccount
 import kr.co.booktalk.toResult
 import org.springframework.web.bind.annotation.*
@@ -13,14 +13,14 @@ class DebateController(
 ) {
     /** 토론 생성 */
     @PostMapping("/debates")
-    fun create(@RequestBody request: CreateRequest, authAccount: AuthAccount): ApiResult<CreateResponse> {
+    fun create(@RequestBody request: CreateRequest, authAccount: AuthAccount): HttpResult<CreateResponse> {
         request.validate()
         return debateService.create(request, authAccount).toResult()
     }
 
     /** 토론 단건 조회 */
     @GetMapping("/debates/{id}")
-    fun findOne(@PathVariable id: String): ApiResult<FindOneResponse> {
+    fun findOne(@PathVariable id: String): HttpResult<FindOneResponse> {
         return debateService.findOne(id).toResult()
     }
 
@@ -54,14 +54,14 @@ class DebateController(
 
     /** 채팅 생성 */
     @PostMapping("/debates/round/chats")
-    fun createChat(@RequestBody request: CreateChatRequest, authAccount: AuthAccount): ApiResult<CreateChatResponse> {
+    fun createChat(@RequestBody request: CreateChatRequest, authAccount: AuthAccount): HttpResult<CreateChatResponse> {
         request.validate()
         return debateChatService.create(request, authAccount).toResult()
     }
 
     /** 토론 채팅 조회 */
     @GetMapping("/debates/{debateId}/chats")
-    fun getChats(@PathVariable debateId: String, authAccount: AuthAccount): ApiResult<List<ChatResponse>> {
+    fun getChats(@PathVariable debateId: String, authAccount: AuthAccount): HttpResult<List<ChatResponse>> {
         return debateChatService.findByDebateId(debateId, authAccount).toResult()
     }
 }

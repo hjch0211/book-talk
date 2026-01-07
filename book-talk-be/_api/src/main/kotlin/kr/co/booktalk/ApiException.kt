@@ -28,15 +28,15 @@ class GlobalExceptionHandler(
 
     /** Not Found Servlet Exception */
     @ExceptionHandler(NoResourceFoundException::class)
-    fun handle(e: NoResourceFoundException, request: HttpServletRequest): ResponseEntity<ApiResult<Unit>> {
+    fun handle(e: NoResourceFoundException, request: HttpServletRequest): ResponseEntity<HttpResult<Unit>> {
         logger.warn(e) { "${request.method} ${request.requestURL} ${e.message}" }
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-            .body(ApiResult(Unit, ApiResult.Error("No Resource Found")))
+            .body(HttpResult(Unit, HttpResult.Error("No Resource Found")))
     }
 
     /** Http Exception */
     @ExceptionHandler(HttpException::class)
-    fun handle(e: HttpException, request: HttpServletRequest): ResponseEntity<ApiResult<Unit>> {
+    fun handle(e: HttpException, request: HttpServletRequest): ResponseEntity<HttpResult<Unit>> {
         if (e.status.is5xxServerError) {
             logger.error(e) { "${request.method} ${request.requestURL} ${e.status} ${e.responseMessage}" }
             scope.launch {
@@ -53,20 +53,20 @@ class GlobalExceptionHandler(
             logger.warn(e) { "${request.method} ${request.requestURL} ${e.status} ${e.responseMessage}" }
         }
         return ResponseEntity.status(e.status)
-            .body(ApiResult(Unit, ApiResult.Error(e.responseMessage, e.errorCode)))
+            .body(HttpResult(Unit, HttpResult.Error(e.responseMessage, e.errorCode)))
     }
 
     /** Bad Request Exception */
     @ExceptionHandler(IllegalArgumentException::class)
-    fun handle(e: IllegalArgumentException, request: HttpServletRequest): ResponseEntity<ApiResult<Unit>> {
+    fun handle(e: IllegalArgumentException, request: HttpServletRequest): ResponseEntity<HttpResult<Unit>> {
         logger.warn(e) { "${request.method} ${request.requestURL} ${e.message}" }
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-            .body(ApiResult(Unit, ApiResult.Error(e.message ?: "Bad Request")))
+            .body(HttpResult(Unit, HttpResult.Error(e.message ?: "Bad Request")))
     }
 
     /** Internal Server Error Exception */
     @ExceptionHandler(Exception::class)
-    fun handle(e: Exception, request: HttpServletRequest): ResponseEntity<ApiResult<Unit>> {
+    fun handle(e: Exception, request: HttpServletRequest): ResponseEntity<HttpResult<Unit>> {
         logger.error(e) { "${request.method} ${request.requestURL} ${e.message}" }
         scope.launch {
             monitorClient.send(
@@ -80,7 +80,7 @@ class GlobalExceptionHandler(
         }
 
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-            .body(ApiResult(Unit, ApiResult.Error("Internal server error")))
+            .body(HttpResult(Unit, HttpResult.Error("Internal server error")))
     }
 }
 
