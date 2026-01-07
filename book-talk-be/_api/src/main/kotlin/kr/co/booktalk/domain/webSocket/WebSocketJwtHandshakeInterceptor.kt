@@ -9,10 +9,9 @@ import org.springframework.web.socket.WebSocketHandler
 import org.springframework.web.socket.server.HandshakeInterceptor
 import java.net.URLDecoder
 
-// TODO 추 후 AuthArgumentResolver로 통일하기
 @Component
 class WebSocketJwtHandshakeInterceptor(
-    private val jwtService: JwtService
+    private val jwtService: JwtService,
 ) : HandshakeInterceptor {
     private val logger = KotlinLogging.logger {}
 
@@ -23,13 +22,10 @@ class WebSocketJwtHandshakeInterceptor(
         attributes: MutableMap<String, Any>
     ): Boolean {
         return try {
-            // 쿼리 파라미터에서 토큰 추출
             val query = request.uri.query
-            logger.info { "WebSocket 연결 시도: query=$query" }
-
             val token = extractTokenFromQuery(query)
             if (token == null) {
-                logger.error { "WebSocket 연결 시도: 토큰이 없음" }
+                logger.warn { "WebSocket 연결 시도: 토큰이 없음" }
                 return false
             }
 
@@ -37,14 +33,19 @@ class WebSocketJwtHandshakeInterceptor(
             val claims = jwtService.validateAccess(token)
             val accountId = claims.subject
 
+            // accountId 유효성 검사
+            if (accountId.isNullOrBlank()) {
+                logger.warn { "WebSocket 연결 시도: accountId가 없음" }
+                return false
+            }
+
             // WebSocket 세션 속성에 계정 정보 저장
             attributes["accountId"] = accountId
-            attributes["token"] = token
 
             true
-
+            /** GlocalAdvice 범주 밖이므로 예외 핸들링 */
         } catch (e: Exception) {
-            logger.error(e) { "WebSocket 인증 실패: ${e.message}" }
+            logger.warn(e) { "WebSocket 인증 실패: ${e.message}" }
             false
         }
     }
