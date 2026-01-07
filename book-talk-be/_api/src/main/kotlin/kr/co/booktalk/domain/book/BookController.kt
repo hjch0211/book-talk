@@ -1,6 +1,6 @@
 package kr.co.booktalk.domain.book
 
-import kr.co.booktalk.ApiResult
+import kr.co.booktalk.HttpResult
 import kr.co.booktalk.domain.auth.AuthAccount
 import kr.co.booktalk.toResult
 import org.springframework.web.bind.annotation.GetMapping
@@ -16,7 +16,7 @@ class BookController(
     fun searchBook(
         @ModelAttribute request: SearchBookRequest,
         authAccount: AuthAccount
-    ): ApiResult<SearchBookResponse> {
+    ): HttpResult<SearchBookResponse> {
         request.validate()
         return bookService.search(request).toResult()
     }

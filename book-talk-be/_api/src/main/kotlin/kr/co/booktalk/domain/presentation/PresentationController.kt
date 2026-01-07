@@ -1,7 +1,7 @@
 package kr.co.booktalk.domain.presentation
 
 import com.github.fge.jsonpatch.JsonPatch
-import kr.co.booktalk.ApiResult
+import kr.co.booktalk.HttpResult
 import kr.co.booktalk.domain.auth.AuthAccount
 import kr.co.booktalk.toResult
 import org.springframework.web.bind.annotation.*
@@ -12,7 +12,7 @@ class PresentationController(
 ) {
     /** 발표 페이지 단건 조회 */
     @GetMapping("/presentations/{id}")
-    fun findOne(@PathVariable id: String, authAccount: AuthAccount): ApiResult<FindOneResponse> {
+    fun findOne(@PathVariable id: String, authAccount: AuthAccount): HttpResult<FindOneResponse> {
         return presentationService.findOne(id).toResult()
     }
 
