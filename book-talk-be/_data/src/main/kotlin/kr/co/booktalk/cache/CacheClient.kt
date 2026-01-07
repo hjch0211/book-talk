@@ -17,11 +17,11 @@ interface CacheClient {
     fun expire(key: String, ttl: Duration)
 
     /** Hash 연산 */
-    fun hashSet(key: String, field: String, value: String)
-    fun hashSetAll(key: String, map: Map<String, String>, ttl: Duration? = null)
-    fun hashGet(key: String, field: String): String?
-    fun hashGetAll(key: String): Map<String, String>
-    fun hashDelete(key: String, field: String)
+    fun setToHash(key: String, field: String, value: String)
+    fun setAllToHash(key: String, map: Map<String, String>, ttl: Duration? = null)
+    fun getFromHash(key: String, field: String): String?
+    fun getAllFromHash(key: String): Map<String, String>
+    fun deleteHash(key: String, field: String)
 }
 
 class RedisCacheClient(
@@ -52,7 +52,7 @@ class RedisCacheClient(
 
     override fun exists(key: String): Boolean {
         return try {
-            redisTemplate.hasKey(key)
+            redisTemplate.hasKey(key) == true
         } catch (e: Exception) {
             logger.warn(e) { "Redis exists 실패 - key: $key" }
             false
@@ -81,16 +81,16 @@ class RedisCacheClient(
         redisTemplate.expire(key, ttl)
     }
 
-    override fun hashSet(key: String, field: String, value: String) {
+    override fun setToHash(key: String, field: String, value: String) {
         redisTemplate.opsForHash<String, String>().put(key, field, value)
     }
 
-    override fun hashSetAll(key: String, map: Map<String, String>, ttl: Duration?) {
+    override fun setAllToHash(key: String, map: Map<String, String>, ttl: Duration?) {
         redisTemplate.opsForHash<String, String>().putAll(key, map)
         ttl?.let { redisTemplate.expire(key, it) }
     }
 
-    override fun hashGet(key: String, field: String): String? {
+    override fun getFromHash(key: String, field: String): String? {
         return try {
             redisTemplate.opsForHash<String, String>().get(key, field)
         } catch (e: Exception) {
@@ -99,7 +99,7 @@ class RedisCacheClient(
         }
     }
 
-    override fun hashGetAll(key: String): Map<String, String> {
+    override fun getAllFromHash(key: String): Map<String, String> {
         return try {
             redisTemplate.opsForHash<String, String>().entries(key)
         } catch (e: Exception) {
@@ -108,7 +108,7 @@ class RedisCacheClient(
         }
     }
 
-    override fun hashDelete(key: String, field: String) {
+    override fun deleteHash(key: String, field: String) {
         try {
             redisTemplate.opsForHash<String, String>().delete(key, field)
         } catch (e: Exception) {
@@ -155,25 +155,25 @@ class NoOpCacheClient : CacheClient {
         logger.warn { "[NoOp] expire - key: $key, ttl: $ttl" }
     }
 
-    override fun hashSet(key: String, field: String, value: String) {
+    override fun setToHash(key: String, field: String, value: String) {
         logger.warn { "[NoOp] hashSet - key: $key, field: $field" }
     }
 
-    override fun hashSetAll(key: String, map: Map<String, String>, ttl: Duration?) {
+    override fun setAllToHash(key: String, map: Map<String, String>, ttl: Duration?) {
         logger.warn { "[NoOp] hashSetAll - key: $key, size: ${map.size}, ttl: $ttl" }
     }
 
-    override fun hashGet(key: String, field: String): String? {
+    override fun getFromHash(key: String, field: String): String? {
         logger.warn { "[NoOp] hashGet - key: $key, field: $field" }
         return null
     }
 
-    override fun hashGetAll(key: String): Map<String, String> {
+    override fun getAllFromHash(key: String): Map<String, String> {
         logger.warn { "[NoOp] hashGetAll - key: $key" }
         return emptyMap()
     }
 
-    override fun hashDelete(key: String, field: String) {
+    override fun deleteHash(key: String, field: String) {
         logger.warn { "[NoOp] hashDelete - key: $key, field: $field" }
     }
 }
