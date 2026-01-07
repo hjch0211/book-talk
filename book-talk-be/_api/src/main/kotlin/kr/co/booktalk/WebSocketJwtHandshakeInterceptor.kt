@@ -1,4 +1,4 @@
-package kr.co.booktalk.domain.webSocket
+package kr.co.booktalk
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kr.co.booktalk.domain.auth.JwtService

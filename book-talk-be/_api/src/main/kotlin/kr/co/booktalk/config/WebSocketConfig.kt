@@ -1,7 +1,7 @@
 package kr.co.booktalk.config
 
+import kr.co.booktalk.WebSocketJwtHandshakeInterceptor
 import kr.co.booktalk.domain.webSocket.ApiWebSocketHandler
-import kr.co.booktalk.domain.webSocket.WebSocketJwtHandshakeInterceptor
 import org.springframework.context.annotation.Configuration
 import org.springframework.web.socket.config.annotation.EnableWebSocket
 import org.springframework.web.socket.config.annotation.WebSocketConfigurer
