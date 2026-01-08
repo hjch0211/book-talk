@@ -5,6 +5,7 @@ import {
   WebSocketMessageSchema,
   type WS_DebateRoundUpdateResponse,
   type WS_SpeakerUpdateResponse,
+  WS_TYPE,
 } from './schema';
 
 export class DebateWebSocketClient {
@@ -21,44 +22,8 @@ export class DebateWebSocketClient {
     this.establishConnection();
   }
 
-  sendHeartbeat() {
-    if (this.ws?.readyState === WebSocket.OPEN) {
-      const token = localStorage.getItem('accessToken');
-      if (token) {
-        try {
-          const payload = JSON.parse(atob(token.split('.')[1]));
-          const heartbeatMessage = {
-            type: 'C_HEARTBEAT',
-            accountId: payload.sub,
-          };
-          this.ws.send(JSON.stringify(heartbeatMessage));
-        } catch (error) {
-          console.error('Failed to send heartbeat:', error);
-        }
-      }
-    }
-  }
-
   disconnect() {
     if (this.ws) {
-      // LEAVE_DEBATE 메시지 전송
-      if (this.ws.readyState === WebSocket.OPEN) {
-        const token = localStorage.getItem('accessToken');
-        if (token) {
-          try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const leaveMessage = {
-              type: 'C_LEAVE_DEBATE',
-              accountId: payload.sub,
-              debateId: this.debateId!,
-            };
-            this.ws.send(JSON.stringify(leaveMessage));
-          } catch (error) {
-            console.error('Failed to send leave message:', error);
-          }
-        }
-      }
-
       this.ws.close();
       this.ws = null;
     }
@@ -105,13 +70,13 @@ export class DebateWebSocketClient {
       if (token) {
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
-          const toggleHandMessage = {
-            type: 'C_TOGGLE_HAND',
-            debateId: this.debateId,
-            accountId: payload.sub,
-            accountName: payload.name || 'User',
-          };
-          this.ws.send(JSON.stringify(toggleHandMessage));
+          this.ws.send(
+            JSON.stringify({
+              type: WS_TYPE.C_TOGGLE_HAND,
+              debateId: this.debateId,
+              accountId: payload.sub,
+            })
+          );
         } catch (error) {
           console.error('Failed to send toggle hand message:', error);
         }
@@ -185,25 +150,21 @@ export class DebateWebSocketClient {
 
   private handleMessage(message: WebSocketMessage) {
     switch (message.type) {
-      case 'S_PRESENCE_UPDATE':
-        if (this.handlers.onOnlineMembersUpdate) {
-          const onlineIds = new Set<string>(
-            message.onlineAccounts.map((account) => account.accountId)
-          );
-          this.handlers.onOnlineMembersUpdate(onlineIds);
-        }
-        break;
-      case 'S_SPEAKER_UPDATE':
-        if (this.handlers.onSpeakerUpdate) {
-          this.handlers.onSpeakerUpdate(message);
-        }
-        break;
-      case 'S_JOIN_SUCCESS':
+      case WS_TYPE.S_JOIN_SUCCESS:
         if (this.handlers.onJoinSuccess) {
           this.handlers.onJoinSuccess();
         }
         break;
-      case 'S_HEARTBEAT_ACK':
+      case WS_TYPE.S_DEBATE_ONLINE_ACCOUNTS_UPDATE:
+        if (this.handlers.onOnlineMembersUpdate) {
+          const onlineIds = new Set<string>(message.payload.onlineAccountIds);
+          this.handlers.onOnlineMembersUpdate(onlineIds);
+        }
+        break;
+      case WS_TYPE.S_SPEAKER_UPDATE:
+        if (this.handlers.onSpeakerUpdate) {
+          this.handlers.onSpeakerUpdate(message);
+        }
         break;
       case 'S_DEBATE_ROUND_UPDATE':
         if (this.handlers.onDebateRoundUpdate) {
@@ -214,7 +175,6 @@ export class DebateWebSocketClient {
             const speakerUpdate: WS_SpeakerUpdateResponse = {
               type: 'S_SPEAKER_UPDATE',
               debateId: message.debateId,
-              provider: message.provider,
               currentSpeaker: message.currentSpeaker.accountId
                 ? {
                     accountId: message.currentSpeaker.accountId,
@@ -232,14 +192,10 @@ export class DebateWebSocketClient {
       case 'S_VOICE_OFFER':
       case 'S_VOICE_ANSWER':
       case 'S_VOICE_ICE_CANDIDATE':
-        if (this.handlers.onVoiceSignaling) {
-          this.handlers.onVoiceSignaling(message);
-        }
+        this.handlers.onVoiceSignaling?.(message);
         break;
-      case 'S_HAND_RAISE_UPDATE':
-        if (this.handlers.onHandRaiseUpdate) {
-          this.handlers.onHandRaiseUpdate(message.raisedHands);
-        }
+      case WS_TYPE.S_HAND_RAISE_UPDATE:
+        this.handlers.onHandRaiseUpdate?.(message.payload.raisedHandInfoList);
         break;
       case 'S_CHAT_MESSAGE':
         if (this.handlers.onChatMessage) {
@@ -270,6 +226,6 @@ export interface WebSocketHandlers {
   onSpeakerUpdate?: (speakerInfo: WS_SpeakerUpdateResponse) => void;
   onDebateRoundUpdate?: (roundInfo: WS_DebateRoundUpdateResponse) => void;
   onVoiceSignaling?: (message: WebSocketMessage) => void;
-  onHandRaiseUpdate?: (raisedHands: RaisedHandInfo[]) => void;
+  onHandRaiseUpdate?: (raisedHandInfoList: RaisedHandInfo[]) => void;
   onChatMessage?: (chatId: number) => void;
 }

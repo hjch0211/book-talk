@@ -6,7 +6,7 @@ import kr.co.booktalk.domain.AccountRepository
 import kr.co.booktalk.domain.DebateRepository
 import kr.co.booktalk.domain.DebateRoundEntity
 import kr.co.booktalk.domain.DebateRoundRepository
-import kr.co.booktalk.domain.webSocket.ApiWebSocketHandler
+import kr.co.booktalk.domain.webSocket.WebSocketHandler
 import kr.co.booktalk.httpBadRequest
 import kr.co.booktalk.toUUID
 import org.springframework.data.repository.findByIdOrNull
@@ -20,7 +20,7 @@ class DebateRoundService(
     private val accountRepository: AccountRepository,
     private val debateRoundRepository: DebateRoundRepository,
     private val appConfigService: AppConfigService,
-    private val apiWebSocketHandler: ApiWebSocketHandler,
+    private val webSocketHandler: WebSocketHandler,
     private val objectMapper: ObjectMapper,
 ) {
     @Transactional
@@ -82,7 +82,7 @@ class DebateRoundService(
             )
 
             val messageJson = objectMapper.writeValueAsString(response)
-            apiWebSocketHandler.broadcastToDebateRoom(debateId, messageJson)
+            webSocketHandler.broadcastToDebateRoom(debateId, messageJson)
         } catch (e: Exception) {
             // 브로드캐스트 실패는 로그만 남기고 메인 로직에는 영향 없도록 처리
             println("토론 라운드 브로드캐스트 실패: debateId=$debateId, error=${e.message}")

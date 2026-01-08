@@ -1,94 +1,90 @@
-import { z } from 'zod';
+import {z} from 'zod';
+
+export enum WS_TYPE {
+  /** Client → Server */
+  C_JOIN_DEBATE = 'C_JOIN_DEBATE',
+  C_TOGGLE_HAND = 'C_TOGGLE_HAND',
+  C_CHAT = 'C_CHAT',
+  C_VOICE_JOIN = 'C_VOICE_JOIN',
+  C_VOICE_OFFER = 'C_VOICE_OFFER',
+  C_VOICE_ANSWER = 'C_VOICE_ANSWER',
+  C_VOICE_ICE_CANDIDATE = 'C_VOICE_ICE_CANDIDATE',
+  /** Server → Client */
+  S_JOIN_SUCCESS = 'S_JOIN_SUCCESS',
+  S_JOIN_ERROR = 'S_JOIN_ERROR',
+  S_DEBATE_ONLINE_ACCOUNTS_UPDATE = 'S_DEBATE_ONLINE_ACCOUNTS_UPDATE',
+  S_HAND_RAISE_UPDATE = 'S_HAND_RAISE_UPDATE',
+  S_CHAT = 'S_CHAT',
+  S_SPEAKER_UPDATE = 'S_SPEAKER_UPDATE',
+  S_DEBATE_ROUND_UPDATE = 'S_DEBATE_ROUND_UPDATE',
+  S_VOICE_JOIN = 'S_VOICE_JOIN',
+  S_VOICE_OFFER = 'S_VOICE_OFFER',
+  S_VOICE_ANSWER = 'S_VOICE_ANSWER',
+  S_VOICE_ICE_CANDIDATE = 'S_VOICE_ICE_CANDIDATE',
+}
 
 export const WS_JoinDebateRequestSchema = z.object({
-  type: z.literal('C_JOIN_DEBATE'),
-  provider: z.literal('CLIENT'),
-  debateId: z.string(),
-  accountId: z.string(),
-  accountName: z.string(),
-});
-
-export const WS_LeaveDebateRequestSchema = z.object({
-  type: z.literal('C_LEAVE_DEBATE'),
-  provider: z.literal('CLIENT'),
-  debateId: z.string(),
-  accountId: z.string(),
-});
-
-export const WS_HeartbeatRequestSchema = z.object({
-  type: z.literal('C_HEARTBEAT'),
-  provider: z.literal('CLIENT'),
-  accountId: z.string().optional(),
+  type: z.literal(WS_TYPE.C_JOIN_DEBATE),
+  payload: z.object({
+    debateId: z.string(),
+    accountId: z.string(),
+  }),
 });
 
 export const WS_ToggleHandRequestSchema = z.object({
-  type: z.literal('C_TOGGLE_HAND'),
-  provider: z.literal('CLIENT'),
-  debateId: z.string(),
-  accountId: z.string(),
-  accountName: z.string(),
+  type: z.literal(WS_TYPE.C_TOGGLE_HAND),
+  payload: z.object({
+    debateId: z.string(),
+    accountId: z.string(),
+  }),
 });
 
-export const WS_ChatMessageRequestSchema = z.object({
-  type: z.literal('C_CHAT_MESSAGE'),
-  provider: z.literal('CLIENT'),
-  debateId: z.string(),
-  chatId: z.number(),
+export const WS_ChatRequestSchema = z.object({
+  type: z.literal(WS_TYPE.C_CHAT),
+  payload: z.object({
+    debateId: z.string(),
+    chatId: z.number(),
+  }),
 });
 
 export const WS_JoinSuccessResponseSchema = z.object({
-  type: z.literal('S_JOIN_SUCCESS'),
-  provider: z.literal('API'),
+  type: z.literal(WS_TYPE.S_JOIN_SUCCESS),
   debateId: z.string(),
   accountId: z.string(),
 });
 
 export const WS_JoinErrorResponseSchema = z.object({
-  type: z.literal('S_JOIN_ERROR'),
-  provider: z.literal('API'),
+  type: z.literal(WS_TYPE.S_JOIN_ERROR),
   debateId: z.string(),
   accountId: z.string(),
   reason: z.string(),
 });
 
-export const WS_HeartbeatAckResponseSchema = z.object({
-  type: z.literal('S_HEARTBEAT_ACK'),
-  provider: z.literal('API'),
-  timestamp: z.number(),
-});
-
-export const AccountPresenceInfoSchema = z.object({
-  accountId: z.string(),
-  accountName: z.string(),
-  status: z.string(),
-  lastHeartbeat: z.number(),
-});
-
-export const WS_PresenceUpdateResponseSchema = z.object({
-  type: z.literal('S_PRESENCE_UPDATE'),
-  provider: z.literal('API'),
-  debateId: z.string(),
-  onlineAccounts: z.array(AccountPresenceInfoSchema),
+export const WS_DebateOnlineAccountsUpdateResponseSchema = z.object({
+  type: z.literal(WS_TYPE.S_DEBATE_ONLINE_ACCOUNTS_UPDATE),
+  payload: z.object({
+    onlineAccountIds: z.array(z.string()),
+  }),
 });
 
 export const RaisedHandInfoSchema = z.object({
   accountId: z.string(),
-  accountName: z.string(),
-  raisedAt: z.number(),
+  raisedAt: z.string(),
 });
 
 export const WS_HandRaiseUpdateResponseSchema = z.object({
-  type: z.literal('S_HAND_RAISE_UPDATE'),
-  provider: z.literal('API'),
-  debateId: z.string(),
-  raisedHands: z.array(RaisedHandInfoSchema),
+  type: z.literal(WS_TYPE.S_HAND_RAISE_UPDATE),
+  payload: z.object({
+    raisedHandInfoList: z.array(RaisedHandInfoSchema),
+  }),
 });
 
-export const WS_ChatMessageResponseSchema = z.object({
-  type: z.literal('S_CHAT_MESSAGE'),
-  provider: z.literal('API'),
-  debateId: z.string(),
-  chatId: z.number(),
+export const WS_ChatResponseSchema = z.object({
+  type: z.literal(WS_TYPE.S_CHAT),
+  payload: z.object({
+    debateId: z.string(),
+    chatId: z.number(),
+  }),
 });
 
 export const CurrentSpeakerInfoSchema = z.object({
@@ -103,8 +99,7 @@ export const NextSpeakerInfoSchema = z.object({
 });
 
 export const WS_SpeakerUpdateResponseSchema = z.object({
-  type: z.literal('S_SPEAKER_UPDATE'),
-  provider: z.literal('API'),
+  type: z.literal(WS_TYPE.S_SPEAKER_UPDATE),
   debateId: z.string(),
   currentSpeaker: CurrentSpeakerInfoSchema.nullable(),
   nextSpeaker: NextSpeakerInfoSchema.nullable(),
@@ -120,24 +115,20 @@ export const RoundInfoSchema = z.object({
 });
 
 export const WS_DebateRoundUpdateResponseSchema = z.object({
-  type: z.literal('S_DEBATE_ROUND_UPDATE'),
-  provider: z.literal('API'),
+  type: z.literal(WS_TYPE.S_DEBATE_ROUND_UPDATE),
   debateId: z.string(),
   round: RoundInfoSchema,
   currentSpeaker: CurrentSpeakerInfoSchema,
 });
 
-// Voice - Client sends
 export const WS_VoiceJoinRequestSchema = z.object({
-  type: z.literal('C_VOICE_JOIN'),
-  provider: z.literal('CLIENT'),
+  type: z.literal(WS_TYPE.C_VOICE_JOIN),
   debateId: z.string(),
   accountId: z.string(),
 });
 
 export const WS_VoiceOfferRequestSchema = z.object({
-  type: z.literal('C_VOICE_OFFER'),
-  provider: z.literal('CLIENT'),
+  type: z.literal(WS_TYPE.C_VOICE_OFFER),
   debateId: z.string(),
   fromId: z.string(),
   toId: z.string(),
@@ -145,35 +136,29 @@ export const WS_VoiceOfferRequestSchema = z.object({
 });
 
 export const WS_VoiceAnswerRequestSchema = z.object({
-  type: z.literal('C_VOICE_ANSWER'),
-  provider: z.literal('CLIENT'),
+  type: z.literal(WS_TYPE.C_VOICE_ANSWER),
   debateId: z.string(),
   fromId: z.string(),
   toId: z.string(),
   answer: z.custom<RTCSessionDescriptionInit>(),
 });
 
-/** Trickle ICE: ICE Candidate 전송 (Client → Server) */
 export const WS_VoiceIceCandidateRequestSchema = z.object({
-  type: z.literal('C_VOICE_ICE_CANDIDATE'),
-  provider: z.literal('CLIENT'),
+  type: z.literal(WS_TYPE.C_VOICE_ICE_CANDIDATE),
   debateId: z.string(),
   fromId: z.string(),
   toId: z.string(),
   candidate: z.custom<RTCIceCandidateInit>(),
 });
 
-// Voice - Server broadcasts/relays
 export const WS_VoiceJoinResponseSchema = z.object({
-  type: z.literal('S_VOICE_JOIN'),
-  provider: z.literal('API'),
+  type: z.literal(WS_TYPE.S_VOICE_JOIN),
   debateId: z.string(),
   fromId: z.string(),
 });
 
 export const WS_VoiceOfferResponseSchema = z.object({
-  type: z.literal('S_VOICE_OFFER'),
-  provider: z.literal('API'),
+  type: z.literal(WS_TYPE.S_VOICE_OFFER),
   debateId: z.string(),
   fromId: z.string(),
   toId: z.string(),
@@ -181,18 +166,15 @@ export const WS_VoiceOfferResponseSchema = z.object({
 });
 
 export const WS_VoiceAnswerResponseSchema = z.object({
-  type: z.literal('S_VOICE_ANSWER'),
-  provider: z.literal('API'),
+  type: z.literal(WS_TYPE.S_VOICE_ANSWER),
   debateId: z.string(),
   fromId: z.string(),
   toId: z.string(),
   answer: z.custom<RTCSessionDescriptionInit>(),
 });
 
-/** Trickle ICE: ICE Candidate 수신 (Server → Client) */
 export const WS_VoiceIceCandidateResponseSchema = z.object({
-  type: z.literal('S_VOICE_ICE_CANDIDATE'),
-  provider: z.literal('API'),
+  type: z.literal(WS_TYPE.S_VOICE_ICE_CANDIDATE),
   debateId: z.string(),
   fromId: z.string(),
   toId: z.string(),
@@ -202,17 +184,14 @@ export const WS_VoiceIceCandidateResponseSchema = z.object({
 export const WebSocketMessageSchema = z.discriminatedUnion('type', [
   // Client messages
   WS_JoinDebateRequestSchema,
-  WS_LeaveDebateRequestSchema,
-  WS_HeartbeatRequestSchema,
   WS_ToggleHandRequestSchema,
-  WS_ChatMessageRequestSchema,
+  WS_ChatRequestSchema,
   // Server messages
   WS_JoinSuccessResponseSchema,
   WS_JoinErrorResponseSchema,
-  WS_HeartbeatAckResponseSchema,
-  WS_PresenceUpdateResponseSchema,
+  WS_DebateOnlineAccountsUpdateResponseSchema,
   WS_HandRaiseUpdateResponseSchema,
-  WS_ChatMessageResponseSchema,
+  WS_ChatResponseSchema,
   WS_SpeakerUpdateResponseSchema,
   WS_DebateRoundUpdateResponseSchema,
   // Voice - Client
@@ -228,17 +207,16 @@ export const WebSocketMessageSchema = z.discriminatedUnion('type', [
 ]);
 
 export type WS_JoinDebateRequest = z.infer<typeof WS_JoinDebateRequestSchema>;
-export type WS_LeaveDebateRequest = z.infer<typeof WS_LeaveDebateRequestSchema>;
-export type WS_HeartbeatRequest = z.infer<typeof WS_HeartbeatRequestSchema>;
 export type WS_ToggleHandRequest = z.infer<typeof WS_ToggleHandRequestSchema>;
-export type WS_ChatMessageRequest = z.infer<typeof WS_ChatMessageRequestSchema>;
+export type WS_ChatRequest = z.infer<typeof WS_ChatRequestSchema>;
 
 export type WS_JoinSuccessResponse = z.infer<typeof WS_JoinSuccessResponseSchema>;
 export type WS_JoinErrorResponse = z.infer<typeof WS_JoinErrorResponseSchema>;
-export type WS_HeartbeatAckResponse = z.infer<typeof WS_HeartbeatAckResponseSchema>;
-export type WS_PresenceUpdateResponse = z.infer<typeof WS_PresenceUpdateResponseSchema>;
+export type WS_DebateOnlineAccountsUpdateResponse = z.infer<
+    typeof WS_DebateOnlineAccountsUpdateResponseSchema
+>;
 export type WS_HandRaiseUpdateResponse = z.infer<typeof WS_HandRaiseUpdateResponseSchema>;
-export type WS_ChatMessageResponse = z.infer<typeof WS_ChatMessageResponseSchema>;
+export type WS_ChatResponse = z.infer<typeof WS_ChatResponseSchema>;
 export type WS_SpeakerUpdateResponse = z.infer<typeof WS_SpeakerUpdateResponseSchema>;
 export type WS_DebateRoundUpdateResponse = z.infer<typeof WS_DebateRoundUpdateResponseSchema>;
 
@@ -263,7 +241,6 @@ export type WS_VoiceIceCandidateResponse = z.infer<typeof WS_VoiceIceCandidateRe
 
 export type WebSocketMessage = z.infer<typeof WebSocketMessageSchema>;
 
-export type AccountPresenceInfo = z.infer<typeof AccountPresenceInfoSchema>;
 export type RaisedHandInfo = z.infer<typeof RaisedHandInfoSchema>;
 export type CurrentSpeakerInfo = z.infer<typeof CurrentSpeakerInfoSchema>;
 export type NextSpeakerInfo = z.infer<typeof NextSpeakerInfoSchema>;

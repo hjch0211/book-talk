@@ -81,7 +81,7 @@ function DebatePageContent({ debateId }: Props) {
           currentSpeaker={round.currentSpeaker}
           nextSpeaker={round.nextSpeaker}
           realTimeRemainingSeconds={round.realTimeRemainingSeconds}
-          raisedHands={connection.raisedHands}
+          raisedHands={connection.raisedHandInfoList}
           currentRoundType={currentRoundInfo.type}
           myAccountId={myMemberInfo?.id}
           onPassSpeaker={round.passSpeaker}
@@ -94,7 +94,11 @@ function DebatePageContent({ debateId }: Props) {
           onStartDebate={handleOpenStartModal}
           onEndPresentation={round.endPresentation}
           onToggleHand={connection.toggleHand}
-          isMyHandRaised={myMemberInfo?.id ? connection.isHandRaised(myMemberInfo.id) : false}
+          isMyHandRaised={
+            myMemberInfo?.id
+              ? connection.raisedHandInfoList.some((hand) => hand.accountId === myMemberInfo?.id)
+              : false
+          }
           isVoiceChatJoined={connection.voiceConnectionStatus === 'COMPLETED'}
           isVoiceMuted={voiceChatUI.isMuted}
           onToggleMute={voiceChatUI.toggleMute}

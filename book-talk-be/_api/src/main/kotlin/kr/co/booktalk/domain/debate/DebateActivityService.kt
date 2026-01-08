@@ -16,8 +16,7 @@ class DebateActivityService(
     private val handRaiseCache: HandRaiseCache,
     private val objectMapper: ObjectMapper
 ) {
-    /** "debate.request.toggle.hand" 이벤트 처리 */
-    fun handleToggleHandEvent(payload: ToggleHandRaiseRequest.Payload) {
+    fun toggleHandRaise(payload: ToggleHandRaiseRequest.Payload) {
         webSocketSessionCache.get(payload.accountId) ?: mqInvalidMessage("Session not found")
 
         val raisedHands = handRaiseCache.get(payload.debateId)

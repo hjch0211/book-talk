@@ -1,10 +1,10 @@
 package kr.co.booktalk.domain.debate
 
+import kr.co.booktalk.*
+import kr.co.booktalk.cache.WebSocketSessionCache
 import kr.co.booktalk.domain.*
 import kr.co.booktalk.domain.auth.AuthAccount
-import kr.co.booktalk.httpBadRequest
-import kr.co.booktalk.httpForbidden
-import kr.co.booktalk.toUUID
+import kr.co.booktalk.domain.webSocket.ChatRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -15,33 +15,31 @@ class DebateChatService(
     private val debateChatRepository: DebateChatRepository,
     private val debateRepository: DebateRepository,
     private val accountRepository: AccountRepository,
-    private val debateMemberRepository: DebateMemberRepository
+    private val debateMemberRepository: DebateMemberRepository,
+    private val webSocketSessionCache: WebSocketSessionCache
 ) {
+    fun create(request: ChatRequest) {
+        val session = webSocketSessionCache.get(request.payload.accountId) ?: wsBadRequest("Session not found")
 
-    fun create(request: CreateChatRequest, authAccount: AuthAccount): CreateChatResponse {
-        val debate = debateRepository.findByIdOrNull(request.debateId.toUUID())
-            ?: httpBadRequest("토론을 찾을 수 없습니다.")
-        if (debate.closedAt != null) httpBadRequest("종료된 토론입니다.")
-        val account = accountRepository.findByIdOrNull(authAccount.id.toUUID())
-            ?: httpBadRequest("계정을 찾을 수 없습니다.")
+        val debate = debateRepository.findByIdOrNull(request.payload.debateId.toUUID())
+            ?: wsBadRequest("토론을 찾을 수 없습니다.")
+        if (debate.closedAt != null) wsBadRequest("종료된 토론입니다.")
+
+        val account = accountRepository.findByIdOrNull(request.payload.accountId.toUUID())
+            ?: wsBadRequest("계정을 찾을 수 없습니다.")
+
         if (!debateMemberRepository.existsByDebateAndAccountId(debate, account.id!!))
-            httpForbidden("토론 참여자만 가능합니다.")
+            wsForbidden("토론 참여자만 가능합니다.")
+
         val savedChat = debateChatRepository.save(
             DebateChatEntity(
                 debate = debate,
                 account = account,
-                content = request.content
+                content = request.payload.content
             )
         )
 
-        return CreateChatResponse(
-            id = savedChat.id,
-            debateId = savedChat.debate.id.toString(),
-            accountId = savedChat.account.id.toString(),
-            accountName = savedChat.account.name,
-            content = savedChat.content,
-            createdAt = savedChat.createdAt
-        )
+        // TODO: 브로드캐스트 로직 추가
     }
 
     @Transactional(readOnly = true)
@@ -65,4 +63,5 @@ class DebateChatService(
             )
         }
     }
+
 }

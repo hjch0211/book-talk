@@ -26,6 +26,7 @@ import {
 } from '../style.ts';
 import { PresentationViewModal } from './modal/PresentationViewModal.tsx';
 
+// TODO: Props type 정리하기
 interface Props {
   members: Array<{
     id: string;
@@ -46,8 +47,6 @@ interface Props {
   realTimeRemainingSeconds: number;
   raisedHands: Array<{
     accountId: string;
-    accountName: string;
-    raisedAt: number;
   }>;
   currentRoundType: 'PREPARATION' | 'PRESENTATION' | 'FREE';
   myAccountId?: string;

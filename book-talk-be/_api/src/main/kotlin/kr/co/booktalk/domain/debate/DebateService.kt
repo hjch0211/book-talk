@@ -1,9 +1,17 @@
 package kr.co.booktalk.domain.debate
 
+import com.fasterxml.jackson.databind.ObjectMapper
 import kr.co.booktalk.cache.AppConfigService
+import kr.co.booktalk.cache.DebateOnlineAccountsCache
+import kr.co.booktalk.cache.WebSocketSessionCache
 import kr.co.booktalk.domain.*
 import kr.co.booktalk.domain.auth.AuthAccount
+import kr.co.booktalk.domain.webSocket.DebateOnlineAccountUpdateResponse
+import kr.co.booktalk.domain.webSocket.JoinDebateRequest
+import kr.co.booktalk.domain.webSocket.JoinDebateResponse
+import kr.co.booktalk.domain.webSocket.sendByMQ
 import kr.co.booktalk.httpBadRequest
+import kr.co.booktalk.mqInvalidMessage
 import kr.co.booktalk.toUUID
 import org.openapitools.jackson.nullable.JsonNullable
 import org.springframework.data.repository.findByIdOrNull
@@ -11,6 +19,7 @@ import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
 
+// TODO: PUB/SUB 도입하여 관심사 분리
 @Service
 class DebateService(
     private val accountRepository: AccountRepository,
@@ -22,7 +31,10 @@ class DebateService(
     private val debateRoundSpeakerRepository: DebateRoundSpeakerRepository,
     private val debateRoundSpeakerService: DebateRoundSpeakerService,
     private val debateRoundService: DebateRoundService,
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
+    private val webSocketSessionCache: WebSocketSessionCache,
+    private val debateOnlineAccountsCache: DebateOnlineAccountsCache,
+    private val objectMapper: ObjectMapper
 ) {
     @Transactional
     fun create(request: CreateRequest, authAccount: AuthAccount): CreateResponse {
@@ -132,6 +144,20 @@ class DebateService(
             debateRoundRepository.findByDebateIdAndEndedAtIsNull(debate.id!!)?.let { currentRound ->
                 currentRound.endedAt = Instant.now()
             }
+        }
+    }
+
+    fun joinSessionInDebate(payload: JoinDebateRequest.Payload) {
+        val session = webSocketSessionCache.get(payload.accountId) ?: mqInvalidMessage("Session not found")
+        session.attributes["debateId"] = payload.debateId
+
+        debateOnlineAccountsCache.add(payload.debateId, payload.accountId)
+        session.sendByMQ(objectMapper.writeValueAsString(JoinDebateResponse.build(payload.debateId, payload.accountId)))
+
+        val accountIds = debateOnlineAccountsCache.get(payload.debateId)
+        accountIds.forEach { accountId ->
+            webSocketSessionCache.get(accountId) ?: mqInvalidMessage("Session not found")
+            session.sendByMQ(objectMapper.writeValueAsString(DebateOnlineAccountUpdateResponse.build(accountIds)))
         }
     }
 }

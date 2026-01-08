@@ -5,9 +5,9 @@ export type {
   RaisedHandInfo,
   RoundInfo,
   WebSocketMessage,
-  WS_ChatMessageResponse,
+  WS_ChatResponse,
+  WS_DebateOnlineAccountsUpdateResponse,
   WS_DebateRoundUpdateResponse,
   WS_HandRaiseUpdateResponse,
-  WS_PresenceUpdateResponse,
   WS_SpeakerUpdateResponse,
 } from './schema';

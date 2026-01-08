@@ -48,8 +48,8 @@ export const useDebateRealtimeConnection = (props: Props) => {
   const [onlineMembers, setOnlineMembers] = useState<OnlineMember[]>([]);
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [isDebateJoined, setIsDebateJoined] = useState<boolean>(false);
-  const [raisedHands, setRaisedHands] = useState<RaisedHandInfo[]>([]);
   const wsClientRef = useRef<DebateWebSocketClient | null>(null);
+  const [activeRaisedHands, setActiveRaisedHands] = useState<RaisedHandInfo[]>([]);
 
   // Voice 연결 상태
   const [voiceConnectionStatus, setVoiceConnectionStatus] =
@@ -261,15 +261,14 @@ export const useDebateRealtimeConnection = (props: Props) => {
       onOnlineMembersUpdate,
       onConnectionStatus: (connected: boolean) => {
         setIsConnected(connected);
-        if (!connected) {
-          setIsDebateJoined(false);
-        }
+        if (!connected) setIsDebateJoined(false);
       },
-      onJoinSuccess: () => {
-        setIsDebateJoined(true);
-      },
-      onHandRaiseUpdate: (hands: RaisedHandInfo[]) => {
-        setRaisedHands(hands);
+      onJoinSuccess: () => setIsDebateJoined(true),
+      onHandRaiseUpdate: (raisedHandInfoList: RaisedHandInfo[]) => {
+        const now = Date.now();
+        setActiveRaisedHands(
+          raisedHandInfoList.filter((hand) => now - new Date(hand.raisedAt).getTime() < 5000)
+        );
       },
       onSpeakerUpdate,
       onDebateRoundUpdate,
@@ -283,26 +282,17 @@ export const useDebateRealtimeConnection = (props: Props) => {
     };
   }, [debateId]);
 
-  /** WebSocket 하트비트 관리 (30초 간격) */
+  /** 손들기 목록 업데이트 */
   useEffect(() => {
-    if (!isConnected || !wsClientRef.current) return;
+    const interval = setInterval(() => {
+      const now = Date.now();
+      setActiveRaisedHands((prev) =>
+        prev.filter((hand) => now - new Date(hand.raisedAt).getTime() < 5000)
+      );
+    }, 1000);
 
-    const intervalId = window.setInterval(() => {
-      wsClientRef.current?.sendHeartbeat();
-    }, 30000);
-
-    return () => clearInterval(intervalId);
-  }, [isConnected]);
-
-  /** 손들기 토글 */
-  const toggleHand = () => {
-    wsClientRef.current?.toggleHand();
-  };
-
-  /** 손든 상태 확인 */
-  const isHandRaised = (accountId: string): boolean => {
-    return raisedHands.some((hand) => hand.accountId === accountId);
-  };
+    return () => clearInterval(interval);
+  }, []);
 
   /** 채팅 메시지 전송 */
   const sendChatMessage = (chatId: number) => {
@@ -319,11 +309,9 @@ export const useDebateRealtimeConnection = (props: Props) => {
     /** 토론 참여 완료 여부 */
     isDebateJoined,
     /** 손들기 목록 */
-    raisedHands,
+    raisedHandInfoList: activeRaisedHands,
     /** 손들기 토글 */
-    toggleHand,
-    /** 손든 상태 확인 */
-    isHandRaised,
+    toggleHand: () => wsClientRef.current?.toggleHand(),
     /** 채팅 메시지 전송 */
     sendChatMessage,
     /** 음성 연결 상태 */

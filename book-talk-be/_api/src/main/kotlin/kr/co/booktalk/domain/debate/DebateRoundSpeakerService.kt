@@ -4,7 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
 import kr.co.booktalk.cache.AppConfigService
 import kr.co.booktalk.domain.*
-import kr.co.booktalk.domain.webSocket.ApiWebSocketHandler
+import kr.co.booktalk.domain.webSocket.WebSocketHandler
 import kr.co.booktalk.httpBadRequest
 import kr.co.booktalk.httpForbidden
 import kr.co.booktalk.toUUID
@@ -22,7 +22,7 @@ class DebateRoundSpeakerService(
     private val appConfigService: AppConfigService,
     private val debateMemberRepository: DebateMemberRepository,
     private val objectMapper: ObjectMapper,
-    private val apiWebSocketHandler: ApiWebSocketHandler,
+    private val webSocketHandler: WebSocketHandler,
     private val debateRoundService: DebateRoundService
 ) {
     private val logger = KotlinLogging.logger {}
@@ -184,7 +184,7 @@ class DebateRoundSpeakerService(
 
             // 해당 토론방의 모든 WebSocket 세션에 직접 브로드캐스트
             val messageJson = objectMapper.writeValueAsString(response)
-            apiWebSocketHandler.broadcastToDebateRoom(debateId, messageJson)
+            webSocketHandler.broadcastToDebateRoom(debateId, messageJson)
 
             logger.info { "발표자 정보 브로드캐스트 완료: debateId=$debateId" }
         } catch (e: Exception) {
