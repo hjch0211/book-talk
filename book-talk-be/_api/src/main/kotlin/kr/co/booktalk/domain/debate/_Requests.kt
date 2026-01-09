@@ -4,6 +4,18 @@ import kr.co.booktalk.WebSocketMessage
 import kr.co.booktalk.domain.DebateRoundType
 import org.openapitools.jackson.nullable.JsonNullable
 
+enum class WSRequestMessageType {
+    C_JOIN_DEBATE,
+    C_LEAVE_DEBATE,
+    C_HEARTBEAT,
+    C_TOGGLE_HAND,
+    C_CHAT_MESSAGE,
+    C_VOICE_JOIN,
+    C_VOICE_OFFER,
+    C_VOICE_ANSWER,
+    C_VOICE_ICE_CANDIDATE
+}
+
 data class CreateRequest(
     val topic: String,
     val description: String?,
@@ -58,84 +70,111 @@ data class CreateChatRequest(
     val content: String
 )
 
-data class WS_JoinDebateRequest(
-    val debateId: String,
-    val accountId: String,
-    val accountName: String,
-    val voiceEnabled: Boolean = true  // 기본값: voice chat 활성화
-) : WebSocketMessage {
-    override val type: String = "C_JOIN_DEBATE"
-    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+data class JoinDebateRequest(
+    override val payload: JoinDebatePayload?
+) : WebSocketMessage<JoinDebateRequest.JoinDebatePayload> {
+    override val type: String = WSRequestMessageType.C_JOIN_DEBATE.name
+
+    data class JoinDebatePayload(
+        val debateId: String,
+        val accountId: String,
+        val accountName: String,
+        val voiceEnabled: Boolean = true  // 기본값: voice chat 활성화
+    )
 }
 
-data class WS_LeaveDebateRequest(
-    val debateId: String,
-    val accountId: String
-) : WebSocketMessage {
-    override val type: String = "C_LEAVE_DEBATE"
-    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+data class LeaveDebateRequest(
+    override val payload: LeaveDebatePayload?
+) : WebSocketMessage<LeaveDebateRequest.LeaveDebatePayload> {
+    override val type: String = WSRequestMessageType.C_LEAVE_DEBATE.name
+
+    data class LeaveDebatePayload(
+        val debateId: String,
+        val accountId: String
+    )
 }
 
-data class WS_HeartbeatRequest(
-    val accountId: String? = null
-) : WebSocketMessage {
-    override val type: String = "C_HEARTBEAT"
-    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+data class HeartbeatRequest(
+    override val payload: HeartbeatPayload?
+) : WebSocketMessage<HeartbeatRequest.HeartbeatPayload> {
+    override val type: String = WSRequestMessageType.C_HEARTBEAT.name
+
+    data class HeartbeatPayload(
+        val accountId: String? = null
+    )
 }
 
-data class WS_ToggleHandRequest(
-    val debateId: String,
-    val accountId: String,
-    val accountName: String
-) : WebSocketMessage {
-    override val type: String = "C_TOGGLE_HAND"
-    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+data class ToggleHandRequest(
+    override val payload: ToggleHandPayload?
+) : WebSocketMessage<ToggleHandRequest.ToggleHandPayload> {
+    override val type: String = WSRequestMessageType.C_TOGGLE_HAND.name
+
+    data class ToggleHandPayload(
+        val debateId: String,
+        val accountId: String,
+        val accountName: String
+    )
 }
 
-data class WS_ChatMessageRequest(
-    val debateId: String,
-    val chatId: Long
-) : WebSocketMessage {
-    override val type: String = "C_CHAT_MESSAGE"
-    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+data class ChatMessageRequest(
+    override val payload: ChatMessagePayload?
+) : WebSocketMessage<ChatMessageRequest.ChatMessagePayload> {
+    override val type: String = WSRequestMessageType.C_CHAT_MESSAGE.name
+
+    data class ChatMessagePayload(
+        val debateId: String,
+        val chatId: Long
+    )
 }
 
 // WebRTC Signaling Messages - Client sends (C_ prefix)
-data class WS_VoiceJoinRequest(
-    val debateId: String,
-    val accountId: String
-) : WebSocketMessage {
-    override val type: String = "C_VOICE_JOIN"
-    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+data class VoiceJoinRequest(
+    override val payload: VoiceJoinPayload?
+) : WebSocketMessage<VoiceJoinRequest.VoiceJoinPayload> {
+    override val type: String = WSRequestMessageType.C_VOICE_JOIN.name
+
+    data class VoiceJoinPayload(
+        val debateId: String,
+        val accountId: String
+    )
 }
 
-data class WS_VoiceOfferRequest(
-    val debateId: String,
-    val fromId: String,
-    val toId: String,
-    val offer: Map<String, Any>
-) : WebSocketMessage {
-    override val type: String = "C_VOICE_OFFER"
-    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+data class VoiceOfferRequest(
+    override val payload: VoiceOfferPayload?
+) : WebSocketMessage<VoiceOfferRequest.VoiceOfferPayload> {
+    override val type: String = WSRequestMessageType.C_VOICE_OFFER.name
+
+    data class VoiceOfferPayload(
+        val debateId: String,
+        val fromId: String,
+        val toId: String,
+        val offer: Map<String, Any>
+    )
 }
 
-data class WS_VoiceAnswerRequest(
-    val debateId: String,
-    val fromId: String,
-    val toId: String,
-    val answer: Map<String, Any>
-) : WebSocketMessage {
-    override val type: String = "C_VOICE_ANSWER"
-    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+data class VoiceAnswerRequest(
+    override val payload: VoiceAnswerPayload?
+) : WebSocketMessage<VoiceAnswerRequest.VoiceAnswerPayload> {
+    override val type: String = WSRequestMessageType.C_VOICE_ANSWER.name
+
+    data class VoiceAnswerPayload(
+        val debateId: String,
+        val fromId: String,
+        val toId: String,
+        val answer: Map<String, Any>
+    )
 }
 
 /** Trickle ICE: ICE Candidate 전송 */
-data class WS_VoiceIceCandidateRequest(
-    val debateId: String,
-    val fromId: String,
-    val toId: String,
-    val candidate: Map<String, Any>
-) : WebSocketMessage {
-    override val type: String = "C_VOICE_ICE_CANDIDATE"
-    override val provider: WebSocketMessage.Provider = WebSocketMessage.Provider.CLIENT
+data class VoiceIceCandidateRequest(
+    override val payload: VoiceIceCandidatePayload?
+) : WebSocketMessage<VoiceIceCandidateRequest.VoiceIceCandidatePayload> {
+    override val type: String = WSRequestMessageType.C_VOICE_ICE_CANDIDATE.name
+
+    data class VoiceIceCandidatePayload(
+        val debateId: String,
+        val fromId: String,
+        val toId: String,
+        val candidate: Map<String, Any>
+    )
 }

@@ -148,7 +148,7 @@ class DebateRoundSpeakerService(
     }
 
     /** 현재 발표자 정보를 조회합니다 */
-    fun getCurrentSpeaker(debateId: String): WS_SpeakerUpdateResponse? {
+    fun getCurrentSpeaker(debateId: String): SpeakerUpdateResponse? {
         return try {
             val debateUUID = java.util.UUID.fromString(debateId)
             val currentRound = debateRoundRepository.findByDebateIdAndEndedAtIsNull(debateUUID)
@@ -157,19 +157,21 @@ class DebateRoundSpeakerService(
             val currentSpeaker = debateRoundSpeakerRepository.findByDebateRoundAndIsActive(currentRound, true)
                 ?: return null
 
-            WS_SpeakerUpdateResponse(
-                debateId = debateId,
-                currentSpeaker = WS_SpeakerUpdateResponse.CurrentSpeakerInfo(
-                    accountId = currentSpeaker.account.id.toString(),
-                    accountName = currentSpeaker.account.name,
-                    endedAt = currentSpeaker.endedAt.toEpochMilli()
-                ),
-                nextSpeaker = currentRound.nextSpeaker?.let {
-                    WS_SpeakerUpdateResponse.NextSpeakerInfo(
-                        accountId = it.id.toString(),
-                        accountName = it.name
-                    )
-                }
+            SpeakerUpdateResponse(
+                payload = SpeakerUpdateResponse.SpeakerUpdatePayload(
+                    debateId = debateId,
+                    currentSpeaker = SpeakerUpdateResponse.SpeakerUpdatePayload.CurrentSpeakerInfo(
+                        accountId = currentSpeaker.account.id.toString(),
+                        accountName = currentSpeaker.account.name,
+                        endedAt = currentSpeaker.endedAt.toEpochMilli()
+                    ),
+                    nextSpeaker = currentRound.nextSpeaker?.let {
+                        SpeakerUpdateResponse.SpeakerUpdatePayload.NextSpeakerInfo(
+                            accountId = it.id.toString(),
+                            accountName = it.name
+                        )
+                    }
+                )
             )
         } catch (e: Exception) {
             logger.error(e) { "현재 발표자 정보 조회 실패: debateId=$debateId" }

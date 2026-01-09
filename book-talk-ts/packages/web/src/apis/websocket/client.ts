@@ -3,8 +3,10 @@ import {
   type VoiceMessagePayload,
   type WebSocketMessage,
   WebSocketMessageSchema,
-  type WS_DebateRoundUpdateResponse,
-  type WS_SpeakerUpdateResponse,
+  type DebateRoundUpdateResponse,
+  type SpeakerUpdateResponse,
+  WSRequestMessageType,
+  WSResponseMessageType,
 } from './schema';
 
 export class DebateWebSocketClient {
@@ -28,8 +30,10 @@ export class DebateWebSocketClient {
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
           const heartbeatMessage = {
-            type: 'C_HEARTBEAT',
-            accountId: payload.sub,
+            type: WSRequestMessageType.C_HEARTBEAT,
+            payload: {
+              accountId: payload.sub,
+            },
           };
           this.ws.send(JSON.stringify(heartbeatMessage));
         } catch (error) {
@@ -48,9 +52,11 @@ export class DebateWebSocketClient {
           try {
             const payload = JSON.parse(atob(token.split('.')[1]));
             const leaveMessage = {
-              type: 'C_LEAVE_DEBATE',
-              accountId: payload.sub,
-              debateId: this.debateId!,
+              type: WSRequestMessageType.C_LEAVE_DEBATE,
+              payload: {
+                accountId: payload.sub,
+                debateId: this.debateId!,
+              },
             };
             this.ws.send(JSON.stringify(leaveMessage));
           } catch (error) {
@@ -76,7 +82,10 @@ export class DebateWebSocketClient {
     if (this.ws?.readyState === WebSocket.OPEN && this.debateId) {
       const voiceMessage = {
         ...message,
-        debateId: this.debateId,
+        payload: {
+          ...message.payload,
+          debateId: this.debateId,
+        },
       };
       this.ws.send(JSON.stringify(voiceMessage));
     } else {
@@ -91,9 +100,11 @@ export class DebateWebSocketClient {
   sendChatMessage(chatId: number): void {
     if (this.ws?.readyState === WebSocket.OPEN && this.debateId) {
       const chatMessage = {
-        type: 'C_CHAT_MESSAGE',
-        debateId: this.debateId,
-        chatId: chatId,
+        type: WSRequestMessageType.C_CHAT_MESSAGE,
+        payload: {
+          debateId: this.debateId,
+          chatId: chatId,
+        },
       };
       this.ws.send(JSON.stringify(chatMessage));
     }
@@ -106,10 +117,12 @@ export class DebateWebSocketClient {
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
           const toggleHandMessage = {
-            type: 'C_TOGGLE_HAND',
-            debateId: this.debateId,
-            accountId: payload.sub,
-            accountName: payload.name || 'User',
+            type: WSRequestMessageType.C_TOGGLE_HAND,
+            payload: {
+              debateId: this.debateId,
+              accountId: payload.sub,
+              accountName: payload.name || 'User',
+            },
           };
           this.ws.send(JSON.stringify(toggleHandMessage));
         } catch (error) {
@@ -166,10 +179,13 @@ export class DebateWebSocketClient {
         try {
           const payload = JSON.parse(atob(token.split('.')[1]));
           const joinMessage = {
-            type: 'C_JOIN_DEBATE',
-            debateId: this.debateId,
-            accountId: payload.sub,
-            accountName: payload.name || 'User',
+            type: WSRequestMessageType.C_JOIN_DEBATE,
+            payload: {
+              debateId: this.debateId,
+              accountId: payload.sub,
+              accountName: payload.name || 'User',
+              voiceEnabled: true,
+            },
           };
 
           // 약간의 지연 후 메시지 전송
@@ -185,65 +201,66 @@ export class DebateWebSocketClient {
 
   private handleMessage(message: WebSocketMessage) {
     switch (message.type) {
-      case 'S_PRESENCE_UPDATE':
-        if (this.handlers.onOnlineMembersUpdate) {
+      case WSResponseMessageType.S_PRESENCE_UPDATE:
+        if (this.handlers.onOnlineMembersUpdate && message.payload) {
           const onlineIds = new Set<string>(
-            message.onlineAccounts.map((account) => account.accountId)
+            message.payload.onlineAccounts.map((account) => account.accountId)
           );
           this.handlers.onOnlineMembersUpdate(onlineIds);
         }
         break;
-      case 'S_SPEAKER_UPDATE':
+      case WSResponseMessageType.S_SPEAKER_UPDATE:
         if (this.handlers.onSpeakerUpdate) {
           this.handlers.onSpeakerUpdate(message);
         }
         break;
-      case 'S_JOIN_SUCCESS':
+      case WSResponseMessageType.S_JOIN_SUCCESS:
         if (this.handlers.onJoinSuccess) {
           this.handlers.onJoinSuccess();
         }
         break;
-      case 'S_HEARTBEAT_ACK':
+      case WSResponseMessageType.S_HEARTBEAT_ACK:
         break;
-      case 'S_DEBATE_ROUND_UPDATE':
+      case WSResponseMessageType.S_DEBATE_ROUND_UPDATE:
         if (this.handlers.onDebateRoundUpdate) {
           this.handlers.onDebateRoundUpdate(message);
 
           // currentSpeaker 정보가 있으면 SPEAKER_UPDATE로도 처리
-          if (this.handlers.onSpeakerUpdate && message.currentSpeaker) {
-            const speakerUpdate: WS_SpeakerUpdateResponse = {
-              type: 'S_SPEAKER_UPDATE',
-              debateId: message.debateId,
-              provider: message.provider,
-              currentSpeaker: message.currentSpeaker.accountId
-                ? {
-                    accountId: message.currentSpeaker.accountId,
-                    accountName: message.currentSpeaker.accountName!,
-                    endedAt: message.currentSpeaker.endedAt,
-                  }
-                : null,
-              nextSpeaker: null,
+          if (this.handlers.onSpeakerUpdate && message.payload?.currentSpeaker) {
+            const speakerUpdate: SpeakerUpdateResponse = {
+              type: WSResponseMessageType.S_SPEAKER_UPDATE,
+              payload: {
+                debateId: message.payload.debateId,
+                currentSpeaker: message.payload.currentSpeaker.accountId
+                  ? {
+                      accountId: message.payload.currentSpeaker.accountId,
+                      accountName: message.payload.currentSpeaker.accountName!,
+                      endedAt: message.payload.currentSpeaker.endedAt,
+                    }
+                  : null,
+                nextSpeaker: null,
+              },
             };
             this.handlers.onSpeakerUpdate(speakerUpdate);
           }
         }
         break;
-      case 'S_VOICE_JOIN':
-      case 'S_VOICE_OFFER':
-      case 'S_VOICE_ANSWER':
-      case 'S_VOICE_ICE_CANDIDATE':
+      case WSResponseMessageType.S_VOICE_JOIN:
+      case WSResponseMessageType.S_VOICE_OFFER:
+      case WSResponseMessageType.S_VOICE_ANSWER:
+      case WSResponseMessageType.S_VOICE_ICE_CANDIDATE:
         if (this.handlers.onVoiceSignaling) {
           this.handlers.onVoiceSignaling(message);
         }
         break;
-      case 'S_HAND_RAISE_UPDATE':
-        if (this.handlers.onHandRaiseUpdate) {
-          this.handlers.onHandRaiseUpdate(message.raisedHands);
+      case WSResponseMessageType.S_HAND_RAISE_UPDATE:
+        if (this.handlers.onHandRaiseUpdate && message.payload) {
+          this.handlers.onHandRaiseUpdate(message.payload.raisedHands);
         }
         break;
-      case 'S_CHAT_MESSAGE':
-        if (this.handlers.onChatMessage) {
-          this.handlers.onChatMessage(message.chatId);
+      case WSResponseMessageType.S_CHAT_MESSAGE:
+        if (this.handlers.onChatMessage && message.payload) {
+          this.handlers.onChatMessage(message.payload.chatId);
         }
         break;
       default:
@@ -267,8 +284,8 @@ export interface WebSocketHandlers {
   onOnlineMembersUpdate?: (onlineAccountIds: Set<string>) => void;
   onConnectionStatus?: (connected: boolean) => void;
   onJoinSuccess?: () => void;
-  onSpeakerUpdate?: (speakerInfo: WS_SpeakerUpdateResponse) => void;
-  onDebateRoundUpdate?: (roundInfo: WS_DebateRoundUpdateResponse) => void;
+  onSpeakerUpdate?: (speakerInfo: SpeakerUpdateResponse) => void;
+  onDebateRoundUpdate?: (roundInfo: DebateRoundUpdateResponse) => void;
   onVoiceSignaling?: (message: WebSocketMessage) => void;
   onHandRaiseUpdate?: (raisedHands: RaisedHandInfo[]) => void;
   onChatMessage?: (chatId: number) => void;

@@ -5,8 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.*
-import kr.co.booktalk.cache.CacheClient
-import kr.co.booktalk.cache.CacheProperties
+import kr.co.booktalk.cache.HandRaiseCache
 import kr.co.booktalk.domain.debate.*
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.CloseStatus
@@ -19,8 +18,7 @@ import java.util.concurrent.ConcurrentHashMap
 @Component
 class ApiWebSocketHandler(
     private val presenceService: PresenceService,
-    private val cacheClient: CacheClient,
-    private val cacheProperties: CacheProperties,
+    private val handRaiseCache: HandRaiseCache,
     private val objectMapper: ObjectMapper
 ) : TextWebSocketHandler() {
     private val logger = KotlinLogging.logger {}
@@ -35,11 +33,6 @@ class ApiWebSocketHandler(
     private val localSessions = ConcurrentHashMap<String, WebSocketSession>()
 
 
-    data class RaisedHandInfo(
-        val accountId: String,
-        val accountName: String,
-        val raisedAt: Long
-    )
 
     /** WebSocket 연결 수립 시 세션을 등록하고 로그를 기록합니다. */
     override fun afterConnectionEstablished(session: WebSocketSession) {
@@ -54,49 +47,48 @@ class ApiWebSocketHandler(
             val messageType = typeMap["type"] as? String
 
             when (messageType) {
-                "C_JOIN_DEBATE" -> {
-                    val request = objectMapper.readValue<WS_JoinDebateRequest>(message.payload)
+                WSRequestMessageType.C_JOIN_DEBATE.name -> {
+                    val request = objectMapper.readValue<JoinDebateRequest>(message.payload)
                     handleJoinDebate(session, request)
                 }
 
-                "C_LEAVE_DEBATE" -> {
-                    val request = objectMapper.readValue<WS_LeaveDebateRequest>(message.payload)
+                WSRequestMessageType.C_LEAVE_DEBATE.name -> {
+                    val request = objectMapper.readValue<LeaveDebateRequest>(message.payload)
                     handleLeaveDebate(session, request)
                 }
 
-                "C_HEARTBEAT" -> {
-                    val request = objectMapper.readValue<WS_HeartbeatRequest>(message.payload)
-                    handleHeartbeat(session, request)
+                WSRequestMessageType.C_HEARTBEAT.name -> {
+                    handleHeartbeat(session)
                 }
 
-                "C_TOGGLE_HAND" -> {
-                    val request = objectMapper.readValue<WS_ToggleHandRequest>(message.payload)
+                WSRequestMessageType.C_TOGGLE_HAND.name -> {
+                    val request = objectMapper.readValue<ToggleHandRequest>(message.payload)
                     scope.launch { handleToggleHand(session, request) }
                 }
 
-                "C_CHAT_MESSAGE" -> {
-                    val request = objectMapper.readValue<WS_ChatMessageRequest>(message.payload)
+                WSRequestMessageType.C_CHAT_MESSAGE.name -> {
+                    val request = objectMapper.readValue<ChatMessageRequest>(message.payload)
                     handleChatMessage(session, request)
                 }
 
                 // WebRTC Signaling Messages (C_ = Client sends)
-                "C_VOICE_JOIN" -> {
-                    val request = objectMapper.readValue<WS_VoiceJoinRequest>(message.payload)
+                WSRequestMessageType.C_VOICE_JOIN.name -> {
+                    val request = objectMapper.readValue<VoiceJoinRequest>(message.payload)
                     handleVoiceJoin(session, request)
                 }
 
-                "C_VOICE_OFFER" -> {
-                    val request = objectMapper.readValue<WS_VoiceOfferRequest>(message.payload)
+                WSRequestMessageType.C_VOICE_OFFER.name -> {
+                    val request = objectMapper.readValue<VoiceOfferRequest>(message.payload)
                     handleVoiceOffer(session, request)
                 }
 
-                "C_VOICE_ANSWER" -> {
-                    val request = objectMapper.readValue<WS_VoiceAnswerRequest>(message.payload)
+                WSRequestMessageType.C_VOICE_ANSWER.name -> {
+                    val request = objectMapper.readValue<VoiceAnswerRequest>(message.payload)
                     handleVoiceAnswer(session, request)
                 }
 
-                "C_VOICE_ICE_CANDIDATE" -> {
-                    val request = objectMapper.readValue<WS_VoiceIceCandidateRequest>(message.payload)
+                WSRequestMessageType.C_VOICE_ICE_CANDIDATE.name -> {
+                    val request = objectMapper.readValue<VoiceIceCandidateRequest>(message.payload)
                     handleVoiceIceCandidate(session, request)
                 }
 
@@ -109,30 +101,32 @@ class ApiWebSocketHandler(
 
     /** WebSocket 연결 종료 시 세션을 정리합니다. */
     override fun afterConnectionClosed(session: WebSocketSession, status: CloseStatus) {
-        cleanupSession(session, status)
+        cleanupSession(session)
         localSessions.remove(session.id)
     }
 
     /** 토론방 참여 요청을 처리합니다. 사용자 인증, 유효성 검사를 거쳐 토론방에 참여시킵니다. */
-    private fun handleJoinDebate(session: WebSocketSession, request: WS_JoinDebateRequest) {
+    private fun handleJoinDebate(session: WebSocketSession, request: JoinDebateRequest) {
+        val payload = request.payload ?: return
         val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
 
-        if (!validateAccountIdMatch(authenticatedAccountId, request.accountId)) {
+        if (!validateAccountIdMatch(authenticatedAccountId, payload.accountId)) {
             return
         }
 
-        registerAccountSession(session, authenticatedAccountId, request.debateId)
-        joinDebateWithErrorHandling(session, request.debateId, authenticatedAccountId, request.accountName, request.voiceEnabled)
+        registerAccountSession(session, payload.debateId)
+        joinDebateWithErrorHandling(session, payload.debateId, authenticatedAccountId, payload.accountName, payload.voiceEnabled)
     }
 
     /** 토론방 나가기 요청을 처리합니다. 사용자를 토론방에서 제거하고 세션을 정리합니다. */
-    private fun handleLeaveDebate(session: WebSocketSession, request: WS_LeaveDebateRequest) {
+    private fun handleLeaveDebate(session: WebSocketSession, request: LeaveDebateRequest) {
+        val payload = request.payload ?: return
         val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
-        leaveDebateAndCleanup(session, request.debateId, authenticatedAccountId)
+        leaveDebateAndCleanup(session, payload.debateId, authenticatedAccountId)
     }
 
     /** 클라이언트의 하트비트 요청을 처리하고 응답을 보냅니다. */
-    private fun handleHeartbeat(session: WebSocketSession, @Suppress("UNUSED_PARAMETER") request: WS_HeartbeatRequest) {
+    private fun handleHeartbeat(session: WebSocketSession) {
         val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
 
         try {
@@ -159,7 +153,7 @@ class ApiWebSocketHandler(
     }
 
     /** 세션에 계정과 토론방 정보를 등록합니다. */
-    private fun registerAccountSession(session: WebSocketSession, @Suppress("UNUSED_PARAMETER") accountId: String, debateId: String) {
+    private fun registerAccountSession(session: WebSocketSession, debateId: String) {
         // 세션 속성에 debateId 저장
         session.attributes["debateId"] = debateId
     }
@@ -202,7 +196,7 @@ class ApiWebSocketHandler(
     }
 
     /** 연결 종료 시 세션과 관련된 모든 정보를 정리합니다. */
-    private fun cleanupSession(session: WebSocketSession, @Suppress("UNUSED_PARAMETER") status: CloseStatus) {
+    private fun cleanupSession(session: WebSocketSession) {
         val accountId = session.attributes["accountId"] as? String
         val debateId = session.attributes["debateId"] as? String
 
@@ -221,35 +215,52 @@ class ApiWebSocketHandler(
 
     /** 토론 참여 성공 응답을 클라이언트에게 전송합니다. */
     private fun sendJoinSuccessResponse(session: WebSocketSession, debateId: String, accountId: String) {
-        val response = WS_JoinSuccessResponse(debateId = debateId, accountId = accountId)
+        val response = JoinSuccessResponse(
+            payload = JoinSuccessResponse.JoinSuccessPayload(
+                debateId = debateId,
+                accountId = accountId
+            )
+        )
         sendMessage(session, response)
     }
 
     /** 토론 참여 실패 응답을 클라이언트에게 전송합니다. */
     private fun sendJoinErrorResponse(session: WebSocketSession, debateId: String, accountId: String, reason: String) {
-        val response = WS_JoinErrorResponse(debateId = debateId, accountId = accountId, reason = reason)
+        val response = JoinErrorResponse(
+            payload = JoinErrorResponse.JoinErrorPayload(
+                debateId = debateId,
+                accountId = accountId,
+                reason = reason
+            )
+        )
         sendMessage(session, response)
     }
 
     /** 하트비트 응답을 클라이언트에게 전송합니다. */
     private fun sendHeartbeatResponse(session: WebSocketSession) {
-        val response = WS_HeartbeatAckResponse(timestamp = System.currentTimeMillis())
+        val response = HeartbeatAckResponse(
+            payload = HeartbeatAckResponse.HeartbeatAckPayload(
+                timestamp = System.currentTimeMillis()
+            )
+        )
         sendMessage(session, response)
     }
 
     /** 해당 토론방의 모든 WebSocket 세션에 presence 업데이트를 직접 브로드캐스트합니다. */
     private fun publishPresenceUpdate(debateId: String) {
         val onlineAccounts = presenceService.getOnlineAccounts(debateId)
-        val response = WS_PresenceUpdateResponse(
-            debateId = debateId,
-            onlineAccounts = onlineAccounts.map { account ->
-                WS_PresenceUpdateResponse.AccountPresenceInfo(
-                    accountId = account.accountId,
-                    accountName = account.accountName,
-                    status = account.status.name,
-                    lastHeartbeat = account.lastHeartbeat.toEpochMilli()
-                )
-            }
+        val response = PresenceUpdateResponse(
+            payload = PresenceUpdateResponse.PresenceUpdatePayload(
+                debateId = debateId,
+                onlineAccounts = onlineAccounts.map { account ->
+                    PresenceUpdateResponse.PresenceUpdatePayload.AccountPresenceInfo(
+                        accountId = account.accountId,
+                        accountName = account.accountName,
+                        status = account.status.name,
+                        lastHeartbeat = account.lastHeartbeat.toEpochMilli()
+                    )
+                }
+            )
         )
 
         val messageJson = objectMapper.writeValueAsString(response)
@@ -307,47 +318,41 @@ class ApiWebSocketHandler(
     }
 
     /** 손들기 토글 요청을 처리합니다. */
-    private suspend fun handleToggleHand(session: WebSocketSession, request: WS_ToggleHandRequest) {
+    private suspend fun handleToggleHand(session: WebSocketSession, request: ToggleHandRequest) {
+        val payload = request.payload ?: return
         val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
 
-        if (!validateAccountIdMatch(authenticatedAccountId, request.accountId)) {
+        if (!validateAccountIdMatch(authenticatedAccountId, payload.accountId)) {
             return
         }
 
         val sessionDebateId = session.attributes["debateId"] as? String
-        if (sessionDebateId == null || sessionDebateId != request.debateId) {
-            logger.error { "손들기 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}" }
+        if (sessionDebateId == null || sessionDebateId != payload.debateId) {
+            logger.error { "손들기 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${payload.debateId}" }
             return
         }
 
         try {
-            val handsKey = cacheProperties.handRaise.handsKey(request.debateId)
-            val existing = cacheClient.hashGet(handsKey, authenticatedAccountId)
+            val existing = handRaiseCache.get(payload.debateId)[authenticatedAccountId]
 
             if (existing != null) {
                 // 손 내리기: Redis에서 삭제
-                cacheClient.hashDelete(handsKey, authenticatedAccountId)
+                handRaiseCache.remove(payload.debateId, authenticatedAccountId)
             } else {
                 // 손들기: Redis에 저장
-                val handInfo = RaisedHandInfo(
-                    accountId = authenticatedAccountId,
-                    accountName = request.accountName,
-                    raisedAt = System.currentTimeMillis()
-                )
-                cacheClient.hashSet(handsKey, authenticatedAccountId, objectMapper.writeValueAsString(handInfo))
-                cacheClient.expire(handsKey, cacheProperties.handRaise.handRaiseTtl)
+                handRaiseCache.add(payload.debateId, authenticatedAccountId)
 
                 // 3초 후 자동으로 손 내리기
                 delay(3000)
-                cacheClient.hashDelete(handsKey, authenticatedAccountId)
-                publishHandRaiseUpdate(request.debateId)
+                handRaiseCache.remove(payload.debateId, authenticatedAccountId)
+                publishHandRaiseUpdate(payload.debateId)
             }
 
             // 손들기 상태 브로드캐스트
-            publishHandRaiseUpdate(request.debateId)
+            publishHandRaiseUpdate(payload.debateId)
 
         } catch (e: Exception) {
-            logger.error(e) { "손들기 토글 처리 실패: debateId=${request.debateId}, accountId=$authenticatedAccountId" }
+            logger.error(e) { "손들기 토글 처리 실패: debateId=${payload.debateId}, accountId=$authenticatedAccountId" }
         }
     }
 
@@ -355,26 +360,25 @@ class ApiWebSocketHandler(
     private fun publishHandRaiseUpdate(debateId: String) {
         try {
             // Redis에서 현재 손든 사용자 목록 조회
-            val handsKey = cacheProperties.handRaise.handsKey(debateId)
-            val handsMap = cacheClient.hashGetAll(handsKey)
+            val handsMap = handRaiseCache.get(debateId)
 
-            val raisedHandsList = handsMap.values.mapNotNull { json ->
-                try {
-                    val handInfo = objectMapper.readValue<RaisedHandInfo>(json)
-                    WS_HandRaiseUpdateResponse.RaisedHandInfo(
-                        accountId = handInfo.accountId,
-                        accountName = handInfo.accountName,
-                        raisedAt = handInfo.raisedAt
-                    )
-                } catch (e: Exception) {
-                    logger.warn(e) { "손들기 정보 파싱 실패: $json" }
-                    null
-                }
+            // 온라인 사용자 목록에서 accountName 가져오기
+            val onlineAccounts = presenceService.getOnlineAccounts(debateId)
+            val accountNameMap = onlineAccounts.associate { it.accountId to it.accountName }
+
+            val raisedHandsList = handsMap.map { (accountId, raisedAt) ->
+                HandRaiseUpdateResponse.HandRaiseUpdatePayload.RaisedHandInfo(
+                    accountId = accountId,
+                    accountName = accountNameMap[accountId] ?: "Unknown",
+                    raisedAt = raisedAt.toEpochMilli()
+                )
             }
 
-            val response = WS_HandRaiseUpdateResponse(
-                debateId = debateId,
-                raisedHands = raisedHandsList
+            val response = HandRaiseUpdateResponse(
+                payload = HandRaiseUpdateResponse.HandRaiseUpdatePayload(
+                    debateId = debateId,
+                    raisedHands = raisedHandsList
+                )
             )
 
             val messageJson = objectMapper.writeValueAsString(response)
@@ -387,26 +391,29 @@ class ApiWebSocketHandler(
     }
 
     /** 채팅 메시지를 토론방 모든 참가자에게 브로드캐스트합니다. */
-    private fun handleChatMessage(session: WebSocketSession, request: WS_ChatMessageRequest) {
+    private fun handleChatMessage(session: WebSocketSession, request: ChatMessageRequest) {
+        val payload = request.payload ?: return
         val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
         val sessionDebateId = session.attributes["debateId"] as? String
-        if (sessionDebateId == null || sessionDebateId != request.debateId) {
-            logger.error { "채팅 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}, account=$authenticatedAccountId" }
+        if (sessionDebateId == null || sessionDebateId != payload.debateId) {
+            logger.error { "채팅 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${payload.debateId}, account=$authenticatedAccountId" }
             return
         }
 
         try {
-            publishChatMessage(request.debateId, request.chatId)
+            publishChatMessage(payload.debateId, payload.chatId)
         } catch (e: Exception) {
-            logger.error(e) { "채팅 메시지 브로드캐스트 실패: debateId=${request.debateId}, chatId=${request.chatId}" }
+            logger.error(e) { "채팅 메시지 브로드캐스트 실패: debateId=${payload.debateId}, chatId=${payload.chatId}" }
         }
     }
 
     /** 채팅 메시지 업데이트를 토론방 모든 참가자에게 브로드캐스트합니다. */
     private fun publishChatMessage(debateId: String, chatId: Long) {
-        val response = WS_ChatMessageResponse(
-            debateId = debateId,
-            chatId = chatId
+        val response = ChatMessageResponse(
+            payload = ChatMessageResponse.ChatMessagePayload(
+                debateId = debateId,
+                chatId = chatId
+            )
         )
 
         val messageJson = objectMapper.writeValueAsString(response)
@@ -418,155 +425,159 @@ class ApiWebSocketHandler(
     // ============ WebRTC Signaling Handlers ============
 
     /** 음성 채팅 참여 요청을 처리합니다. */
-    private fun handleVoiceJoin(session: WebSocketSession, request: WS_VoiceJoinRequest) {
+    private fun handleVoiceJoin(session: WebSocketSession, request: VoiceJoinRequest) {
+        val payload = request.payload ?: return
         val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
-        if (!validateAccountIdMatch(authenticatedAccountId, request.accountId)) {
+        if (!validateAccountIdMatch(authenticatedAccountId, payload.accountId)) {
             return
         }
 
         val sessionDebateId = session.attributes["debateId"] as? String
-        if (sessionDebateId != request.debateId) {
-            logger.error { "음성 참여 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}" }
+        if (sessionDebateId != payload.debateId) {
+            logger.error { "음성 참여 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${payload.debateId}" }
             return
         }
 
         try {
-            logger.info { "음성 채팅 참여: debateId=${request.debateId}, accountId=${request.accountId}" }
+            logger.info { "음성 채팅 참여: debateId=${payload.debateId}, accountId=${payload.accountId}" }
 
             // 같은 토론방의 다른 참가자들에게 S_VOICE_JOIN 브로드캐스트
-            val broadcastMessage = mapOf(
-                "type" to "S_VOICE_JOIN",
-                "provider" to "API",
-                "debateId" to request.debateId,
-                "fromId" to request.accountId
+            val response = VoiceJoinResponse(
+                payload = VoiceJoinResponse.VoiceJoinResponsePayload(
+                    debateId = payload.debateId,
+                    fromId = payload.accountId
+                )
             )
-            val messageJson = objectMapper.writeValueAsString(broadcastMessage)
-            broadcastToDebateRoom(request.debateId, messageJson)
+            val messageJson = objectMapper.writeValueAsString(response)
+            broadcastToDebateRoom(payload.debateId, messageJson)
         } catch (e: Exception) {
-            logger.error(e) { "음성 참여 처리 실패: debateId=${request.debateId}, accountId=${request.accountId}" }
+            logger.error(e) { "음성 참여 처리 실패: debateId=${payload.debateId}, accountId=${payload.accountId}" }
         }
     }
 
     /** WebRTC Offer를 특정 피어에게 전달합니다. */
-    private fun handleVoiceOffer(session: WebSocketSession, request: WS_VoiceOfferRequest) {
+    private fun handleVoiceOffer(session: WebSocketSession, request: VoiceOfferRequest) {
+        val payload = request.payload ?: return
         val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
-        if (!validateAccountIdMatch(authenticatedAccountId, request.fromId)) {
+        if (!validateAccountIdMatch(authenticatedAccountId, payload.fromId)) {
             return
         }
 
         val sessionDebateId = session.attributes["debateId"] as? String
-        if (sessionDebateId != request.debateId) {
-            logger.error { "Offer 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}" }
+        if (sessionDebateId != payload.debateId) {
+            logger.error { "Offer 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${payload.debateId}" }
             return
         }
 
         try {
-            logger.debug { "Offer 전달: from=${request.fromId}, to=${request.toId}" }
+            logger.debug { "Offer 전달: from=${payload.fromId}, to=${payload.toId}" }
 
             // toId에 해당하는 세션에만 전달
             val targetSession = localSessions.values.find { targetSession ->
-                targetSession.attributes["accountId"] == request.toId &&
-                targetSession.attributes["debateId"] == request.debateId
+                targetSession.attributes["accountId"] == payload.toId &&
+                targetSession.attributes["debateId"] == payload.debateId
             }
 
             if (targetSession != null) {
-                val relayedMessage = mapOf(
-                    "type" to "S_VOICE_OFFER",
-                    "provider" to "API",
-                    "debateId" to request.debateId,
-                    "fromId" to request.fromId,
-                    "toId" to request.toId,
-                    "offer" to request.offer
+                val response = VoiceOfferResponse(
+                    payload = VoiceOfferResponse.VoiceOfferResponsePayload(
+                        debateId = payload.debateId,
+                        fromId = payload.fromId,
+                        toId = payload.toId,
+                        offer = payload.offer
+                    )
                 )
-                val messageJson = objectMapper.writeValueAsString(relayedMessage)
+                val messageJson = objectMapper.writeValueAsString(response)
                 sendTextMessage(targetSession, messageJson)
             } else {
-                logger.warn { "Offer 전달 실패: 대상 세션을 찾을 수 없음 toId=${request.toId}" }
+                logger.warn { "Offer 전달 실패: 대상 세션을 찾을 수 없음 toId=${payload.toId}" }
             }
         } catch (e: Exception) {
-            logger.error(e) { "Offer 전달 실패: from=${request.fromId}, to=${request.toId}" }
+            logger.error(e) { "Offer 전달 실패: from=${payload.fromId}, to=${payload.toId}" }
         }
     }
 
     /** WebRTC Answer를 특정 피어에게 전달합니다. */
-    private fun handleVoiceAnswer(session: WebSocketSession, request: WS_VoiceAnswerRequest) {
+    private fun handleVoiceAnswer(session: WebSocketSession, request: VoiceAnswerRequest) {
+        val payload = request.payload ?: return
         val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
-        if (!validateAccountIdMatch(authenticatedAccountId, request.fromId)) {
+        if (!validateAccountIdMatch(authenticatedAccountId, payload.fromId)) {
             return
         }
 
         val sessionDebateId = session.attributes["debateId"] as? String
-        if (sessionDebateId != request.debateId) {
-            logger.error { "Answer 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}" }
+        if (sessionDebateId != payload.debateId) {
+            logger.error { "Answer 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${payload.debateId}" }
             return
         }
 
         try {
-            logger.debug { "Answer 전달: from=${request.fromId}, to=${request.toId}" }
+            logger.debug { "Answer 전달: from=${payload.fromId}, to=${payload.toId}" }
 
             // toId에 해당하는 세션에만 전달
             val targetSession = localSessions.values.find { targetSession ->
-                targetSession.attributes["accountId"] == request.toId &&
-                targetSession.attributes["debateId"] == request.debateId
+                targetSession.attributes["accountId"] == payload.toId &&
+                targetSession.attributes["debateId"] == payload.debateId
             }
 
             if (targetSession != null) {
-                val relayedMessage = mapOf(
-                    "type" to "S_VOICE_ANSWER",
-                    "provider" to "API",
-                    "debateId" to request.debateId,
-                    "fromId" to request.fromId,
-                    "toId" to request.toId,
-                    "answer" to request.answer
+                val response = VoiceAnswerResponse(
+                    payload = VoiceAnswerResponse.VoiceAnswerResponsePayload(
+                        debateId = payload.debateId,
+                        fromId = payload.fromId,
+                        toId = payload.toId,
+                        answer = payload.answer
+                    )
                 )
-                val messageJson = objectMapper.writeValueAsString(relayedMessage)
+                val messageJson = objectMapper.writeValueAsString(response)
                 sendTextMessage(targetSession, messageJson)
             } else {
-                logger.warn { "Answer 전달 실패: 대상 세션을 찾을 수 없음 toId=${request.toId}" }
+                logger.warn { "Answer 전달 실패: 대상 세션을 찾을 수 없음 toId=${payload.toId}" }
             }
         } catch (e: Exception) {
-            logger.error(e) { "Answer 전달 실패: from=${request.fromId}, to=${request.toId}" }
+            logger.error(e) { "Answer 전달 실패: from=${payload.fromId}, to=${payload.toId}" }
         }
     }
 
     /** Trickle ICE: ICE Candidate를 특정 피어에게 전달합니다. */
-    private fun handleVoiceIceCandidate(session: WebSocketSession, request: WS_VoiceIceCandidateRequest) {
+    private fun handleVoiceIceCandidate(session: WebSocketSession, request: VoiceIceCandidateRequest) {
+        val payload = request.payload ?: return
         val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
-        if (!validateAccountIdMatch(authenticatedAccountId, request.fromId)) {
+        if (!validateAccountIdMatch(authenticatedAccountId, payload.fromId)) {
             return
         }
 
         val sessionDebateId = session.attributes["debateId"] as? String
-        if (sessionDebateId != request.debateId) {
-            logger.error { "ICE Candidate 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${request.debateId}" }
+        if (sessionDebateId != payload.debateId) {
+            logger.error { "ICE Candidate 요청 거부: 세션 방 불일치 sessionDebateId=$sessionDebateId, req=${payload.debateId}" }
             return
         }
 
         try {
-            logger.debug { "ICE Candidate 전달: from=${request.fromId}, to=${request.toId}" }
+            logger.debug { "ICE Candidate 전달: from=${payload.fromId}, to=${payload.toId}" }
 
             // toId에 해당하는 세션에만 전달
             val targetSession = localSessions.values.find { targetSession ->
-                targetSession.attributes["accountId"] == request.toId &&
-                targetSession.attributes["debateId"] == request.debateId
+                targetSession.attributes["accountId"] == payload.toId &&
+                targetSession.attributes["debateId"] == payload.debateId
             }
 
             if (targetSession != null) {
-                val relayedMessage = mapOf(
-                    "type" to "S_VOICE_ICE_CANDIDATE",
-                    "provider" to "API",
-                    "debateId" to request.debateId,
-                    "fromId" to request.fromId,
-                    "toId" to request.toId,
-                    "candidate" to request.candidate
+                val response = VoiceIceCandidateResponse(
+                    payload = VoiceIceCandidateResponse.VoiceIceCandidateResponsePayload(
+                        debateId = payload.debateId,
+                        fromId = payload.fromId,
+                        toId = payload.toId,
+                        candidate = payload.candidate
+                    )
                 )
-                val messageJson = objectMapper.writeValueAsString(relayedMessage)
+                val messageJson = objectMapper.writeValueAsString(response)
                 sendTextMessage(targetSession, messageJson)
             } else {
-                logger.warn { "ICE Candidate 전달 실패: 대상 세션을 찾을 수 없음 toId=${request.toId}" }
+                logger.warn { "ICE Candidate 전달 실패: 대상 세션을 찾을 수 없음 toId=${payload.toId}" }
             }
         } catch (e: Exception) {
-            logger.error(e) { "ICE Candidate 전달 실패: from=${request.fromId}, to=${request.toId}" }
+            logger.error(e) { "ICE Candidate 전달 실패: from=${payload.fromId}, to=${payload.toId}" }
         }
     }
 }

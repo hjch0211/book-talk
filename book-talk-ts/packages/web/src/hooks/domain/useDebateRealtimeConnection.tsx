@@ -6,14 +6,16 @@ import {
   type RoundType,
 } from '@src/apis/debate';
 import {
+  type DebateRoundUpdateResponse,
   DebateWebSocketClient,
   type RaisedHandInfo,
   type WebSocketMessage,
-  type WS_DebateRoundUpdateResponse,
+  WSRequestMessageType,
+  WSResponseMessageType,
 } from '@src/apis/websocket';
-import { useWebRTC } from '@src/hooks';
-import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import {useWebRTC} from '@src/hooks';
+import {useQueryClient} from '@tanstack/react-query';
+import {useEffect, useEffectEvent, useRef, useState} from 'react';
 
 export interface OnlineMember extends MemberInfo {
   isMe: boolean;
@@ -69,19 +71,21 @@ export const useDebateRealtimeConnection = (props: Props) => {
       setConnectedPeerIds(new Set());
       setOnlineMembers((prev) => prev.map((m) => ({ ...m, isConnecting: false })));
       wsClientRef.current?.sendVoiceMessage({
-        type: 'C_VOICE_JOIN',
-        provider: 'CLIENT',
-        accountId: debate.myMemberInfo.id,
+        type: WSRequestMessageType.C_VOICE_JOIN,
+        payload: {
+          accountId: debate.myMemberInfo.id,
+        },
       });
     },
     onIceCandidate: ({ myId: fromId, peerId, candidate }) => {
       if (!debateId) return;
       wsClientRef.current?.sendVoiceMessage({
-        type: 'C_VOICE_ICE_CANDIDATE',
-        provider: 'CLIENT',
-        fromId,
-        toId: peerId,
-        candidate,
+        type: WSRequestMessageType.C_VOICE_ICE_CANDIDATE,
+        payload: {
+          fromId,
+          toId: peerId,
+          candidate,
+        },
       });
     },
     onPeerConnected: (peerId) => {
@@ -118,9 +122,10 @@ export const useDebateRealtimeConnection = (props: Props) => {
     }
 
     wsClientRef.current?.sendVoiceMessage({
-      type: 'C_VOICE_JOIN',
-      provider: 'CLIENT',
-      accountId: debate.myMemberInfo.id,
+      type: WSRequestMessageType.C_VOICE_JOIN,
+      payload: {
+        accountId: debate.myMemberInfo.id,
+      },
     });
   });
 
@@ -133,8 +138,9 @@ export const useDebateRealtimeConnection = (props: Props) => {
       voiceConnectionStatus === 'PENDING' || voiceConnectionStatus === 'COMPLETED';
 
     switch (message.type) {
-      case 'S_VOICE_JOIN': {
-        const fromId = message.fromId;
+      case WSResponseMessageType.S_VOICE_JOIN: {
+        if (!message.payload) return;
+        const fromId = message.payload.fromId;
         if (fromId === myAccountId) return;
 
         if (voiceConnectionStatus === 'NOT_STARTED') {
@@ -144,41 +150,46 @@ export const useDebateRealtimeConnection = (props: Props) => {
         const offer = await webRTC.createOffer(fromId);
         if (offer) {
           wsClientRef.current?.sendVoiceMessage({
-            type: 'C_VOICE_OFFER',
-            provider: 'CLIENT',
-            fromId: myAccountId,
-            toId: fromId,
-            offer,
+            type: WSRequestMessageType.C_VOICE_OFFER,
+            payload: {
+              fromId: myAccountId,
+              toId: fromId,
+              offer,
+            },
           });
         }
         break;
       }
 
-      case 'S_VOICE_OFFER': {
-        if (message.toId !== myAccountId || !isConnectable) return;
+      case WSResponseMessageType.S_VOICE_OFFER: {
+        if (!message.payload) return;
+        if (message.payload.toId !== myAccountId || !isConnectable) return;
 
-        const answer = await webRTC.handleOffer(message.fromId, message.offer);
+        const answer = await webRTC.handleOffer(message.payload.fromId, message.payload.offer);
         if (answer) {
           wsClientRef.current?.sendVoiceMessage({
-            type: 'C_VOICE_ANSWER',
-            provider: 'CLIENT',
-            fromId: myAccountId,
-            toId: message.fromId,
-            answer,
+            type: WSRequestMessageType.C_VOICE_ANSWER,
+            payload: {
+              fromId: myAccountId,
+              toId: message.payload.fromId,
+              answer,
+            },
           });
         }
         break;
       }
 
-      case 'S_VOICE_ANSWER': {
-        if (message.toId !== myAccountId) return;
-        await webRTC.handleAnswer(message.fromId, message.answer);
+      case WSResponseMessageType.S_VOICE_ANSWER: {
+        if (!message.payload) return;
+        if (message.payload.toId !== myAccountId) return;
+        await webRTC.handleAnswer(message.payload.fromId, message.payload.answer);
         break;
       }
 
-      case 'S_VOICE_ICE_CANDIDATE': {
-        if (message.toId !== myAccountId) return;
-        await webRTC.addIceCandidate(message.fromId, message.candidate);
+      case WSResponseMessageType.S_VOICE_ICE_CANDIDATE: {
+        if (!message.payload) return;
+        if (message.payload.toId !== myAccountId) return;
+        await webRTC.addIceCandidate(message.payload.fromId, message.payload.candidate);
         break;
       }
     }
@@ -228,14 +239,14 @@ export const useDebateRealtimeConnection = (props: Props) => {
   });
 
   /** 라운드 업데이트 */
-  const onDebateRoundUpdate = useEffectEvent((roundInfo: WS_DebateRoundUpdateResponse) => {
+  const onDebateRoundUpdate = useEffectEvent((roundInfo: DebateRoundUpdateResponse) => {
     if (debateId) {
       void queryClient.invalidateQueries({
         queryKey: findOneDebateQueryOptions(debateId).queryKey,
       });
     }
 
-    const roundType = roundInfo.round.type as RoundType;
+    const roundType = roundInfo.payload.round.type as RoundType;
     if (roundType === 'PRESENTATION' || roundType === 'FREE') {
       onRoundStartBackdrop(roundType);
     }

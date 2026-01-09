@@ -64,20 +64,22 @@ class DebateRoundService(
         debateRound: DebateRoundEntity,
     ) {
         try {
-            val response = WS_DebateRoundUpdateResponse(
-                debateId = debateId,
-                round = WS_DebateRoundUpdateResponse.RoundInfo(
-                    id = debateRound.id,
-                    type = debateRound.type.name,
-                    nextSpeakerId = null,
-                    nextSpeakerName = null,
-                    createdAt = debateRound.createdAt.toEpochMilli(),
-                    endedAt = debateRound.endedAt?.toEpochMilli()
-                ),
-                currentSpeaker = WS_DebateRoundUpdateResponse.CurrentSpeakerInfo(
-                    accountId = null,
-                    accountName = null,
-                    endedAt = System.currentTimeMillis() + appConfigService.debateRoundSpeakerSeconds() * 1000
+            val response = DebateRoundUpdateResponse(
+                payload = DebateRoundUpdateResponse.DebateRoundUpdatePayload(
+                    debateId = debateId,
+                    round = DebateRoundUpdateResponse.DebateRoundUpdatePayload.RoundInfo(
+                        id = debateRound.id,
+                        type = debateRound.type.name,
+                        nextSpeakerId = null,
+                        nextSpeakerName = null,
+                        createdAt = debateRound.createdAt.toEpochMilli(),
+                        endedAt = debateRound.endedAt?.toEpochMilli()
+                    ),
+                    currentSpeaker = DebateRoundUpdateResponse.DebateRoundUpdatePayload.CurrentSpeakerInfo(
+                        accountId = null,
+                        accountName = null,
+                        endedAt = System.currentTimeMillis() + appConfigService.debateRoundSpeakerSeconds() * 1000
+                    )
                 )
             )
 
