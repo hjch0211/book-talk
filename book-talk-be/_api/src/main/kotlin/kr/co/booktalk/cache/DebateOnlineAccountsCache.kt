@@ -13,16 +13,15 @@ class DebateOnlineAccountsCache(private val cacheClient: CacheClient) {
 
     fun add(debateId: String, accountId: String) {
         val key = key(debateId)
-        cacheClient.addToSet(key, accountId)
-        cacheClient.expire(key, TTL)
+        cacheClient.addToSet(key, accountId, TTL)
     }
 
     fun remove(debateId: String, accountId: String) {
-        cacheClient.removeFromSet(key(debateId), accountId)
+        cacheClient.deleteFromSet(key(debateId), accountId)
     }
 
     fun get(debateId: String): Set<String> {
-        return cacheClient.getSetMembers(key(debateId))
+        return cacheClient.getFromSet(key(debateId))
     }
 
     private fun key(debateId: String): String =
