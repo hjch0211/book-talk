@@ -90,22 +90,22 @@ data class ChatResponse(
 )
 
 data class JoinSuccessResponse(
-    override val payload: JoinSuccessPayload?
-) : WebSocketMessage<JoinSuccessResponse.JoinSuccessPayload> {
+    override val payload: Payload
+) : WebSocketMessage<JoinSuccessResponse.Payload> {
     override val type: String = WSResponseMessageType.S_JOIN_SUCCESS.name
 
-    data class JoinSuccessPayload(
+    data class Payload(
         val debateId: String,
         val accountId: String
     )
 }
 
 data class JoinErrorResponse(
-    override val payload: JoinErrorPayload?
-) : WebSocketMessage<JoinErrorResponse.JoinErrorPayload> {
+    override val payload: Payload
+) : WebSocketMessage<JoinErrorResponse.Payload> {
     override val type: String = WSResponseMessageType.S_JOIN_ERROR.name
 
-    data class JoinErrorPayload(
+    data class Payload(
         val debateId: String,
         val accountId: String,
         val reason: String
@@ -113,21 +113,21 @@ data class JoinErrorResponse(
 }
 
 data class HeartbeatAckResponse(
-    override val payload: HeartbeatAckPayload?
-) : WebSocketMessage<HeartbeatAckResponse.HeartbeatAckPayload> {
+    override val payload: Payload
+) : WebSocketMessage<HeartbeatAckResponse.Payload> {
     override val type: String = WSResponseMessageType.S_HEARTBEAT_ACK.name
 
-    data class HeartbeatAckPayload(
+    data class Payload(
         val timestamp: Long
     )
 }
 
 data class PresenceUpdateResponse(
-    override val payload: PresenceUpdatePayload?
-) : WebSocketMessage<PresenceUpdateResponse.PresenceUpdatePayload> {
+    override val payload: Payload
+) : WebSocketMessage<PresenceUpdateResponse.Payload> {
     override val type: String = WSResponseMessageType.S_PRESENCE_UPDATE.name
 
-    data class PresenceUpdatePayload(
+    data class Payload(
         val debateId: String,
         val onlineAccounts: List<AccountPresenceInfo>
     ) {
@@ -141,11 +141,11 @@ data class PresenceUpdateResponse(
 }
 
 data class HandRaiseUpdateResponse(
-    override val payload: HandRaiseUpdatePayload?
-) : WebSocketMessage<HandRaiseUpdateResponse.HandRaiseUpdatePayload> {
+    override val payload: Payload
+) : WebSocketMessage<HandRaiseUpdateResponse.Payload> {
     override val type: String = WSResponseMessageType.S_HAND_RAISE_UPDATE.name
 
-    data class HandRaiseUpdatePayload(
+    data class Payload(
         val debateId: String,
         val raisedHands: List<RaisedHandInfo>
     ) {
@@ -158,22 +158,22 @@ data class HandRaiseUpdateResponse(
 }
 
 data class ChatMessageResponse(
-    override val payload: ChatMessagePayload?
-) : WebSocketMessage<ChatMessageResponse.ChatMessagePayload> {
+    override val payload: Payload
+) : WebSocketMessage<ChatMessageResponse.Payload> {
     override val type: String = WSResponseMessageType.S_CHAT_MESSAGE.name
 
-    data class ChatMessagePayload(
+    data class Payload(
         val debateId: String,
         val chatId: Long
     )
 }
 
 data class SpeakerUpdateResponse(
-    override val payload: SpeakerUpdatePayload?
-) : WebSocketMessage<SpeakerUpdateResponse.SpeakerUpdatePayload> {
+    override val payload: Payload
+) : WebSocketMessage<SpeakerUpdateResponse.Payload> {
     override val type: String = WSResponseMessageType.S_SPEAKER_UPDATE.name
 
-    data class SpeakerUpdatePayload(
+    data class Payload(
         val debateId: String,
         val currentSpeaker: CurrentSpeakerInfo?,
         val nextSpeaker: NextSpeakerInfo?
@@ -192,11 +192,11 @@ data class SpeakerUpdateResponse(
 }
 
 data class DebateRoundUpdateResponse(
-    override val payload: DebateRoundUpdatePayload?
-) : WebSocketMessage<DebateRoundUpdateResponse.DebateRoundUpdatePayload> {
+    override val payload: Payload
+) : WebSocketMessage<DebateRoundUpdateResponse.Payload> {
     override val type: String = WSResponseMessageType.S_DEBATE_ROUND_UPDATE.name
 
-    data class DebateRoundUpdatePayload(
+    data class Payload(
         val debateId: String,
         val round: RoundInfo,
         val currentSpeaker: CurrentSpeakerInfo
@@ -221,22 +221,22 @@ data class DebateRoundUpdateResponse(
 // ============ WebRTC Voice Signaling Response Messages ============
 
 data class VoiceJoinResponse(
-    override val payload: VoiceJoinResponsePayload?
-) : WebSocketMessage<VoiceJoinResponse.VoiceJoinResponsePayload> {
+    override val payload: Payload
+) : WebSocketMessage<VoiceJoinResponse.Payload> {
     override val type: String = WSResponseMessageType.S_VOICE_JOIN.name
 
-    data class VoiceJoinResponsePayload(
+    data class Payload(
         val debateId: String,
         val fromId: String
     )
 }
 
 data class VoiceOfferResponse(
-    override val payload: VoiceOfferResponsePayload?
-) : WebSocketMessage<VoiceOfferResponse.VoiceOfferResponsePayload> {
+    override val payload: Payload
+) : WebSocketMessage<VoiceOfferResponse.Payload> {
     override val type: String = WSResponseMessageType.S_VOICE_OFFER.name
 
-    data class VoiceOfferResponsePayload(
+    data class Payload(
         val debateId: String,
         val fromId: String,
         val toId: String,
@@ -245,11 +245,11 @@ data class VoiceOfferResponse(
 }
 
 data class VoiceAnswerResponse(
-    override val payload: VoiceAnswerResponsePayload?
-) : WebSocketMessage<VoiceAnswerResponse.VoiceAnswerResponsePayload> {
+    override val payload: Payload
+) : WebSocketMessage<VoiceAnswerResponse.Payload> {
     override val type: String = WSResponseMessageType.S_VOICE_ANSWER.name
 
-    data class VoiceAnswerResponsePayload(
+    data class Payload(
         val debateId: String,
         val fromId: String,
         val toId: String,
@@ -258,11 +258,11 @@ data class VoiceAnswerResponse(
 }
 
 data class VoiceIceCandidateResponse(
-    override val payload: VoiceIceCandidateResponsePayload?
-) : WebSocketMessage<VoiceIceCandidateResponse.VoiceIceCandidateResponsePayload> {
+    override val payload: Payload
+) : WebSocketMessage<VoiceIceCandidateResponse.Payload> {
     override val type: String = WSResponseMessageType.S_VOICE_ICE_CANDIDATE.name
 
-    data class VoiceIceCandidateResponsePayload(
+    data class Payload(
         val debateId: String,
         val fromId: String,
         val toId: String,

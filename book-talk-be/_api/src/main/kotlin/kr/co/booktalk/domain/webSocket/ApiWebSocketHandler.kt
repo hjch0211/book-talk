@@ -219,7 +219,7 @@ class ApiWebSocketHandler(
     /** 토론 참여 성공 응답을 클라이언트에게 전송합니다. */
     private fun sendJoinSuccessResponse(session: WebSocketSession, debateId: String, accountId: String) {
         val response = JoinSuccessResponse(
-            payload = JoinSuccessResponse.JoinSuccessPayload(
+            payload = JoinSuccessResponse.Payload(
                 debateId = debateId,
                 accountId = accountId
             )
@@ -230,7 +230,7 @@ class ApiWebSocketHandler(
     /** 토론 참여 실패 응답을 클라이언트에게 전송합니다. */
     private fun sendJoinErrorResponse(session: WebSocketSession, debateId: String, accountId: String, reason: String) {
         val response = JoinErrorResponse(
-            payload = JoinErrorResponse.JoinErrorPayload(
+            payload = JoinErrorResponse.Payload(
                 debateId = debateId,
                 accountId = accountId,
                 reason = reason
@@ -242,7 +242,7 @@ class ApiWebSocketHandler(
     /** 하트비트 응답을 클라이언트에게 전송합니다. */
     private fun sendHeartbeatResponse(session: WebSocketSession) {
         val response = HeartbeatAckResponse(
-            payload = HeartbeatAckResponse.HeartbeatAckPayload(
+            payload = HeartbeatAckResponse.Payload(
                 timestamp = System.currentTimeMillis()
             )
         )
@@ -253,10 +253,10 @@ class ApiWebSocketHandler(
     private fun publishPresenceUpdate(debateId: String) {
         val onlineAccounts = presenceService.getOnlineAccounts(debateId)
         val response = PresenceUpdateResponse(
-            payload = PresenceUpdateResponse.PresenceUpdatePayload(
+            payload = PresenceUpdateResponse.Payload(
                 debateId = debateId,
                 onlineAccounts = onlineAccounts.map { account ->
-                    PresenceUpdateResponse.PresenceUpdatePayload.AccountPresenceInfo(
+                    PresenceUpdateResponse.Payload.AccountPresenceInfo(
                         accountId = account.accountId,
                         accountName = account.accountName,
                         status = account.status.name,
@@ -355,7 +355,7 @@ class ApiWebSocketHandler(
             val raisedAt = handRaiseCache.get(debateId, account.accountId)
                 ?: return@mapNotNull null
 
-            HandRaiseUpdateResponse.HandRaiseUpdatePayload.RaisedHandInfo(
+            HandRaiseUpdateResponse.Payload.RaisedHandInfo(
                 accountId = account.accountId,
                 accountName = account.accountName,
                 raisedAt = raisedAt.toEpochMilli()
@@ -363,7 +363,7 @@ class ApiWebSocketHandler(
         }
 
         val response = HandRaiseUpdateResponse(
-            payload = HandRaiseUpdateResponse.HandRaiseUpdatePayload(
+            payload = HandRaiseUpdateResponse.Payload(
                 debateId = debateId,
                 raisedHands = raisedHandsList
             )
@@ -393,7 +393,7 @@ class ApiWebSocketHandler(
     /** 채팅 메시지 업데이트를 토론방 모든 참가자에게 브로드캐스트합니다. */
     private fun publishChatMessage(debateId: String, chatId: Long) {
         val response = ChatMessageResponse(
-            payload = ChatMessageResponse.ChatMessagePayload(
+            payload = ChatMessageResponse.Payload(
                 debateId = debateId,
                 chatId = chatId
             )
@@ -426,7 +426,7 @@ class ApiWebSocketHandler(
 
             // 같은 토론방의 다른 참가자들에게 S_VOICE_JOIN 브로드캐스트
             val response = VoiceJoinResponse(
-                payload = VoiceJoinResponse.VoiceJoinResponsePayload(
+                payload = VoiceJoinResponse.Payload(
                     debateId = payload.debateId,
                     fromId = payload.accountId
                 )
@@ -458,7 +458,7 @@ class ApiWebSocketHandler(
             val targetSession = webSocketSessionCache.get(payload.toId)
             if (targetSession != null) {
                 val response = VoiceOfferResponse(
-                    payload = VoiceOfferResponse.VoiceOfferResponsePayload(
+                    payload = VoiceOfferResponse.Payload(
                         debateId = payload.debateId,
                         fromId = payload.fromId,
                         toId = payload.toId,
@@ -495,7 +495,7 @@ class ApiWebSocketHandler(
             val targetSession = webSocketSessionCache.get(payload.toId)
             if (targetSession != null) {
                 val response = VoiceAnswerResponse(
-                    payload = VoiceAnswerResponse.VoiceAnswerResponsePayload(
+                    payload = VoiceAnswerResponse.Payload(
                         debateId = payload.debateId,
                         fromId = payload.fromId,
                         toId = payload.toId,
@@ -532,7 +532,7 @@ class ApiWebSocketHandler(
             val targetSession = webSocketSessionCache.get(payload.toId)
             if (targetSession != null) {
                 val response = VoiceIceCandidateResponse(
-                    payload = VoiceIceCandidateResponse.VoiceIceCandidateResponsePayload(
+                    payload = VoiceIceCandidateResponse.Payload(
                         debateId = payload.debateId,
                         fromId = payload.fromId,
                         toId = payload.toId,
