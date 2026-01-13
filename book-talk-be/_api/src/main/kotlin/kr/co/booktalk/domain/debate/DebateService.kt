@@ -1,6 +1,6 @@
 package kr.co.booktalk.domain.debate
 
-import kr.co.booktalk.cache.AppConfigService
+import kr.co.booktalk.config.AppProperties
 import kr.co.booktalk.domain.*
 import kr.co.booktalk.domain.auth.AuthAccount
 import kr.co.booktalk.httpBadRequest
@@ -17,7 +17,7 @@ class DebateService(
     private val debateRepository: DebateRepository,
     private val debateMemberRepository: DebateMemberRepository,
     private val debateRoundRepository: DebateRoundRepository,
-    private val appConfigService: AppConfigService,
+    private val appProperties: AppProperties,
     private val presentationRepository: PresentationRepository,
     private val debateRoundSpeakerRepository: DebateRoundSpeakerRepository,
     private val debateRoundSpeakerService: DebateRoundSpeakerService,
@@ -70,8 +70,8 @@ class DebateService(
         val debate = debateRepository.findByIdOrNull(request.debateId.toUUID())
             ?.validateJoinable()
             ?: httpBadRequest("존재하지 않는 토론입니다.")
-        if (debateMemberRepository.countByDebateForUpdate(debate) >= appConfigService.maxDebateMemberCnt()) {
-            httpBadRequest("토론방의 최대 정원(${appConfigService.maxDebateMemberCnt()}명)을 초과했습니다.")
+        if (debateMemberRepository.countByDebateForUpdate(debate) >= appProperties.debate.maxMemberCount) {
+            httpBadRequest("토론방의 최대 정원(${appProperties.debate.maxMemberCount}명)을 초과했습니다.")
         }
 
         debateMemberRepository.save(

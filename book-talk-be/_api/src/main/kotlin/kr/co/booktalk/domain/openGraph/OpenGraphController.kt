@@ -1,6 +1,6 @@
 package kr.co.booktalk.domain.openGraph
 
-import kr.co.booktalk.ApiResult
+import kr.co.booktalk.HttpResult
 import kr.co.booktalk.domain.auth.AuthAccount
 import kr.co.booktalk.toResult
 import org.springframework.web.bind.annotation.GetMapping
@@ -16,7 +16,7 @@ class OpenGraphController(
     fun getOGData(
         @ModelAttribute request: FetchOpenGraphRequest,
         authAccount: AuthAccount
-    ): ApiResult<FetchOpenGraphResponse> {
+    ): HttpResult<FetchOpenGraphResponse> {
         request.validate()
         return openGraphService.getOGData(request.url).toResult()
     }

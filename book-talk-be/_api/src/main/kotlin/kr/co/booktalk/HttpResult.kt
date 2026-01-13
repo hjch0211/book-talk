@@ -1,6 +1,6 @@
 package kr.co.booktalk
 
-data class ApiResult<R>(
+data class HttpResult<R>(
     val data: R,
     val error: Error? = null
 ) {
@@ -12,7 +12,7 @@ data class ApiResult<R>(
 }
 
 /**
- * Converts object to [ApiResult]
- * All api endpoints must return [ApiResult].
+ * Converts object to [HttpResult]
+ * All api endpoints must return [HttpResult].
  */
-fun <R> R.toResult() = ApiResult(this)
+fun <R> R.toResult() = HttpResult(this)

@@ -1,12 +1,11 @@
 package kr.co.booktalk.domain.debate
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import kr.co.booktalk.cache.AppConfigService
+import kr.co.booktalk.config.AppProperties
 import kr.co.booktalk.domain.AccountRepository
 import kr.co.booktalk.domain.DebateRepository
 import kr.co.booktalk.domain.DebateRoundEntity
 import kr.co.booktalk.domain.DebateRoundRepository
-import kr.co.booktalk.domain.webSocket.ApiWebSocketHandler
 import kr.co.booktalk.httpBadRequest
 import kr.co.booktalk.toUUID
 import org.springframework.data.repository.findByIdOrNull
@@ -19,8 +18,8 @@ class DebateRoundService(
     private val debateRepository: DebateRepository,
     private val accountRepository: AccountRepository,
     private val debateRoundRepository: DebateRoundRepository,
-    private val appConfigService: AppConfigService,
-    private val apiWebSocketHandler: ApiWebSocketHandler,
+    private val appProperties: AppProperties,
+    private val debateWebSocketHandler: DebateWebSocketHandler,
     private val objectMapper: ObjectMapper,
 ) {
     @Transactional
@@ -64,25 +63,27 @@ class DebateRoundService(
         debateRound: DebateRoundEntity,
     ) {
         try {
-            val response = WS_DebateRoundUpdateResponse(
-                debateId = debateId,
-                round = WS_DebateRoundUpdateResponse.RoundInfo(
-                    id = debateRound.id,
-                    type = debateRound.type.name,
-                    nextSpeakerId = null,
-                    nextSpeakerName = null,
-                    createdAt = debateRound.createdAt.toEpochMilli(),
-                    endedAt = debateRound.endedAt?.toEpochMilli()
-                ),
-                currentSpeaker = WS_DebateRoundUpdateResponse.CurrentSpeakerInfo(
-                    accountId = null,
-                    accountName = null,
-                    endedAt = System.currentTimeMillis() + appConfigService.debateRoundSpeakerSeconds() * 1000
+            val response = DebateRoundUpdateResponse(
+                payload = DebateRoundUpdateResponse.Payload(
+                    debateId = debateId,
+                    round = DebateRoundUpdateResponse.Payload.RoundInfo(
+                        id = debateRound.id,
+                        type = debateRound.type.name,
+                        nextSpeakerId = null,
+                        nextSpeakerName = null,
+                        createdAt = debateRound.createdAt.toEpochMilli(),
+                        endedAt = debateRound.endedAt?.toEpochMilli()
+                    ),
+                    currentSpeaker = DebateRoundUpdateResponse.Payload.CurrentSpeakerInfo(
+                        accountId = null,
+                        accountName = null,
+                        endedAt = System.currentTimeMillis() + appProperties.debate.roundSpeakerSeconds * 1000
+                    )
                 )
             )
 
             val messageJson = objectMapper.writeValueAsString(response)
-            apiWebSocketHandler.broadcastToDebateRoom(debateId, messageJson)
+            debateWebSocketHandler.broadcastToDebateRoom(debateId, messageJson)
         } catch (e: Exception) {
             // 브로드캐스트 실패는 로그만 남기고 메인 로직에는 영향 없도록 처리
             println("토론 라운드 브로드캐스트 실패: debateId=$debateId, error=${e.message}")

@@ -88,18 +88,6 @@ else
   echo "⚠️  스키마 디렉토리를 찾을 수 없습니다: $SCHEMA_DIR"
 fi
 
-# 초기 데이터 삽입
-echo ""
-echo "📦 초기 데이터 설정 스크립트 실행 중..."
-if [ -f ".bin/initDataProd.sh" ]; then
-  if ! ./..bin/initDataProd.sh; then
-    echo "❌ 초기 데이터 설정 실패!"
-    exit 1
-  fi
-else
-  echo "⚠️  초기 데이터 스크립트를 찾을 수 없습니다: .bin/initDataProd.sh"
-fi
-
 # Backend 로그 확인
 echo ""
 echo "📋 Backend 로그 (최근 20줄):"

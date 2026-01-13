@@ -2,9 +2,8 @@ package kr.co.booktalk.domain.debate
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kr.co.booktalk.cache.AppConfigService
+import kr.co.booktalk.config.AppProperties
 import kr.co.booktalk.domain.*
-import kr.co.booktalk.domain.webSocket.ApiWebSocketHandler
 import kr.co.booktalk.httpBadRequest
 import kr.co.booktalk.httpForbidden
 import kr.co.booktalk.toUUID
@@ -19,10 +18,10 @@ class DebateRoundSpeakerService(
     private val accountRepository: AccountRepository,
     private val debateRoundSpeakerRepository: DebateRoundSpeakerRepository,
     private val debateRoundRepository: DebateRoundRepository,
-    private val appConfigService: AppConfigService,
+    private val appProperties: AppProperties,
     private val debateMemberRepository: DebateMemberRepository,
     private val objectMapper: ObjectMapper,
-    private val apiWebSocketHandler: ApiWebSocketHandler,
+    private val debateWebSocketHandler: DebateWebSocketHandler,
     private val debateRoundService: DebateRoundService
 ) {
     private val logger = KotlinLogging.logger {}
@@ -49,7 +48,7 @@ class DebateRoundSpeakerService(
             DebateRoundSpeakerEntity(
                 account = speaker,
                 debateRound = debateRound,
-                endedAt = Instant.now().plusSeconds(appConfigService.debateRoundSpeakerSeconds()),
+                endedAt = Instant.now().plusSeconds(appProperties.debate.roundSpeakerSeconds),
                 isActive = true
             )
         )
@@ -68,7 +67,7 @@ class DebateRoundSpeakerService(
         var updated = false
 
         request.extension?.takeIf { it }?.let {
-            speaker.endedAt = speaker.endedAt.plusSeconds(appConfigService.debateRoundSpeakerSeconds())
+            speaker.endedAt = speaker.endedAt.plusSeconds(appProperties.debate.roundSpeakerSeconds)
             updated = true
         }
         request.ended?.takeIf { it }?.let {
@@ -113,7 +112,7 @@ class DebateRoundSpeakerService(
                 DebateRoundSpeakerEntity(
                     account = firstSpeaker,
                     debateRound = freeRoundEntity,
-                    endedAt = Instant.now().plusSeconds(appConfigService.debateRoundSpeakerSeconds()),
+                    endedAt = Instant.now().plusSeconds(appProperties.debate.roundSpeakerSeconds),
                     isActive = true
                 )
             )
@@ -127,7 +126,7 @@ class DebateRoundSpeakerService(
             DebateRoundSpeakerEntity(
                 account = nextSpeaker,
                 debateRound = round,
-                endedAt = Instant.now().plusSeconds(appConfigService.debateRoundSpeakerSeconds()),
+                endedAt = Instant.now().plusSeconds(appProperties.debate.roundSpeakerSeconds),
                 isActive = true
             )
         )
@@ -148,7 +147,7 @@ class DebateRoundSpeakerService(
     }
 
     /** 현재 발표자 정보를 조회합니다 */
-    fun getCurrentSpeaker(debateId: String): WS_SpeakerUpdateResponse? {
+    fun getCurrentSpeaker(debateId: String): SpeakerUpdateResponse? {
         return try {
             val debateUUID = java.util.UUID.fromString(debateId)
             val currentRound = debateRoundRepository.findByDebateIdAndEndedAtIsNull(debateUUID)
@@ -157,19 +156,21 @@ class DebateRoundSpeakerService(
             val currentSpeaker = debateRoundSpeakerRepository.findByDebateRoundAndIsActive(currentRound, true)
                 ?: return null
 
-            WS_SpeakerUpdateResponse(
-                debateId = debateId,
-                currentSpeaker = WS_SpeakerUpdateResponse.CurrentSpeakerInfo(
-                    accountId = currentSpeaker.account.id.toString(),
-                    accountName = currentSpeaker.account.name,
-                    endedAt = currentSpeaker.endedAt.toEpochMilli()
-                ),
-                nextSpeaker = currentRound.nextSpeaker?.let {
-                    WS_SpeakerUpdateResponse.NextSpeakerInfo(
-                        accountId = it.id.toString(),
-                        accountName = it.name
-                    )
-                }
+            SpeakerUpdateResponse(
+                payload = SpeakerUpdateResponse.Payload(
+                    debateId = debateId,
+                    currentSpeaker = SpeakerUpdateResponse.Payload.CurrentSpeakerInfo(
+                        accountId = currentSpeaker.account.id.toString(),
+                        accountName = currentSpeaker.account.name,
+                        endedAt = currentSpeaker.endedAt.toEpochMilli()
+                    ),
+                    nextSpeaker = currentRound.nextSpeaker?.let {
+                        SpeakerUpdateResponse.Payload.NextSpeakerInfo(
+                            accountId = it.id.toString(),
+                            accountName = it.name
+                        )
+                    }
+                )
             )
         } catch (e: Exception) {
             logger.error(e) { "현재 발표자 정보 조회 실패: debateId=$debateId" }
@@ -184,7 +185,7 @@ class DebateRoundSpeakerService(
 
             // 해당 토론방의 모든 WebSocket 세션에 직접 브로드캐스트
             val messageJson = objectMapper.writeValueAsString(response)
-            apiWebSocketHandler.broadcastToDebateRoom(debateId, messageJson)
+            debateWebSocketHandler.broadcastToDebateRoom(debateId, messageJson)
 
             logger.info { "발표자 정보 브로드캐스트 완료: debateId=$debateId" }
         } catch (e: Exception) {

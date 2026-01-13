@@ -1,6 +1,6 @@
-import { MoreVert, Person } from '@mui/icons-material';
-import { Avatar, Menu, MenuItem } from '@mui/material';
-import { type MouseEvent, useState } from 'react';
+import {MoreVert, Person} from '@mui/icons-material';
+import {Avatar, Menu, MenuItem} from '@mui/material';
+import {type MouseEvent, useState} from 'react';
 import hostIconSvg from '../../../assets/host-icon.svg';
 import raiseHandSvg from '../../../assets/raise-hand.svg';
 import {
@@ -24,7 +24,7 @@ import {
   RaisedHandIcon,
   SpeakerTimer,
 } from '../style.ts';
-import { PresentationViewModal } from './modal/PresentationViewModal.tsx';
+import {PresentationViewModal} from './modal/PresentationViewModal.tsx';
 
 interface Props {
   members: Array<{
@@ -46,7 +46,6 @@ interface Props {
   realTimeRemainingSeconds: number;
   raisedHands: Array<{
     accountId: string;
-    accountName: string;
     raisedAt: number;
   }>;
   currentRoundType: 'PREPARATION' | 'PRESENTATION' | 'FREE';
