@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { Box, Button, Typography, Rating, IconButton } from '@mui/material';
 import CloseIcon from '@mui/icons-material/Close';
+import { Box, Button, IconButton, Rating, Typography } from '@mui/material';
+import { useState } from 'react';
 import Modal from '../../../../components/organisms/Modal';
 
 interface Props {
@@ -128,7 +128,7 @@ function SurveyModal({ onConfirm, isLoading = false, onClose, open }: Props) {
               },
             }}
           >
-              문의 내용 남기기
+            문의 내용 남기기
           </Button>
 
           <Button

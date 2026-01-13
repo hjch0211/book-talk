@@ -5,13 +5,14 @@ import {
   useDebateChat,
   useDebateRealtimeConnection,
   useDebateRound,
-  useDebateVoiceChat, useModal,
+  useDebateVoiceChat,
+  useModal,
 } from '@src/hooks';
+import SurveyModal from '@src/routes/Debate/_components/modal/SurveyModal';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useEffect, useEffectEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDebateRoundStartBackdrop } from './useDebateRoundStartBackdrop';
-import SurveyModal from '@src/routes/Debate/_components/modal/SurveyModal';
 
 interface Props {
   debateId?: string;
@@ -91,9 +92,8 @@ export const useDebate = ({ debateId }: Props) => {
     if (debate.closedAt && diffInSeconds < 10) {
       handleOpenSurveyModal();
       return;
-    }
+    } else if (debate.closedAt) {
     /** expired 토론방의 경우 (10초 이상 지난 경우) */
-    else if (debate.closedAt) {
       navigateToExpiredPage();
       return;
     }

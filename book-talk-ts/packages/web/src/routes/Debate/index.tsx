@@ -46,9 +46,8 @@ function DebatePageContent({ debateId }: Props) {
     return <div>유효하지 않는 id입니다.</div>;
   }
 
-  // PENDING 또는 FAILED 상태일 때 스켈레톤 표시
   if (
-    connection.voiceConnectionStatus === 'PENDING' ||
+    (connection.onlineMembers.length > 1 && connection.voiceConnectionStatus === 'PENDING') ||
     connection.voiceConnectionStatus === 'FAILED'
   ) {
     return (
