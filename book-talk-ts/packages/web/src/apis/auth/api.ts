@@ -1,4 +1,4 @@
-import { ApiError, apiClient } from '../client';
+import { apiClient } from '../client';
 import {
   type CreateTokensResponse,
   CreateTokensResponseSchema,
@@ -28,28 +28,12 @@ export const signIn = async (request: SignInRequest): Promise<CreateTokensRespon
 export const refreshAccessToken = async (
   request: RefreshRequest
 ): Promise<CreateTokensResponse> => {
-  const refreshToken = request?.refreshToken || localStorage.getItem('refreshToken');
-
-  if (!refreshToken) {
-    throw new ApiError('No refresh token available', 'NO_REFRESH_TOKEN');
-  }
-
-  const validatedData = RefreshRequestSchema.parse({ refreshToken });
+  const validatedData = RefreshRequestSchema.parse(request);
   const response = await apiClient.post('/auth/refresh', validatedData);
-  const validatedTokens = CreateTokensResponseSchema.parse(response.data.data);
-
-  localStorage.setItem('accessToken', validatedTokens.accessToken);
-  localStorage.setItem('refreshToken', validatedTokens.refreshToken);
-
-  return validatedTokens;
+  return CreateTokensResponseSchema.parse(response.data.data);
 };
 
 /** 로그아웃 */
 export const signOut = async (): Promise<void> => {
-  try {
-    await apiClient.post('/auth/sign-out');
-  } finally {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-  }
+  await apiClient.post('/auth/sign-out');
 };

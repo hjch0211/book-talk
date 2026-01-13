@@ -1,7 +1,7 @@
+import { refreshAccessToken } from '@src/apis/auth';
 import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import axios, { type AxiosError } from 'axios';
 import { env } from '../configs/env.ts';
-import {refreshAccessToken} from "@src/apis/auth";
 
 /** 백엔드 ApiResult와 매칭되는 API 응답 래퍼 */
 export interface ApiResult<T> {
@@ -51,8 +51,26 @@ export const cloudflareApiClient: AxiosInstance = axios.create({
   },
 });
 
-/** 에러 응답 처리 공통 함수 */
-const handleErrorResponse = async (error: AxiosError): Promise<never> => {
+/** 토큰 저장 */
+export const saveTokens = (accessToken: string, refreshToken: string) => {
+  localStorage.setItem('accessToken', accessToken);
+  localStorage.setItem('refreshToken', refreshToken);
+};
+
+/** 토큰 제거 */
+export const clearTokens = () => {
+  localStorage.removeItem('accessToken');
+  localStorage.removeItem('refreshToken');
+};
+
+/** 인증 실패 처리 (토큰 제거 및 로그인 페이지 이동) */
+const handleAuthFailure = () => {
+  clearTokens();
+  window.location.replace('/?auth=false');
+};
+
+/** 공통 에러 처리 (401 제외) */
+const handleCommonError = (error: AxiosError): never => {
   if (error.response) {
     const status = error.response.status;
     const data = error.response.data as
@@ -61,38 +79,6 @@ const handleErrorResponse = async (error: AxiosError): Promise<never> => {
           message?: string;
         }
       | undefined;
-
-    if (status === 401) {
-      const config = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
-      if (config._retry) {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        window.location.replace('/?auth=false');
-        throw new ApiError('인증이 만료되었습니다. 다시 로그인해주세요.', 'TOKEN_EXPIRED', 401);
-      }
-
-      try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (!refreshToken) {
-          throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
-        }
-
-        await refreshAccessToken({ refreshToken });
-        config._retry = true;
-
-        const newToken = localStorage.getItem('accessToken');
-        if (newToken && config.headers) {
-          config.headers.Authorization = `Bearer ${newToken}`;
-        }
-
-        return await axios.request(config) as Promise<never>;
-      } catch (refreshError) {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        window.location.replace('/?auth=false');
-        throw new ApiError('인증이 만료되었습니다. 다시 로그인해주세요.', 'TOKEN_EXPIRED', 401);
-      }
-    }
 
     throw new ApiError(
       data?.error?.message || data?.message || '오류가 발생했습니다',
@@ -106,6 +92,49 @@ const handleErrorResponse = async (error: AxiosError): Promise<never> => {
   }
 };
 
+/** 인증 불필요 API 에러 핸들러 */
+const handleNonAuthErrorResponse = async (error: AxiosError): Promise<never> => {
+  return handleCommonError(error);
+};
+
+/** 인증 필요 API 에러 핸들러 (401 토큰 갱신 포함) */
+const handleAuthErrorResponse = async (error: AxiosError): Promise<never> => {
+  if (error.response?.status === 401) {
+    const config = error.config as InternalAxiosRequestConfig & {
+      _retry?: boolean;
+    };
+
+    if (config._retry) {
+      handleAuthFailure();
+      throw new ApiError('인증이 만료되었습니다. 다시 로그인해주세요.', 'TOKEN_EXPIRED', 401);
+    }
+
+    try {
+      const refreshToken = localStorage.getItem('refreshToken');
+      if (!refreshToken) {
+        handleAuthFailure();
+        throw new ApiError('인증이 만료되었습니다. 다시 로그인해주세요.', 'TOKEN_EXPIRED', 401);
+      }
+
+      const tokens = await refreshAccessToken({ refreshToken });
+      saveTokens(tokens.accessToken, tokens.refreshToken);
+      config._retry = true;
+
+      if (config.headers) {
+        config.headers.Authorization = `Bearer ${tokens.accessToken}`;
+      }
+
+      return await authApiClient.request(config);
+    } catch (refreshError) {
+      // 토큰 갱신 실패 시 로그아웃
+      handleAuthFailure();
+      throw new ApiError('인증이 만료되었습니다. 다시 로그인해주세요.', 'TOKEN_EXPIRED', 401);
+    }
+  }
+
+  return handleCommonError(error);
+};
+
 /** 응답 데이터 처리 공통 함수 */
 const handleResponse = (response: AxiosResponse) => {
   const apiResult = response.data as ApiResult<unknown>;
@@ -115,7 +144,8 @@ const handleResponse = (response: AxiosResponse) => {
   return response;
 };
 
-apiClient.interceptors.response.use(handleResponse, handleErrorResponse);
+apiClient.interceptors.response.use(handleResponse, handleNonAuthErrorResponse);
+
 authApiClient.interceptors.request.use(
   (config: InternalAxiosRequestConfig) => {
     const token = localStorage.getItem('accessToken');
@@ -127,4 +157,4 @@ authApiClient.interceptors.request.use(
   (error: AxiosError) => Promise.reject(error)
 );
 
-authApiClient.interceptors.response.use(handleResponse, handleErrorResponse);
+authApiClient.interceptors.response.use(handleResponse, handleAuthErrorResponse);
