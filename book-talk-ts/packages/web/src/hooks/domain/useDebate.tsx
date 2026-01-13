@@ -1,11 +1,14 @@
 import { meQueryOption } from '@src/apis/account';
-import { findOneDebateQueryOptions, joinDebate } from '@src/apis/debate';
+import { findOneDebateQueryOptions, joinDebate, updateDebate } from '@src/apis/debate';
+import { createSurvey } from '@src/apis/survey';
 import {
   useDebateChat,
   useDebateRealtimeConnection,
   useDebateRound,
   useDebateVoiceChat,
+  useModal,
 } from '@src/hooks';
+import SurveyModal from '@src/routes/Debate/_components/modal/SurveyModal';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useEffect, useEffectEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -28,6 +31,7 @@ export const useDebate = ({ debateId }: Props) => {
   const navigate = useNavigate();
   const { data: _me } = useSuspenseQuery(meQueryOption);
   const { data: debate } = useSuspenseQuery(findOneDebateQueryOptions(debateId, _me?.id));
+  const { openModal, closeModal } = useModal();
 
   /** 토론 참여 */
   const joinDebateMutation = useMutation({
@@ -42,6 +46,25 @@ export const useDebate = ({ debateId }: Props) => {
     },
   });
 
+  /** 토론 상태 수정 */
+  const updateDebateMutation = useMutation({
+    mutationFn: updateDebate,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: findOneDebateQueryOptions(debateId).queryKey,
+      });
+    },
+  });
+
+  /** 설문조사 생성 */
+  const createSurveyMutation = useMutation({
+    mutationFn: createSurvey,
+    onSuccess: () => {
+      closeModal();
+      navigateToExpiredPage();
+    },
+  });
+
   const onAutoJoin = useEffectEvent((targetDebateId: string) => {
     joinDebateMutation.mutate(targetDebateId);
   });
@@ -50,9 +73,27 @@ export const useDebate = ({ debateId }: Props) => {
     navigate('/debate-expired');
   });
 
+  /** 설문조사 모달 열기 */
+  const handleOpenSurveyModal = useEffectEvent(() => {
+    openModal(SurveyModal, {
+      onConfirm: (rate: number) => {
+        createSurveyMutation.mutate({ rate });
+      },
+      isLoading: createSurveyMutation.isPending,
+    });
+  });
+
   useEffect(() => {
-    /** expired 토론방의 경우 */
-    if (debate.closedAt) {
+    const closedTime = debate.closedAt ? new Date(debate.closedAt).getTime() : null;
+    const now = Date.now();
+    const diffInSeconds = closedTime ? (now - closedTime) / 1000 : Infinity;
+
+    /** 토론이 끝난 지 10초 미만이면 설문조사 모달 띄우기 */
+    if (debate.closedAt && diffInSeconds < 10) {
+      handleOpenSurveyModal();
+      return;
+    } else if (debate.closedAt) {
+    /** expired 토론방의 경우 (10초 이상 지난 경우) */
       navigateToExpiredPage();
       return;
     }
@@ -99,6 +140,16 @@ export const useDebate = ({ debateId }: Props) => {
     await round.startPresentationRound();
   });
 
+  /** 토론 종료 */
+  const handleEndDebate = useEffectEvent(async () => {
+    if (!debateId) return;
+    await updateDebateMutation.mutateAsync({
+      debateId,
+      roundType: debate.currentRoundInfo.type,
+      ended: true,
+    });
+  });
+
   /** 채팅 기능 (FREE 라운드에서만 동작) */
   const chat = useDebateChat({
     debateId,
@@ -126,5 +177,7 @@ export const useDebate = ({ debateId }: Props) => {
     roundStartBackdrop,
     /** 토론 시작 */
     handleStartDebate,
+    /** 토론 종료 */
+    handleEndDebate,
   };
 };

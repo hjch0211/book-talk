@@ -29,6 +29,7 @@ function DebatePageContent({ debateId }: Props) {
     chat,
     roundStartBackdrop,
     handleStartDebate,
+    handleEndDebate,
   } = useDebate({ debateId });
 
   const handleOpenStartModal = () => {
@@ -45,9 +46,8 @@ function DebatePageContent({ debateId }: Props) {
     return <div>유효하지 않는 id입니다.</div>;
   }
 
-  // PENDING 또는 FAILED 상태일 때 스켈레톤 표시
   if (
-    connection.voiceConnectionStatus === 'PENDING' ||
+    (connection.onlineMembers.length > 1 && connection.voiceConnectionStatus === 'PENDING') ||
     connection.voiceConnectionStatus === 'FAILED'
   ) {
     return (
@@ -65,10 +65,13 @@ function DebatePageContent({ debateId }: Props) {
   return (
     <MainContainer isAuthPage>
       <DebateContainer>
-        <DebateHeader topic={debate.topic} />
+        <DebateHeader
+          topic={debate.topic}
+          isHost={myMemberInfo?.role === 'HOST'}
+          endDebate={handleEndDebate}
+        />
         <DebatePresentation
           currentRoundInfo={currentRoundInfo}
-          currentSpeaker={round.currentSpeaker}
           debateId={debateId}
           myAccountId={myMemberInfo?.id}
           onChatMessage={connection.sendChatMessage}
@@ -77,9 +80,9 @@ function DebatePageContent({ debateId }: Props) {
           presentations={debate.presentations}
         />
         <DebateMemberList
+          currentSpeaker={currentRoundInfo.currentSpeaker}
+          nextSpeaker={currentRoundInfo.nextSpeaker}
           members={connection.onlineMembers}
-          currentSpeaker={round.currentSpeaker}
-          nextSpeaker={round.nextSpeaker}
           realTimeRemainingSeconds={round.realTimeRemainingSeconds}
           raisedHands={connection.raisedHands}
           currentRoundType={currentRoundInfo.type}
@@ -90,7 +93,7 @@ function DebatePageContent({ debateId }: Props) {
         <RoundActions
           roundType={currentRoundInfo.type as RoundType}
           myRole={myMemberInfo?.role || ''}
-          isCurrentSpeaker={round.currentSpeaker?.accountId === myMemberInfo?.id}
+          isCurrentSpeaker={debate.currentRoundInfo.currentSpeaker?.accountId === myMemberInfo?.id}
           onStartDebate={handleOpenStartModal}
           onEndPresentation={round.endPresentation}
           onToggleHand={connection.toggleHand}

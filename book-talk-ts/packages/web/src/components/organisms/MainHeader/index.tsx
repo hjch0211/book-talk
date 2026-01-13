@@ -12,10 +12,11 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import { useSuspenseQuery } from '@tanstack/react-query';
+import { meQueryOption } from '@src/apis/account';
+import { signOut } from '@src/apis/auth';
+import { clearTokens } from '@src/apis/client.ts';
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense, useState } from 'react';
-import { meQueryOption } from '../../../apis/account';
-import { signOut } from '../../../apis/auth';
 import logoSvg from '../../../assets/logo.svg';
 import UpdateNicknameModal from '../../../routes/Main/_components/NickNameModal/UpdateNicknameModal.tsx';
 import { LogoContainer, LogoWrapper } from './style.ts';
@@ -25,6 +26,14 @@ const ProfileSection = () => {
   const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const open = Boolean(anchorEl);
   const { data: me } = useSuspenseQuery(meQueryOption);
+
+  const logoutMutation = useMutation({
+    mutationFn: signOut,
+    onSettled: () => {
+      clearTokens();
+      window.location.reload();
+    },
+  });
 
   const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -44,8 +53,7 @@ const ProfileSection = () => {
   };
 
   const handleLogout = () => {
-    signOut();
-    window.location.reload();
+    logoutMutation.mutate();
   };
 
   if (!me) return null;

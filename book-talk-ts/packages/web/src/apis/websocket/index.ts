@@ -1,17 +1,17 @@
 export { DebateWebSocketClient, type WebSocketHandlers } from './client';
-export {
-  WSRequestMessageType,
-  WSResponseMessageType,
-} from './schema';
 export type {
+  ChatMessageResponse,
   CurrentSpeakerInfo,
+  DebateOnlineAccountsUpdateResponse,
+  DebateRoundUpdateResponse,
+  HandRaiseUpdateResponse,
   NextSpeakerInfo,
   RaisedHandInfo,
   RoundInfo,
-  WebSocketMessage,
-  ChatMessageResponse,
-  DebateRoundUpdateResponse,
-  HandRaiseUpdateResponse,
-  DebateOnlineAccountsUpdateResponse,
   SpeakerUpdateResponse,
+  WebSocketMessage,
+} from './schema';
+export {
+  WSRequestMessageType,
+  WSResponseMessageType,
 } from './schema';

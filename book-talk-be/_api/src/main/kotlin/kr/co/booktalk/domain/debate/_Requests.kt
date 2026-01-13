@@ -32,8 +32,13 @@ data class JoinRequest(
 
 data class UpdateRequest(
     val debateId: String,
-    val roundType: DebateRoundType,
-)
+    val roundType: RoundType,
+    val ended: Boolean,
+) {
+    enum class RoundType {
+        PREPARATION, PRESENTATION, FREE
+    }
+}
 
 data class CreateRoundRequest(
     val debateId: String,

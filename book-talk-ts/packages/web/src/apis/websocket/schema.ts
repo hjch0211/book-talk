@@ -1,4 +1,4 @@
-import {z} from 'zod';
+import { z } from 'zod';
 
 // Message Type Enums
 export enum WSRequestMessageType {
@@ -324,7 +324,9 @@ export type VoiceIceCandidateRequest = z.infer<typeof VoiceIceCandidateRequestSc
 // Response types
 export type JoinSuccessResponse = z.infer<typeof JoinSuccessResponseSchema>;
 export type HeartbeatAckResponse = z.infer<typeof HeartbeatAckResponseSchema>;
-export type DebateOnlineAccountsUpdateResponse = z.infer<typeof DebateOnlineAccountsUpdateResponseSchema>;
+export type DebateOnlineAccountsUpdateResponse = z.infer<
+  typeof DebateOnlineAccountsUpdateResponseSchema
+>;
 export type HandRaiseUpdateResponse = z.infer<typeof HandRaiseUpdateResponseSchema>;
 export type ChatMessageResponse = z.infer<typeof ChatMessageResponseSchema>;
 export type SpeakerUpdateResponse = z.infer<typeof SpeakerUpdateResponseSchema>;
@@ -356,7 +358,10 @@ export type WebSocketMessage = z.infer<typeof WebSocketMessageSchema>;
 
 /** 음성 메시지 (debateId 제외 - 클라이언트가 자동 추가) */
 export type VoiceMessagePayload =
-    | { type: WSRequestMessageType.C_VOICE_JOIN; payload: Omit<VoiceJoinPayload, 'debateId'> }
-    | { type: WSRequestMessageType.C_VOICE_OFFER; payload: Omit<VoiceOfferPayload, 'debateId'> }
-    | { type: WSRequestMessageType.C_VOICE_ANSWER; payload: Omit<VoiceAnswerPayload, 'debateId'> }
-    | { type: WSRequestMessageType.C_VOICE_ICE_CANDIDATE; payload: Omit<VoiceIceCandidatePayload, 'debateId'> };
+  | { type: WSRequestMessageType.C_VOICE_JOIN; payload: Omit<VoiceJoinPayload, 'debateId'> }
+  | { type: WSRequestMessageType.C_VOICE_OFFER; payload: Omit<VoiceOfferPayload, 'debateId'> }
+  | { type: WSRequestMessageType.C_VOICE_ANSWER; payload: Omit<VoiceAnswerPayload, 'debateId'> }
+  | {
+      type: WSRequestMessageType.C_VOICE_ICE_CANDIDATE;
+      payload: Omit<VoiceIceCandidatePayload, 'debateId'>;
+    };

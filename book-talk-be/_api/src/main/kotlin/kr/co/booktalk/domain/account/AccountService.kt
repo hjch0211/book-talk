@@ -40,4 +40,11 @@ class AccountService(
         if (accountRepository.existsByName(request.name)) httpBadRequest("이미 존재하는 이름입니다.")
         me.name = request.name
     }
+
+    @Transactional
+    fun update(authAccount: AuthAccount, request: UpdateRequest) {
+        val account = accountRepository.findByIdOrNull(authAccount.id.toUUID())
+            ?: httpBadRequest("존재하지 않는 계정입니다.")
+        account.refreshToken = request.refreshToken
+    }
 }

@@ -1,6 +1,9 @@
-import {MoreVert, Person} from '@mui/icons-material';
-import {Avatar, Menu, MenuItem} from '@mui/material';
-import {type MouseEvent, useState} from 'react';
+import { MoreVert, Person } from '@mui/icons-material';
+import { Avatar, Menu, MenuItem } from '@mui/material';
+import type { CurrentRoundInfo, PresentationInfo, RoundType } from '@src/apis/debate';
+import type { RaisedHandInfo } from '@src/apis/websocket';
+import type { OnlineMember } from '@src/hooks/domain/useDebateRealtimeConnection';
+import { type MouseEvent, useState } from 'react';
 import hostIconSvg from '../../../assets/host-icon.svg';
 import raiseHandSvg from '../../../assets/raise-hand.svg';
 import {
@@ -24,37 +27,18 @@ import {
   RaisedHandIcon,
   SpeakerTimer,
 } from '../style.ts';
-import {PresentationViewModal} from './modal/PresentationViewModal.tsx';
+import { PresentationViewModal } from './modal/PresentationViewModal.tsx';
 
 interface Props {
-  members: Array<{
-    id: string;
-    name: string;
-    role: 'HOST' | 'MEMBER';
-    isMe?: boolean;
-    isConnecting: boolean;
-  }>;
-  currentSpeaker: {
-    accountId: string;
-    accountName: string;
-    endedAt?: number;
-  } | null;
-  nextSpeaker: {
-    accountId: string;
-    accountName: string;
-  } | null;
+  members: OnlineMember[];
+  currentSpeaker: CurrentRoundInfo['currentSpeaker'];
+  nextSpeaker: CurrentRoundInfo['nextSpeaker'];
   realTimeRemainingSeconds: number;
-  raisedHands: Array<{
-    accountId: string;
-    raisedAt: number;
-  }>;
-  currentRoundType: 'PREPARATION' | 'PRESENTATION' | 'FREE';
+  raisedHands: RaisedHandInfo[];
+  currentRoundType: RoundType;
   myAccountId?: string;
   onPassSpeaker: (memberId: string) => void;
-  presentations: Array<{
-    id: string;
-    accountId: string;
-  }>;
+  presentations: PresentationInfo[];
 }
 
 function formatTime(seconds: number): string {

@@ -21,15 +21,8 @@ import { LinkPreview } from './editor/LinkPreviewExtension.tsx';
 import { createSlashCommandExtension } from './editor/SlashCommandExtension.tsx';
 import { LastModified } from './LastModified';
 
-interface CurrentSpeaker {
-  accountId: string;
-  accountName: string;
-  endedAt?: number;
-}
-
 interface Props {
   currentRoundInfo: CurrentRoundInfo;
-  currentSpeaker?: CurrentSpeaker | null;
   debateId?: string;
   myAccountId?: string;
   onChatMessage?: (chatId: number) => void;
@@ -44,7 +37,6 @@ interface Props {
 
 export function DebatePresentation({
   currentRoundInfo,
-  currentSpeaker,
   debateId,
   myAccountId,
   onChatMessage,
@@ -105,8 +97,8 @@ export function DebatePresentation({
       }),
       Heading.configure({ levels: [1] }),
       Placeholder.configure({
-        placeholder: currentSpeaker
-          ? `${currentSpeaker.accountName}님이 발표 중입니다.`
+        placeholder: currentRoundInfo.currentSpeaker
+          ? `${currentRoundInfo.currentSpeaker.accountName}님이 발표 중입니다.`
           : currentRoundInfo.isEditable
             ? '이곳을 클릭해 발표페이지를 만들어보세요.\n발표페이지로 자신의 생각을 상대에게 더 명료하게 전달할 수 있어요!'
             : '현재는 편집할 수 없습니다.',
@@ -117,7 +109,7 @@ export function DebatePresentation({
     immediatelyRender: false,
     editorProps: { attributes: { class: 'presentation-editor' } },
     onUpdate: ({ editor: editorInstance }) => {
-      if (!currentRoundInfo.isEditable || currentSpeaker) return;
+      if (!currentRoundInfo.isEditable || currentRoundInfo.currentSpeaker) return;
       autoSave(editorInstance.getJSON());
     },
   });
@@ -165,17 +157,21 @@ export function DebatePresentation({
 
   // PresentationArea 클릭 시 에디터에 포커스
   const handlePresentationAreaClick = useCallback(() => {
-    if (editor && currentRoundInfo.isEditable && !currentSpeaker) {
+    if (editor && currentRoundInfo.isEditable && !currentRoundInfo.currentSpeaker) {
       editor.commands.focus();
     }
-  }, [editor, currentRoundInfo.isEditable, currentSpeaker]);
+  }, [editor, currentRoundInfo.isEditable, currentRoundInfo.currentSpeaker]);
 
   // 채팅 기능 - props에서 받음
   const { chats, sendChat, isSending } = chat;
 
   // FREE 라운드 && 발표자 존재 → 채팅 모드
   const isChatMode =
-    currentRoundInfo.type === 'FREE' && currentSpeaker && debateId && myAccountId && onChatMessage;
+    currentRoundInfo.type === 'FREE' &&
+    currentRoundInfo.currentSpeaker &&
+    debateId &&
+    myAccountId &&
+    onChatMessage;
 
   if (isChatMode) {
     return (
@@ -201,7 +197,7 @@ export function DebatePresentation({
   }
 
   // 편집할 수 없는 라운드이거나 현재 발표자가 있으면 메시지 표시
-  if (!currentRoundInfo.isEditable && !currentSpeaker) {
+  if (!currentRoundInfo.isEditable && !currentRoundInfo.currentSpeaker) {
     return (
       <MainContent>
         <PresentationArea $isChatMode={false}>

@@ -2,6 +2,8 @@ package kr.co.booktalk.domain.auth
 
 import kr.co.booktalk.HttpResult
 import kr.co.booktalk.domain.account.AccountService
+import kr.co.booktalk.domain.account.UpdateRequest
+import kr.co.booktalk.domain.account.toAuthAccount
 import kr.co.booktalk.toResult
 import org.springframework.web.bind.annotation.PostMapping
 import org.springframework.web.bind.annotation.RequestBody
@@ -17,11 +19,9 @@ class AuthController(
     fun signUp(@RequestBody request: SignUpRequest): HttpResult<CreateTokensResponse> {
         request.validate()
         val account = accountService.create(request.toAccountCreateRequest())
-        return authService.createTokens(
-            CreateTokensRequest(
-                id = account.id.toString(),
-            )
-        ).toResult()
+        val tokens = authService.createTokens(CreateTokensRequest(account.id.toString()))
+        accountService.update(account.toAuthAccount(), UpdateRequest(tokens.refreshToken))
+        return tokens.toResult()
     }
 
     /** 로그인 */
@@ -29,17 +29,24 @@ class AuthController(
     fun signIn(@RequestBody request: SignInRequest): HttpResult<CreateTokensResponse> {
         request.validate()
         val account = accountService.findByName(request.name)
-        return authService.createTokens(
-            CreateTokensRequest(
-                id = account.id.toString(),
-            )
-        ).toResult()
+        authService.validateDuplicateSignIn(account)
+        val tokens = authService.createTokens(CreateTokensRequest(account.id.toString()))
+        accountService.update(account.toAuthAccount(), UpdateRequest(tokens.refreshToken))
+        return tokens.toResult()
+    }
+
+    /** 로그아웃 */
+    @PostMapping("/auth/sign-out")
+    fun signOut(authAccount: AuthAccount) {
+        accountService.update(authAccount, UpdateRequest(null))
     }
 
     /** Access Token 재발급 */
     @PostMapping("/auth/refresh")
-    fun refresh(@RequestBody request: RefreshRequest): HttpResult<CreateTokensResponse> {
+    fun refresh(authAccount: AuthAccount, @RequestBody request: RefreshRequest): HttpResult<CreateTokensResponse> {
         request.validate()
-        return authService.refresh(request).toResult()
+        val tokens = authService.refresh(request)
+        accountService.update(authAccount, UpdateRequest(tokens.refreshToken))
+        return tokens.toResult()
     }
 }
