@@ -7,9 +7,8 @@ import java.time.Instant
 
 enum class WSResponseMessageType {
     S_JOIN_SUCCESS,
-    S_JOIN_ERROR,
     S_HEARTBEAT_ACK,
-    S_PRESENCE_UPDATE,
+    S_DEBATE_ONLINE_ACCOUNTS_UPDATE,
     S_HAND_RAISE_UPDATE,
     S_CHAT_MESSAGE,
     S_SPEAKER_UPDATE,
@@ -100,18 +99,6 @@ data class JoinSuccessResponse(
     )
 }
 
-data class JoinErrorResponse(
-    override val payload: Payload
-) : WebSocketMessage<JoinErrorResponse.Payload> {
-    override val type: String = WSResponseMessageType.S_JOIN_ERROR.name
-
-    data class Payload(
-        val debateId: String,
-        val accountId: String,
-        val reason: String
-    )
-}
-
 data class HeartbeatAckResponse(
     override val payload: Payload
 ) : WebSocketMessage<HeartbeatAckResponse.Payload> {
@@ -122,22 +109,15 @@ data class HeartbeatAckResponse(
     )
 }
 
-data class PresenceUpdateResponse(
+data class DebateOnlineAccountsUpdateResponse(
     override val payload: Payload
-) : WebSocketMessage<PresenceUpdateResponse.Payload> {
-    override val type: String = WSResponseMessageType.S_PRESENCE_UPDATE.name
+) : WebSocketMessage<DebateOnlineAccountsUpdateResponse.Payload> {
+    override val type: String = WSResponseMessageType.S_DEBATE_ONLINE_ACCOUNTS_UPDATE.name
 
     data class Payload(
         val debateId: String,
-        val onlineAccounts: List<AccountPresenceInfo>
-    ) {
-        data class AccountPresenceInfo(
-            val accountId: String,
-            val accountName: String,
-            val status: String,
-            val lastHeartbeat: Long
-        )
-    }
+        val onlineAccounts: Set<String>
+    )
 }
 
 data class HandRaiseUpdateResponse(
@@ -151,7 +131,6 @@ data class HandRaiseUpdateResponse(
     ) {
         data class RaisedHandInfo(
             val accountId: String,
-            val accountName: String,
             val raisedAt: Long
         )
     }

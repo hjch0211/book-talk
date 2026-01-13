@@ -1,13 +1,13 @@
-package kr.co.booktalk.domain.webSocket
+package kr.co.booktalk.domain.debate
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.*
+import kr.co.booktalk.cache.DebateOnlineAccountsCache
 import kr.co.booktalk.cache.HandRaiseCache
 import kr.co.booktalk.cache.WebSocketSessionCache
-import kr.co.booktalk.domain.debate.*
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
@@ -17,8 +17,8 @@ import java.time.Instant
 
 // TODO: 추 후 webSocket 모듈 제거. 도메인 단위로 모두 나누기
 @Component
-class ApiWebSocketHandler(
-    private val presenceService: PresenceService,
+class DebateWebSocketHandler(
+    private val debateOnlineAccountsCache: DebateOnlineAccountsCache,
     private val handRaiseCache: HandRaiseCache,
     private val webSocketSessionCache: WebSocketSessionCache,
     private val objectMapper: ObjectMapper
@@ -44,9 +44,7 @@ class ApiWebSocketHandler(
         try {
             // 먼저 type 필드만 추출
             val typeMap = objectMapper.readValue<Map<String, Any>>(message.payload)
-            val messageType = typeMap["type"] as? String
-
-            when (messageType) {
+            when (val messageType = typeMap["type"] as? String) {
                 WSRequestMessageType.C_JOIN_DEBATE.name -> {
                     val request = objectMapper.readValue<JoinDebateRequest>(message.payload)
                     handleJoinDebate(session, request)
@@ -118,7 +116,7 @@ class ApiWebSocketHandler(
         }
 
         registerAccountSession(session, payload.debateId)
-        joinDebateWithErrorHandling(session, payload.debateId, authenticatedAccountId, payload.accountName, payload.voiceEnabled)
+        joinDebateWithErrorHandling(session, payload.debateId, authenticatedAccountId)
     }
 
     /** 토론방 나가기 요청을 처리합니다. 사용자를 토론방에서 제거하고 세션을 정리합니다. */
@@ -130,13 +128,10 @@ class ApiWebSocketHandler(
 
     /** 클라이언트의 하트비트 요청을 처리하고 응답을 보냅니다. */
     private fun handleHeartbeat(session: WebSocketSession) {
-        val authenticatedAccountId = getAuthenticatedAccountId(session) ?: return
-
         try {
-            presenceService.updateHeartbeat(authenticatedAccountId)
             sendHeartbeatResponse(session)
         } catch (e: Exception) {
-            logger.error(e) { "Heartbeat 처리 실패: accountId=$authenticatedAccountId" }
+            logger.error(e) { "Heartbeat 처리 실패" }
         }
     }
 
@@ -166,26 +161,22 @@ class ApiWebSocketHandler(
         session: WebSocketSession,
         debateId: String,
         accountId: String,
-        accountName: String,
-        voiceEnabled: Boolean = true
     ) {
         try {
-            presenceService.joinDebate(debateId, accountId, accountName)
+            debateOnlineAccountsCache.add(debateId, accountId)
             sendJoinSuccessResponse(session, debateId, accountId)
 
-            // Redis Pub/Sub을 통해 즉시 브로드캐스트
-            publishPresenceUpdate(debateId)
+            broadcastDebateOnlineAccountsUpdate(debateId)
         } catch (e: Exception) {
             logger.error(e) { "토론 참여 처리 실패: debateId=$debateId, accountId=$accountId" }
-            sendJoinErrorResponse(session, debateId, accountId, e.message ?: "UNKNOWN_ERROR")
         }
     }
 
     /** 토론 나가기 처리와 세션 정리를 수행합니다. */
     private fun leaveDebateAndCleanup(session: WebSocketSession, debateId: String, accountId: String) {
         try {
-            presenceService.leaveDebate(debateId, accountId)
-            publishPresenceUpdate(debateId)
+            debateOnlineAccountsCache.remove(debateId, accountId)
+            broadcastDebateOnlineAccountsUpdate(debateId)
             removeAccountSession(session)
         } catch (e: Exception) {
             logger.error(e) { "토론 나가기 처리 실패: debateId=$debateId, accountId=$accountId" }
@@ -207,9 +198,8 @@ class ApiWebSocketHandler(
 
         if (accountId != null && debateId != null) {
             try {
-                presenceService.leaveDebate(debateId, accountId)
-                // Redis Pub/Sub을 통해 모든 서버에 브로드캐스트
-                publishPresenceUpdate(debateId)
+                debateOnlineAccountsCache.remove(debateId, accountId)
+                broadcastDebateOnlineAccountsUpdate(debateId)
             } catch (e: Exception) {
                 logger.error(e) { "연결 종료 시 정리 실패: accountId=$accountId, debateId=$debateId" }
             }
@@ -227,18 +217,6 @@ class ApiWebSocketHandler(
         sendMessage(session, response)
     }
 
-    /** 토론 참여 실패 응답을 클라이언트에게 전송합니다. */
-    private fun sendJoinErrorResponse(session: WebSocketSession, debateId: String, accountId: String, reason: String) {
-        val response = JoinErrorResponse(
-            payload = JoinErrorResponse.Payload(
-                debateId = debateId,
-                accountId = accountId,
-                reason = reason
-            )
-        )
-        sendMessage(session, response)
-    }
-
     /** 하트비트 응답을 클라이언트에게 전송합니다. */
     private fun sendHeartbeatResponse(session: WebSocketSession) {
         val response = HeartbeatAckResponse(
@@ -250,19 +228,12 @@ class ApiWebSocketHandler(
     }
 
     /** 해당 토론방의 모든 WebSocket 세션에 presence 업데이트를 직접 브로드캐스트합니다. */
-    private fun publishPresenceUpdate(debateId: String) {
-        val onlineAccounts = presenceService.getOnlineAccounts(debateId)
-        val response = PresenceUpdateResponse(
-            payload = PresenceUpdateResponse.Payload(
+    private fun broadcastDebateOnlineAccountsUpdate(debateId: String) {
+        val onlineAccounts = debateOnlineAccountsCache.get(debateId)
+        val response = DebateOnlineAccountsUpdateResponse(
+            payload = DebateOnlineAccountsUpdateResponse.Payload(
                 debateId = debateId,
-                onlineAccounts = onlineAccounts.map { account ->
-                    PresenceUpdateResponse.Payload.AccountPresenceInfo(
-                        accountId = account.accountId,
-                        accountName = account.accountName,
-                        status = account.status.name,
-                        lastHeartbeat = account.lastHeartbeat.toEpochMilli()
-                    )
-                }
+                onlineAccounts = onlineAccounts
             )
         )
 
@@ -290,9 +261,7 @@ class ApiWebSocketHandler(
     /** 특정 토론방의 모든 WebSocket 세션에게 메시지를 직접 브로드캐스트합니다. */
     fun broadcastToDebateRoom(debateId: String, messageJson: String) {
         try {
-            // presenceService에서 해당 토론방의 온라인 사용자 목록을 가져와서 세션 조회
-            val onlineAccounts = presenceService.getOnlineAccounts(debateId)
-            val accountIds = onlineAccounts.map { it.accountId }.toSet()
+            val accountIds = debateOnlineAccountsCache.get(debateId)
             val targetSessions = webSocketSessionCache.getAll(accountIds)
 
             targetSessions.forEach { session ->
@@ -336,28 +305,30 @@ class ApiWebSocketHandler(
         val existing = handRaiseCache.get(payload.debateId, authenticatedAccountId)
 
         if (existing != null) {
+            /** 손내리기 */
             handRaiseCache.remove(payload.debateId, authenticatedAccountId)
+            publishHandRaiseUpdate(payload.debateId)
         } else {
+            /** 손들기 */
             handRaiseCache.add(payload.debateId, authenticatedAccountId, Instant.now())
+            publishHandRaiseUpdate(payload.debateId)
 
             delay(3000)
             handRaiseCache.remove(payload.debateId, authenticatedAccountId)
+            publishHandRaiseUpdate(payload.debateId)
         }
-
-        publishHandRaiseUpdate(payload.debateId)
     }
 
     /** 손들기 상태 업데이트를 토론방 모든 참가자에게 브로드캐스트합니다. */
     private fun publishHandRaiseUpdate(debateId: String) {
-        val onlineAccounts = presenceService.getOnlineAccounts(debateId)
+        val onlineAccountIds = debateOnlineAccountsCache.get(debateId)
 
-        val raisedHandsList = onlineAccounts.mapNotNull { account ->
-            val raisedAt = handRaiseCache.get(debateId, account.accountId)
+        val raisedHandsList = onlineAccountIds.mapNotNull { accountId ->
+            val raisedAt = handRaiseCache.get(debateId, accountId)
                 ?: return@mapNotNull null
 
             HandRaiseUpdateResponse.Payload.RaisedHandInfo(
-                accountId = account.accountId,
-                accountName = account.accountName,
+                accountId = accountId,
                 raisedAt = raisedAt.toEpochMilli()
             )
         }

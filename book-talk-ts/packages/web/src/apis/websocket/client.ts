@@ -1,10 +1,10 @@
 import {
+  type DebateRoundUpdateResponse,
   type RaisedHandInfo,
+  type SpeakerUpdateResponse,
   type VoiceMessagePayload,
   type WebSocketMessage,
   WebSocketMessageSchema,
-  type DebateRoundUpdateResponse,
-  type SpeakerUpdateResponse,
   WSRequestMessageType,
   WSResponseMessageType,
 } from './schema';
@@ -201,11 +201,9 @@ export class DebateWebSocketClient {
 
   private handleMessage(message: WebSocketMessage) {
     switch (message.type) {
-      case WSResponseMessageType.S_PRESENCE_UPDATE:
+      case WSResponseMessageType.S_DEBATE_ONLINE_ACCOUNTS_UPDATE:
         if (this.handlers.onOnlineMembersUpdate && message.payload) {
-          const onlineIds = new Set<string>(
-            message.payload.onlineAccounts.map((account) => account.accountId)
-          );
+          const onlineIds = new Set<string>(message.payload.onlineAccounts);
           this.handlers.onOnlineMembersUpdate(onlineIds);
         }
         break;

@@ -12,6 +12,6 @@ export type {
   ChatMessageResponse,
   DebateRoundUpdateResponse,
   HandRaiseUpdateResponse,
-  PresenceUpdateResponse,
+  DebateOnlineAccountsUpdateResponse,
   SpeakerUpdateResponse,
 } from './schema';

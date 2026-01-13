@@ -15,9 +15,8 @@ export enum WSRequestMessageType {
 
 export enum WSResponseMessageType {
   S_JOIN_SUCCESS = 'S_JOIN_SUCCESS',
-  S_JOIN_ERROR = 'S_JOIN_ERROR',
   S_HEARTBEAT_ACK = 'S_HEARTBEAT_ACK',
-  S_PRESENCE_UPDATE = 'S_PRESENCE_UPDATE',
+  S_DEBATE_ONLINE_ACCOUNTS_UPDATE = 'S_DEBATE_ONLINE_ACCOUNTS_UPDATE',
   S_HAND_RAISE_UPDATE = 'S_HAND_RAISE_UPDATE',
   S_CHAT_MESSAGE = 'S_CHAT_MESSAGE',
   S_SPEAKER_UPDATE = 'S_SPEAKER_UPDATE',
@@ -147,21 +146,13 @@ export const HeartbeatAckPayloadSchema = z.object({
   timestamp: z.number(),
 });
 
-export const AccountPresenceInfoSchema = z.object({
-  accountId: z.string(),
-  accountName: z.string(),
-  status: z.string(),
-  lastHeartbeat: z.number(),
-});
-
-export const PresenceUpdatePayloadSchema = z.object({
+export const DebateOnlineAccountsUpdatePayloadSchema = z.object({
   debateId: z.string(),
-  onlineAccounts: z.array(AccountPresenceInfoSchema),
+  onlineAccounts: z.array(z.string()),
 });
 
 export const RaisedHandInfoSchema = z.object({
   accountId: z.string(),
-  accountName: z.string(),
   raisedAt: z.number(),
 });
 
@@ -176,9 +167,9 @@ export const ChatMessageResponsePayloadSchema = z.object({
 });
 
 export const CurrentSpeakerInfoSchema = z.object({
-  accountId: z.string().optional(),
+  accountId: z.string().nullable(),
   accountName: z.string().nullable(),
-  endedAt: z.number().nullable(),
+  endedAt: z.number(),
 });
 
 export const NextSpeakerInfoSchema = z.object({
@@ -240,19 +231,14 @@ export const JoinSuccessResponseSchema = z.object({
   payload: JoinSuccessPayloadSchema,
 });
 
-export const JoinErrorResponseSchema = z.object({
-  type: z.literal(WSResponseMessageType.S_JOIN_ERROR),
-  payload: JoinErrorPayloadSchema,
-});
-
 export const HeartbeatAckResponseSchema = z.object({
   type: z.literal(WSResponseMessageType.S_HEARTBEAT_ACK),
   payload: HeartbeatAckPayloadSchema,
 });
 
-export const PresenceUpdateResponseSchema = z.object({
-  type: z.literal(WSResponseMessageType.S_PRESENCE_UPDATE),
-  payload: PresenceUpdatePayloadSchema,
+export const DebateOnlineAccountsUpdateResponseSchema = z.object({
+  type: z.literal(WSResponseMessageType.S_DEBATE_ONLINE_ACCOUNTS_UPDATE),
+  payload: DebateOnlineAccountsUpdatePayloadSchema,
 });
 
 export const HandRaiseUpdateResponseSchema = z.object({
@@ -310,9 +296,8 @@ export const WebSocketMessageSchema = z.discriminatedUnion('type', [
   VoiceIceCandidateRequestSchema,
   // Server messages
   JoinSuccessResponseSchema,
-  JoinErrorResponseSchema,
   HeartbeatAckResponseSchema,
-  PresenceUpdateResponseSchema,
+  DebateOnlineAccountsUpdateResponseSchema,
   HandRaiseUpdateResponseSchema,
   ChatMessageResponseSchema,
   SpeakerUpdateResponseSchema,
@@ -338,9 +323,8 @@ export type VoiceIceCandidateRequest = z.infer<typeof VoiceIceCandidateRequestSc
 
 // Response types
 export type JoinSuccessResponse = z.infer<typeof JoinSuccessResponseSchema>;
-export type JoinErrorResponse = z.infer<typeof JoinErrorResponseSchema>;
 export type HeartbeatAckResponse = z.infer<typeof HeartbeatAckResponseSchema>;
-export type PresenceUpdateResponse = z.infer<typeof PresenceUpdateResponseSchema>;
+export type DebateOnlineAccountsUpdateResponse = z.infer<typeof DebateOnlineAccountsUpdateResponseSchema>;
 export type HandRaiseUpdateResponse = z.infer<typeof HandRaiseUpdateResponseSchema>;
 export type ChatMessageResponse = z.infer<typeof ChatMessageResponseSchema>;
 export type SpeakerUpdateResponse = z.infer<typeof SpeakerUpdateResponseSchema>;
@@ -362,7 +346,6 @@ export type VoiceAnswerPayload = z.infer<typeof VoiceAnswerPayloadSchema>;
 export type VoiceIceCandidatePayload = z.infer<typeof VoiceIceCandidatePayloadSchema>;
 
 // Nested types
-export type AccountPresenceInfo = z.infer<typeof AccountPresenceInfoSchema>;
 export type RaisedHandInfo = z.infer<typeof RaisedHandInfoSchema>;
 export type CurrentSpeakerInfo = z.infer<typeof CurrentSpeakerInfoSchema>;
 export type NextSpeakerInfo = z.infer<typeof NextSpeakerInfoSchema>;
