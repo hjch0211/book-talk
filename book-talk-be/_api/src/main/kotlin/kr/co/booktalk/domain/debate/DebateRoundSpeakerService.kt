@@ -2,7 +2,7 @@ package kr.co.booktalk.domain.debate
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import io.github.oshai.kotlinlogging.KotlinLogging
-import kr.co.booktalk.cache.AppConfigService
+import kr.co.booktalk.config.AppProperties
 import kr.co.booktalk.domain.*
 import kr.co.booktalk.httpBadRequest
 import kr.co.booktalk.httpForbidden
@@ -18,7 +18,7 @@ class DebateRoundSpeakerService(
     private val accountRepository: AccountRepository,
     private val debateRoundSpeakerRepository: DebateRoundSpeakerRepository,
     private val debateRoundRepository: DebateRoundRepository,
-    private val appConfigService: AppConfigService,
+    private val appProperties: AppProperties,
     private val debateMemberRepository: DebateMemberRepository,
     private val objectMapper: ObjectMapper,
     private val debateWebSocketHandler: DebateWebSocketHandler,
@@ -48,7 +48,7 @@ class DebateRoundSpeakerService(
             DebateRoundSpeakerEntity(
                 account = speaker,
                 debateRound = debateRound,
-                endedAt = Instant.now().plusSeconds(appConfigService.debateRoundSpeakerSeconds()),
+                endedAt = Instant.now().plusSeconds(appProperties.debate.roundSpeakerSeconds),
                 isActive = true
             )
         )
@@ -67,7 +67,7 @@ class DebateRoundSpeakerService(
         var updated = false
 
         request.extension?.takeIf { it }?.let {
-            speaker.endedAt = speaker.endedAt.plusSeconds(appConfigService.debateRoundSpeakerSeconds())
+            speaker.endedAt = speaker.endedAt.plusSeconds(appProperties.debate.roundSpeakerSeconds)
             updated = true
         }
         request.ended?.takeIf { it }?.let {
@@ -112,7 +112,7 @@ class DebateRoundSpeakerService(
                 DebateRoundSpeakerEntity(
                     account = firstSpeaker,
                     debateRound = freeRoundEntity,
-                    endedAt = Instant.now().plusSeconds(appConfigService.debateRoundSpeakerSeconds()),
+                    endedAt = Instant.now().plusSeconds(appProperties.debate.roundSpeakerSeconds),
                     isActive = true
                 )
             )
@@ -126,7 +126,7 @@ class DebateRoundSpeakerService(
             DebateRoundSpeakerEntity(
                 account = nextSpeaker,
                 debateRound = round,
-                endedAt = Instant.now().plusSeconds(appConfigService.debateRoundSpeakerSeconds()),
+                endedAt = Instant.now().plusSeconds(appProperties.debate.roundSpeakerSeconds),
                 isActive = true
             )
         )
@@ -157,15 +157,15 @@ class DebateRoundSpeakerService(
                 ?: return null
 
             SpeakerUpdateResponse(
-                payload = SpeakerUpdateResponse.SpeakerUpdatePayload(
+                payload = SpeakerUpdateResponse.Payload(
                     debateId = debateId,
-                    currentSpeaker = SpeakerUpdateResponse.SpeakerUpdatePayload.CurrentSpeakerInfo(
+                    currentSpeaker = SpeakerUpdateResponse.Payload.CurrentSpeakerInfo(
                         accountId = currentSpeaker.account.id.toString(),
                         accountName = currentSpeaker.account.name,
                         endedAt = currentSpeaker.endedAt.toEpochMilli()
                     ),
                     nextSpeaker = currentRound.nextSpeaker?.let {
-                        SpeakerUpdateResponse.SpeakerUpdatePayload.NextSpeakerInfo(
+                        SpeakerUpdateResponse.Payload.NextSpeakerInfo(
                             accountId = it.id.toString(),
                             accountName = it.name
                         )

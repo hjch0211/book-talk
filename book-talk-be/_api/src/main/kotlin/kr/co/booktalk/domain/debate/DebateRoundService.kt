@@ -1,7 +1,7 @@
 package kr.co.booktalk.domain.debate
 
 import com.fasterxml.jackson.databind.ObjectMapper
-import kr.co.booktalk.cache.AppConfigService
+import kr.co.booktalk.config.AppProperties
 import kr.co.booktalk.domain.AccountRepository
 import kr.co.booktalk.domain.DebateRepository
 import kr.co.booktalk.domain.DebateRoundEntity
@@ -18,7 +18,7 @@ class DebateRoundService(
     private val debateRepository: DebateRepository,
     private val accountRepository: AccountRepository,
     private val debateRoundRepository: DebateRoundRepository,
-    private val appConfigService: AppConfigService,
+    private val appProperties: AppProperties,
     private val debateWebSocketHandler: DebateWebSocketHandler,
     private val objectMapper: ObjectMapper,
 ) {
@@ -64,9 +64,9 @@ class DebateRoundService(
     ) {
         try {
             val response = DebateRoundUpdateResponse(
-                payload = DebateRoundUpdateResponse.DebateRoundUpdatePayload(
+                payload = DebateRoundUpdateResponse.Payload(
                     debateId = debateId,
-                    round = DebateRoundUpdateResponse.DebateRoundUpdatePayload.RoundInfo(
+                    round = DebateRoundUpdateResponse.Payload.RoundInfo(
                         id = debateRound.id,
                         type = debateRound.type.name,
                         nextSpeakerId = null,
@@ -74,10 +74,10 @@ class DebateRoundService(
                         createdAt = debateRound.createdAt.toEpochMilli(),
                         endedAt = debateRound.endedAt?.toEpochMilli()
                     ),
-                    currentSpeaker = DebateRoundUpdateResponse.DebateRoundUpdatePayload.CurrentSpeakerInfo(
+                    currentSpeaker = DebateRoundUpdateResponse.Payload.CurrentSpeakerInfo(
                         accountId = null,
                         accountName = null,
-                        endedAt = System.currentTimeMillis() + appConfigService.debateRoundSpeakerSeconds() * 1000
+                        endedAt = System.currentTimeMillis() + appProperties.debate.roundSpeakerSeconds * 1000
                     )
                 )
             )
