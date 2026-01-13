@@ -1,5 +1,5 @@
 import { meQueryOption } from '@src/apis/account';
-import { findOneDebateQueryOptions, joinDebate } from '@src/apis/debate';
+import {findOneDebateQueryOptions, joinDebate, updateDebate} from '@src/apis/debate';
 import {
   useDebateChat,
   useDebateRealtimeConnection,
@@ -39,6 +39,16 @@ export const useDebate = ({ debateId }: Props) => {
     },
     onError: () => {
       navigate('/debate-full');
+    },
+  });
+
+  /** 토론 상태 수정 */
+  const updateDebateMutation = useMutation({
+    mutationFn: updateDebate,
+    onSuccess: () => {
+      void queryClient.invalidateQueries({
+        queryKey: findOneDebateQueryOptions(debateId).queryKey,
+      });
     },
   });
 
@@ -99,6 +109,16 @@ export const useDebate = ({ debateId }: Props) => {
     await round.startPresentationRound();
   });
 
+  /** 토론 종료 */
+  const handleEndDebate = useEffectEvent(async () => {
+    if (!debateId) return;
+    await updateDebateMutation.mutateAsync({
+      debateId,
+      roundType: debate.currentRoundInfo.type,
+      ended: true,
+    });
+  });
+
   /** 채팅 기능 (FREE 라운드에서만 동작) */
   const chat = useDebateChat({
     debateId,
@@ -126,5 +146,7 @@ export const useDebate = ({ debateId }: Props) => {
     roundStartBackdrop,
     /** 토론 시작 */
     handleStartDebate,
+    /** 토론 종료 */
+    handleEndDebate,
   };
 };

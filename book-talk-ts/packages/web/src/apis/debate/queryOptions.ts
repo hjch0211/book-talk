@@ -10,10 +10,9 @@ export interface CurrentRoundInfo {
   id: number | null;
   type: RoundType;
   currentPresentationId?: string;
-  currentSpeakerId?: number | null;
-  currentSpeakerAccountId?: string | null;
+  currentSpeaker: { accountId: string; accountName: string; endedAt: Date } | null;
+  nextSpeaker: { accountId: string } | null;
   createdAt: string | null;
-  nextSpeakerAccountId?: string | null;
   endedAt?: string | null;
   isEditable: boolean;
 }
@@ -24,29 +23,60 @@ export type Debate = FindOneDebateResponse & {
   myMemberInfo: MemberInfo | undefined;
 };
 
+function resolveCurrentSpeaker(debate: FindOneDebateResponse): CurrentRoundInfo['currentSpeaker'] {
+  const currentRound = debate.currentRound;
+  if (!currentRound || !currentRound.currentSpeakerAccountId) return null;
+
+  const speaker = debate.members.find((m) => m.id === currentRound.currentSpeakerAccountId);
+  if (!speaker || !currentRound.currentSpeakerEndedAt) return null;
+
+  return {
+    accountId: speaker.id,
+    accountName: speaker.name,
+    endedAt: new Date(currentRound.currentSpeakerEndedAt),
+  };
+}
+
+function resolveNextSpeaker(debate: FindOneDebateResponse): CurrentRoundInfo['nextSpeaker'] {
+  const round = debate.currentRound;
+  if (!round?.nextSpeakerAccountId) return null;
+
+  return {
+    accountId: round.nextSpeakerAccountId,
+  };
+}
+
 /** 서버 응답을 CurrentRoundInfo로 변환 */
 function transformToCurrentRoundInfo(
   debate: FindOneDebateResponse,
   myAccountId?: string
 ): CurrentRoundInfo {
   if (debate.currentRound) {
-    const currentSpeakerPresentationId = debate.presentations.find(
-      (p) => p.accountId === debate.currentRound?.currentSpeakerAccountId
+    const round = debate.currentRound;
+    const currentPresentationId = debate.presentations.find(
+      (p) => p.accountId === round.currentSpeakerAccountId
     )?.id;
+
     return {
-      ...debate.currentRound,
-      currentPresentationId: currentSpeakerPresentationId,
+      id: round.id,
+      type: round.type ?? 'PREPARATION',
+      currentPresentationId,
+      currentSpeaker: resolveCurrentSpeaker(debate),
+      nextSpeaker: resolveNextSpeaker(debate),
+      createdAt: round.createdAt,
+      endedAt: round.endedAt,
       isEditable: false,
     };
   }
 
-  // 0라운드 (준비 단계)
+  /** PREPARATION 라운드 */
   const myPresentation = debate.presentations.find((p) => p.accountId === myAccountId);
   return {
     id: null,
-    type: 'PREPARATION' as const,
+    type: 'PREPARATION',
     currentPresentationId: myPresentation?.id,
-    currentSpeakerId: null,
+    currentSpeaker: null,
+    nextSpeaker: null,
     createdAt: null,
     isEditable: true,
   };

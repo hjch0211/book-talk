@@ -18,6 +18,13 @@ class DebateController(
         return debateService.create(request, authAccount).toResult()
     }
 
+    /** 토론 수정 */
+    @PutMapping("/debates")
+    fun updateDebate(@RequestBody request: UpdateRequest, authAccount: AuthAccount) {
+        request.validate()
+        debateService.update(request)
+    }
+
     /** 토론 단건 조회 */
     @GetMapping("/debates/{id}")
     fun findOne(@PathVariable id: String): HttpResult<FindOneResponse> {
@@ -29,13 +36,6 @@ class DebateController(
     fun join(@RequestBody request: JoinRequest, authAccount: AuthAccount) {
         request.validate()
         debateService.join(request, authAccount)
-    }
-
-    /** 토론 라운드 전환 */
-    @PutMapping("/debates")
-    fun updateDebate(@RequestBody request: UpdateRequest, authAccount: AuthAccount) {
-        request.validate()
-        debateService.update(request)
     }
 
     /** 발언자 생성 */

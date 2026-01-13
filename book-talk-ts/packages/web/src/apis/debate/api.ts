@@ -40,7 +40,7 @@ export const joinDebate = async (request: JoinDebateRequest): Promise<void> => {
   await authApiClient.post('/debates/participants', validatedData);
 };
 
-/** 토론 라운드 전환 */
+/** 토론 상태 수정 */
 export const updateDebate = async (request: UpdateDebateRequest): Promise<void> => {
   const validatedData = UpdateDebateRequestSchema.parse(request);
   await authApiClient.put('/debates', validatedData);

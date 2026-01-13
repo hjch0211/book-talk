@@ -19,7 +19,8 @@ export const JoinDebateRequestSchema = z.object({
 
 export const UpdateDebateRequestSchema = z.object({
   debateId: z.string().min(1, '토론 ID를 입력해주세요'),
-  roundType: z.enum(['PRESENTATION', 'FREE']),
+  roundType: z.enum(['PREPARATION', 'PRESENTATION', 'FREE']),
+  ended: z.boolean(),
 });
 
 export const MemberInfoSchema = z.object({

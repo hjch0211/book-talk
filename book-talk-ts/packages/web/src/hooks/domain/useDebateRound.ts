@@ -1,35 +1,17 @@
 import {
   type CurrentRoundInfo,
   createRoundSpeaker,
-  type FindOneDebateResponse,
+  type Debate,
   findOneDebateQueryOptions,
   patchRoundSpeaker,
   updateDebate,
 } from '@src/apis/debate';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useMemo, useState } from 'react';
-
-/** 현재 발언자 정보 */
-export interface CurrentSpeaker {
-  /** 계정 ID */
-  accountId: string;
-  /** 계정 이름 */
-  accountName: string;
-  /** 발언 종료 시각 (timestamp) */
-  endedAt?: number;
-}
-
-/** 다음 발언자 정보 */
-export interface NextSpeaker {
-  /** 계정 ID */
-  accountId: string;
-  /** 계정 이름 */
-  accountName: string;
-}
+import {useEffect, useEffectEvent, useMemo, useState} from 'react';
 
 interface Props {
   /** 토론 정보 */
-  debate: FindOneDebateResponse;
+  debate: Debate;
   /** 토론 ID */
   debateId?: string;
   /** 현재 라운드 정보 */
@@ -88,56 +70,30 @@ export const useDebateRound = (props: Props) => {
     },
   });
 
-  /** 현재 발표자 계산 (서버 데이터에서 직접 계산) */
-  const currentSpeaker = useMemo((): CurrentSpeaker | null => {
-    const currentRound = debate.currentRound;
-    if (!currentRound || !currentRound.currentSpeakerAccountId) return null;
-
-    const speaker = debate.members.find((m) => m.id === currentRound.currentSpeakerAccountId);
-    if (!speaker) return null;
-
-    return {
-      accountId: speaker.id,
-      accountName: speaker.name,
-      endedAt: currentRound.currentSpeakerEndedAt
-        ? new Date(currentRound.currentSpeakerEndedAt).getTime()
-        : undefined,
-    };
-  }, [debate.currentRound, debate.members]);
-
-  /** 다음 발표자 계산 (서버 데이터에서 직접 계산) */
-  const nextSpeaker = useMemo((): NextSpeaker | null => {
-    const currentRound = debate.currentRound;
-    if (!currentRound || !currentRound.nextSpeakerAccountId) return null;
-
-    const speaker = debate.members.find((m) => m.id === currentRound.nextSpeakerAccountId);
-    if (!speaker) return null;
-
-    return {
-      accountId: speaker.id,
-      accountName: speaker.name,
-    };
-  }, [debate.currentRound, debate.members]);
-
   /** 현재 발표자의 실시간 남은 시간 계산 */
   const realTimeRemainingSeconds = useMemo(() => {
-    if (!currentSpeaker?.endedAt) return 0;
-
-    return Math.max(0, Math.floor((currentSpeaker.endedAt - currentTime.getTime()) / 1000));
-  }, [currentSpeaker?.endedAt, currentTime]);
+    if (!debate.currentRoundInfo.currentSpeaker?.endedAt) return 0;
+    return Math.max(
+      0,
+      Math.floor(
+        (debate.currentRoundInfo.currentSpeaker?.endedAt.getTime() - currentTime.getTime()) / 1000
+      )
+    );
+  }, [debate.currentRoundInfo.currentSpeaker?.endedAt, currentTime]);
 
   /** PRESENTATION 라운드 시작 (PREPARATION → PRESENTATION) */
-  const startPresentationRound = useCallback(async () => {
+  const startPresentationRound = useEffectEvent(async () => {
     if (!debateId || currentRoundInfo?.id) return;
 
     await updateDebateMutation.mutateAsync({
       debateId,
       roundType: 'PRESENTATION',
+      ended: false,
     });
-  }, [debateId, currentRoundInfo?.id, updateDebateMutation]);
+  });
 
   /** PRESENTATION 라운드에서 발언 조기 종료 */
-  const endPresentation = useCallback(async () => {
+  const endPresentation = useEffectEvent(async () => {
     const currentSpeakerId = debate.currentRound?.currentSpeakerId;
     if (currentRoundInfo?.type !== 'PRESENTATION' || !currentSpeakerId) return;
 
@@ -145,26 +101,19 @@ export const useDebateRound = (props: Props) => {
       debateRoundSpeakerId: currentSpeakerId,
       ended: true,
     });
-  }, [debate.currentRound?.currentSpeakerId, currentRoundInfo?.type, patchRoundSpeakerMutation]);
+  });
 
   /** 발언권 전달 (FREE 라운드) */
-  const passSpeaker = useCallback(
-    async (memberId: string) => {
-      if (!currentRoundInfo?.id) return;
+  const passSpeaker = useEffectEvent(async (memberId: string) => {
+    if (!currentRoundInfo?.id) return;
 
-      await createRoundSpeakerMutation.mutateAsync({
-        debateRoundId: currentRoundInfo.id,
-        nextSpeakerId: memberId,
-      });
-    },
-    [currentRoundInfo?.id, createRoundSpeakerMutation]
-  );
+    await createRoundSpeakerMutation.mutateAsync({
+      debateRoundId: currentRoundInfo.id,
+      nextSpeakerId: memberId,
+    });
+  });
 
   return {
-    /** 현재 발언자 */
-    currentSpeaker,
-    /** 다음 발언자 */
-    nextSpeaker,
     /** 실시간 남은 발언 시간 (초) */
     realTimeRemainingSeconds,
     /** 토론 업데이트 중 여부 */
