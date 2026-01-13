@@ -1,6 +1,7 @@
 import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import axios, { type AxiosError } from 'axios';
 import { env } from '../configs/env.ts';
+import {refreshAccessToken} from "@src/apis/auth";
 
 /** 백엔드 ApiResult와 매칭되는 API 응답 래퍼 */
 export interface ApiResult<T> {
@@ -51,7 +52,7 @@ export const cloudflareApiClient: AxiosInstance = axios.create({
 });
 
 /** 에러 응답 처리 공통 함수 */
-const handleErrorResponse = (error: AxiosError): Promise<never> => {
+const handleErrorResponse = async (error: AxiosError): Promise<never> => {
   if (error.response) {
     const status = error.response.status;
     const data = error.response.data as
@@ -61,11 +62,36 @@ const handleErrorResponse = (error: AxiosError): Promise<never> => {
         }
       | undefined;
 
-    // 401 Unauthorized - 토큰 만료 처리
     if (status === 401) {
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      window.location.replace('/?auth=false');
+      const config = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+      if (config._retry) {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.replace('/?auth=false');
+        throw new ApiError('인증이 만료되었습니다. 다시 로그인해주세요.', 'TOKEN_EXPIRED', 401);
+      }
+
+      try {
+        const refreshToken = localStorage.getItem('refreshToken');
+        if (!refreshToken) {
+          throw new Error('인증이 만료되었습니다. 다시 로그인해주세요.');
+        }
+
+        await refreshAccessToken({ refreshToken });
+        config._retry = true;
+
+        const newToken = localStorage.getItem('accessToken');
+        if (newToken && config.headers) {
+          config.headers.Authorization = `Bearer ${newToken}`;
+        }
+
+        return await axios.request(config) as Promise<never>;
+      } catch (refreshError) {
+        localStorage.removeItem('accessToken');
+        localStorage.removeItem('refreshToken');
+        window.location.replace('/?auth=false');
+        throw new ApiError('인증이 만료되었습니다. 다시 로그인해주세요.', 'TOKEN_EXPIRED', 401);
+      }
     }
 
     throw new ApiError(
