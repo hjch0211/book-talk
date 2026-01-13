@@ -232,7 +232,7 @@ export class DebateWebSocketClient {
                 currentSpeaker: message.payload.currentSpeaker.accountId
                   ? {
                       accountId: message.payload.currentSpeaker.accountId,
-                      accountName: message.payload.currentSpeaker.accountName!,
+                      accountName: message.payload.currentSpeaker.accountName,
                       endedAt: message.payload.currentSpeaker.endedAt,
                     }
                   : null,
