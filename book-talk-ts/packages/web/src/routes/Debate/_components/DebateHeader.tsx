@@ -7,7 +7,7 @@ import { DebateTitle, NavButton, NavButtonGroup, NavContent, NavigationBar } fro
 interface Props {
   topic: string;
   endDebate: () => Promise<void>;
-  isHost: boolean
+  isHost: boolean;
 }
 
 export function DebateHeader({ topic, isHost, endDebate }: Props) {
@@ -29,7 +29,7 @@ export function DebateHeader({ topic, isHost, endDebate }: Props) {
   };
 
   const handleLeave = () => {
-    if(isHost) void endDebate();
+    if (isHost) void endDebate();
     else navigate('/');
   };
 
@@ -48,7 +48,7 @@ export function DebateHeader({ topic, isHost, endDebate }: Props) {
             onClick={handleLeave}
             startIcon={<img src={leaveIconSvg} alt="Leave Icon" width={24} height={24} />}
           >
-            {isHost ? "토론 종료" : "나가기"}
+            {isHost ? '토론 종료' : '나가기'}
           </NavButton>
         </NavButtonGroup>
       </NavContent>

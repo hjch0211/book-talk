@@ -43,8 +43,8 @@ const ProfileSection = () => {
     setIsUpdateModalOpen(false);
   };
 
-  const handleLogout = () => {
-    signOut();
+  const handleLogout = async () => {
+    await signOut();
     window.location.reload();
   };
 

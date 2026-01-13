@@ -29,7 +29,7 @@ function DebatePageContent({ debateId }: Props) {
     chat,
     roundStartBackdrop,
     handleStartDebate,
-    handleEndDebate
+    handleEndDebate,
   } = useDebate({ debateId });
 
   const handleOpenStartModal = () => {
@@ -66,7 +66,11 @@ function DebatePageContent({ debateId }: Props) {
   return (
     <MainContainer isAuthPage>
       <DebateContainer>
-        <DebateHeader topic={debate.topic} isHost={myMemberInfo?.role === "HOST"} endDebate={handleEndDebate} />
+        <DebateHeader
+          topic={debate.topic}
+          isHost={myMemberInfo?.role === 'HOST'}
+          endDebate={handleEndDebate}
+        />
         <DebatePresentation
           currentRoundInfo={currentRoundInfo}
           debateId={debateId}

@@ -7,3 +7,7 @@ data class CreateRequest(
 data class PatchMyRequest(
     val name: String
 )
+
+data class UpdateRequest(
+    val refreshToken: String? = null
+)

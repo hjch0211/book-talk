@@ -7,7 +7,7 @@ import {
   updateDebate,
 } from '@src/apis/debate';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
-import {useEffect, useEffectEvent, useMemo, useState} from 'react';
+import { useEffect, useEffectEvent, useMemo, useState } from 'react';
 
 interface Props {
   /** 토론 정보 */

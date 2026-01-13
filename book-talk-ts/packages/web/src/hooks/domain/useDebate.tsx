@@ -1,5 +1,5 @@
 import { meQueryOption } from '@src/apis/account';
-import {findOneDebateQueryOptions, joinDebate, updateDebate} from '@src/apis/debate';
+import { findOneDebateQueryOptions, joinDebate, updateDebate } from '@src/apis/debate';
 import {
   useDebateChat,
   useDebateRealtimeConnection,

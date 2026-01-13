@@ -15,6 +15,8 @@ import java.util.*
 @EntityListeners(AuditingEntityListener::class)
 class AccountEntity(
     var name: String = "",
+
+    var refreshToken: String? = null
 ) : AuditableUuidEntity()
 
 @Transactional(readOnly = true)

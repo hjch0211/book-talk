@@ -26,7 +26,7 @@ export const signIn = async (request: SignInRequest): Promise<CreateTokensRespon
 
 /** 토큰 갱신 */
 export const refreshAccessToken = async (
-  request?: RefreshRequest
+  request: RefreshRequest
 ): Promise<CreateTokensResponse> => {
   const refreshToken = request?.refreshToken || localStorage.getItem('refreshToken');
 
@@ -45,7 +45,11 @@ export const refreshAccessToken = async (
 };
 
 /** 로그아웃 */
-export const signOut = (): void => {
-  localStorage.removeItem('accessToken');
-  localStorage.removeItem('refreshToken');
+export const signOut = async (): Promise<void> => {
+  try {
+    await apiClient.post('/auth/sign-out');
+  } finally {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('refreshToken');
+  }
 };
