@@ -86,3 +86,17 @@ export const MainButtonText = styled.span<{ disabled?: boolean }>`
     letter-spacing: 0.3px;
     color: ${(props) => (props.disabled ? '#7B7B7B' : '#262626')};
 `;
+
+export const SurveyHyperLinkText = styled.a`
+    font-family: 'S-Core Dream', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
+    font-style: normal;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 150%;
+    text-align: center;
+    letter-spacing: 0.3px;
+    text-decoration-line: underline;
+    color: #434343;
+    align-self: stretch;
+    cursor: pointer;
+`;

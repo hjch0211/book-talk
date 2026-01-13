@@ -1,8 +1,8 @@
-import { meQueryOption } from '@src/apis/account';
-import { useModal } from '@src/hooks';
-import { useQuery, useSuspenseQuery } from '@tanstack/react-query';
-import { Suspense, useEffect, useState } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import {meQueryOption} from '@src/apis/account';
+import {useModal} from '@src/hooks';
+import {useQuery, useSuspenseQuery} from '@tanstack/react-query';
+import {Suspense, useEffect, useState} from 'react';
+import {useSearchParams} from 'react-router-dom';
 import MainHeader from '../../components/organisms/MainHeader';
 import MainContainer from '../../components/templates/MainContainer';
 import PageContainer from '../../components/templates/PageContainer';
@@ -16,6 +16,7 @@ import {
   MainText,
   MainTextContainer,
   MainTextWrapper,
+  SurveyHyperLinkText,
 } from './style.ts';
 
 const TextSection = () => {
@@ -105,6 +106,14 @@ export function MainPage() {
                 <ButtonSection />
               </Suspense>
             </ButtonContainer>
+
+            <SurveyHyperLinkText
+                href="https://docs.google.com/forms/d/e/1FAIpQLSeJS7YMm1S1qAQbUZkn7fHmm1Xyo9zV6L3cDfekLYdQq-BlUg/viewform"
+                target="_blank"
+                rel="noopener noreferrer"
+            >
+              북톡에 대한 의견을 남겨주세요!
+            </SurveyHyperLinkText>
           </MainTextContainer>
         </MainContainer>
       </PageContainer>
