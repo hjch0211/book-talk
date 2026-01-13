@@ -1,15 +1,17 @@
 import { meQueryOption } from '@src/apis/account';
 import { findOneDebateQueryOptions, joinDebate, updateDebate } from '@src/apis/debate';
+import { createSurvey } from '@src/apis/survey';
 import {
   useDebateChat,
   useDebateRealtimeConnection,
   useDebateRound,
-  useDebateVoiceChat,
+  useDebateVoiceChat, useModal,
 } from '@src/hooks';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useEffect, useEffectEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useDebateRoundStartBackdrop } from './useDebateRoundStartBackdrop';
+import SurveyModal from '@src/routes/Debate/_components/modal/SurveyModal';
 
 interface Props {
   debateId?: string;
@@ -28,6 +30,7 @@ export const useDebate = ({ debateId }: Props) => {
   const navigate = useNavigate();
   const { data: _me } = useSuspenseQuery(meQueryOption);
   const { data: debate } = useSuspenseQuery(findOneDebateQueryOptions(debateId, _me?.id));
+  const { openModal, closeModal } = useModal();
 
   /** 토론 참여 */
   const joinDebateMutation = useMutation({
@@ -52,6 +55,15 @@ export const useDebate = ({ debateId }: Props) => {
     },
   });
 
+  /** 설문조사 생성 */
+  const createSurveyMutation = useMutation({
+    mutationFn: createSurvey,
+    onSuccess: () => {
+      closeModal();
+      navigateToExpiredPage();
+    },
+  });
+
   const onAutoJoin = useEffectEvent((targetDebateId: string) => {
     joinDebateMutation.mutate(targetDebateId);
   });
@@ -60,9 +72,28 @@ export const useDebate = ({ debateId }: Props) => {
     navigate('/debate-expired');
   });
 
+  /** 설문조사 모달 열기 */
+  const handleOpenSurveyModal = useEffectEvent(() => {
+    openModal(SurveyModal, {
+      onConfirm: (rate: number) => {
+        createSurveyMutation.mutate({ rate });
+      },
+      isLoading: createSurveyMutation.isPending,
+    });
+  });
+
   useEffect(() => {
-    /** expired 토론방의 경우 */
-    if (debate.closedAt) {
+    const closedTime = debate.closedAt ? new Date(debate.closedAt).getTime() : null;
+    const now = Date.now();
+    const diffInSeconds = closedTime ? (now - closedTime) / 1000 : Infinity;
+
+    /** 토론이 끝난 지 10초 미만이면 설문조사 모달 띄우기 */
+    if (debate.closedAt && diffInSeconds < 10) {
+      handleOpenSurveyModal();
+      return;
+    }
+    /** expired 토론방의 경우 (10초 이상 지난 경우) */
+    else if (debate.closedAt) {
       navigateToExpiredPage();
       return;
     }
