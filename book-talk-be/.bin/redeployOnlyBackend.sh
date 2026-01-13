@@ -23,60 +23,67 @@ if [ ! -f .env.prod ]; then
 fi
 echo "✅ .env.prod 파일 확인 완료"
 
-# Backend 컨테이너 중지 및 제거
-echo "🛑 기존 Backend 컨테이너 중지 중..."
-docker compose --env-file .env.prod stop backend
-docker compose --env-file .env.prod rm -f backend
-
-# Backend 이미지 빌드
-echo "🔨 Backend 이미지 빌드 중..."
-if ! docker compose --env-file .env.prod build --no-cache backend; then
-  echo "❌ Backend 이미지 빌드 실패!"
-  exit 1
-fi
-echo "✅ Backend 이미지 빌드 완료"
-
-# Backend 컨테이너 실행
-echo "🚀 Backend 컨테이너 실행 중..."
-if ! docker compose --env-file .env.prod up -d backend; then
-  echo "❌ Backend 컨테이너 실행 실패!"
-  exit 1
-fi
-echo "✅ Backend 컨테이너 실행 완료"
-
-# Backend 헬스 체크 대기
+# 컨테이너 중지 및 제거
 echo ""
-echo "🏥 Backend 서비스 헬스 체크 중..."
+echo "🛑 기존 컨테이너 중지 및 제거 중..."
+docker compose --env-file .env.prod stop backend batch
+docker compose --env-file .env.prod rm -f backend batch
+echo "✅ 컨테이너 중지 및 제거 완료"
+
+# 이미지 빌드
+echo ""
+echo "🔨 이미지 빌드 중 (병렬 실행)..."
+
+# Backend 빌드 (백그라운드)
+(
+  echo "  → Backend 빌드 시작..."
+  if docker compose --env-file .env.prod build --no-cache backend 2>&1 | sed 's/^/    /'; then
+    echo "  ✅ Backend 빌드 완료"
+  else
+    echo "  ❌ Backend 빌드 실패!"
+    exit 1
+  fi
+) &
+BACKEND_BUILD_PID=$!
+
+# Batch 빌드 (백그라운드)
+(
+  echo "  → Batch 빌드 시작..."
+  if docker compose --env-file .env.prod build --no-cache batch 2>&1 | sed 's/^/    /'; then
+    echo "  ✅ Batch 빌드 완료"
+  else
+    echo "  ❌ Batch 빌드 실패!"
+    exit 1
+  fi
+) &
+BATCH_BUILD_PID=$!
+
+# 빌드 완료 대기
+wait $BACKEND_BUILD_PID
+BACKEND_BUILD_STATUS=$?
+wait $BATCH_BUILD_PID
+BATCH_BUILD_STATUS=$?
+
+if [ $BACKEND_BUILD_STATUS -ne 0 ] || [ $BATCH_BUILD_STATUS -ne 0 ]; then
+  echo "❌ 이미지 빌드 실패!"
+  exit 1
+fi
+echo "✅ 이미지 빌드 완료"
+
+# 컨테이너 실행
+echo ""
+echo "🚀 컨테이너 실행 중..."
+if ! docker compose --env-file .env.prod up -d backend batch; then
+  echo "❌ 컨테이너 실행 실패!"
+  exit 1
+fi
+echo "✅ 컨테이너 실행 완료"
+
+# 헬스 체크 대기
+echo ""
+echo "🏥 서비스 헬스 체크 중..."
 sleep 5
-echo "✅ Backend 헬스 체크 완료"
-
-# Batch 컨테이너 중지 및 제거
-echo ""
-echo "🛑 기존 Batch 컨테이너 중지 중..."
-docker compose --env-file .env.prod stop batch
-docker compose --env-file .env.prod rm -f batch
-
-# Batch 이미지 빌드
-echo "🔨 Batch 이미지 빌드 중..."
-if ! docker compose --env-file .env.prod build --no-cache batch; then
-  echo "❌ Batch 이미지 빌드 실패!"
-  exit 1
-fi
-echo "✅ Batch 이미지 빌드 완료"
-
-# Batch 컨테이너 실행
-echo "🚀 Batch 컨테이너 실행 중..."
-if ! docker compose --env-file .env.prod up -d batch; then
-  echo "❌ Batch 컨테이너 실행 실패!"
-  exit 1
-fi
-echo "✅ Batch 컨테이너 실행 완료"
-
-# Batch 헬스 체크 대기
-echo ""
-echo "🏥 Batch 서비스 헬스 체크 중..."
-sleep 5
-echo "✅ Batch 헬스 체크 완료"
+echo "✅ 헬스 체크 완료"
 
 # 로그 확인
 echo ""
