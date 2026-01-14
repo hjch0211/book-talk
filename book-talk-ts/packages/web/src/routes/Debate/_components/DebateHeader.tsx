@@ -1,4 +1,4 @@
-import { useToast } from '@src/hooks';
+import {type CurrentRoundInfo, useToast} from '@src/hooks';
 import { useNavigate } from 'react-router-dom';
 import leaveIconSvg from '../../../assets/leave.svg';
 import userAddIconSvg from '../../../assets/user-add.svg';
@@ -6,11 +6,12 @@ import { DebateTitle, NavButton, NavButtonGroup, NavContent, NavigationBar } fro
 
 interface Props {
   topic: string;
+  currentRoundInfo: CurrentRoundInfo;
   endDebate: () => Promise<void>;
   isHost: boolean;
 }
 
-export function DebateHeader({ topic, isHost, endDebate }: Props) {
+export function DebateHeader({ topic, currentRoundInfo, isHost, endDebate }: Props) {
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -29,7 +30,7 @@ export function DebateHeader({ topic, isHost, endDebate }: Props) {
   };
 
   const handleLeave = () => {
-    if (isHost) void endDebate();
+    if (isHost && currentRoundInfo.type !== 'PREPARATION') void endDebate();
     else navigate('/');
   };
 
@@ -48,7 +49,7 @@ export function DebateHeader({ topic, isHost, endDebate }: Props) {
             onClick={handleLeave}
             startIcon={<img src={leaveIconSvg} alt="Leave Icon" width={24} height={24} />}
           >
-            {isHost ? '토론 종료' : '나가기'}
+            {isHost && currentRoundInfo.type !== 'PREPARATION' ? '토론 종료' : '나가기'}
           </NavButton>
         </NavButtonGroup>
       </NavContent>

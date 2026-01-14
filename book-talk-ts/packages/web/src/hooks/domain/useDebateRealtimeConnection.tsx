@@ -294,13 +294,13 @@ export const useDebateRealtimeConnection = (props: Props) => {
     };
   }, [debateId]);
 
-  /** WebSocket 하트비트 관리 (30초 간격) */
+  /** WebSocket 하트비트 관리 (5초 간격) */
   useEffect(() => {
     if (!isConnected || !wsClientRef.current) return;
 
     const intervalId = window.setInterval(() => {
       wsClientRef.current?.sendHeartbeat();
-    }, 30000);
+    }, 5000);
 
     return () => clearInterval(intervalId);
   }, [isConnected]);

@@ -29,8 +29,8 @@ export const FormContainer = styled(Box)`
     position: relative;
 `;
 
-export const StyledTextField = styled(TextField)`
-    width: 100%;
+export const StyledTextField = styled(TextField)<{ width?: string | number }>`
+    width: ${({ width }) => (typeof width === 'number' ? `${width}px` : width || '100%')};
 
     & .MuiOutlinedInput-root {
         height: 56px;
@@ -63,9 +63,15 @@ export const StyledTextField = styled(TextField)`
 
     & .MuiInputLabel-root {
         font-family: 'Roboto', sans-serif;
-        font-size: 12px;
+        font-size: 14px;
         letter-spacing: 0.15px;
         color: rgba(0, 0, 0, 0.6);
+    }
+
+    & .MuiFormHelperText-root {
+        font-family: 'Roboto', sans-serif;
+        font-size: 12px;
+        letter-spacing: 0.15px;
     }
 `;
 

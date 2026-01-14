@@ -10,7 +10,7 @@ import {
   ModalContainer,
   ModalTitle,
   StyledTextField,
-} from './NicknameModal.style';
+} from './style.ts';
 
 interface NicknameModalProps {
   open: boolean;

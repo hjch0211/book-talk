@@ -1,24 +1,11 @@
-import { useQuery } from '@tanstack/react-query';
-import { type ReactNode, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { meQueryOption } from '../../../apis/account';
+import { type ReactNode } from 'react';
 import { StyledContainer } from './style.ts';
 
-interface MainContainerProps {
+interface Props {
   children: ReactNode;
-  isAuthPage?: boolean;
 }
 
-const MainContainer = ({ children, isAuthPage = false }: MainContainerProps) => {
-  const { data: account, isLoading } = useQuery(meQueryOption);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    if (!isLoading && isAuthPage && !account) {
-      navigate('/?auth=false');
-    }
-  }, [isAuthPage, account, isLoading, navigate]);
-
+const MainContainer = ({ children }: Props) => {
   return (
     <StyledContainer maxWidth={false} disableGutters>
       {children}

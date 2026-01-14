@@ -1,5 +1,8 @@
+import { meQueryOption } from '@src/apis/account';
 import { AudioActivationBanner, AudioPlayer } from '@src/components';
 import { type RoundType, useDebate, useModal } from '@src/hooks';
+import type { VoiceConnectionStatus } from '@src/hooks/domain/useDebateRealtimeConnection.tsx';
+import { useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense } from 'react';
 import { useParams } from 'react-router-dom';
 import MainContainer from '../../components/templates/MainContainer';
@@ -19,6 +22,7 @@ interface Props {
 function DebatePageContent({ debateId }: Props) {
   const { openModal, closeModal } = useModal();
 
+  const { data: me } = useSuspenseQuery(meQueryOption);
   const {
     debate,
     myMemberInfo,
@@ -46,10 +50,36 @@ function DebatePageContent({ debateId }: Props) {
     return <div>유효하지 않는 id입니다.</div>;
   }
 
+  if (!me) {
+    return <DebateSkeleton title={''} content={''} />;
+  }
+
   if (
     (connection.onlineMembers.length > 1 && connection.voiceConnectionStatus === 'PENDING') ||
     connection.voiceConnectionStatus === 'FAILED'
   ) {
+    const getSkeletonText = (status: VoiceConnectionStatus) => {
+      switch (status) {
+        case 'PENDING':
+          return {
+            title: '음성 채팅 연결 중...',
+            content: '잠시만 기다려주세요',
+          };
+        case 'FAILED':
+          return {
+            title: '음성 채팅 연결 실패',
+            content: '새로고침을 시도해주세요',
+          };
+        default:
+          return {
+            title: '토론방에 입장 중...',
+            content: '잠시만 기다려주세요',
+          };
+      }
+    };
+
+    const { title, content } = getSkeletonText(connection.voiceConnectionStatus);
+
     return (
       <>
         <RoundStartBackdrop
@@ -57,16 +87,17 @@ function DebatePageContent({ debateId }: Props) {
           roundType={roundStartBackdrop.type}
           onClose={roundStartBackdrop.close}
         />
-        <DebateSkeleton connectionStatus={connection.voiceConnectionStatus} />
+        <DebateSkeleton title={title} content={content} />
       </>
     );
   }
 
   return (
-    <MainContainer isAuthPage>
+    <MainContainer>
       <DebateContainer>
         <DebateHeader
           topic={debate.topic}
+          currentRoundInfo={currentRoundInfo}
           isHost={myMemberInfo?.role === 'HOST'}
           endDebate={handleEndDebate}
         />
@@ -136,7 +167,10 @@ export function DebatePage() {
   const { debateId } = useParams<{ debateId: string }>();
 
   return (
-    <Suspense key={debateId} fallback={<DebateSkeleton connectionStatus={'NOT_STARTED'} />}>
+    <Suspense
+      key={debateId}
+      fallback={<DebateSkeleton title={'토론방에 입장 중...'} content={'잠시만 기다려주세요'} />}
+    >
       <DebatePageContent debateId={debateId} />
     </Suspense>
   );
