@@ -15,7 +15,7 @@ class AccountController(
     /** 내 계정 정보 조회 */
     @GetMapping("/accounts/me")
     fun findMy(authAccount: AuthAccount): HttpResult<FindMyResponse> {
-        return accountService.findMy(authAccount).toResult()
+        return accountService.find(authAccount).toResult()
     }
 
     /** 내 계정 정보 업데이트 */

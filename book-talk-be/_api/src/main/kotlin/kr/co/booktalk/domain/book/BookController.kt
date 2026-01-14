@@ -13,10 +13,7 @@ class BookController(
 ) {
     /** 책 검색  */
     @GetMapping("/books")
-    fun searchBook(
-        @ModelAttribute request: SearchBookRequest,
-        authAccount: AuthAccount
-    ): HttpResult<SearchBookResponse> {
+    fun searchBook(@ModelAttribute request: SearchBookRequest): HttpResult<SearchBookResponse> {
         request.validate()
         return bookService.search(request).toResult()
     }

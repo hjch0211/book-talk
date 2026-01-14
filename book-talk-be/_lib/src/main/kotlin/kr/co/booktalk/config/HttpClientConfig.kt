@@ -55,4 +55,20 @@ class HttpClientConfig {
             )
         }
     }
+
+    @Bean
+    fun aiClient(
+        httpClient: HttpClient,
+        properties: LibProperties
+    ): AiClient {
+        if (!properties.ai.isValid()) {
+            logger.warn { "AI 서버 설정이 비었습니다. NoOpAiClient를 생성합니다." }
+            return NoOpAiClient()
+        } else {
+            return AiServerClient(
+                httpClient = httpClient,
+                properties = properties.ai
+            )
+        }
+    }
 }

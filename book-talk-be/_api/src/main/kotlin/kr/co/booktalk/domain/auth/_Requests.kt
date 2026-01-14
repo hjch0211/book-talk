@@ -8,6 +8,10 @@ data class SignUpRequest(
     val name: String,
 )
 
+data class ValidateDuplicateSignInRequest(
+    val name: String
+)
+
 data class SignInRequest(
     val name: String,
 )

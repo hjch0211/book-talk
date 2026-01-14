@@ -24,7 +24,12 @@ export const CreateTokensResponseSchema = z.object({
   refreshToken: z.string(),
 });
 
+export const ValidateDuplicateSignInRequestSchema = z.object({
+  name: z.string().min(1, '이름을 입력해주세요'),
+});
+
 export type SignUpRequest = z.infer<typeof SignUpRequestSchema>;
 export type SignInRequest = z.infer<typeof SignInRequestSchema>;
 export type RefreshRequest = z.infer<typeof RefreshRequestSchema>;
 export type CreateTokensResponse = z.infer<typeof CreateTokensResponseSchema>;
+export type ValidateDuplicateSignInRequest = z.infer<typeof ValidateDuplicateSignInRequestSchema>;

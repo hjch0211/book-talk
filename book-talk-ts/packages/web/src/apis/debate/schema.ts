@@ -4,13 +4,13 @@ export const CreateDebateRequestSchema = z.object({
   bookTitle: z.string().min(1, '책 제목을 입력해주세요'),
   bookISBN: z.string().min(1, '책 ISBN을 입력해주세요'),
   bookAuthor: z.string().min(1, '책 저자를 입력해주세요'),
-  bookDescription: z.string().nullable().optional(),
-  bookImageUrl: z.string().nullable().optional(),
+  bookDescription: z.string().nullish(),
+  bookImageUrl: z.string().nullish(),
   topic: z
     .string()
     .min(1, '토론 주제를 입력해주세요')
     .max(200, '토론 주제는 200자 이내로 입력해주세요'),
-  description: z.string().max(500, '토론 설명은 500자 이내로 입력해주세요').nullable().optional(),
+  description: z.string().max(500, '토론 설명은 500자 이내로 입력해주세요').nullish(),
 });
 
 export const JoinDebateRequestSchema = z.object({
@@ -37,12 +37,12 @@ export const PresentationInfoSchema = z.object({
 export const RoundInfoSchema = z.object({
   id: z.number(),
   type: z.enum(['PRESENTATION', 'FREE']),
-  currentSpeakerId: z.number().nullable().optional(),
-  currentSpeakerAccountId: z.string().nullable().optional(),
-  nextSpeakerAccountId: z.string().nullable().optional(),
-  currentSpeakerEndedAt: z.string().nullable().optional(),
+  currentSpeakerId: z.number().nullish(),
+  currentSpeakerAccountId: z.string().nullish(),
+  nextSpeakerAccountId: z.string().nullish(),
+  currentSpeakerEndedAt: z.string().nullish(),
   createdAt: z.string(),
-  endedAt: z.string().nullable().optional(),
+  endedAt: z.string().nullish(),
 });
 
 export const BookInfoSchema = z.object({
@@ -56,14 +56,15 @@ export const FindOneDebateResponseSchema = z.object({
   id: z.string(),
   members: z.array(MemberInfoSchema),
   presentations: z.array(PresentationInfoSchema),
-  currentRound: RoundInfoSchema.nullable().optional(),
+  currentRound: RoundInfoSchema.nullish(),
   bookInfo: BookInfoSchema,
   topic: z.string(),
-  description: z.string().nullable().optional(),
-  closedAt: z.string().nullable().optional(),
+  description: z.string().nullish(),
+  aiSummarized: z.string().nullish(),
+  closedAt: z.string().nullish(),
   createdAt: z.string(),
   updatedAt: z.string(),
-  archivedAt: z.string().nullable().optional(),
+  archivedAt: z.string().nullish(),
 });
 
 export const CreateRoundRequestSchema = z.object({
@@ -77,8 +78,8 @@ export const CreateRoundResponseSchema = z.object({
 
 export const PatchRoundRequestSchema = z.object({
   debateRoundId: z.number(),
-  nextSpeakerId: z.string().nullable().optional(),
-  ended: z.boolean().nullable().optional(),
+  nextSpeakerId: z.string().nullish(),
+  ended: z.boolean().nullish(),
 });
 
 export const CreateRoundSpeakerRequestSchema = z.object({
@@ -88,8 +89,8 @@ export const CreateRoundSpeakerRequestSchema = z.object({
 
 export const PatchRoundSpeakerRequestSchema = z.object({
   debateRoundSpeakerId: z.number(),
-  extension: z.boolean().nullable().optional(),
-  ended: z.boolean().nullable().optional(),
+  extension: z.boolean().nullish(),
+  ended: z.boolean().nullish(),
 });
 
 export const CreateChatRequestSchema = z.object({

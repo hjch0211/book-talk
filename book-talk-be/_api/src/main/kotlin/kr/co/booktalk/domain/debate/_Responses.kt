@@ -35,6 +35,7 @@ data class FindOneResponse(
     val bookInfo: BookInfo,
     val topic: String,
     val description: String? = null,
+    val aiSummarized: String? = null,
     val closedAt: Instant? = null,
     val createdAt: Instant,
     val updatedAt: Instant,

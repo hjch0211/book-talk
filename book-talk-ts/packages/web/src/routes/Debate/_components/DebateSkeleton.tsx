@@ -1,5 +1,4 @@
 import { CircularProgress } from '@mui/material';
-import type { VoiceConnectionStatus } from '@src/hooks/domain/useDebateRealtimeConnection.tsx';
 import MainContainer from '../../../components/templates/MainContainer';
 import {
   LoadingOverlay,
@@ -29,8 +28,9 @@ import {
   SkeletonTitle,
 } from '../skeleton.style';
 
-interface DebateSkeletonProps {
-  connectionStatus: VoiceConnectionStatus;
+interface Props {
+  title: string;
+  content: string;
 }
 
 /** 멤버 아이템 스켈레톤 */
@@ -44,32 +44,9 @@ const MemberItemSkeleton = () => (
   </SkeletonMemberItem>
 );
 
-/** 연결 상태별 메시지 */
-const getConnectionMessage = (status: VoiceConnectionStatus) => {
-  switch (status) {
-    case 'PENDING':
-      return {
-        title: '음성 채팅 연결 중...',
-        subTitle: '잠시만 기다려주세요',
-      };
-    case 'FAILED':
-      return {
-        title: '음성 채팅 연결 실패',
-        subTitle: '새로고침을 시도해주세요',
-      };
-    default:
-      return {
-        title: '토론방에 입장 중...',
-        subTitle: '잠시만 기다려주세요',
-      };
-  }
-};
-
-export const DebateSkeleton = ({ connectionStatus }: DebateSkeletonProps) => {
-  const message = getConnectionMessage(connectionStatus);
-
+export const DebateSkeleton = ({ title, content }: Props) => {
   return (
-    <MainContainer isAuthPage>
+    <MainContainer>
       <SkeletonContainer>
         {/* Navigation Bar */}
         <SkeletonNavigationBar>
@@ -115,14 +92,9 @@ export const DebateSkeleton = ({ connectionStatus }: DebateSkeletonProps) => {
 
         {/* Loading Overlay */}
         <LoadingOverlay>
-          <CircularProgress
-            size={48}
-            sx={{
-              color: connectionStatus === 'FAILED' ? '#FF7544' : '#1A00E2',
-            }}
-          />
-          <LoadingText>{message.title}</LoadingText>
-          <LoadingSubText>{message.subTitle}</LoadingSubText>
+          <CircularProgress size={48} />
+          <LoadingText>{title}</LoadingText>
+          <LoadingSubText>{content}</LoadingSubText>
         </LoadingOverlay>
       </SkeletonContainer>
     </MainContainer>

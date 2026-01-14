@@ -57,7 +57,7 @@ class DebateRoundService(
         }
     }
 
-    /** WebSocket을 통해 토론 라운드 업데이트를 브로드캐스트합니다. */
+    /** 토론 라운드 업데이트 브로드캐스트 */
     fun broadcastDebateRoundUpdate(
         debateId: String,
         debateRound: DebateRoundEntity,

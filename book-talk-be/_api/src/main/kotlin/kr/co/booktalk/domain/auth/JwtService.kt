@@ -47,7 +47,6 @@ class JwtService(
     }
 
     fun decodeRefresh(token: String): DecodedJWT {
-        validateRefresh(token)
         return JWT.decode(token)
     }
 

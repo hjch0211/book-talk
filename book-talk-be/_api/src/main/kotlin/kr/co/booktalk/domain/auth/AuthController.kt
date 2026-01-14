@@ -24,11 +24,21 @@ class AuthController(
         return tokens.toResult()
     }
 
+    /** 중복 접속 확인 */
+    @PostMapping("/auth/check")
+    fun validateDuplicateSignIn(@RequestBody request: ValidateDuplicateSignInRequest) {
+        request.validate()
+        val account = runCatching {
+            accountService.find(request.name)
+        }.getOrNull() ?: return
+        authService.validateDuplicateSignIn(account)
+    }
+
     /** 로그인 */
     @PostMapping("/auth/sign-in")
     fun signIn(@RequestBody request: SignInRequest): HttpResult<CreateTokensResponse> {
         request.validate()
-        val account = accountService.findByName(request.name)
+        val account = accountService.find(request.name)
         authService.validateDuplicateSignIn(account)
         val tokens = authService.createTokens(CreateTokensRequest(account.id.toString()))
         accountService.update(account.toAuthAccount(), UpdateRequest(tokens.refreshToken))
@@ -43,10 +53,10 @@ class AuthController(
 
     /** Access Token 재발급 */
     @PostMapping("/auth/refresh")
-    fun refresh(authAccount: AuthAccount, @RequestBody request: RefreshRequest): HttpResult<CreateTokensResponse> {
+    fun refresh(@RequestBody request: RefreshRequest): HttpResult<CreateTokensResponse> {
         request.validate()
         val tokens = authService.refresh(request)
-        accountService.update(authAccount, UpdateRequest(tokens.refreshToken))
+        accountService.update(request.refreshToken, tokens.refreshToken)
         return tokens.toResult()
     }
 }

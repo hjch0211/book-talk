@@ -25,7 +25,7 @@ export const DebateExpired = () => {
       <DebateExpiredContainer>
         <ContentWrapper>
           <TextWrapper>
-            <ExpiredRoomTitle>생성된 지 24시간이 지나 종료된 토론방입니다.</ExpiredRoomTitle>
+            <ExpiredRoomTitle>이미 종료된 토론방입니다.</ExpiredRoomTitle>
             <ExpiredRoomMessage>
               메인페이지로 돌아가 새로운 토론방을 생성해보세요!
             </ExpiredRoomMessage>

@@ -24,4 +24,5 @@ class AccountEntity(
 interface AccountRepository : JpaRepository<AccountEntity, UUID> {
     fun existsByName(name: String): Boolean
     fun findByName(name: String): AccountEntity?
+    fun findByRefreshToken(refreshToken: String): AccountEntity?
 }

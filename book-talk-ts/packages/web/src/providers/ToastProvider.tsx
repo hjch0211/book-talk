@@ -1,5 +1,5 @@
+import { Toast } from '@src/components';
 import { createContext, type ReactNode, useCallback, useMemo, useState } from 'react';
-import { Toast } from '../components/organisms/Toast';
 
 interface ToastMethods {
   success: (message: string) => void;

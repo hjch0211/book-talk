@@ -66,7 +66,7 @@ export const clearTokens = () => {
 /** 인증 실패 처리 (토큰 제거 및 로그인 페이지 이동) */
 const handleAuthFailure = () => {
   clearTokens();
-  window.location.replace('/?auth=false');
+  window.location.replace('/');
 };
 
 /** 공통 에러 처리 (401 제외) */

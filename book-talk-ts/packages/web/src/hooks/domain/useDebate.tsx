@@ -1,4 +1,6 @@
 import { meQueryOption } from '@src/apis/account';
+import { signIn, signUp } from '@src/apis/auth';
+import { type ApiError, saveTokens } from '@src/apis/client.ts';
 import { findOneDebateQueryOptions, joinDebate, updateDebate } from '@src/apis/debate';
 import { createSurvey } from '@src/apis/survey';
 import {
@@ -7,8 +9,10 @@ import {
   useDebateRound,
   useDebateVoiceChat,
   useModal,
+  useToast,
 } from '@src/hooks';
 import SurveyModal from '@src/routes/Debate/_components/modal/SurveyModal';
+import NicknameModal from '@src/routes/Main/_components/NickNameModal/NicknameModal.tsx';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useEffect, useEffectEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -32,6 +36,35 @@ export const useDebate = ({ debateId }: Props) => {
   const { data: _me } = useSuspenseQuery(meQueryOption);
   const { data: debate } = useSuspenseQuery(findOneDebateQueryOptions(debateId, _me?.id));
   const { openModal, closeModal } = useModal();
+  const { toast } = useToast();
+
+  /** 로그인 */
+  const signInMutation = useMutation({
+    mutationFn: (name: string) => signIn({ name }),
+    onSuccess: async (data: { accessToken: string; refreshToken: string }) => {
+      saveTokens(data.accessToken, data.refreshToken);
+      await queryClient.invalidateQueries();
+    },
+    onError: (error: ApiError, name) => {
+      if (error?.status === 400 && error?.message === '존재하지 않는 계정입니다.') {
+        signUpMutation.mutate(name);
+        return;
+      }
+      toast.error('로그인 중 오류가 발생했습니다.');
+    },
+  });
+
+  /** 회원가입 */
+  const signUpMutation = useMutation({
+    mutationFn: (name: string) => signUp({ name }),
+    onSuccess: async (data: { accessToken: string; refreshToken: string }) => {
+      saveTokens(data.accessToken, data.refreshToken);
+      await queryClient.invalidateQueries();
+    },
+    onError: () => {
+      toast.error('회원가입 중 오류가 발생했습니다.');
+    }
+  });
 
   /** 토론 참여 */
   const joinDebateMutation = useMutation({
@@ -83,7 +116,22 @@ export const useDebate = ({ debateId }: Props) => {
     });
   });
 
+  const openNickNameModal = useEffectEvent(() => {
+    openModal(NicknameModal, {
+      onSubmit: (nickname: string) => {
+        signInMutation.mutate(nickname);
+      },
+      isLoading: signInMutation.isPending || signUpMutation.isPending,
+    });
+  });
+
   useEffect(() => {
+    /** 로그인이 필요한 경우 */
+    if (!_me?.id) {
+      openNickNameModal();
+      return;
+    }
+
     const closedTime = debate.closedAt ? new Date(debate.closedAt).getTime() : null;
     const now = Date.now();
     const diffInSeconds = closedTime ? (now - closedTime) / 1000 : Infinity;
@@ -93,7 +141,7 @@ export const useDebate = ({ debateId }: Props) => {
       handleOpenSurveyModal();
       return;
     } else if (debate.closedAt) {
-    /** expired 토론방의 경우 (10초 이상 지난 경우) */
+      /** expired 토론방의 경우 (10초 이상 지난 경우) */
       navigateToExpiredPage();
       return;
     }
