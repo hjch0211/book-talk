@@ -25,11 +25,11 @@ class AccountService(
         )
     }
 
-    fun findByName(name: String): AccountEntity {
+    fun find(name: String): AccountEntity {
         return accountRepository.findByName(name) ?: httpBadRequest("존재하지 않는 계정입니다.")
     }
 
-    fun findMy(authAccount: AuthAccount): FindMyResponse {
+    fun find(authAccount: AuthAccount): FindMyResponse {
         return accountRepository.findByIdOrNull(authAccount.id.toUUID())?.toResponse()
             ?: httpBadRequest("존재하지 않는 계정입니다.")
     }
@@ -46,5 +46,11 @@ class AccountService(
         val account = accountRepository.findByIdOrNull(authAccount.id.toUUID())
             ?: httpBadRequest("존재하지 않는 계정입니다.")
         account.refreshToken = request.refreshToken
+    }
+
+    @Transactional
+    fun update(oldRefreshToken: String, newRefreshToken: String) {
+        val account = accountRepository.findByRefreshToken(oldRefreshToken) ?: httpBadRequest("존재하지 않는 계정입니다.")
+        account.refreshToken = newRefreshToken
     }
 }
