@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import {useEffect, useEffectEvent, useRef, useState} from 'react';
 
 interface UseDebounceOptions {
   /** 디바운스 지연 시간 (ms) */
@@ -19,7 +19,7 @@ export const useDebounce = <T extends (...args: any[]) => Promise<void> | void>(
   const timerRef = useRef<number | null>(null);
   const [isDebouncing, setIsDebouncing] = useState(false);
 
-  const debouncedCallback = useCallback(
+  const debouncedCallback = useEffectEvent(
     (...args: Parameters<T>) => {
       setIsDebouncing(true);
 
@@ -37,16 +37,24 @@ export const useDebounce = <T extends (...args: any[]) => Promise<void> | void>(
           timerRef.current = null;
         }
       }, delay);
-    },
-    [callback, delay]
+    }
   );
 
-  const cancel = useCallback(() => {
+  const cancel = useEffectEvent(() => {
     if (timerRef.current !== null) {
       clearTimeout(timerRef.current);
       timerRef.current = null;
       setIsDebouncing(false);
     }
+  });
+
+  /** 언마운트 시 타이머 정리 */
+  useEffect(() => {
+    return () => {
+      if (timerRef.current !== null) {
+        clearTimeout(timerRef.current);
+      }
+    };
   }, []);
 
   return {

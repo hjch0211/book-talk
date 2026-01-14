@@ -61,6 +61,9 @@ export const useDebate = ({ debateId }: Props) => {
       saveTokens(data.accessToken, data.refreshToken);
       await queryClient.invalidateQueries();
     },
+    onError: () => {
+      toast.error('회원가입 중 오류가 발생했습니다.');
+    }
   });
 
   /** 토론 참여 */
@@ -118,7 +121,7 @@ export const useDebate = ({ debateId }: Props) => {
       onSubmit: (nickname: string) => {
         signInMutation.mutate(nickname);
       },
-      isLoading: signInMutation.isPending,
+      isLoading: signInMutation.isPending || signUpMutation.isPending,
     });
   });
 

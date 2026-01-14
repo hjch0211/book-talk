@@ -50,6 +50,6 @@ export type { AiChatRepository, AiChatMessageRepository };
       inject: [DataSource],
     },
   ],
-  exports: [AI_CHAT_REPOSITORY, AI_CHAT_MESSAGE_REPOSITORY],
+  exports: [AI_CHAT_REPOSITORY, AI_CHAT_MESSAGE_REPOSITORY, DEBATE_SUMMARIZATION_REPOSITORY],
 })
 export class DataModule {}

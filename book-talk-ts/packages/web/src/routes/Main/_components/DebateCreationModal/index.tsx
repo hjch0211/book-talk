@@ -119,6 +119,9 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
         createDebateMutation.mutate(request);
       }
     },
+    onError: () => {
+      toast.error('회원가입 중 오류가 발생했습니다.');
+    },
   });
 
   const { data: searchResults, isLoading } = useQuery(
