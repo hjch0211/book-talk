@@ -1,6 +1,7 @@
 package kr.co.booktalk.domain.debate
 
 import kr.co.booktalk.domain.*
+import java.time.Instant
 
 fun CreateRequest.toEntity(host: AccountEntity, book: BookEntity): DebateEntity {
     return DebateEntity(
@@ -17,7 +18,8 @@ fun DebateEntity.toResponse(
     currentRound: DebateRoundEntity? = null,
     currentSpeakerId: Long? = null,
     currentSpeakerAccountId: String? = null,
-    currentSpeakerEndedAt: java.time.Instant? = null
+    currentSpeakerEndedAt: Instant? = null,
+    aiSummarized: String? = null
 ): FindOneResponse {
     return FindOneResponse(
         id = id.toString(),
@@ -37,6 +39,7 @@ fun DebateEntity.toResponse(
         ),
         topic = topic,
         description = description,
+        aiSummarized = aiSummarized,
         closedAt = closedAt,
         createdAt = createdAt,
         updatedAt = updatedAt,

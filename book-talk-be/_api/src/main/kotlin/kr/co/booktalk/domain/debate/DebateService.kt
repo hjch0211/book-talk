@@ -1,5 +1,14 @@
 package kr.co.booktalk.domain.debate
 
+import jakarta.annotation.PreDestroy
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
+import kr.co.booktalk.client.AiClient
+import kr.co.booktalk.client.SummarizeRequest
 import kr.co.booktalk.config.AppProperties
 import kr.co.booktalk.domain.*
 import kr.co.booktalk.domain.auth.AuthAccount
@@ -22,8 +31,19 @@ class DebateService(
     private val debateRoundSpeakerRepository: DebateRoundSpeakerRepository,
     private val debateRoundSpeakerService: DebateRoundSpeakerService,
     private val debateRoundService: DebateRoundService,
-    private val bookRepository: BookRepository
+    private val bookRepository: BookRepository,
+    private val aiClient: AiClient,
+    private val debateSummarizationRepository: DebateSummarizationRepository
 ) {
+    private val scope = CoroutineScope(
+        SupervisorJob() + Dispatchers.IO + CoroutineName("debate-service")
+    )
+
+    @PreDestroy
+    fun destroy() {
+        scope.cancel()
+    }
+
     @Transactional
     fun create(request: CreateRequest, authAccount: AuthAccount): CreateResponse {
         val host = accountRepository.findByIdOrNull(authAccount.id.toUUID()) ?: httpBadRequest("존재하지 않는 사용자입니다.")
@@ -60,8 +80,9 @@ class DebateService(
         val currentSpeakerId = currentSpeaker?.id
         val currentSpeakerAccountId = currentSpeaker?.account?.id?.toString()
         val currentSpeakerEndedAt = currentSpeaker?.endedAt
+        val aiSummarized = debateSummarizationRepository.findByDebateId(debate.id!!)
 
-        return debate.toResponse(members, presentations, currentRound, currentSpeakerId, currentSpeakerAccountId, currentSpeakerEndedAt)
+        return debate.toResponse(members, presentations, currentRound, currentSpeakerId, currentSpeakerAccountId, currentSpeakerEndedAt, aiSummarized?.content)
     }
 
     @Transactional
@@ -149,6 +170,12 @@ class DebateService(
             debateRoundRepository.findByDebateIdAndEndedAtIsNull(debate.id!!)?.let { currentRound ->
                 currentRound.endedAt = Instant.now()
             }
+        }
+    }
+
+    fun summarizeDebate(debateId: String) {
+        scope.launch {
+            aiClient.summarizeDebate(SummarizeRequest(debateId))
         }
     }
 }

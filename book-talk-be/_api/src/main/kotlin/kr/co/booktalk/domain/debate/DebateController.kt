@@ -15,7 +15,9 @@ class DebateController(
     @PostMapping("/debates")
     fun create(@RequestBody request: CreateRequest, authAccount: AuthAccount): HttpResult<CreateResponse> {
         request.validate()
-        return debateService.create(request, authAccount).toResult()
+        val response = debateService.create(request, authAccount)
+        debateService.summarizeDebate(response.id)
+        return response.toResult()
     }
 
     /** 토론 수정 */

@@ -6,10 +6,12 @@ import {
   AiChatMessageEntity,
   AiChatMessageRepository,
 } from '@src/data/entity/ai-chat-message.entity.js';
+import { DebateSummarizationRepository } from '@src/data/entity/debate-summarization.entity.js';
 import { DataSource } from 'typeorm';
 
 export const AI_CHAT_REPOSITORY = Symbol.for('AI_CHAT_REPOSITORY');
 export const AI_CHAT_MESSAGE_REPOSITORY = Symbol.for('AI_CHAT_MESSAGE_REPOSITORY');
+export const DEBATE_SUMMARIZATION_REPOSITORY = Symbol.for('DEBATE_SUMMARIZATION_REPOSITORY');
 
 export type { AiChatRepository, AiChatMessageRepository };
 
@@ -40,6 +42,11 @@ export type { AiChatRepository, AiChatMessageRepository };
     {
       provide: AI_CHAT_MESSAGE_REPOSITORY,
       useFactory: (dataSource: DataSource) => new AiChatMessageRepository(dataSource),
+      inject: [DataSource],
+    },
+    {
+      provide: DEBATE_SUMMARIZATION_REPOSITORY,
+      useFactory: (dataSource: DataSource) => new DebateSummarizationRepository(dataSource),
       inject: [DataSource],
     },
   ],
