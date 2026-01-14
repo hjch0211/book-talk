@@ -24,6 +24,16 @@ class AuthController(
         return tokens.toResult()
     }
 
+    /** 중복 접속 확인 */
+    @PostMapping("/auth/check")
+    fun validateDuplicateSignIn(@RequestBody request: ValidateDuplicateSignInRequest) {
+        request.validate()
+        val account = runCatching {
+            accountService.findByName(request.name)
+        }.getOrNull() ?: return
+        authService.validateDuplicateSignIn(account)
+    }
+
     /** 로그인 */
     @PostMapping("/auth/sign-in")
     fun signIn(@RequestBody request: SignInRequest): HttpResult<CreateTokensResponse> {

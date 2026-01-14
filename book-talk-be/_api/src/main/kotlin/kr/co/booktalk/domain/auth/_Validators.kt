@@ -6,6 +6,10 @@ fun SignUpRequest.validate() {
     require(name.isNotBlank() && name.isLengthInRange(1, 50)) { "유효하지 않은 이름입니다." }
 }
 
+fun ValidateDuplicateSignInRequest.validate() {
+    require(name.isNotBlank() && name.isLengthInRange(1, 50)) { "유효하지 않은 이름입니다." }
+}
+
 fun SignInRequest.validate() {
     require(name.isNotBlank()) { "유효하지 않은 이름입니다." }
 }

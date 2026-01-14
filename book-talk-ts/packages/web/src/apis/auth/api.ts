@@ -8,6 +8,8 @@ import {
   SignInRequestSchema,
   type SignUpRequest,
   SignUpRequestSchema,
+  type ValidateDuplicateSignInRequest,
+  ValidateDuplicateSignInRequestSchema,
 } from './schema';
 
 /** 회원가입 */
@@ -36,4 +38,12 @@ export const refreshAccessToken = async (
 /** 로그아웃 */
 export const signOut = async (): Promise<void> => {
   await apiClient.post('/auth/sign-out');
+};
+
+/** 중복 접속 확인 */
+export const validateDuplicateSignIn = async (
+  request: ValidateDuplicateSignInRequest
+): Promise<void> => {
+  const validatedData = ValidateDuplicateSignInRequestSchema.parse(request);
+  await apiClient.post('/auth/check', validatedData);
 };
