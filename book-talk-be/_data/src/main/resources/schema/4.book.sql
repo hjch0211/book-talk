@@ -7,8 +7,8 @@ create table if not exists book
     description varchar(5000) null,
     image_url   varchar(300)  null,
 
-    created_at  timestamp     not null,
-    updated_at  timestamp     not null,
+    created_at  timestamp     not null default now(),
+    updated_at  timestamp     not null default now(),
     archived_at timestamp     null
 );
 

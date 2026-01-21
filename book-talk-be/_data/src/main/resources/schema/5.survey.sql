@@ -4,7 +4,7 @@ create table if not exists survey
     account_id  uuid          not null,
     rate        int           not null, -- [0 ~ 10]
 
-    created_at  timestamp     not null,
-    updated_at  timestamp     not null,
+    created_at  timestamp     not null default now(),
+    updated_at  timestamp     not null default now(),
     archived_at timestamp     null
 );

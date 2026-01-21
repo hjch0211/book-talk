@@ -12,10 +12,10 @@ export abstract class AuditableLongIdEntity implements AuditableEntity {
   @PrimaryGeneratedColumn('increment')
   id!: number;
 
-  @CreateDateColumn({ name: 'created_at', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 
   @Column({ name: 'archived_at' })
@@ -27,10 +27,10 @@ export abstract class AuditableUuidEntity implements AuditableEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @CreateDateColumn({ name: 'created_at', default: () => 'CURRENT_TIMESTAMP' })
+  @CreateDateColumn({ name: 'created_at' })
   createdAt!: Date;
 
-  @UpdateDateColumn({ name: 'updated_at', default: () => 'CURRENT_TIMESTAMP' })
+  @UpdateDateColumn({ name: 'updated_at' })
   updatedAt!: Date;
 
   @Column({ name: 'archived_at' })

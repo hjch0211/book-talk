@@ -4,7 +4,7 @@ create table if not exists account
     name          varchar(50)  not null unique,
     refresh_token varchar(300) null,
 
-    created_at    timestamp    not null,
-    updated_at    timestamp    not null,
+    created_at    timestamp    not null default now(),
+    updated_at    timestamp    not null default now(),
     archived_at   timestamp    null
 );

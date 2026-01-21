@@ -57,8 +57,8 @@ create table if not exists debate_chat
     account_id  uuid      not null,
     content     text      not null,
 
-    created_at  timestamp not null,
-    updated_at  timestamp not null,
+    created_at  timestamp not null default now(),
+    updated_at  timestamp not null default now(),
     archived_at timestamp null
 );
 
@@ -68,7 +68,7 @@ create table if not exists debate_summarization
     debate_id   uuid      not null,
     content     text      not null,
 
-    created_at  timestamp not null,
-    updated_at  timestamp not null,
+    created_at  timestamp not null default now(),
+    updated_at  timestamp not null default now(),
     archived_at timestamp null
 );
