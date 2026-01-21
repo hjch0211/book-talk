@@ -96,8 +96,7 @@ function DebatePageContent({ debateId }: Props) {
     <MainContainer>
       <DebateContainer>
         <DebateHeader
-          topic={debate.topic}
-          currentRoundInfo={currentRoundInfo}
+          debate={debate}
           isHost={myMemberInfo?.role === 'HOST'}
           endDebate={handleEndDebate}
         />

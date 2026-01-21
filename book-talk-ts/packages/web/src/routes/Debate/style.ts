@@ -75,6 +75,7 @@ export const NavButton = styled(Button)`
     justify-content: center;
     align-items: center;
     padding: 8px 11px;
+    width: auto;
     height: 40px;
     border-radius: 4px;
     font-family: 'S-Core Dream', sans-serif;
@@ -90,16 +91,6 @@ export const NavButton = styled(Button)`
     background: transparent;
     border: none;
     box-shadow: none;
-
-    &:first-of-type {
-        width: 98px;
-        order: 0;
-    }
-
-    &:last-of-type {
-        width: 85px;
-        order: 1;
-    }
 
     & .MuiButton-startIcon {
         margin-right: 8px;
