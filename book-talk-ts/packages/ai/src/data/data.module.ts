@@ -6,7 +6,10 @@ import {
   AiChatMessageEntity,
   AiChatMessageRepository,
 } from '@src/data/entity/ai-chat-message.entity.js';
-import { DebateSummarizationRepository } from '@src/data/entity/debate-summarization.entity.js';
+import {
+  DebateSummarizationEntity,
+  DebateSummarizationRepository,
+} from '@src/data/entity/debate-summarization.entity.js';
 import { DataSource } from 'typeorm';
 
 export const AI_CHAT_REPOSITORY = Symbol.for('AI_CHAT_REPOSITORY');
@@ -29,7 +32,7 @@ export type { AiChatRepository, AiChatMessageRepository };
         password: props.password,
         logging: props.logging,
         synchronize: false,
-        entities: [AiChatEntity, AiChatMessageEntity],
+        entities: [AiChatEntity, AiChatMessageEntity, DebateSummarizationEntity],
       }),
     }),
   ],

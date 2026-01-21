@@ -1,5 +1,5 @@
 import type { Callbacks } from '@langchain/core/callbacks/manager';
-import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { PROMPT_STUDIO_AGENT, type PromptStudioAgent } from '@src/client/prompt-studio.agent.js';
 import {
   AI_CHAT_MESSAGE_REPOSITORY,
