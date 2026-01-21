@@ -18,7 +18,7 @@ class GlobalExceptionHandler(
 ) {
     private val logger = KotlinLogging.logger {}
     private val scope = CoroutineScope(
-        SupervisorJob() + Dispatchers.IO + CoroutineName("exception-monitor")
+        SupervisorJob() + Dispatchers.IO + CoroutineName("exception-monitor") + coroutineGlobalExceptionHandler
     )
 
     @PreDestroy

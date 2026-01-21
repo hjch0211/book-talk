@@ -8,6 +8,9 @@ import kotlinx.coroutines.*
 import kr.co.booktalk.cache.DebateOnlineAccountsCache
 import kr.co.booktalk.cache.HandRaiseCache
 import kr.co.booktalk.cache.WebSocketSessionCache
+import kr.co.booktalk.client.MonitorClient
+import kr.co.booktalk.client.SendRequest
+import kr.co.booktalk.coroutineGlobalExceptionHandler
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
@@ -21,10 +24,11 @@ class DebateWebSocketHandler(
     private val debateOnlineAccountsCache: DebateOnlineAccountsCache,
     private val handRaiseCache: HandRaiseCache,
     private val webSocketSessionCache: WebSocketSessionCache,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val monitorClient: MonitorClient
 ) : TextWebSocketHandler() {
     private val logger = KotlinLogging.logger {}
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineName("api-websocket-handler"))
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineName("api-websocket-handler")) + coroutineGlobalExceptionHandler
 
     @PreDestroy
     fun destroy() {
@@ -61,7 +65,21 @@ class DebateWebSocketHandler(
 
                 WSRequestMessageType.C_TOGGLE_HAND.name -> {
                     val request = objectMapper.readValue<ToggleHandRequest>(message.payload)
-                    scope.launch { handleToggleHand(session, request) }
+                    scope.launch {
+                        try {
+                            handleToggleHand(session, request)
+                        } catch (e: Exception) {
+                            logger.error(e) { "손들기 처리 실패 - ${e.message}" }
+                            monitorClient.send(
+                                SendRequest(
+                                    title = "[book-talk-api] INTERNAL SERVER ERROR",
+                                    message = "${e.message}",
+                                    stackTrace = e.stackTraceToString(),
+                                    level = SendRequest.Level.ERROR
+                                )
+                            )
+                        }
+                    }
                 }
 
                 WSRequestMessageType.C_CHAT_MESSAGE.name -> {

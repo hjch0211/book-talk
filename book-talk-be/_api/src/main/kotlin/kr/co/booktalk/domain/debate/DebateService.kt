@@ -1,5 +1,6 @@
 package kr.co.booktalk.domain.debate
 
+import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -8,8 +9,11 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kr.co.booktalk.client.AiClient
+import kr.co.booktalk.client.MonitorClient
+import kr.co.booktalk.client.SendRequest
 import kr.co.booktalk.client.SummarizeRequest
 import kr.co.booktalk.config.AppProperties
+import kr.co.booktalk.coroutineGlobalExceptionHandler
 import kr.co.booktalk.domain.*
 import kr.co.booktalk.domain.auth.AuthAccount
 import kr.co.booktalk.httpBadRequest
@@ -33,10 +37,12 @@ class DebateService(
     private val debateRoundService: DebateRoundService,
     private val bookRepository: BookRepository,
     private val aiClient: AiClient,
-    private val debateSummarizationRepository: DebateSummarizationRepository
+    private val debateSummarizationRepository: DebateSummarizationRepository,
+    private val monitorClient: MonitorClient
 ) {
+    private val logger = KotlinLogging.logger {}
     private val scope = CoroutineScope(
-        SupervisorJob() + Dispatchers.IO + CoroutineName("debate-service")
+        SupervisorJob() + Dispatchers.IO + CoroutineName("debate-service") + coroutineGlobalExceptionHandler
     )
 
     @PreDestroy
@@ -175,7 +181,19 @@ class DebateService(
 
     fun summarizeDebate(debateId: String) {
         scope.launch {
-            aiClient.summarizeDebate(SummarizeRequest(debateId))
+            try {
+                aiClient.summarizeDebate(SummarizeRequest(debateId))
+            } catch (e: Exception) {
+                logger.error(e) {"토론 요약 실패 - ${e.message}"}
+                monitorClient.send(
+                    SendRequest(
+                        title = "[book-talk-api] INTERNAL SERVER ERROR",
+                        message = "${e.message}",
+                        stackTrace = e.stackTraceToString(),
+                        level = SendRequest.Level.ERROR
+                    )
+                )
+            }
         }
     }
 }

@@ -5,6 +5,7 @@ import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.*
 import kr.co.booktalk.client.MonitorClient
 import kr.co.booktalk.client.SendRequest
+import kr.co.booktalk.coroutineGlobalExceptionHandler
 import kr.co.booktalk.domain.DebateRoundSpeakerRepository
 import kr.co.booktalk.domain.DebateRoundType
 import org.springframework.scheduling.annotation.Scheduled
@@ -24,7 +25,7 @@ class DebateScheduler(
 ) {
     private val logger = KotlinLogging.logger {}
     private val scope = CoroutineScope(
-        SupervisorJob() + Dispatchers.IO + CoroutineName("debate-scheduler")
+        SupervisorJob() + Dispatchers.IO + CoroutineName("debate-scheduler") + coroutineGlobalExceptionHandler
     )
 
     @PreDestroy
