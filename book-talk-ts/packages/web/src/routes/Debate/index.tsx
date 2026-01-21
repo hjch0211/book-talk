@@ -63,7 +63,7 @@ function DebatePageContent({ debateId }: Props) {
         case 'PENDING':
           return {
             title: '음성 채팅 연결 중...',
-            content: '잠시만 기다려주세요',
+            content: '원활한 음성연결을 위해 크롬 브라우저 사용을 권장드립니다.',
           };
         case 'FAILED':
           return {
@@ -73,7 +73,7 @@ function DebatePageContent({ debateId }: Props) {
         default:
           return {
             title: '토론방에 입장 중...',
-            content: '잠시만 기다려주세요',
+            content: '원활한 음성연결을 위해 크롬 브라우저 사용을 권장드립니다.',
           };
       }
     };

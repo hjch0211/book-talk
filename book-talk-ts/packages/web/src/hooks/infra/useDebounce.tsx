@@ -1,4 +1,4 @@
-import {useEffect, useEffectEvent, useRef, useState} from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
 interface UseDebounceOptions {
   /** 디바운스 지연 시간 (ms) */
@@ -19,26 +19,24 @@ export const useDebounce = <T extends (...args: any[]) => Promise<void> | void>(
   const timerRef = useRef<number | null>(null);
   const [isDebouncing, setIsDebouncing] = useState(false);
 
-  const debouncedCallback = useEffectEvent(
-    (...args: Parameters<T>) => {
-      setIsDebouncing(true);
+  const debouncedCallback = useEffectEvent((...args: Parameters<T>) => {
+    setIsDebouncing(true);
 
-      if (timerRef.current !== null) {
-        clearTimeout(timerRef.current);
-      }
-
-      timerRef.current = window.setTimeout(async () => {
-        try {
-          await callback(...args);
-        } catch (error) {
-          console.error('Debounced callback error:', error);
-        } finally {
-          setIsDebouncing(false);
-          timerRef.current = null;
-        }
-      }, delay);
+    if (timerRef.current !== null) {
+      clearTimeout(timerRef.current);
     }
-  );
+
+    timerRef.current = window.setTimeout(async () => {
+      try {
+        await callback(...args);
+      } catch (error) {
+        console.error('Debounced callback error:', error);
+      } finally {
+        setIsDebouncing(false);
+        timerRef.current = null;
+      }
+    }, delay);
+  });
 
   const cancel = useEffectEvent(() => {
     if (timerRef.current !== null) {

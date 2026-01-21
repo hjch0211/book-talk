@@ -1,4 +1,4 @@
-import {type CurrentRoundInfo, useToast} from '@src/hooks';
+import { type CurrentRoundInfo, useToast } from '@src/hooks';
 import { useNavigate } from 'react-router-dom';
 import leaveIconSvg from '../../../assets/leave.svg';
 import userAddIconSvg from '../../../assets/user-add.svg';

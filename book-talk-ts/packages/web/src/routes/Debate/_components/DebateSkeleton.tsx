@@ -1,4 +1,4 @@
-import { CircularProgress } from '@mui/material';
+import debateLoadingGif from '@src/assets/debate-loading.gif';
 import MainContainer from '../../../components/templates/MainContainer';
 import {
   LoadingOverlay,
@@ -92,7 +92,7 @@ export const DebateSkeleton = ({ title, content }: Props) => {
 
         {/* Loading Overlay */}
         <LoadingOverlay>
-          <CircularProgress size={48} />
+          <img src={debateLoadingGif} alt="로딩 중" width={316} />
           <LoadingText>{title}</LoadingText>
           <LoadingSubText>{content}</LoadingSubText>
         </LoadingOverlay>

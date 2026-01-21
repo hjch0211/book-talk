@@ -197,7 +197,7 @@ export const SkeletonActionButton = styled(Skeleton)`
 /** 로딩 오버레이 (연결 중 표시) */
 export const LoadingOverlay = styled(Box)`
   position: fixed;
-  top: 0;
+  top: -120px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -207,7 +207,7 @@ export const LoadingOverlay = styled(Box)`
   align-items: center;
   background: rgba(255, 255, 255, 0.5);
   z-index: 1000;
-  gap: 24px;
+  gap: 18px;
 `;
 
 export const LoadingText = styled.div`
