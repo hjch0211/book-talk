@@ -47,8 +47,8 @@ class DebateWebSocketHandler(
     /** 클라이언트로부터 수신된 텍스트 메시지를 파싱하고 타입별로 처리합니다. */
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
         try {
-            val webSocketMessage = objectMapper.readValue<WebSocketMessage<Any>>(message.payload)
-            when (webSocketMessage.type) {
+            val typeMap = objectMapper.readValue<Map<String, Any>>(message.payload)
+            when (typeMap["type"]) {
                 WSRequestMessageType.C_JOIN_DEBATE.name -> {
                     val request = objectMapper.readValue<JoinDebateRequest>(message.payload)
                     handleJoinDebate(session, request)
