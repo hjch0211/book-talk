@@ -1,4 +1,4 @@
-import { Column, PrimaryGeneratedColumn } from 'typeorm';
+import { Column, CreateDateColumn, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
 
 /** Auditable 엔티티 인터페이스 */
 export interface AuditableEntity {
@@ -12,13 +12,13 @@ export abstract class AuditableLongIdEntity implements AuditableEntity {
   @PrimaryGeneratedColumn('increment')
   id!: number;
 
-  @Column({ name: 'created_at', type: 'timestamp' })
+  @CreateDateColumn({ name: 'created_at', default: () => 'CURRENT_TIMESTAMP' })
   createdAt!: Date;
 
-  @Column({ name: 'updated_at', type: 'timestamp' })
+  @UpdateDateColumn({ name: 'updated_at', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt!: Date;
 
-  @Column({ name: 'archived_at', type: 'timestamp', nullable: true })
+  @Column({ name: 'archived_at' })
   archivedAt?: Date;
 }
 
@@ -27,12 +27,12 @@ export abstract class AuditableUuidEntity implements AuditableEntity {
   @PrimaryGeneratedColumn('uuid')
   id!: string;
 
-  @Column({ name: 'created_at', type: 'timestamp' })
+  @CreateDateColumn({ name: 'created_at', default: () => 'CURRENT_TIMESTAMP' })
   createdAt!: Date;
 
-  @Column({ name: 'updated_at', type: 'timestamp' })
+  @UpdateDateColumn({ name: 'updated_at', default: () => 'CURRENT_TIMESTAMP' })
   updatedAt!: Date;
 
-  @Column({ name: 'archived_at', type: 'timestamp', nullable: true })
+  @Column({ name: 'archived_at' })
   archivedAt?: Date;
 }
