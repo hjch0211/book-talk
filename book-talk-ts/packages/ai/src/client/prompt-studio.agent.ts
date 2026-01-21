@@ -1,5 +1,5 @@
-import { Langfuse } from 'langfuse';
-import { CallbackHandler } from 'langfuse-langchain';
+import { LangfuseClient } from '@langfuse/client';
+import { CallbackHandler } from '@langfuse/langchain';
 
 export const PROMPT_STUDIO_AGENT = Symbol.for('PROMPT_STUDIO_AGENT');
 
@@ -9,10 +9,7 @@ export interface PromptStudioAgent {
   getPrompt(name: string): Promise<string | null>;
 
   /** LangChain용 콜백 핸들러 생성 */
-  createCallbackHandler(sessionId?: string): CallbackHandler | null;
-
-  /** 트레이스 생성 */
-  createTrace(name: string, metadata?: Record<string, unknown>): unknown;
+  createCallbackHandler(): CallbackHandler | null;
 
   /** 클라이언트 종료 */
   shutdown(): Promise<void>;
@@ -26,10 +23,10 @@ export interface LangfuseConfig {
 }
 
 export class LangfusePromptStudioAgent implements PromptStudioAgent {
-  private readonly langfuse: Langfuse;
+  private readonly langfuse: LangfuseClient;
 
-  constructor(private readonly config: LangfuseConfig) {
-    this.langfuse = new Langfuse({
+  constructor(readonly config: LangfuseConfig) {
+    this.langfuse = new LangfuseClient({
       publicKey: config.publicKey,
       secretKey: config.secretKey,
       baseUrl: config.baseUrl,
@@ -38,29 +35,19 @@ export class LangfusePromptStudioAgent implements PromptStudioAgent {
 
   async getPrompt(name: string): Promise<string | null> {
     try {
-      const prompt = await this.langfuse.getPrompt(name);
-      return prompt.prompt;
+      const textPromptClient = await this.langfuse.prompt.get(name);
+      return textPromptClient.prompt;
     } catch {
       return null;
     }
   }
 
-  createCallbackHandler(sessionId?: string): CallbackHandler {
-    return new CallbackHandler({
-      publicKey: this.config.publicKey,
-      secretKey: this.config.secretKey,
-      baseUrl: this.config.baseUrl,
-      sessionId,
-    });
-  }
-
-  createTrace(name: string, metadata?: Record<string, unknown>) {
-    return this.langfuse.trace({ name, metadata });
+  createCallbackHandler(): CallbackHandler {
+    return new CallbackHandler();
   }
 
   async shutdown(): Promise<void> {
-    await this.langfuse.flushAsync();
-    await this.langfuse.shutdownAsync();
+    await this.langfuse.shutdown();
   }
 }
 
@@ -70,11 +57,7 @@ export class NoOpPromptStudioAgent implements PromptStudioAgent {
     return null;
   }
 
-  createCallbackHandler(_sessionId?: string): null {
-    return null;
-  }
-
-  createTrace(_name: string, _metadata?: Record<string, unknown>): null {
+  createCallbackHandler(): null {
     return null;
   }
 

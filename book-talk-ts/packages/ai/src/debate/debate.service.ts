@@ -1,4 +1,3 @@
-import type { Callbacks } from '@langchain/core/callbacks/manager';
 import { Inject, Injectable } from '@nestjs/common';
 import { PROMPT_STUDIO_AGENT, type PromptStudioAgent } from '@src/client/prompt-studio.agent.js';
 import {
@@ -35,8 +34,12 @@ export class DebateService {
   async summarize(request: SummarizeRequest): Promise<void> {
     const { debateId } = request;
 
-    const callbacks = this.createCallbacks(debateId);
-    const response = await this.debateGraph.run([], '토론 시작', debateId, callbacks);
+    const response = await this.debateGraph.run(
+      [],
+      '토론 시작',
+      debateId,
+      this.promptStudioAgent.createCallbackHandler()
+    );
     void this.debateSummarizationRepository.save({ debateId, content: response.content });
   }
 
@@ -60,12 +63,11 @@ export class DebateService {
 
     await this.messageRepository.save({ chatId, role: 'user', content: message });
 
-    const callbacks = this.createCallbacks(chatId);
     const response = await this.debateGraph.run(
       chat.messages?.map((e: AiChatMessageEntity) => ({ role: e.role, content: e.content })) || [],
       message,
       chat.debateId,
-      callbacks
+      this.promptStudioAgent.createCallbackHandler()
     );
 
     // TODO: response 타입을 나누어야 함
@@ -81,10 +83,5 @@ export class DebateService {
   /** 채팅방 삭제 */
   async remove(chatId: string): Promise<void> {
     await this.chatRepository.delete({ id: chatId });
-  }
-
-  private createCallbacks(sessionId: string): Callbacks {
-    const handler = this.promptStudioAgent.createCallbackHandler(sessionId);
-    return handler ? [handler] : [];
   }
 }

@@ -1,4 +1,6 @@
+import { LangfuseSpanProcessor } from '@langfuse/otel';
 import { Global, Inject, Logger, Module, type OnModuleDestroy } from '@nestjs/common';
+import { NodeSDK } from '@opentelemetry/sdk-node';
 import {
   BooktalkDebateClient,
   DEBATE_CLIENT,
@@ -22,6 +24,19 @@ import { LangfuseProperties } from '@src/config/langfuse.properties.js';
       inject: [LangfuseProperties],
       useFactory: (props: LangfuseProperties): PromptStudioAgent => {
         if (props.isValid()) {
+          const sdk = new NodeSDK({
+            spanProcessors: [
+              new LangfuseSpanProcessor({
+                publicKey: props.publicKey,
+                secretKey: props.secretKey,
+                baseUrl: props.baseUrl,
+              }),
+            ],
+          });
+
+          sdk.start();
+          Logger.log('Langfuse otel 초기화 성공');
+
           return new LangfusePromptStudioAgent({
             publicKey: props.publicKey,
             secretKey: props.secretKey,
