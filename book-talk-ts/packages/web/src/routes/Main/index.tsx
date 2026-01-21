@@ -1,3 +1,4 @@
+import { Box } from '@mui/material';
 import { meQueryOption } from '@src/apis/account';
 import { useModal } from '@src/hooks';
 import { useSuspenseQuery } from '@tanstack/react-query';
@@ -59,7 +60,7 @@ export function MainPage() {
       <MainContainer>
         <MainHeader />
         <MainTextContainer>
-          <Suspense fallback={<></>}>
+          <Suspense fallback={<Box height="230px" />}>
             <TextSection />
           </Suspense>
 
