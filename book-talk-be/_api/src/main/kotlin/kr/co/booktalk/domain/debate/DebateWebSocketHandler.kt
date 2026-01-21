@@ -5,9 +5,13 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.*
+import kr.co.booktalk.WebSocketMessage
 import kr.co.booktalk.cache.DebateOnlineAccountsCache
 import kr.co.booktalk.cache.HandRaiseCache
 import kr.co.booktalk.cache.WebSocketSessionCache
+import kr.co.booktalk.client.MonitorClient
+import kr.co.booktalk.client.SendRequest
+import kr.co.booktalk.coroutineGlobalExceptionHandler
 import org.springframework.stereotype.Component
 import org.springframework.web.socket.CloseStatus
 import org.springframework.web.socket.TextMessage
@@ -21,10 +25,11 @@ class DebateWebSocketHandler(
     private val debateOnlineAccountsCache: DebateOnlineAccountsCache,
     private val handRaiseCache: HandRaiseCache,
     private val webSocketSessionCache: WebSocketSessionCache,
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
+    private val monitorClient: MonitorClient
 ) : TextWebSocketHandler() {
     private val logger = KotlinLogging.logger {}
-    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineName("api-websocket-handler"))
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineName("api-websocket-handler")) + coroutineGlobalExceptionHandler
 
     @PreDestroy
     fun destroy() {
@@ -42,9 +47,8 @@ class DebateWebSocketHandler(
     /** 클라이언트로부터 수신된 텍스트 메시지를 파싱하고 타입별로 처리합니다. */
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
         try {
-            // 먼저 type 필드만 추출
-            val typeMap = objectMapper.readValue<Map<String, Any>>(message.payload)
-            when (val messageType = typeMap["type"] as? String) {
+            val webSocketMessage = objectMapper.readValue<WebSocketMessage<Any>>(message.payload)
+            when (webSocketMessage.type) {
                 WSRequestMessageType.C_JOIN_DEBATE.name -> {
                     val request = objectMapper.readValue<JoinDebateRequest>(message.payload)
                     handleJoinDebate(session, request)
@@ -61,7 +65,21 @@ class DebateWebSocketHandler(
 
                 WSRequestMessageType.C_TOGGLE_HAND.name -> {
                     val request = objectMapper.readValue<ToggleHandRequest>(message.payload)
-                    scope.launch { handleToggleHand(session, request) }
+                    scope.launch {
+                        try {
+                            handleToggleHand(session, request)
+                        } catch (e: Exception) {
+                            logger.error(e) { "손들기 처리 실패 - ${e.message}" }
+                            monitorClient.send(
+                                SendRequest(
+                                    title = "[book-talk-api] INTERNAL SERVER ERROR",
+                                    message = "${e.message}",
+                                    stackTrace = e.stackTraceToString(),
+                                    level = SendRequest.Level.ERROR
+                                )
+                            )
+                        }
+                    }
                 }
 
                 WSRequestMessageType.C_CHAT_MESSAGE.name -> {
@@ -89,11 +107,19 @@ class DebateWebSocketHandler(
                     val request = objectMapper.readValue<VoiceIceCandidateRequest>(message.payload)
                     handleVoiceIceCandidate(session, request)
                 }
-
-                else -> logger.warn { "알 수 없는 메시지 타입: $messageType" }
             }
         } catch (e: Exception) {
             logger.error(e) { "메시지 처리 실패: ${message.payload}" }
+            scope.launch {
+                monitorClient.send(
+                    SendRequest(
+                        title = "[book-talk-API] INTERNAL SERVER ERROR",
+                        message = "${e.message}",
+                        stackTrace = e.stackTraceToString(),
+                        level = SendRequest.Level.ERROR
+                    )
+                )
+            }
         }
     }
 
