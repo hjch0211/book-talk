@@ -97,8 +97,13 @@ const handleNonAuthErrorResponse = async (error: AxiosError): Promise<never> => 
   return handleCommonError(error);
 };
 
-/** 인증 필요 API 에러 핸들러 (401 토큰 갱신 포함) */
+/** 인증 필요 API 에러 핸들러 */
 const handleAuthErrorResponse = async (error: AxiosError): Promise<never> => {
+  if (error.response?.status === 403) {
+    handleAuthFailure();
+    throw new ApiError('접근 권한이 없습니다. 다시 로그인해주세요.', 'FORBIDDEN', 403);
+  }
+
   if (error.response?.status === 401) {
     const config = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
