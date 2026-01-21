@@ -5,6 +5,7 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.*
+import kr.co.booktalk.WebSocketMessage
 import kr.co.booktalk.cache.DebateOnlineAccountsCache
 import kr.co.booktalk.cache.HandRaiseCache
 import kr.co.booktalk.cache.WebSocketSessionCache
@@ -46,9 +47,8 @@ class DebateWebSocketHandler(
     /** 클라이언트로부터 수신된 텍스트 메시지를 파싱하고 타입별로 처리합니다. */
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
         try {
-            // 먼저 type 필드만 추출
-            val typeMap = objectMapper.readValue<Map<String, Any>>(message.payload)
-            when (val messageType = typeMap["type"] as? String) {
+            val webSocketMessage = objectMapper.readValue<WebSocketMessage<Any>>(message.payload)
+            when (webSocketMessage.type) {
                 WSRequestMessageType.C_JOIN_DEBATE.name -> {
                     val request = objectMapper.readValue<JoinDebateRequest>(message.payload)
                     handleJoinDebate(session, request)
@@ -107,11 +107,19 @@ class DebateWebSocketHandler(
                     val request = objectMapper.readValue<VoiceIceCandidateRequest>(message.payload)
                     handleVoiceIceCandidate(session, request)
                 }
-
-                else -> logger.warn { "알 수 없는 메시지 타입: $messageType" }
             }
         } catch (e: Exception) {
             logger.error(e) { "메시지 처리 실패: ${message.payload}" }
+            scope.launch {
+                monitorClient.send(
+                    SendRequest(
+                        title = "[book-talk-API] INTERNAL SERVER ERROR",
+                        message = "${e.message}",
+                        stackTrace = e.stackTraceToString(),
+                        level = SendRequest.Level.ERROR
+                    )
+                )
+            }
         }
     }
 
