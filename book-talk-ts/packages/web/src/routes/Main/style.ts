@@ -1,4 +1,10 @@
+import { keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
+
+const fadeIn = keyframes`
+    from { opacity: 0; }
+    to { opacity: 1; }
+`;
 
 export const MainTextContainer = styled.div`
     display: flex;
@@ -29,6 +35,7 @@ export const MainText = styled.h1`
     letter-spacing: 0.3px;
     color: #000000;
     margin: 0;
+    animation: ${fadeIn} 0.5s ease;
 `;
 
 export const ButtonContainer = styled.div`

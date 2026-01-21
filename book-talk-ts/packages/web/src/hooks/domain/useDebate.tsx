@@ -63,7 +63,7 @@ export const useDebate = ({ debateId }: Props) => {
     },
     onError: () => {
       toast.error('회원가입 중 오류가 발생했습니다.');
-    }
+    },
   });
 
   /** 토론 참여 */
