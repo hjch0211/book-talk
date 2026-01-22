@@ -1,10 +1,10 @@
 import { Avatar, Box, Stack, Typography } from '@mui/material';
+import type { ChatResponse } from '@src/externals/debate';
 import Heading from '@tiptap/extension-heading';
 import Youtube from '@tiptap/extension-youtube';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useCallback, useEffect, useState } from 'react';
-import type { ChatResponse } from '../../../../apis/debate';
 import { ImageWithPaste } from '../editor/ImageExtension.ts';
 import { LinkPreview } from '../editor/LinkPreviewExtension.tsx';
 import { createMentionExtension } from '../editor/MentionExtension.tsx';

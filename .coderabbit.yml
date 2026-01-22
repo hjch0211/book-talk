@@ -213,7 +213,7 @@ reviews:
         - 초기값이 명확하게 정의되어 있나요?"
 
     # API 클라이언트
-    - path: "book-talk-ts/packages/web/src/apis/**/*.ts"
+    - path: "book-talk-ts/packages/web/src/externals/**/*.ts"
       instructions: |
         "API 클라이언트는 아래 사항을 확인해주세요!
         - HTTP 메서드와 엔드포인트가 올바른가요?
@@ -224,7 +224,7 @@ reviews:
         - timeout 설정이 적절한가요?"
 
     # WebSocket 클라이언트
-    - path: "book-talk-ts/packages/web/src/apis/websocket/**/*.ts"
+    - path: "book-talk-ts/packages/web/src/externals/websocket/**/*.ts"
       instructions: |
         "WebSocket 클라이언트는 아래 사항을 확인해주세요!
         - 연결/재연결 로직이 안전한가요?
@@ -236,7 +236,7 @@ reviews:
         - 하트비트 로직이 있나요?"
 
     # WebRTC Manager
-    - path: "book-talk-ts/packages/web/src/apis/webrtc/**/*.ts"
+    - path: "book-talk-ts/packages/web/src/externals/webrtc/**/*.ts"
       instructions: |
         "WebRTC 코드는 아래 사항을 확인해주세요!
         - Peer connection 생성/종료가 올바른가요?

@@ -1,7 +1,7 @@
 import { MoreVert, Person } from '@mui/icons-material';
 import { Avatar, Menu, MenuItem } from '@mui/material';
-import type { CurrentRoundInfo, PresentationInfo, RoundType } from '@src/apis/debate';
-import type { RaisedHandInfo } from '@src/apis/websocket';
+import type { CurrentRoundInfo, PresentationInfo, RoundType } from '@src/externals/debate';
+import type { RaisedHandInfo } from '@src/externals/websocket';
 import type { OnlineMember } from '@src/hooks/domain/useDebateRealtimeConnection';
 import { type MouseEvent, useState } from 'react';
 import hostIconSvg from '../../../assets/host-icon.svg';

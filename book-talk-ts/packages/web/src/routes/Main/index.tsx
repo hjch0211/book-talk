@@ -1,5 +1,5 @@
 import { Box } from '@mui/material';
-import { meQueryOption } from '@src/apis/account';
+import { meQueryOption } from '@src/externals/account';
 import { useModal } from '@src/hooks';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense } from 'react';

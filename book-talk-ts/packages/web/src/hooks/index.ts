@@ -1,4 +1,4 @@
-export type { CurrentRoundInfo, RoundType } from '@src/apis/debate';
+export type { CurrentRoundInfo, RoundType } from '@src/externals/debate';
 export { useDebate } from './domain/useDebate';
 export { useDebateChat } from './domain/useDebateChat';
 export { useDebateRealtimeConnection } from './domain/useDebateRealtimeConnection.tsx';

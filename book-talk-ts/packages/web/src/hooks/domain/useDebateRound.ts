@@ -5,7 +5,7 @@ import {
   findOneDebateQueryOptions,
   patchRoundSpeaker,
   updateDebate,
-} from '@src/apis/debate';
+} from '@src/externals/debate';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useMemo, useState } from 'react';
 

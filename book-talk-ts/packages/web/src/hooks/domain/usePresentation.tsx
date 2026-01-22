@@ -3,7 +3,7 @@ import {
   findOnePresentationQueryOptions,
   type PatchContentRequest,
   patchPresentationContent,
-} from '@src/apis/presentation';
+} from '@src/externals/presentation';
 import { useJsonPatch } from '@src/hooks';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback, useMemo } from 'react';

@@ -1,5 +1,5 @@
 import 'webrtc-adapter';
-import { postGenerateIceServers } from '../apis/ice';
+import { postGenerateIceServers } from '@src/externals/ice';
 
 /** Remote stream 정보 */
 export interface RemoteStream {

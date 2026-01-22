@@ -1,6 +1,6 @@
 import { Box } from '@mui/material';
+import type { ChatResponse } from '@src/externals/debate';
 import { useEffect, useRef } from 'react';
-import type { ChatResponse } from '../../../../apis/debate';
 import { ChatMessage } from './ChatMessage.tsx';
 
 interface ChatMessageListProps {

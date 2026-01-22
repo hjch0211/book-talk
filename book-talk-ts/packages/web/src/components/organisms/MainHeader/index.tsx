@@ -12,9 +12,9 @@ import {
   Toolbar,
   Typography,
 } from '@mui/material';
-import { meQueryOption } from '@src/apis/account';
-import { signOut } from '@src/apis/auth';
-import { clearTokens } from '@src/apis/client.ts';
+import { meQueryOption } from '@src/externals/account';
+import { signOut } from '@src/externals/auth';
+import { clearTokens } from '@src/externals/client.ts';
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense, useState } from 'react';
 import logoSvg from '../../../assets/logo.svg';

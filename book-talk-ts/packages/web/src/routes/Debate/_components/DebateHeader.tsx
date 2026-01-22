@@ -1,5 +1,5 @@
 import { Divider } from '@mui/material';
-import type { Debate } from '@src/apis/debate';
+import type { Debate } from '@src/externals/debate';
 import { type RoundType, useModal, useToast } from '@src/hooks';
 import AiSummarizationModal from '@src/routes/Debate/_components/modal/AiSummarizationModal.tsx';
 import { useNavigate } from 'react-router-dom';

@@ -1,8 +1,8 @@
-import { meQueryOption } from '@src/apis/account';
-import { signIn, signUp } from '@src/apis/auth';
-import { type ApiError, saveTokens } from '@src/apis/client.ts';
-import { findOneDebateQueryOptions, joinDebate, updateDebate } from '@src/apis/debate';
-import { createSurvey } from '@src/apis/survey';
+import { meQueryOption } from '@src/externals/account';
+import { signIn, signUp } from '@src/externals/auth';
+import { type ApiError, saveTokens } from '@src/externals/client.ts';
+import { findOneDebateQueryOptions, joinDebate, updateDebate } from '@src/externals/debate';
+import { createSurvey } from '@src/externals/survey';
 import {
   useDebateChat,
   useDebateRealtimeConnection,

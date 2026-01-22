@@ -1,14 +1,14 @@
 import { Search } from '@mui/icons-material';
 import { Typography } from '@mui/material';
-import { meQueryOption } from '@src/apis/account';
-import { signIn, signUp, validateDuplicateSignIn } from '@src/apis/auth';
-import { type BookData, searchBooksQueryOptions } from '@src/apis/book';
-import { type ApiError, saveTokens } from '@src/apis/client.ts';
+import { meQueryOption } from '@src/externals/account';
+import { signIn, signUp, validateDuplicateSignIn } from '@src/externals/auth';
+import { type BookData, searchBooksQueryOptions } from '@src/externals/book';
+import { type ApiError, saveTokens } from '@src/externals/client.ts';
 import {
   type CreateDebateRequest,
   createDebate,
   findOneDebateQueryOptions,
-} from '@src/apis/debate';
+} from '@src/externals/debate';
 import { useToast } from '@src/hooks';
 import { useDebounce } from '@src/hooks/infra/useDebounce';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';

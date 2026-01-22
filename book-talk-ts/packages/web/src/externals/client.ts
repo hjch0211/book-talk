@@ -1,4 +1,4 @@
-import { refreshAccessToken } from '@src/apis/auth';
+import { refreshAccessToken } from '@src/externals/auth';
 import type { AxiosInstance, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import axios, { type AxiosError } from 'axios';
 import { env } from '../configs/env.ts';

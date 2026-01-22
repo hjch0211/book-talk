@@ -4,7 +4,7 @@ import {
   getChatsQueryOptions,
   type MemberInfo,
   type RoundType,
-} from '@src/apis/debate';
+} from '@src/externals/debate';
 import {
   type DebateRoundUpdateResponse,
   DebateWebSocketClient,
@@ -12,7 +12,7 @@ import {
   type WebSocketMessage,
   WSRequestMessageType,
   WSResponseMessageType,
-} from '@src/apis/websocket';
+} from '@src/externals/websocket';
 import { useWebRTC } from '@src/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';

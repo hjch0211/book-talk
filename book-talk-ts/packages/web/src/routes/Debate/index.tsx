@@ -1,5 +1,5 @@
-import { meQueryOption } from '@src/apis/account';
 import { AudioActivationBanner, AudioPlayer } from '@src/components';
+import { meQueryOption } from '@src/externals/account';
 import { type RoundType, useDebate, useModal } from '@src/hooks';
 import type { VoiceConnectionStatus } from '@src/hooks/domain/useDebateRealtimeConnection.tsx';
 import { useSuspenseQuery } from '@tanstack/react-query';

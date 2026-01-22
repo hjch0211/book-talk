@@ -1,4 +1,4 @@
-import { createChat, getChatsQueryOptions } from '@src/apis/debate';
+import { createChat, getChatsQueryOptions } from '@src/externals/debate';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useCallback } from 'react';
 

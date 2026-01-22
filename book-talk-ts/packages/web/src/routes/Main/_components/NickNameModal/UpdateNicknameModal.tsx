@@ -1,5 +1,5 @@
-import { patchMyAccount } from '@src/apis/account';
-import type { ApiError } from '@src/apis/client.ts';
+import { patchMyAccount } from '@src/externals/account';
+import type { ApiError } from '@src/externals/client.ts';
 import { useToast } from '@src/hooks';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import NicknameModal from './NicknameModal';
