@@ -1,5 +1,5 @@
 import { LangfuseClient } from '@langfuse/client';
-import { CallbackHandler } from '@langfuse/langchain';
+import type { NodeSDK } from '@opentelemetry/sdk-node';
 
 export const PROMPT_STUDIO_AGENT = Symbol.for('PROMPT_STUDIO_AGENT');
 
@@ -7,9 +7,6 @@ export const PROMPT_STUDIO_AGENT = Symbol.for('PROMPT_STUDIO_AGENT');
 export interface PromptStudioAgent {
   /** 프롬프트 조회 (파일명으로) */
   getPrompt(name: string): Promise<string | null>;
-
-  /** LangChain용 콜백 핸들러 생성 */
-  createCallbackHandler(): CallbackHandler | null;
 
   /** 클라이언트 종료 */
   shutdown(): Promise<void>;
@@ -25,7 +22,10 @@ export interface LangfuseConfig {
 export class LangfusePromptStudioAgent implements PromptStudioAgent {
   private readonly langfuse: LangfuseClient;
 
-  constructor(readonly config: LangfuseConfig) {
+  constructor(
+    readonly config: LangfuseConfig,
+    private readonly nodeSdk: NodeSDK
+  ) {
     this.langfuse = new LangfuseClient({
       publicKey: config.publicKey,
       secretKey: config.secretKey,
@@ -42,22 +42,15 @@ export class LangfusePromptStudioAgent implements PromptStudioAgent {
     }
   }
 
-  createCallbackHandler(): CallbackHandler {
-    return new CallbackHandler();
-  }
-
   async shutdown(): Promise<void> {
     await this.langfuse.shutdown();
+    await this.nodeSdk.shutdown();
   }
 }
 
 /** NoOp PromptStudioAgent */
 export class NoOpPromptStudioAgent implements PromptStudioAgent {
   async getPrompt(_name: string): Promise<null> {
-    return null;
-  }
-
-  createCallbackHandler(): null {
     return null;
   }
 

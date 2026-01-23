@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { PROMPT_STUDIO_AGENT, type PromptStudioAgent } from '@src/client/prompt-studio.agent.js';
 import {
   AI_CHAT_MESSAGE_REPOSITORY,
   AI_CHAT_REPOSITORY,
@@ -18,8 +17,6 @@ export const DEBATE_SERVICE = Symbol.for('DEBATE_SERVICE');
 @Injectable()
 export class DebateService {
   constructor(
-    @Inject(PROMPT_STUDIO_AGENT)
-    private readonly promptStudioAgent: PromptStudioAgent,
     @Inject(DEBATE_GRAPH)
     private readonly debateGraph: DebateGraph,
     @Inject(AI_CHAT_REPOSITORY)
@@ -34,12 +31,7 @@ export class DebateService {
   async summarize(request: SummarizeRequest): Promise<void> {
     const { debateId } = request;
 
-    const response = await this.debateGraph.run(
-      [],
-      '토론 시작',
-      debateId,
-      this.promptStudioAgent.createCallbackHandler()
-    );
+    const response = await this.debateGraph.run([], '토론 시작', debateId);
     void this.debateSummarizationRepository.save({ debateId, content: response.content });
   }
 
@@ -66,8 +58,7 @@ export class DebateService {
     const response = await this.debateGraph.run(
       chat.messages?.map((e: AiChatMessageEntity) => ({ role: e.role, content: e.content })) || [],
       message,
-      chat.debateId,
-      this.promptStudioAgent.createCallbackHandler()
+      chat.debateId
     );
 
     // TODO: response 타입을 나누어야 함

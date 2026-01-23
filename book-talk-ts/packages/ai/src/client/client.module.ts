@@ -30,6 +30,7 @@ import { LangfuseProperties } from '@src/config/langfuse.properties.js';
                 publicKey: props.publicKey,
                 secretKey: props.secretKey,
                 baseUrl: props.baseUrl,
+                environment: process.env.NODE_ENV ?? "development",
               }),
             ],
           });
@@ -37,11 +38,14 @@ import { LangfuseProperties } from '@src/config/langfuse.properties.js';
           sdk.start();
           Logger.log('Langfuse otel 초기화 성공');
 
-          return new LangfusePromptStudioAgent({
-            publicKey: props.publicKey,
-            secretKey: props.secretKey,
-            baseUrl: props.baseUrl,
-          });
+          return new LangfusePromptStudioAgent(
+            {
+              publicKey: props.publicKey,
+              secretKey: props.secretKey,
+              baseUrl: props.baseUrl,
+            },
+            sdk
+          );
         }
         Logger.warn('Langfuse 설정이 유효하지 않아 NoOp Agent가 사용됩니다.');
         return new NoOpPromptStudioAgent();

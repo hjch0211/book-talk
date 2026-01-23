@@ -1,5 +1,5 @@
 import { END, START, StateGraph } from '@langchain/langgraph';
-import type { CallbackHandler } from '@langfuse/langchain';
+import { CallbackHandler } from '@langfuse/langchain';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   type ChatHistory,
@@ -37,18 +37,12 @@ export class DebateGraph {
     this.graph = this.createGraph();
   }
 
-  async run(
-    chatHistory: ChatHistory[],
-    request: string,
-    debateId: string,
-    callback: CallbackHandler
-  ): Promise<Response> {
+  async run(chatHistory: ChatHistory[], request: string, debateId: string): Promise<Response> {
     const result = await this.graph.invoke(
       { chatHistory, request, debateId },
       {
-        callbacks: [callback],
+        callbacks: [(new CallbackHandler())],
         metadata: {
-          langfuseSessionId: debateId,
           runName: 'debate-agent',
           tags: ['debate'],
         },
