@@ -36,7 +36,6 @@ class DebateWebSocketHandler(
         scope.cancel()
     }
 
-    /** WebSocket 연결 수립 시 세션을 등록하고 로그를 기록합니다. */
     override fun afterConnectionEstablished(session: WebSocketSession) {
         val accountId = session.attributes["accountId"] as? String
         if (accountId != null) {
@@ -44,19 +43,31 @@ class DebateWebSocketHandler(
         }
     }
 
-    /** 클라이언트로부터 수신된 텍스트 메시지를 파싱하고 타입별로 처리합니다. */
+    override fun afterConnectionClosed(session: WebSocketSession, status: CloseStatus) {
+        val accountId = session.attributes["accountId"] as? String
+        val debateId = session.attributes["debateId"] as? String
+
+        if (accountId != null && debateId != null) {
+            try {
+                debateOnlineAccountsCache.remove(debateId, accountId)
+                webSocketSessionCache.remove(accountId)
+                broadcastDebateOnlineAccountsUpdate(debateId)
+            } catch (e: Exception) {
+                logger.error(e) { "연결 종료 시 정리 실패: accountId=$accountId, debateId=$debateId" }
+            }
+        }
+    }
+
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
         try {
-            val typeMap = objectMapper.readValue<Map<String, Any>>(message.payload)
-            when (typeMap["type"]) {
+            val request = objectMapper.readValue<WebSocketMessage<*>>(message.payload)
+            when (request.type) {
                 WSRequestMessageType.C_JOIN_DEBATE.name -> {
-                    val request = objectMapper.readValue<JoinDebateRequest>(message.payload)
-                    handleJoinDebate(session, request)
+                    handleJoinDebate(session, request as JoinDebateRequest)
                 }
 
                 WSRequestMessageType.C_LEAVE_DEBATE.name -> {
-                    val request = objectMapper.readValue<LeaveDebateRequest>(message.payload)
-                    handleLeaveDebate(session, request)
+                    handleLeaveDebate(session, request as LeaveDebateRequest)
                 }
 
                 WSRequestMessageType.C_HEARTBEAT.name -> {
@@ -64,10 +75,10 @@ class DebateWebSocketHandler(
                 }
 
                 WSRequestMessageType.C_TOGGLE_HAND.name -> {
-                    val request = objectMapper.readValue<ToggleHandRequest>(message.payload)
+                    val toggleHandRequest = request as ToggleHandRequest
                     scope.launch {
                         try {
-                            handleToggleHand(session, request)
+                            handleToggleHand(session, toggleHandRequest)
                         } catch (e: Exception) {
                             logger.error(e) { "손들기 처리 실패 - ${e.message}" }
                             monitorClient.send(
@@ -83,29 +94,24 @@ class DebateWebSocketHandler(
                 }
 
                 WSRequestMessageType.C_CHAT_MESSAGE.name -> {
-                    val request = objectMapper.readValue<ChatMessageRequest>(message.payload)
-                    handleChatMessage(session, request)
+                    handleChatMessage(session, request as ChatMessageRequest)
                 }
 
                 // WebRTC Signaling Messages (C_ = Client sends)
                 WSRequestMessageType.C_VOICE_JOIN.name -> {
-                    val request = objectMapper.readValue<VoiceJoinRequest>(message.payload)
-                    handleVoiceJoin(session, request)
+                    handleVoiceJoin(session, request as VoiceJoinRequest)
                 }
 
                 WSRequestMessageType.C_VOICE_OFFER.name -> {
-                    val request = objectMapper.readValue<VoiceOfferRequest>(message.payload)
-                    handleVoiceOffer(session, request)
+                    handleVoiceOffer(session, request as VoiceOfferRequest)
                 }
 
                 WSRequestMessageType.C_VOICE_ANSWER.name -> {
-                    val request = objectMapper.readValue<VoiceAnswerRequest>(message.payload)
-                    handleVoiceAnswer(session, request)
+                    handleVoiceAnswer(session, request as VoiceAnswerRequest)
                 }
 
                 WSRequestMessageType.C_VOICE_ICE_CANDIDATE.name -> {
-                    val request = objectMapper.readValue<VoiceIceCandidateRequest>(message.payload)
-                    handleVoiceIceCandidate(session, request)
+                    handleVoiceIceCandidate(session, request as VoiceIceCandidateRequest)
                 }
             }
         } catch (e: Exception) {
@@ -123,14 +129,6 @@ class DebateWebSocketHandler(
         }
     }
 
-    /** WebSocket 연결 종료 시 세션을 정리합니다. */
-    override fun afterConnectionClosed(session: WebSocketSession, status: CloseStatus) {
-        cleanupSession(session)
-        val accountId = session.attributes["accountId"] as? String
-        if (accountId != null) {
-            webSocketSessionCache.remove(accountId)
-        }
-    }
 
     /** 토론방 참여 요청을 처리합니다. 사용자 인증, 유효성 검사를 거쳐 토론방에 참여시킵니다. */
     private fun handleJoinDebate(session: WebSocketSession, request: JoinDebateRequest) {
@@ -203,32 +201,9 @@ class DebateWebSocketHandler(
         try {
             debateOnlineAccountsCache.remove(debateId, accountId)
             broadcastDebateOnlineAccountsUpdate(debateId)
-            removeAccountSession(session)
+            session.attributes.remove("debateId")
         } catch (e: Exception) {
             logger.error(e) { "토론 나가기 처리 실패: debateId=$debateId, accountId=$accountId" }
-        }
-    }
-
-    /** 세션 정보를 제거합니다. */
-    private fun removeAccountSession(session: WebSocketSession) {
-        // 세션 속성에서 debateId 제거
-        session.attributes.remove("debateId")
-    }
-
-    /** 연결 종료 시 세션과 관련된 모든 정보를 정리합니다. */
-    private fun cleanupSession(session: WebSocketSession) {
-        val accountId = session.attributes["accountId"] as? String
-        val debateId = session.attributes["debateId"] as? String
-
-        removeAccountSession(session)
-
-        if (accountId != null && debateId != null) {
-            try {
-                debateOnlineAccountsCache.remove(debateId, accountId)
-                broadcastDebateOnlineAccountsUpdate(debateId)
-            } catch (e: Exception) {
-                logger.error(e) { "연결 종료 시 정리 실패: accountId=$accountId, debateId=$debateId" }
-            }
         }
     }
 

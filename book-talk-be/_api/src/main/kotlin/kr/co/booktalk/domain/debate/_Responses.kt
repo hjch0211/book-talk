@@ -91,7 +91,7 @@ data class ChatResponse(
 
 data class JoinSuccessResponse(
     override val payload: Payload
-) : WebSocketMessage<JoinSuccessResponse.Payload> {
+) : WebSocketMessage<JoinSuccessResponse.Payload>() {
     override val type: String = WSResponseMessageType.S_JOIN_SUCCESS.name
 
     data class Payload(
@@ -102,7 +102,7 @@ data class JoinSuccessResponse(
 
 data class HeartbeatAckResponse(
     override val payload: Payload
-) : WebSocketMessage<HeartbeatAckResponse.Payload> {
+) : WebSocketMessage<HeartbeatAckResponse.Payload>() {
     override val type: String = WSResponseMessageType.S_HEARTBEAT_ACK.name
 
     data class Payload(
@@ -112,7 +112,7 @@ data class HeartbeatAckResponse(
 
 data class DebateOnlineAccountsUpdateResponse(
     override val payload: Payload
-) : WebSocketMessage<DebateOnlineAccountsUpdateResponse.Payload> {
+) : WebSocketMessage<DebateOnlineAccountsUpdateResponse.Payload>() {
     override val type: String = WSResponseMessageType.S_DEBATE_ONLINE_ACCOUNTS_UPDATE.name
 
     data class Payload(
@@ -123,7 +123,7 @@ data class DebateOnlineAccountsUpdateResponse(
 
 data class HandRaiseUpdateResponse(
     override val payload: Payload
-) : WebSocketMessage<HandRaiseUpdateResponse.Payload> {
+) : WebSocketMessage<HandRaiseUpdateResponse.Payload>() {
     override val type: String = WSResponseMessageType.S_HAND_RAISE_UPDATE.name
 
     data class Payload(
@@ -139,7 +139,7 @@ data class HandRaiseUpdateResponse(
 
 data class ChatMessageResponse(
     override val payload: Payload
-) : WebSocketMessage<ChatMessageResponse.Payload> {
+) : WebSocketMessage<ChatMessageResponse.Payload>() {
     override val type: String = WSResponseMessageType.S_CHAT_MESSAGE.name
 
     data class Payload(
@@ -150,7 +150,7 @@ data class ChatMessageResponse(
 
 data class SpeakerUpdateResponse(
     override val payload: Payload
-) : WebSocketMessage<SpeakerUpdateResponse.Payload> {
+) : WebSocketMessage<SpeakerUpdateResponse.Payload>() {
     override val type: String = WSResponseMessageType.S_SPEAKER_UPDATE.name
 
     data class Payload(
@@ -173,7 +173,7 @@ data class SpeakerUpdateResponse(
 
 data class DebateRoundUpdateResponse(
     override val payload: Payload
-) : WebSocketMessage<DebateRoundUpdateResponse.Payload> {
+) : WebSocketMessage<DebateRoundUpdateResponse.Payload>() {
     override val type: String = WSResponseMessageType.S_DEBATE_ROUND_UPDATE.name
 
     data class Payload(
@@ -202,7 +202,7 @@ data class DebateRoundUpdateResponse(
 
 data class VoiceJoinResponse(
     override val payload: Payload
-) : WebSocketMessage<VoiceJoinResponse.Payload> {
+) : WebSocketMessage<VoiceJoinResponse.Payload>() {
     override val type: String = WSResponseMessageType.S_VOICE_JOIN.name
 
     data class Payload(
@@ -213,7 +213,7 @@ data class VoiceJoinResponse(
 
 data class VoiceOfferResponse(
     override val payload: Payload
-) : WebSocketMessage<VoiceOfferResponse.Payload> {
+) : WebSocketMessage<VoiceOfferResponse.Payload>() {
     override val type: String = WSResponseMessageType.S_VOICE_OFFER.name
 
     data class Payload(
@@ -226,7 +226,7 @@ data class VoiceOfferResponse(
 
 data class VoiceAnswerResponse(
     override val payload: Payload
-) : WebSocketMessage<VoiceAnswerResponse.Payload> {
+) : WebSocketMessage<VoiceAnswerResponse.Payload>() {
     override val type: String = WSResponseMessageType.S_VOICE_ANSWER.name
 
     data class Payload(
@@ -239,7 +239,7 @@ data class VoiceAnswerResponse(
 
 data class VoiceIceCandidateResponse(
     override val payload: Payload
-) : WebSocketMessage<VoiceIceCandidateResponse.Payload> {
+) : WebSocketMessage<VoiceIceCandidateResponse.Payload>() {
     override val type: String = WSResponseMessageType.S_VOICE_ICE_CANDIDATE.name
 
     data class Payload(

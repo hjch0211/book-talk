@@ -77,7 +77,7 @@ data class CreateChatRequest(
 
 data class JoinDebateRequest(
     override val payload: Payload
-) : WebSocketMessage<JoinDebateRequest.Payload> {
+) : WebSocketMessage<JoinDebateRequest.Payload>() {
     override val type: String = WSRequestMessageType.C_JOIN_DEBATE.name
 
     data class Payload(
@@ -90,7 +90,7 @@ data class JoinDebateRequest(
 
 data class LeaveDebateRequest(
     override val payload: Payload
-) : WebSocketMessage<LeaveDebateRequest.Payload> {
+) : WebSocketMessage<LeaveDebateRequest.Payload>() {
     override val type: String = WSRequestMessageType.C_LEAVE_DEBATE.name
 
     data class Payload(
@@ -101,7 +101,7 @@ data class LeaveDebateRequest(
 
 data class HeartbeatRequest(
     override val payload: Payload
-) : WebSocketMessage<HeartbeatRequest.Payload> {
+) : WebSocketMessage<HeartbeatRequest.Payload>() {
     override val type: String = WSRequestMessageType.C_HEARTBEAT.name
 
     data class Payload(
@@ -111,7 +111,7 @@ data class HeartbeatRequest(
 
 data class ToggleHandRequest(
     override val payload: Payload
-) : WebSocketMessage<ToggleHandRequest.Payload> {
+) : WebSocketMessage<ToggleHandRequest.Payload>() {
     override val type: String = WSRequestMessageType.C_TOGGLE_HAND.name
 
     data class Payload(
@@ -123,7 +123,7 @@ data class ToggleHandRequest(
 
 data class ChatMessageRequest(
     override val payload: Payload
-) : WebSocketMessage<ChatMessageRequest.Payload> {
+) : WebSocketMessage<ChatMessageRequest.Payload>() {
     override val type: String = WSRequestMessageType.C_CHAT_MESSAGE.name
 
     data class Payload(
@@ -135,7 +135,7 @@ data class ChatMessageRequest(
 // WebRTC Signaling Messages - Client sends (C_ prefix)
 data class VoiceJoinRequest(
     override val payload: Payload
-) : WebSocketMessage<VoiceJoinRequest.Payload> {
+) : WebSocketMessage<VoiceJoinRequest.Payload>() {
     override val type: String = WSRequestMessageType.C_VOICE_JOIN.name
 
     data class Payload(
@@ -146,7 +146,7 @@ data class VoiceJoinRequest(
 
 data class VoiceOfferRequest(
     override val payload: Payload
-) : WebSocketMessage<VoiceOfferRequest.Payload> {
+) : WebSocketMessage<VoiceOfferRequest.Payload>() {
     override val type: String = WSRequestMessageType.C_VOICE_OFFER.name
 
     data class Payload(
@@ -159,7 +159,7 @@ data class VoiceOfferRequest(
 
 data class VoiceAnswerRequest(
     override val payload: Payload
-) : WebSocketMessage<VoiceAnswerRequest.Payload> {
+) : WebSocketMessage<VoiceAnswerRequest.Payload>() {
     override val type: String = WSRequestMessageType.C_VOICE_ANSWER.name
 
     data class Payload(
@@ -173,7 +173,7 @@ data class VoiceAnswerRequest(
 /** Trickle ICE: ICE Candidate 전송 */
 data class VoiceIceCandidateRequest(
     override val payload: Payload
-) : WebSocketMessage<VoiceIceCandidateRequest.Payload> {
+) : WebSocketMessage<VoiceIceCandidateRequest.Payload>() {
     override val type: String = WSRequestMessageType.C_VOICE_ICE_CANDIDATE.name
 
     data class Payload(
