@@ -124,6 +124,8 @@ class DebateService(
 
         /** 토론 라운드 처리 */
         when {
+            currentRoundType != null && request.roundType.name == currentRoundType.name -> null
+
             currentRoundType != null && request.roundType == UpdateRequest.RoundType.PRESENTATION ->
                 httpBadRequest("이미 라운드가 시작되었습니다.")
 
@@ -152,9 +154,11 @@ class DebateService(
 
         /** 토론 종료 처리 */
         when {
-            request.ended && debate.closedAt != null -> httpBadRequest("이미 종료된 토론입니다.")
+            !request.ended -> null
 
-            request.ended && currentRoundType != null -> {
+            debate.closedAt != null -> httpBadRequest("이미 종료된 토론입니다.")
+
+            currentRoundType != null -> {
                 currentRound.nextSpeaker = null
                 currentRound.endedAt = Instant.now()
                 debate.closedAt = Instant.now()
