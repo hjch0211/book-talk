@@ -5,7 +5,6 @@ import com.fasterxml.jackson.module.kotlin.readValue
 import io.github.oshai.kotlinlogging.KotlinLogging
 import jakarta.annotation.PreDestroy
 import kotlinx.coroutines.*
-import kr.co.booktalk.WebSocketMessage
 import kr.co.booktalk.cache.DebateOnlineAccountsCache
 import kr.co.booktalk.cache.HandRaiseCache
 import kr.co.booktalk.cache.WebSocketSessionCache
@@ -61,14 +60,16 @@ class DebateWebSocketHandler(
 
     override fun handleTextMessage(session: WebSocketSession, message: TextMessage) {
         try {
-            val request = objectMapper.readValue<WebSocketMessage<*>>(message.payload)
-            when (request.type) {
+            val raw = objectMapper.readValue<Map<String, Any?>>(message.payload)
+            val type = raw["type"] as? String ?: return
+
+            when (type) {
                 WSRequestMessageType.C_JOIN_DEBATE.name -> {
-                    handleJoinDebate(session, request as JoinDebateRequest)
+                    handleJoinDebate(session, objectMapper.convertValue(raw, JoinDebateRequest::class.java))
                 }
 
                 WSRequestMessageType.C_LEAVE_DEBATE.name -> {
-                    handleLeaveDebate(session, request as LeaveDebateRequest)
+                    handleLeaveDebate(session, objectMapper.convertValue(raw, LeaveDebateRequest::class.java))
                 }
 
                 WSRequestMessageType.C_HEARTBEAT.name -> {
@@ -76,7 +77,7 @@ class DebateWebSocketHandler(
                 }
 
                 WSRequestMessageType.C_TOGGLE_HAND.name -> {
-                    val toggleHandRequest = request as ToggleHandRequest
+                    val toggleHandRequest = objectMapper.convertValue(raw, ToggleHandRequest::class.java)
                     scope.launch {
                         try {
                             handleToggleHand(session, toggleHandRequest)
@@ -95,24 +96,24 @@ class DebateWebSocketHandler(
                 }
 
                 WSRequestMessageType.C_CHAT_MESSAGE.name -> {
-                    handleChatMessage(session, request as ChatMessageRequest)
+                    handleChatMessage(session, objectMapper.convertValue(raw, ChatMessageRequest::class.java))
                 }
 
                 // WebRTC Signaling Messages (C_ = Client sends)
                 WSRequestMessageType.C_VOICE_JOIN.name -> {
-                    handleVoiceJoin(session, request as VoiceJoinRequest)
+                    handleVoiceJoin(session, objectMapper.convertValue(raw, VoiceJoinRequest::class.java))
                 }
 
                 WSRequestMessageType.C_VOICE_OFFER.name -> {
-                    handleVoiceOffer(session, request as VoiceOfferRequest)
+                    handleVoiceOffer(session, objectMapper.convertValue(raw, VoiceOfferRequest::class.java))
                 }
 
                 WSRequestMessageType.C_VOICE_ANSWER.name -> {
-                    handleVoiceAnswer(session, request as VoiceAnswerRequest)
+                    handleVoiceAnswer(session, objectMapper.convertValue(raw, VoiceAnswerRequest::class.java))
                 }
 
                 WSRequestMessageType.C_VOICE_ICE_CANDIDATE.name -> {
-                    handleVoiceIceCandidate(session, request as VoiceIceCandidateRequest)
+                    handleVoiceIceCandidate(session, objectMapper.convertValue(raw, VoiceIceCandidateRequest::class.java))
                 }
             }
         } catch (e: Exception) {
