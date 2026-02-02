@@ -255,17 +255,19 @@ export const useDebateRealtimeConnection = (props: Props) => {
   });
 
   /** AI 요약 완성 */
-  const onAiSummaryCompleted = useEffectEvent(() => {
+  const onAiSummaryCompleted = useEffectEvent(async () => {
     if (debateId) {
-      void queryClient.invalidateQueries({
-        queryKey: findOneDebateQueryOptions(debateId).queryKey,
-      });
-      openModal(AiSummarizationModal, {
-        bookTitle: `${debate.bookInfo.title} - ${debate.bookInfo.author}`,
-        topic: debate.topic,
-        bookImageUrl: debate.bookInfo.imageUrl,
-        summarization: debate.aiSummarized ?? '',
-      });
+      await queryClient.fetchQuery({
+        ...findOneDebateQueryOptions(debateId),
+        staleTime: 0,
+      }).then(debate => {
+        openModal(AiSummarizationModal, {
+          bookTitle: `${debate.bookInfo.title} - ${debate.bookInfo.author}`,
+          topic: debate.topic,
+          bookImageUrl: debate.bookInfo.imageUrl,
+          summarization: debate.aiSummarized ?? '',
+        });
+      })
     }
   });
 
