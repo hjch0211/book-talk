@@ -9,7 +9,8 @@ import org.springframework.web.bind.annotation.*
 class DebateController(
     private val debateService: DebateService,
     private val debateRoundSpeakerService: DebateRoundSpeakerService,
-    private val debateChatService: DebateChatService
+    private val debateChatService: DebateChatService,
+    private val debateRealtimeService: DebateRealtimeService
 ) {
     /** 토론 생성 */
     @PostMapping("/debates")
@@ -65,5 +66,12 @@ class DebateController(
     @GetMapping("/debates/{debateId}/chats")
     fun getChats(@PathVariable debateId: String, authAccount: AuthAccount): HttpResult<List<ChatResponse>> {
         return debateChatService.findByDebateId(debateId, authAccount).toResult()
+    }
+
+    // TODO: AI server로 오는 요청에만 인가 필요
+    /** AI 서버 - 토론방 요약 완성 callback */
+    @PostMapping("/debates/{debateId}/summary/completion")
+    fun callbackAiSummary(@PathVariable debateId: String) {
+        debateRealtimeService.broadcastAiSummaryCompleted(debateId)
     }
 }

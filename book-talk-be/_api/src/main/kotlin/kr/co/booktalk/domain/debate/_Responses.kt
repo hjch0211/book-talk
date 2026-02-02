@@ -13,6 +13,7 @@ enum class WSResponseMessageType {
     S_CHAT_MESSAGE,
     S_SPEAKER_UPDATE,
     S_DEBATE_ROUND_UPDATE,
+    S_AI_SUMMARY_COMPLETED,
     S_VOICE_JOIN,
     S_VOICE_OFFER,
     S_VOICE_ANSWER,
@@ -196,6 +197,16 @@ data class DebateRoundUpdateResponse(
             val endedAt: Long
         )
     }
+}
+
+data class AiSummaryCompletedResponse(
+    override val payload: Payload
+) : WebSocketMessage<AiSummaryCompletedResponse.Payload>() {
+    override val type: String = WSResponseMessageType.S_AI_SUMMARY_COMPLETED.name
+
+    data class Payload(
+        val debateId: String
+    )
 }
 
 // ============ WebRTC Voice Signaling Response Messages ============

@@ -38,7 +38,8 @@ class DebateService(
     private val bookRepository: BookRepository,
     private val aiClient: AiClient,
     private val debateSummarizationRepository: DebateSummarizationRepository,
-    private val monitorClient: MonitorClient
+    private val monitorClient: MonitorClient,
+    private val debateRealtimeService: DebateRealtimeService
 ) {
     private val logger = KotlinLogging.logger {}
     private val scope = CoroutineScope(
@@ -162,11 +163,10 @@ class DebateService(
                 currentRound.nextSpeaker = null
                 currentRound.endedAt = Instant.now()
                 debate.closedAt = Instant.now()
-                debateRoundService.broadcastDebateRoundUpdate(request.debateId, currentRound)
+                debateRealtimeService.broadcastDebateRoundUpdate(request.debateId, currentRound)
             }
         }
     }
-
 
     @Transactional
     fun closeExpiredDebates() {

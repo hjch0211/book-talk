@@ -13,9 +13,10 @@ import {
   WSRequestMessageType,
   WSResponseMessageType,
 } from '@src/externals/websocket';
-import { useWebRTC } from '@src/hooks';
+import {useModal, useWebRTC} from '@src/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import AiSummarizationModal from "@src/routes/Debate/_components/modal/AiSummarizationModal.tsx";
 
 export interface OnlineMember extends MemberInfo {
   isMe: boolean;
@@ -52,6 +53,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
   const [isDebateJoined, setIsDebateJoined] = useState<boolean>(false);
   const [raisedHands, setRaisedHands] = useState<RaisedHandInfo[]>([]);
   const wsClientRef = useRef<DebateWebSocketClient | null>(null);
+  const { openModal } = useModal()
 
   // Voice 연결 상태
   const [voiceConnectionStatus, setVoiceConnectionStatus] =
@@ -252,6 +254,21 @@ export const useDebateRealtimeConnection = (props: Props) => {
     }
   });
 
+  /** AI 요약 완성 */
+  const onAiSummaryCompleted = useEffectEvent(() => {
+    if (debateId) {
+      void queryClient.invalidateQueries({
+        queryKey: findOneDebateQueryOptions(debateId).queryKey,
+      });
+      openModal(AiSummarizationModal, {
+        bookTitle: `${debate.bookInfo.title} - ${debate.bookInfo.author}`,
+        topic: debate.topic,
+        bookImageUrl: debate.bookInfo.imageUrl,
+        summarization: debate.aiSummarized ?? '',
+      });
+    }
+  });
+
   /** 채팅 메시지 수신 */
   const onChatMessage = useEffectEvent(() => {
     if (debateId) {
@@ -286,6 +303,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
       onDebateRoundUpdate,
       onVoiceSignaling: handleVoiceSignaling,
       onChatMessage,
+      onAiSummaryCompleted,
     });
 
     return () => {

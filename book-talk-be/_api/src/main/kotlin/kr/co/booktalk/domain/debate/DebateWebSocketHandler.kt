@@ -26,7 +26,8 @@ class DebateWebSocketHandler(
     private val handRaiseCache: HandRaiseCache,
     private val webSocketSessionCache: WebSocketSessionCache,
     private val objectMapper: ObjectMapper,
-    private val monitorClient: MonitorClient
+    private val monitorClient: MonitorClient,
+    private val debateRealtimeService: DebateRealtimeService
 ) : TextWebSocketHandler() {
     private val logger = KotlinLogging.logger {}
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO + CoroutineName("api-websocket-handler")) + coroutineGlobalExceptionHandler
@@ -51,7 +52,7 @@ class DebateWebSocketHandler(
             try {
                 debateOnlineAccountsCache.remove(debateId, accountId)
                 webSocketSessionCache.remove(accountId)
-                broadcastDebateOnlineAccountsUpdate(debateId)
+                debateRealtimeService.broadcastOnlineAccountUpdate(debateId)
             } catch (e: Exception) {
                 logger.error(e) { "연결 종료 시 정리 실패: accountId=$accountId, debateId=$debateId" }
             }
@@ -190,7 +191,7 @@ class DebateWebSocketHandler(
             debateOnlineAccountsCache.add(debateId, accountId)
             sendJoinSuccessResponse(session, debateId, accountId)
 
-            broadcastDebateOnlineAccountsUpdate(debateId)
+            debateRealtimeService.broadcastOnlineAccountUpdate(debateId)
         } catch (e: Exception) {
             logger.error(e) { "토론 참여 처리 실패: debateId=$debateId, accountId=$accountId" }
         }
@@ -200,7 +201,7 @@ class DebateWebSocketHandler(
     private fun leaveDebateAndCleanup(session: WebSocketSession, debateId: String, accountId: String) {
         try {
             debateOnlineAccountsCache.remove(debateId, accountId)
-            broadcastDebateOnlineAccountsUpdate(debateId)
+            debateRealtimeService.broadcastOnlineAccountUpdate(debateId)
             session.attributes.remove("debateId")
         } catch (e: Exception) {
             logger.error(e) { "토론 나가기 처리 실패: debateId=$debateId, accountId=$accountId" }
@@ -228,57 +229,12 @@ class DebateWebSocketHandler(
         sendMessage(session, response)
     }
 
-    /** 해당 토론방의 모든 WebSocket 세션에 presence 업데이트를 직접 브로드캐스트합니다. */
-    private fun broadcastDebateOnlineAccountsUpdate(debateId: String) {
-        val onlineAccounts = debateOnlineAccountsCache.get(debateId)
-        val response = DebateOnlineAccountsUpdateResponse(
-            payload = DebateOnlineAccountsUpdateResponse.Payload(
-                debateId = debateId,
-                onlineAccounts = onlineAccounts
-            )
-        )
-
-        val messageJson = objectMapper.writeValueAsString(response)
-        broadcastToDebateRoom(debateId, messageJson)
-    }
-
     /** WebSocket 세션을 통해 클라이언트에게 메시지를 전송합니다. */
     private fun sendMessage(session: WebSocketSession, message: Any) {
         try {
             if (session.isOpen) {
                 val messageJson = objectMapper.writeValueAsString(message)
                 // WebSocket 메시지 전송은 thread-safe하지 않으므로 동기화 필요
-                synchronized(session) {
-                    if (session.isOpen) {
-                        session.sendMessage(TextMessage(messageJson))
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            logger.error(e) { "메시지 전송 실패: sessionId=${session.id}" }
-        }
-    }
-
-    /** 특정 토론방의 모든 WebSocket 세션에게 메시지를 직접 브로드캐스트합니다. */
-    fun broadcastToDebateRoom(debateId: String, messageJson: String) {
-        try {
-            val accountIds = debateOnlineAccountsCache.get(debateId)
-            val targetSessions = webSocketSessionCache.getAll(accountIds)
-
-            targetSessions.forEach { session ->
-                sendTextMessage(session, messageJson)
-            }
-
-            logger.debug { "토론방 브로드캐스트 완료: debateId=$debateId, sessions=${targetSessions.size}" }
-        } catch (e: Exception) {
-            logger.error(e) { "토론방 브로드캐스트 실패: debateId=$debateId, messageJson=$messageJson" }
-        }
-    }
-
-    /** 직접 JSON 문자열을 WebSocket으로 전송합니다. */
-    private fun sendTextMessage(session: WebSocketSession, messageJson: String) {
-        try {
-            if (session.isOpen) {
                 synchronized(session) {
                     if (session.isOpen) {
                         session.sendMessage(TextMessage(messageJson))
@@ -308,41 +264,16 @@ class DebateWebSocketHandler(
         if (existing != null) {
             /** 손내리기 */
             handRaiseCache.remove(payload.debateId, authenticatedAccountId)
-            publishHandRaiseUpdate(payload.debateId)
+            debateRealtimeService.broadcastHandRaiseUpdate(payload.debateId)
         } else {
             /** 손들기 */
             handRaiseCache.add(payload.debateId, authenticatedAccountId, Instant.now())
-            publishHandRaiseUpdate(payload.debateId)
+            debateRealtimeService.broadcastHandRaiseUpdate(payload.debateId)
 
             delay(3000)
             handRaiseCache.remove(payload.debateId, authenticatedAccountId)
-            publishHandRaiseUpdate(payload.debateId)
+            debateRealtimeService.broadcastHandRaiseUpdate(payload.debateId)
         }
-    }
-
-    /** 손들기 상태 업데이트를 토론방 모든 참가자에게 브로드캐스트합니다. */
-    private fun publishHandRaiseUpdate(debateId: String) {
-        val onlineAccountIds = debateOnlineAccountsCache.get(debateId)
-
-        val raisedHandsList = onlineAccountIds.mapNotNull { accountId ->
-            val raisedAt = handRaiseCache.get(debateId, accountId)
-                ?: return@mapNotNull null
-
-            HandRaiseUpdateResponse.Payload.RaisedHandInfo(
-                accountId = accountId,
-                raisedAt = raisedAt.toEpochMilli()
-            )
-        }
-
-        val response = HandRaiseUpdateResponse(
-            payload = HandRaiseUpdateResponse.Payload(
-                debateId = debateId,
-                raisedHands = raisedHandsList
-            )
-        )
-
-        val messageJson = objectMapper.writeValueAsString(response)
-        broadcastToDebateRoom(debateId, messageJson)
     }
 
     /** 채팅 메시지를 토론방 모든 참가자에게 브로드캐스트합니다. */
@@ -356,25 +287,10 @@ class DebateWebSocketHandler(
         }
 
         try {
-            publishChatMessage(payload.debateId, payload.chatId)
+            debateRealtimeService.broadcastChatMessage(payload.debateId, payload.chatId)
         } catch (e: Exception) {
             logger.error(e) { "채팅 메시지 브로드캐스트 실패: debateId=${payload.debateId}, chatId=${payload.chatId}" }
         }
-    }
-
-    /** 채팅 메시지 업데이트를 토론방 모든 참가자에게 브로드캐스트합니다. */
-    private fun publishChatMessage(debateId: String, chatId: Long) {
-        val response = ChatMessageResponse(
-            payload = ChatMessageResponse.Payload(
-                debateId = debateId,
-                chatId = chatId
-            )
-        )
-
-        val messageJson = objectMapper.writeValueAsString(response)
-        broadcastToDebateRoom(debateId, messageJson)
-
-        logger.debug { "채팅 메시지 브로드캐스트 완료: debateId=$debateId, chatId=$chatId" }
     }
 
     // ============ WebRTC Signaling Handlers ============
@@ -395,16 +311,7 @@ class DebateWebSocketHandler(
 
         try {
             logger.info { "음성 채팅 참여: debateId=${payload.debateId}, accountId=${payload.accountId}" }
-
-            // 같은 토론방의 다른 참가자들에게 S_VOICE_JOIN 브로드캐스트
-            val response = VoiceJoinResponse(
-                payload = VoiceJoinResponse.Payload(
-                    debateId = payload.debateId,
-                    fromId = payload.accountId
-                )
-            )
-            val messageJson = objectMapper.writeValueAsString(response)
-            broadcastToDebateRoom(payload.debateId, messageJson)
+            debateRealtimeService.broadcastVoiceJoin(payload.debateId, payload.accountId)
         } catch (e: Exception) {
             logger.error(e) { "음성 참여 처리 실패: debateId=${payload.debateId}, accountId=${payload.accountId}" }
         }
@@ -425,23 +332,16 @@ class DebateWebSocketHandler(
         }
 
         try {
-            logger.debug { "Offer 전달: from=${payload.fromId}, to=${payload.toId}" }
-
-            val targetSession = webSocketSessionCache.get(payload.toId)
-            if (targetSession != null) {
-                val response = VoiceOfferResponse(
-                    payload = VoiceOfferResponse.Payload(
-                        debateId = payload.debateId,
-                        fromId = payload.fromId,
-                        toId = payload.toId,
-                        offer = payload.offer
-                    )
+            val response = VoiceOfferResponse(
+                payload = VoiceOfferResponse.Payload(
+                    debateId = payload.debateId,
+                    fromId = payload.fromId,
+                    toId = payload.toId,
+                    offer = payload.offer
                 )
-                val messageJson = objectMapper.writeValueAsString(response)
-                sendTextMessage(targetSession, messageJson)
-            } else {
-                logger.warn { "Offer 전달 실패: 대상 세션을 찾을 수 없음 toId=${payload.toId}" }
-            }
+            )
+            val messageJson = objectMapper.writeValueAsString(response)
+            debateRealtimeService.sendToSession(payload.toId, messageJson)
         } catch (e: Exception) {
             logger.error(e) { "Offer 전달 실패: from=${payload.fromId}, to=${payload.toId}" }
         }
@@ -462,23 +362,16 @@ class DebateWebSocketHandler(
         }
 
         try {
-            logger.debug { "Answer 전달: from=${payload.fromId}, to=${payload.toId}" }
-
-            val targetSession = webSocketSessionCache.get(payload.toId)
-            if (targetSession != null) {
-                val response = VoiceAnswerResponse(
-                    payload = VoiceAnswerResponse.Payload(
-                        debateId = payload.debateId,
-                        fromId = payload.fromId,
-                        toId = payload.toId,
-                        answer = payload.answer
-                    )
+            val response = VoiceAnswerResponse(
+                payload = VoiceAnswerResponse.Payload(
+                    debateId = payload.debateId,
+                    fromId = payload.fromId,
+                    toId = payload.toId,
+                    answer = payload.answer
                 )
-                val messageJson = objectMapper.writeValueAsString(response)
-                sendTextMessage(targetSession, messageJson)
-            } else {
-                logger.warn { "Answer 전달 실패: 대상 세션을 찾을 수 없음 toId=${payload.toId}" }
-            }
+            )
+            val messageJson = objectMapper.writeValueAsString(response)
+            debateRealtimeService.sendToSession(payload.toId, messageJson)
         } catch (e: Exception) {
             logger.error(e) { "Answer 전달 실패: from=${payload.fromId}, to=${payload.toId}" }
         }
@@ -499,23 +392,16 @@ class DebateWebSocketHandler(
         }
 
         try {
-            logger.debug { "ICE Candidate 전달: from=${payload.fromId}, to=${payload.toId}" }
-
-            val targetSession = webSocketSessionCache.get(payload.toId)
-            if (targetSession != null) {
-                val response = VoiceIceCandidateResponse(
-                    payload = VoiceIceCandidateResponse.Payload(
-                        debateId = payload.debateId,
-                        fromId = payload.fromId,
-                        toId = payload.toId,
-                        candidate = payload.candidate
-                    )
+            val response = VoiceIceCandidateResponse(
+                payload = VoiceIceCandidateResponse.Payload(
+                    debateId = payload.debateId,
+                    fromId = payload.fromId,
+                    toId = payload.toId,
+                    candidate = payload.candidate
                 )
-                val messageJson = objectMapper.writeValueAsString(response)
-                sendTextMessage(targetSession, messageJson)
-            } else {
-                logger.warn { "ICE Candidate 전달 실패: 대상 세션을 찾을 수 없음 toId=${payload.toId}" }
-            }
+            )
+            val messageJson = objectMapper.writeValueAsString(response)
+            debateRealtimeService.sendToSession(payload.toId, messageJson)
         } catch (e: Exception) {
             logger.error(e) { "ICE Candidate 전달 실패: from=${payload.fromId}, to=${payload.toId}" }
         }

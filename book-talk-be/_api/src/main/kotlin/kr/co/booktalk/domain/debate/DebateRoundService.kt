@@ -1,10 +1,7 @@
 package kr.co.booktalk.domain.debate
 
-import com.fasterxml.jackson.databind.ObjectMapper
-import kr.co.booktalk.config.AppProperties
 import kr.co.booktalk.domain.AccountRepository
 import kr.co.booktalk.domain.DebateRepository
-import kr.co.booktalk.domain.DebateRoundEntity
 import kr.co.booktalk.domain.DebateRoundRepository
 import kr.co.booktalk.httpBadRequest
 import kr.co.booktalk.toUUID
@@ -18,9 +15,7 @@ class DebateRoundService(
     private val debateRepository: DebateRepository,
     private val accountRepository: AccountRepository,
     private val debateRoundRepository: DebateRoundRepository,
-    private val appProperties: AppProperties,
-    private val debateWebSocketHandler: DebateWebSocketHandler,
-    private val objectMapper: ObjectMapper,
+    private val debateRealtimeService: DebateRealtimeService,
 ) {
     @Transactional
     fun create(request: CreateRoundRequest): CreateRoundResponse {
@@ -34,8 +29,7 @@ class DebateRoundService(
 
         val debateRound = debateRoundRepository.saveAndFlush(request.toEntity(debate))
 
-        // WebSocket을 통해 토론 라운드 업데이트 브로드캐스트
-        broadcastDebateRoundUpdate(request.debateId, debateRound)
+        debateRealtimeService.broadcastDebateRoundUpdate(request.debateId, debateRound)
 
         return CreateRoundResponse(debateRound.id)
     }
@@ -54,39 +48,6 @@ class DebateRoundService(
 
         if (request.ended?.isPresent == true && request.ended.get() == true) {
             debateRound.endedAt = Instant.now()
-        }
-    }
-
-    /** 토론 라운드 업데이트 브로드캐스트 */
-    fun broadcastDebateRoundUpdate(
-        debateId: String,
-        debateRound: DebateRoundEntity,
-    ) {
-        try {
-            val response = DebateRoundUpdateResponse(
-                payload = DebateRoundUpdateResponse.Payload(
-                    debateId = debateId,
-                    round = DebateRoundUpdateResponse.Payload.RoundInfo(
-                        id = debateRound.id,
-                        type = debateRound.type.name,
-                        nextSpeakerId = null,
-                        nextSpeakerName = null,
-                        createdAt = debateRound.createdAt.toEpochMilli(),
-                        endedAt = debateRound.endedAt?.toEpochMilli()
-                    ),
-                    currentSpeaker = DebateRoundUpdateResponse.Payload.CurrentSpeakerInfo(
-                        accountId = null,
-                        accountName = null,
-                        endedAt = System.currentTimeMillis() + appProperties.debate.roundSpeakerSeconds * 1000
-                    )
-                )
-            )
-
-            val messageJson = objectMapper.writeValueAsString(response)
-            debateWebSocketHandler.broadcastToDebateRoom(debateId, messageJson)
-        } catch (e: Exception) {
-            // 브로드캐스트 실패는 로그만 남기고 메인 로직에는 영향 없도록 처리
-            println("토론 라운드 브로드캐스트 실패: debateId=$debateId, error=${e.message}")
         }
     }
 }
