@@ -1,0 +1,71 @@
+name: Deploy AI Server
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'main'
+        type: string
+
+concurrency:
+  group: deploy-ai
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy AI Server
+    runs-on: self-hosted
+    defaults:
+      run:
+        working-directory: book-talk-ts
+    environment:
+      name: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Copy env file from server
+        run: cp ~/book-talk/book-talk-ts/packages/ai/.env.production packages/ai/.env.production
+
+      - name: Validate prerequisites
+        run: |
+          docker --version
+          docker compose version
+          node --version
+          yarn --version
+          if [ ! -f packages/ai/.env.production ]; then
+            echo "ERROR: packages/ai/.env.production not found"
+            exit 1
+          fi
+
+      - name: Ensure Docker network exists
+        run: docker network inspect booktalk-internal >/dev/null 2>&1 || docker network create booktalk-internal
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build AI package
+        run: yarn ai build
+
+      - name: Stop existing AI container
+        run: |
+          export $(grep -v '^#' packages/ai/.env.production | xargs)
+          docker compose down
+
+      - name: Build and start AI container
+        run: |
+          export $(grep -v '^#' packages/ai/.env.production | xargs)
+          docker compose up -d --build
+
+      - name: Wait and health check
+        run: |
+          sleep 10
+          docker compose ps
+
+      - name: Show recent logs
+        if: always()
+        run: docker compose logs --tail=20

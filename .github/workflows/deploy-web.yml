@@ -1,0 +1,53 @@
+name: Deploy Web (Frontend)
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: 'Branch to deploy'
+        required: true
+        default: 'main'
+        type: string
+
+concurrency:
+  group: deploy-web
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Frontend
+    runs-on: self-hosted
+    defaults:
+      run:
+        working-directory: book-talk-ts
+    environment:
+      name: production
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.branch }}
+
+      - name: Copy env file from server
+        run: cp ~/book-talk/book-talk-ts/packages/web/.env.production packages/web/.env.production
+
+      - name: Validate prerequisites
+        run: |
+          node --version
+          yarn --version
+          if [ ! -f packages/web/.env.production ]; then
+            echo "ERROR: packages/web/.env.production not found"
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: yarn install
+
+      - name: Build web package
+        run: yarn web build
+
+      - name: Deploy static files
+        run: sudo cp -r packages/web/dist/* /var/www/booktalk/frontend/
+
+      - name: Verify deployment
+        run: ls -la /var/www/booktalk/frontend/index.html
