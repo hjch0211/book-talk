@@ -8,12 +8,6 @@
 
 ### 사전 준비
 
-**도메인:**
-
-- `booktalk.my` → 서버 IP
-- `server.booktalk.my` → 서버 IP
-- `ai.server.booktalk.my` → 서버 IP
-
 ---
 
 ## 배포 절차
@@ -55,19 +49,6 @@ cd book-talk-ts
 ```
 
 > `packages/ai/.env.production` 파일이 설정되어 있어야 합니다.
-
-**Docker 명령어:**
-
-```bash
-# 로그 보기
-docker compose -f packages/ai/docker-compose.yml logs -f
-
-# 상태 확인
-docker compose -f packages/ai/docker-compose.yml ps
-
-# 중지
-docker compose -f packages/ai/docker-compose.yml down
-```
 
 ### 4. Nginx 설정 적용
 
