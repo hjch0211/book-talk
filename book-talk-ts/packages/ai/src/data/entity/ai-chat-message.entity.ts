@@ -11,26 +11,23 @@ import {
   Repository,
 } from 'typeorm';
 
-export type ChatRole = 'user' | 'assistant';
-
 @Entity('ai_chat_message')
 export class AiChatMessageEntity extends AuditableUuidEntity {
   /** 채팅방 ID */
-  @Column({ name: 'chat_id', type: 'uuid' })
+  @Column()
   chatId!: string;
 
   /** 역할 (user, assistant) */
-  @Column({ type: 'varchar' })
-  role!: ChatRole;
+  @Column()
+  role!: 'user' | 'assistant';
 
   /** 메시지 내용 */
-  @Column({ type: 'text' })
+  @Column()
   content!: string;
 
   @ManyToOne(
     () => AiChatEntity,
-    (chat) => chat.messages,
-    { onDelete: 'CASCADE' }
+    (chat) => chat.messages
   )
   @JoinColumn({ name: 'chat_id' })
   chat?: Relation<AiChatEntity>;

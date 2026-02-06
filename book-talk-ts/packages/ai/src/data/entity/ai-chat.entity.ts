@@ -6,7 +6,7 @@ import { Column, type DataSource, Entity, OneToMany, type Relation, Repository }
 @Entity('ai_chat')
 export class AiChatEntity extends AuditableUuidEntity {
   /** 토론방 ID */
-  @Column({ name: 'debate_id', type: 'varchar', nullable: true })
+  @Column()
   debateId!: string;
 
   @OneToMany(
