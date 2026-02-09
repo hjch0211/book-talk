@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { DEBATE_CLIENT, type DebateClient } from '@src/client/debate.client.js';
 import {
   AI_CHAT_MESSAGE_REPOSITORY,
   AI_CHAT_REPOSITORY,
@@ -8,7 +9,6 @@ import {
 } from '@src/data/data.module.js';
 import type { AiChatMessageEntity } from '@src/data/entity/ai-chat-message.entity.js';
 import type { DebateSummarizationRepository } from '@src/data/entity/debate-summarization.entity.js';
-import { DEBATE_CLIENT, type DebateClient } from '@src/client/debate.client.js';
 import type { ChatRequest, CreateRequest, SummarizeRequest } from '@src/debate/_requests.js';
 import type { ChatResponse } from '@src/debate/_responses.js';
 import { DEBATE_GRAPH, type DebateGraph } from '@src/debate/graph/debate.graph.js';
@@ -34,8 +34,8 @@ export class DebateService {
   async summarize(request: SummarizeRequest): Promise<void> {
     const { debateId } = request;
 
-    const response = await this.debateGraph.run([], '토론 시작', debateId);
-    await this.debateSummarizationRepository.save({ debateId, content: response.content });
+    const response = await this.debateGraph.runModerator([], '토론 시작', debateId);
+    await this.debateSummarizationRepository.save({ debateId, content: response.message });
     await this.debateClient.notifySummaryCompleted(debateId);
   }
 
@@ -59,13 +59,12 @@ export class DebateService {
 
     await this.messageRepository.save({ chatId, role: 'user', content: message });
 
-    const response = await this.debateGraph.run(
+    const response = await this.debateGraph.runModerator(
       chat.messages?.map((e: AiChatMessageEntity) => ({ role: e.role, content: e.content })) || [],
       message,
       chat.debateId
     );
 
-    // TODO: response 타입을 나누어야 함
     await this.messageRepository.save({
       chatId,
       role: 'assistant',

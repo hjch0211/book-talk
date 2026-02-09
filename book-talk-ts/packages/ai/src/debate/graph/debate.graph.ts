@@ -1,28 +1,25 @@
 import { END, START, StateGraph } from '@langchain/langgraph';
 import { CallbackHandler } from '@langfuse/langchain';
 import { Inject, Injectable } from '@nestjs/common';
-import {
-  type ChatHistory,
-  DebateStateAnnotation,
-  type Response,
-} from '@src/debate/graph/debate.state.js';
+import type { AiResponse } from '@src/ai-response.js';
+import { type ChatHistory, DebateStateAnnotation } from '@src/debate/graph/debate.state.js';
 import {
   DEBATE_STARTER_NODE,
   type DebateStarterNode,
 } from '@src/debate/graph/debate-starter.node.js';
-import { debateStarterEdge, debateToolEdge, supervisorEdge } from './debate.edges.js';
-import { DEBATE_TOOL_NODE, type DebateToolNode } from './debate-tool.node.js';
-import { SUPERVISOR_NODE, type SupervisorNode } from './supervisor.node.js';
 import {
   UNKNOWN_HANDLER_NODE,
   type UnknownHandlerNode,
 } from '@src/debate/graph/unknown-handler.node.js';
+import { debateStarterEdge, debateToolEdge, supervisorEdge } from './debate.edges.js';
+import { DEBATE_TOOL_NODE, type DebateToolNode } from './debate-tool.node.js';
+import { SUPERVISOR_NODE, type SupervisorNode } from './supervisor.node.js';
 
 export const DEBATE_GRAPH = Symbol.for('DEBATE_GRAPH');
 
 @Injectable()
 export class DebateGraph {
-  private readonly graph: ReturnType<typeof this.createGraph>;
+  private readonly moderatorGraph: ReturnType<typeof this.createModeratorGraph>;
 
   constructor(
     @Inject(SUPERVISOR_NODE)
@@ -34,16 +31,20 @@ export class DebateGraph {
     @Inject(DEBATE_TOOL_NODE)
     private readonly debateToolNode: DebateToolNode
   ) {
-    this.graph = this.createGraph();
+    this.moderatorGraph = this.createModeratorGraph();
   }
 
-  async run(chatHistory: ChatHistory[], request: string, debateId: string): Promise<Response> {
-    const result = await this.graph.invoke(
+  async runModerator(
+    chatHistory: ChatHistory[],
+    request: string,
+    debateId: string
+  ): Promise<AiResponse> {
+    const result = await this.moderatorGraph.invoke(
       { chatHistory, request, debateId },
       {
-        callbacks: [(new CallbackHandler())],
+        callbacks: [new CallbackHandler()],
         metadata: {
-          runName: 'debate-agent',
+          runName: 'debate-moderator',
           tags: ['debate'],
         },
       }
@@ -51,7 +52,7 @@ export class DebateGraph {
     return result.response;
   }
 
-  private createGraph() {
+  private createModeratorGraph() {
     return new StateGraph(DebateStateAnnotation)
       .addNode(SUPERVISOR_NODE.description!, this.supervisorNode.process.bind(this.supervisorNode))
       .addNode(

@@ -52,16 +52,24 @@ export class SupervisorNode implements LangGraphNode<DebateState> {
     }
 
     /** 하위 agent 호출 */
-    if (parsedResponse.data?.command === 'debate_start') {
+    if (parsedResponse.data?.command === 'DEBATE_START') {
       return {
-        nodeRequest: { command: 'debate_start' as const, data: { debateId, debateInfo } },
+        nodeRequest: { command: 'DEBATE_START' as const, data: { debateId, debateInfo } },
         debateId: parsedRequest.data.debateId,
       };
     }
 
     /** 호출 없이 즉시 종료 */
     if (parsedResponse.data?.response) {
-      return { response: parsedResponse.data.response };
+      return {
+        response: {
+          status: parsedResponse.status,
+          type: parsedResponse.type,
+          message: parsedResponse.message,
+          reason: parsedResponse.reason,
+          data: parsedResponse.data.response,
+        },
+      };
     }
 
     return { errorMessage: '[SupervisorNode] unexpected response' };

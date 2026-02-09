@@ -26,13 +26,13 @@ export class DebateToolNode {
       return { errorMessage: '[DebateToolNode] request validation failed' };
     }
 
-    /** 올바른 get_debate_info 요청 처리 */
-    if (parsedRequest.command === 'get_debate_info') {
+    /** 올바른 GET_DEBATE_INFO 요청 처리 */
+    if (parsedRequest.command === 'GET_DEBATE_INFO') {
       try {
         const debateInfo = await this.debateClient.findOne(parsedRequest.data.debateId);
         return {
           nodeRequest: {
-            command: 'debate_start' as const,
+            command: 'DEBATE_START' as const,
             data: { debateId: parsedRequest.data.debateId, debateInfo },
           },
           debateId: parsedRequest.data.debateId,
@@ -44,7 +44,7 @@ export class DebateToolNode {
       }
     }
 
-    /** 요청 command가 get_debate_info가 아닌 경우 */
+    /** 요청 command가 GET_DEBATE_INFO가 아닌 경우 */
     return { errorMessage: '[DebateToolNode] unexpected command' };
   }
 }

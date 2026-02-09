@@ -1,36 +1,49 @@
 import { AiResponseBaseSchema } from '@src/ai-response.js';
-import { ResponseType } from '@src/debate/graph/debate.state.js';
 import { z } from 'zod';
 
 export const SupervisorNodeResponseSchema = AiResponseBaseSchema.extend({
   /** 결과 상태 */
   status: z.enum(['SUCCESS', 'FAILED']),
-  /** 메시지 (프롬프트 응답 디버깅용) */
+  /** 메시지 타입 */
+  type: z.enum([
+    /** 일반 응답 */
+    'PLAIN_ANSWER',
+    /** Tool 호출 응답 */
+    'TOOL_CALLING',
+  ]),
+  /** 응답 메시지 */
   message: z.string(),
+  /** 추론 과정 (프롬프트 응답 디버깅용) */
+  reason: z.string(),
   /** data */
   data: z.object({
     /** 하위 agent 호출이 필요할 경우 명령 */
-    command: z.enum(['debate_start']).optional(),
+    command: z.enum(['DEBATE_START']).optional(),
     /** 하위 agent 호출이 필요 없을 경우 응답 */
-    response: z
-      .object({ content: z.string(), type: z.enum([ResponseType.PLAIN_ANSWER]) })
-      .optional(),
+    response: z.object({ content: z.string(), type: z.enum(['PLAIN_ANSWER']) }).optional(),
   }),
 });
 
 export const DebateStarterNodeResponseSchema = AiResponseBaseSchema.extend({
   /** 결과 상태 */
   status: z.enum(['SUCCESS', 'FAILED']),
-  /** 메시지 (프롬프트 응답 디버깅용) */
+  /** 메시지 타입 */
+  type: z.enum([
+    /** 일반 응답 */
+    'PLAIN_ANSWER',
+    /** Tool 호출 응답 */
+    'TOOL_CALLING',
+  ]),
+  /** 응답 메시지 */
   message: z.string(),
+  /** 추론 과정 (프롬프트 응답 디버깅용) */
+  reason: z.string(),
   /** data */
   data: z.object({
     /** 하위 agent 호출이 필요할 경우 명령 */
-    command: z.enum(['get_debate_info']).optional(),
+    command: z.enum(['GET_DEBATE_INFO']).optional(),
     /** 하위 agent 호출이 필요 없을 경우 응답 */
-    response: z
-      .object({ content: z.string(), type: z.enum([ResponseType.DEBATE_START_ANSWER]) })
-      .optional(),
+    response: z.object({ content: z.string(), type: z.enum(['DEBATE_START_ANSWER']) }).optional(),
   }),
 });
 

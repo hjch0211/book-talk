@@ -1,6 +1,6 @@
-import type { Response } from '@src/debate/graph/debate.state.js';
+import type { AiResponse } from '@src/ai-response.js';
 
 export interface ChatResponse {
-  response: Response;
+  response: AiResponse;
   chatId: string;
 }

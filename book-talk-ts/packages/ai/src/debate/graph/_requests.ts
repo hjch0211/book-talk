@@ -13,7 +13,7 @@ export const SupervisorNodeRequestSchema = AiRequestBaseSchema.extend({
 
 export const DebateStarterNodeRequestSchema = AiRequestBaseSchema.extend({
   /** 명령어 */
-  command: z.enum(['debate_start']),
+  command: z.enum(['DEBATE_START']),
   /** data */
   data: z.object({
     /** 토론방 ID */
@@ -25,7 +25,7 @@ export const DebateStarterNodeRequestSchema = AiRequestBaseSchema.extend({
 
 export const GetDebateInfoToolNodeRequestSchema = AiRequestBaseSchema.extend({
   /** 명령어 */
-  command: z.enum(['get_debate_info']),
+  command: z.enum(['GET_DEBATE_INFO']),
   /** data */
   data: z.object({
     /** 토론방 ID */

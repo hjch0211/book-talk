@@ -33,7 +33,7 @@ export class DebateStarterNode implements LangGraphNode<DebateState> {
     /** debateInfo가 없으면 GetDebateInfoTool 호출 */
     if (!debateInfo) {
       const toolRequest: GetDebateInfoToolNodeRequest = {
-        command: 'get_debate_info',
+        command: 'GET_DEBATE_INFO',
         data: { debateId },
       };
       return { nodeRequest: toolRequest };
@@ -62,6 +62,15 @@ export class DebateStarterNode implements LangGraphNode<DebateState> {
     }
 
     /** 최종 응답 */
-    return { response: parsedResponse.data.response, nodeRequest: null };
+    return {
+      response: {
+        status: parsedResponse.status,
+        type: parsedResponse.type,
+        message: parsedResponse.message,
+        reason: parsedResponse.reason,
+        data: parsedResponse.data.response,
+      },
+      nodeRequest: null,
+    };
   }
 }
