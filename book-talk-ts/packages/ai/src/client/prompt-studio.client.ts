@@ -1,10 +1,10 @@
 import { LangfuseClient } from '@langfuse/client';
 import type { NodeSDK } from '@opentelemetry/sdk-node';
 
-export const PROMPT_STUDIO_AGENT = Symbol.for('PROMPT_STUDIO_AGENT');
+export const PROMPT_STUDIO_CLIENT = Symbol.for('PROMPT_STUDIO_CLIENT');
 
 /** Prompt Studio Agent */
-export interface PromptStudioAgent {
+export interface PromptStudioClient {
   /** 프롬프트 조회 (파일명으로) */
   getPrompt(name: string): Promise<string | null>;
 
@@ -19,7 +19,7 @@ export interface LangfuseConfig {
   baseUrl: string;
 }
 
-export class LangfusePromptStudioAgent implements PromptStudioAgent {
+export class LangfusePromptStudioClient implements PromptStudioClient {
   private readonly langfuse: LangfuseClient;
 
   constructor(
@@ -48,8 +48,8 @@ export class LangfusePromptStudioAgent implements PromptStudioAgent {
   }
 }
 
-/** NoOp PromptStudioAgent */
-export class NoOpPromptStudioAgent implements PromptStudioAgent {
+/** NoOp PromptStudioClient */
+export class NoOpPromptStudioClient implements PromptStudioClient {
   async getPrompt(_name: string): Promise<null> {
     return null;
   }
