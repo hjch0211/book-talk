@@ -1,14 +1,9 @@
-import { Annotation, END } from '@langchain/langgraph';
+import { Annotation } from '@langchain/langgraph';
 import type { DebateInfo } from '@src/client/debate.client.js';
 import type { DebateStarterNodeRequest, GetDebateInfoToolNodeRequest } from './_requests.js';
 
 export type ChatHistory = { role: 'assistant' | 'user'; content: string };
-export type Next = {
-  /** 다음 노드 */
-  node: string;
-  /** 다음 노드에 전달할 요청 데이터 */
-  request?: DebateStarterNodeRequest | GetDebateInfoToolNodeRequest;
-};
+export type NodeRequest = DebateStarterNodeRequest | GetDebateInfoToolNodeRequest | null;
 export enum ResponseType {
   /** 일반 텍스트 */
   PLAIN_ANSWER = 'plain_answer',
@@ -53,10 +48,16 @@ export const DebateStateAnnotation = Annotation.Root({
     default: () => ({ type: ResponseType.PLAIN_ANSWER, content: '' }),
   }),
 
-  /** 다음 노드 (라우팅용) */
-  next: Annotation<Next>({
+  /** 노드 간 요청 데이터 전달용 */
+  nodeRequest: Annotation<NodeRequest>({
     reducer: (_, update) => update,
-    default: () => ({ node: END }),
+    default: () => null,
+  }),
+
+  /** 에러 메시지 (edge에서 라우팅 판단용) */
+  errorMessage: Annotation<string | null>({
+    reducer: (_, update) => update,
+    default: () => null,
   }),
 });
 

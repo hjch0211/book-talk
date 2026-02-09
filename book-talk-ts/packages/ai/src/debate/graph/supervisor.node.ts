@@ -1,13 +1,10 @@
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { AIMessage, HumanMessage, SystemMessage } from '@langchain/core/messages';
-import { END } from '@langchain/langgraph';
 import { Logger } from '@nestjs/common';
 import type { DebateState } from '@src/debate/graph/debate.state.js';
 import type { LangGraphNode } from '@src/lang-graph-node.js';
 import { type SupervisorNodeRequest, SupervisorNodeRequestSchema } from './_requests.js';
 import { type SupervisorNodeResponse, SupervisorNodeResponseSchema } from './_responses.js';
-import { DEBATE_STARTER_NODE } from './debate-starter.node.js';
-import { UNKNOWN_HANDLER_NODE } from './unknown-handler.node.js';
 
 export const SUPERVISOR_NODE = Symbol.for('SUPERVISOR_NODE');
 
@@ -26,7 +23,7 @@ export class SupervisorNode implements LangGraphNode<DebateState> {
       parsedRequest = SupervisorNodeRequestSchema.parse({ command: request, data: { debateId } });
     } catch (e) {
       Logger.warn('[SupervisorNode] request validation failed', e);
-      return { next: { node: UNKNOWN_HANDLER_NODE.description! } };
+      return { errorMessage: '[SupervisorNode] request validation failed' };
     }
 
     /** LLM 호출: 기존 메시지 + 현재 요청 포함 */
@@ -42,9 +39,7 @@ export class SupervisorNode implements LangGraphNode<DebateState> {
       llmResponseText = llmResponse.text.trim();
     } catch (e) {
       Logger.error('[SupervisorNode] LLM invoke failed', e);
-      return {
-        next: { node: UNKNOWN_HANDLER_NODE.description! },
-      };
+      return { errorMessage: '[SupervisorNode] LLM invoke failed' };
     }
 
     /** 응답 검증 */
@@ -53,33 +48,22 @@ export class SupervisorNode implements LangGraphNode<DebateState> {
       parsedResponse = SupervisorNodeResponseSchema.parse(JSON.parse(llmResponseText));
     } catch (e) {
       Logger.error('[SupervisorNode] response validation failed', e);
-      return { next: { node: UNKNOWN_HANDLER_NODE.description! } };
+      return { errorMessage: '[SupervisorNode] response validation failed' };
     }
 
     /** 하위 agent 호출 */
-    if (parsedResponse.data?.command) {
+    if (parsedResponse.data?.command === 'debate_start') {
       return {
-        next: {
-          node:
-            parsedResponse.data.command === 'debate_start'
-              ? DEBATE_STARTER_NODE.description!
-              : UNKNOWN_HANDLER_NODE.description!,
-          request: { command: 'debate_start', data: { debateId, debateInfo } },
-        },
+        nodeRequest: { command: 'debate_start' as const, data: { debateId, debateInfo } },
         debateId: parsedRequest.data.debateId,
       };
     }
 
     /** 호출 없이 즉시 종료 */
     if (parsedResponse.data?.response) {
-      return {
-        next: { node: END },
-        response: parsedResponse.data.response,
-      };
+      return { response: parsedResponse.data.response };
     }
 
-    return {
-      next: { node: UNKNOWN_HANDLER_NODE.description! },
-    };
+    return { errorMessage: '[SupervisorNode] unexpected response' };
   }
 }

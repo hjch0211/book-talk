@@ -1,6 +1,5 @@
 import type { BaseChatModel } from '@langchain/core/language_models/chat_models';
 import { HumanMessage, SystemMessage } from '@langchain/core/messages';
-import { END } from '@langchain/langgraph';
 import { Logger } from '@nestjs/common';
 import {
   type DebateStarterNodeRequest,
@@ -10,8 +9,6 @@ import {
 import type { DebateState } from '@src/debate/graph/debate.state.js';
 import type { LangGraphNode } from '@src/lang-graph-node.js';
 import { type DebateStarterNodeResponse, DebateStarterNodeResponseSchema } from './_responses.js';
-import { DEBATE_TOOL_NODE } from './debate-tool.node.js';
-import { UNKNOWN_HANDLER_NODE } from './unknown-handler.node.js';
 
 export const DEBATE_STARTER_NODE = Symbol.for('DEBATE_STARTER_NODE');
 
@@ -22,15 +19,15 @@ export class DebateStarterNode implements LangGraphNode<DebateState> {
   ) {}
 
   async process(state: DebateState): Promise<Partial<DebateState>> {
-    const { debateId, debateInfo, next } = state;
+    const { debateId, debateInfo, nodeRequest } = state;
 
     /** 요청 검증 */
     let parsedRequest: DebateStarterNodeRequest;
     try {
-      parsedRequest = DebateStarterNodeRequestSchema.parse(next.request);
+      parsedRequest = DebateStarterNodeRequestSchema.parse(nodeRequest);
     } catch (e) {
       Logger.warn('[DebateStarterNode] request validation failed', e);
-      return { next: { node: UNKNOWN_HANDLER_NODE.description! } };
+      return { errorMessage: '[DebateStarterNode] request validation failed' };
     }
 
     /** debateInfo가 없으면 GetDebateInfoTool 호출 */
@@ -39,9 +36,7 @@ export class DebateStarterNode implements LangGraphNode<DebateState> {
         command: 'get_debate_info',
         data: { debateId },
       };
-      return {
-        next: { node: DEBATE_TOOL_NODE.description!, request: toolRequest },
-      };
+      return { nodeRequest: toolRequest };
     }
 
     /** LLM 호출 */
@@ -54,7 +49,7 @@ export class DebateStarterNode implements LangGraphNode<DebateState> {
       llmResponseText = llmResponse.text.trim();
     } catch (e) {
       Logger.error('[DebateStarterNode] LLM invoke failed', e);
-      return { next: { node: UNKNOWN_HANDLER_NODE.description! } };
+      return { errorMessage: '[DebateStarterNode] LLM invoke failed' };
     }
 
     /** 응답 검증 */
@@ -63,13 +58,10 @@ export class DebateStarterNode implements LangGraphNode<DebateState> {
       parsedResponse = DebateStarterNodeResponseSchema.parse(JSON.parse(llmResponseText));
     } catch (e) {
       Logger.error('[DebateStarterNode] response validation failed', e);
-      return { next: { node: UNKNOWN_HANDLER_NODE.description! } };
+      return { errorMessage: '[DebateStarterNode] response validation failed' };
     }
 
     /** 최종 응답 */
-    return {
-      next: { node: END },
-      response: parsedResponse.data.response,
-    };
+    return { response: parsedResponse.data.response, nodeRequest: null };
   }
 }

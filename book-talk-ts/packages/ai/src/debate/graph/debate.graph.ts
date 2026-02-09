@@ -3,7 +3,6 @@ import { CallbackHandler } from '@langfuse/langchain';
 import { Inject, Injectable } from '@nestjs/common';
 import {
   type ChatHistory,
-  type DebateState,
   DebateStateAnnotation,
   type Response,
 } from '@src/debate/graph/debate.state.js';
@@ -11,12 +10,13 @@ import {
   DEBATE_STARTER_NODE,
   type DebateStarterNode,
 } from '@src/debate/graph/debate-starter.node.js';
+import { debateStarterEdge, debateToolEdge, supervisorEdge } from './debate.edges.js';
+import { DEBATE_TOOL_NODE, type DebateToolNode } from './debate-tool.node.js';
+import { SUPERVISOR_NODE, type SupervisorNode } from './supervisor.node.js';
 import {
   UNKNOWN_HANDLER_NODE,
   type UnknownHandlerNode,
 } from '@src/debate/graph/unknown-handler.node.js';
-import { DEBATE_TOOL_NODE, type DebateToolNode } from './debate-tool.node.js';
-import { SUPERVISOR_NODE, type SupervisorNode } from './supervisor.node.js';
 
 export const DEBATE_GRAPH = Symbol.for('DEBATE_GRAPH');
 
@@ -67,17 +67,17 @@ export class DebateGraph {
         this.debateToolNode.getDebateStarterTool.bind(this.debateToolNode)
       )
       .addEdge(START, SUPERVISOR_NODE.description!)
-      .addConditionalEdges(SUPERVISOR_NODE.description!, ({ next }: DebateState) => next.node, [
+      .addConditionalEdges(SUPERVISOR_NODE.description!, supervisorEdge, [
         DEBATE_STARTER_NODE.description!,
         UNKNOWN_HANDLER_NODE.description!,
         END,
       ])
-      .addConditionalEdges(DEBATE_STARTER_NODE.description!, ({ next }: DebateState) => next.node, [
+      .addConditionalEdges(DEBATE_STARTER_NODE.description!, debateStarterEdge, [
         DEBATE_TOOL_NODE.description!,
         UNKNOWN_HANDLER_NODE.description!,
         END,
       ])
-      .addConditionalEdges(DEBATE_TOOL_NODE.description!, ({ next }: DebateState) => next.node, [
+      .addConditionalEdges(DEBATE_TOOL_NODE.description!, debateToolEdge, [
         DEBATE_STARTER_NODE.description!,
         UNKNOWN_HANDLER_NODE.description!,
       ])
