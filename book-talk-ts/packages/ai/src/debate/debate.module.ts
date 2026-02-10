@@ -1,6 +1,6 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { Module } from '@nestjs/common';
-import { PROMPT_STUDIO_AGENT, type PromptStudioAgent } from '@src/client/prompt-studio.agent.js';
+import { PROMPT_STUDIO_CLIENT, type PromptStudioClient } from '@src/client/prompt-studio.client.js';
 import { DebateController } from '@src/debate/debate.controller.js';
 import { DEBATE_SERVICE, DebateService } from '@src/debate/debate.service.js';
 import { DEBATE_GRAPH, DebateGraph } from '@src/debate/graph/debate.graph.js';
@@ -19,7 +19,7 @@ import {
     { provide: DEBATE_SERVICE, useClass: DebateService },
     {
       provide: SUPERVISOR_NODE,
-      useFactory: async (promptStudioAgent: PromptStudioAgent) => {
+      useFactory: async (promptStudioAgent: PromptStudioClient) => {
         /** TODO: 환경변수로 빼야됨 */
         const model = new ChatOpenAI({ model: 'gpt-4o-mini', temperature: 0 });
         const prompt = await promptStudioAgent.getPrompt('debates/supervisor');
@@ -29,11 +29,11 @@ import {
 
         return new SupervisorNode(model, prompt);
       },
-      inject: [PROMPT_STUDIO_AGENT],
+      inject: [PROMPT_STUDIO_CLIENT],
     },
     {
       provide: DEBATE_STARTER_NODE,
-      useFactory: async (promptStudio: PromptStudioAgent) => {
+      useFactory: async (promptStudio: PromptStudioClient) => {
         const model = new ChatOpenAI({ model: 'gpt-4o-mini', temperature: 0.7 });
 
         const prompt = await promptStudio.getPrompt('debates/debate-starter');
@@ -43,7 +43,7 @@ import {
 
         return new DebateStarterNode(model, prompt);
       },
-      inject: [PROMPT_STUDIO_AGENT],
+      inject: [PROMPT_STUDIO_CLIENT],
     },
     { provide: DEBATE_TOOL_NODE, useClass: DebateToolNode },
     { provide: UNKNOWN_HANDLER_NODE, useClass: UnknownHandlerNode },

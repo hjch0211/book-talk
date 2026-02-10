@@ -8,11 +8,11 @@ import {
   NoOpDebateClient,
 } from '@src/client/debate.client.js';
 import {
-  LangfusePromptStudioAgent,
-  NoOpPromptStudioAgent,
-  PROMPT_STUDIO_AGENT,
-  type PromptStudioAgent,
-} from '@src/client/prompt-studio.agent.js';
+  LangfusePromptStudioClient,
+  NoOpPromptStudioClient,
+  PROMPT_STUDIO_CLIENT,
+  type PromptStudioClient,
+} from '@src/client/prompt-studio.client.js';
 import { BooktalkProperties } from '@src/config/booktalk.properties.js';
 import { LangfuseProperties } from '@src/config/langfuse.properties.js';
 
@@ -20,9 +20,9 @@ import { LangfuseProperties } from '@src/config/langfuse.properties.js';
 @Module({
   providers: [
     {
-      provide: PROMPT_STUDIO_AGENT,
+      provide: PROMPT_STUDIO_CLIENT,
       inject: [LangfuseProperties],
-      useFactory: (props: LangfuseProperties): PromptStudioAgent => {
+      useFactory: (props: LangfuseProperties): PromptStudioClient => {
         if (props.isValid()) {
           const sdk = new NodeSDK({
             spanProcessors: [
@@ -30,7 +30,7 @@ import { LangfuseProperties } from '@src/config/langfuse.properties.js';
                 publicKey: props.publicKey,
                 secretKey: props.secretKey,
                 baseUrl: props.baseUrl,
-                environment: process.env.NODE_ENV ?? "development",
+                environment: process.env.NODE_ENV ?? 'development',
               }),
             ],
           });
@@ -38,7 +38,7 @@ import { LangfuseProperties } from '@src/config/langfuse.properties.js';
           sdk.start();
           Logger.log('Langfuse otel 초기화 성공');
 
-          return new LangfusePromptStudioAgent(
+          return new LangfusePromptStudioClient(
             {
               publicKey: props.publicKey,
               secretKey: props.secretKey,
@@ -48,7 +48,7 @@ import { LangfuseProperties } from '@src/config/langfuse.properties.js';
           );
         }
         Logger.warn('Langfuse 설정이 유효하지 않아 NoOp Agent가 사용됩니다.');
-        return new NoOpPromptStudioAgent();
+        return new NoOpPromptStudioClient();
       },
     },
     {
@@ -63,12 +63,12 @@ import { LangfuseProperties } from '@src/config/langfuse.properties.js';
       },
     },
   ],
-  exports: [PROMPT_STUDIO_AGENT, DEBATE_CLIENT],
+  exports: [PROMPT_STUDIO_CLIENT, DEBATE_CLIENT],
 })
 export class ClientModule implements OnModuleDestroy {
   constructor(
-    @Inject(PROMPT_STUDIO_AGENT)
-    private readonly agent: PromptStudioAgent
+    @Inject(PROMPT_STUDIO_CLIENT)
+    private readonly agent: PromptStudioClient
   ) {}
 
   async onModuleDestroy() {

@@ -1,26 +1,10 @@
-import { Annotation, END } from '@langchain/langgraph';
+import { Annotation } from '@langchain/langgraph';
+import type { AiResponse } from '@src/ai-response.js';
 import type { DebateInfo } from '@src/client/debate.client.js';
 import type { DebateStarterNodeRequest, GetDebateInfoToolNodeRequest } from './_requests.js';
 
 export type ChatHistory = { role: 'assistant' | 'user'; content: string };
-export type Next = {
-  /** 다음 노드 */
-  node: string;
-  /** 다음 노드에 전달할 요청 데이터 */
-  request?: DebateStarterNodeRequest | GetDebateInfoToolNodeRequest;
-};
-export enum ResponseType {
-  /** 일반 텍스트 */
-  PLAIN_ANSWER = 'plain_answer',
-  /** 토론 시작 응답 */
-  DEBATE_START_ANSWER = 'debate_start_answer',
-}
-export type Response = {
-  /** 응답 타입 */
-  type: ResponseType;
-  /** 응답 내용 */
-  content: string;
-};
+export type NodeRequest = DebateStarterNodeRequest | GetDebateInfoToolNodeRequest | null;
 
 export const DebateStateAnnotation = Annotation.Root({
   /** 지난 채팅 이력 (불변) */
@@ -48,15 +32,26 @@ export const DebateStateAnnotation = Annotation.Root({
   }),
 
   /** 최종 응답 */
-  response: Annotation<Response>({
+  response: Annotation<AiResponse>({
     reducer: (_, update) => update,
-    default: () => ({ type: ResponseType.PLAIN_ANSWER, content: '' }),
+    default: () => ({
+      status: 'SUCCESS',
+      type: 'PLAIN_ANSWER',
+      message: '기본 응답',
+      reason: '기본 응답',
+    }),
   }),
 
-  /** 다음 노드 (라우팅용) */
-  next: Annotation<Next>({
+  /** 노드 간 요청 데이터 전달용 */
+  nodeRequest: Annotation<NodeRequest>({
     reducer: (_, update) => update,
-    default: () => ({ node: END }),
+    default: () => null,
+  }),
+
+  /** 에러 메시지 (edge에서 라우팅 판단용) */
+  errorMessage: Annotation<string | null>({
+    reducer: (_, update) => update,
+    default: () => null,
   }),
 });
 
