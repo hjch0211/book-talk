@@ -1,10 +1,11 @@
 CREATE TABLE IF NOT EXISTS ai_chat
 (
-    id          UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    debate_id   VARCHAR(255),
-    created_at  TIMESTAMP NOT NULL DEFAULT now(),
-    updated_at  TIMESTAMP NOT NULL DEFAULT now(),
-    archived_at TIMESTAMP
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    debate_id       VARCHAR(255),
+    persona         VARCHAR(50)  NOT NULL, -- a, b ...
+    created_at      TIMESTAMP    NOT NULL DEFAULT now(),
+    updated_at      TIMESTAMP    NOT NULL DEFAULT now(),
+    archived_at     TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS ai_chat_message

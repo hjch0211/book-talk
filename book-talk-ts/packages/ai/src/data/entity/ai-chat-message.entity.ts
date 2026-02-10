@@ -14,15 +14,15 @@ import {
 @Entity('ai_chat_message')
 export class AiChatMessageEntity extends AuditableUuidEntity {
   /** 채팅방 ID */
-  @Column()
+  @Column({ name: 'chat_id' })
   chatId!: string;
 
   /** 역할 (user, assistant) */
-  @Column()
+  @Column({ name: 'role' })
   role!: 'user' | 'assistant';
 
   /** 메시지 내용 */
-  @Column()
+  @Column({ name: 'content' })
   content!: string;
 
   @ManyToOne(
