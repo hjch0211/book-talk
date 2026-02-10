@@ -4044,9 +4044,9 @@ kind-of@^6.0.2:
   integrity sha512-dcS1ul+9tmeD95T+x28/ehLgd9mENa3LsvDTtzm3vyBEO7RPptvAD+t44WVXaUjTBRcrpFeFlC8WCruUR456hw==
 
 "langsmith@>=0.4.0 <1.0.0":
-  version "0.4.2"
-  resolved "https://registry.yarnpkg.com/langsmith/-/langsmith-0.4.2.tgz#4f9ce6db01846d64c0f0eb895ab755662a6c0dc0"
-  integrity sha512-BvBeFgSmR9esl8x5wsiDlALiHKKPybw2wE2Hh6x1tgSZki46H9c9KI9/06LARbPhyyDu/TZU7exfg6fnhdj1Qg==
+  version "0.5.0"
+  resolved "https://registry.yarnpkg.com/langsmith/-/langsmith-0.5.0.tgz#69d2fa04f5a87cd41a98d0d254999fdfdd80f30b"
+  integrity sha512-5U9Ar/wAu5vyTBBImvMLrM9sjynHzN703oLHScEqJaXWE6gm+uti0rWDryQZ6ObnuqSNa4IOUudYej9X6VNEwg==
   dependencies:
     "@types/uuid" "^10.0.0"
     chalk "^4.1.2"
