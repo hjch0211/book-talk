@@ -11,8 +11,8 @@ export const SupervisorNodeResponseSchema = AiResponseBaseSchema.extend({
     /** Tool 호출 응답 */
     'TOOL_CALLING',
   ]),
-  /** 응답 메시지 */
-  message: z.string(),
+  /** 응답 메시지 (type이 PLAIN_ANSWER일 때만) */
+  message: z.string().optional(),
   /** 추론 과정 (프롬프트 응답 디버깅용) */
   reason: z.string(),
   /** data */
@@ -34,8 +34,8 @@ export const DebateStarterNodeResponseSchema = AiResponseBaseSchema.extend({
     /** Tool 호출 응답 */
     'TOOL_CALLING',
   ]),
-  /** 응답 메시지 */
-  message: z.string(),
+  /** 응답 메시지 (type이 PLAIN_ANSWER일 때만) */
+  message: z.string().optional(),
   /** 추론 과정 (프롬프트 응답 디버깅용) */
   reason: z.string(),
   /** data */

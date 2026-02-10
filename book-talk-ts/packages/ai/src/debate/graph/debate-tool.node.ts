@@ -30,14 +30,7 @@ export class DebateToolNode {
     if (parsedRequest.command === 'GET_DEBATE_INFO') {
       try {
         const debateInfo = await this.debateClient.findOne(parsedRequest.data.debateId);
-        return {
-          nodeRequest: {
-            command: 'DEBATE_START' as const,
-            data: { debateId: parsedRequest.data.debateId, debateInfo },
-          },
-          debateId: parsedRequest.data.debateId,
-          debateInfo,
-        };
+        return { debateInfo };
       } catch (e) {
         Logger.error('[DebateToolNode] API call failed', e);
         return { errorMessage: '[DebateToolNode] API call failed' };
