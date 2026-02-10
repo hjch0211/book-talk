@@ -27,7 +27,7 @@ class AiServerClient(
     private val logger = KotlinLogging.logger {}
 
     override suspend fun summarizeDebate(request: SummarizeRequest) {
-        val url = "${properties.baseUrl}/debate/summarization"
+        val url = "${properties.baseUrl}/debates/summarization"
 
         withContext(Dispatchers.IO) {
             httpClient.post(url) {

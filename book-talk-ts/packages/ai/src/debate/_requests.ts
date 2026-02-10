@@ -5,7 +5,7 @@ export const SummarizeRequestSchema = z.object({
   debateId: z.string(),
 });
 
-export const CreateRequestSchema = z.object({
+export const CreateChatRequestSchema = z.object({
   /** 토론방 ID */
   debateId: z.string(),
 });
@@ -18,5 +18,5 @@ export const ChatRequestSchema = z.object({
 });
 
 export type SummarizeRequest = z.infer<typeof SummarizeRequestSchema>;
-export type CreateRequest = z.infer<typeof CreateRequestSchema>;
+export type CreateChatRequest = z.infer<typeof CreateChatRequestSchema>;
 export type ChatRequest = z.infer<typeof ChatRequestSchema>;

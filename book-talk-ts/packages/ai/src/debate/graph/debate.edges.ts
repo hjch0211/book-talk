@@ -23,3 +23,18 @@ export function debateToolEdge(state: DebateState): string {
   if (state.debateInfo) return DEBATE_STARTER_NODE.description!;
   return UNKNOWN_HANDLER_NODE.description!;
 }
+
+export function personaEdge(state: DebateState): string {
+  if (state.errorMessage) return UNKNOWN_HANDLER_NODE.description!;
+  if (state.nodeRequest?.command === 'GET_DEBATE_INFO') return DEBATE_TOOL_NODE.description!;
+  if (state.response.type === 'PLAIN_ANSWER') return END;
+  return UNKNOWN_HANDLER_NODE.description!;
+}
+
+export function DebateToolInPersonaEdge(personaNodeSymbol: symbol) {
+  return (state: DebateState): string => {
+    if (state.errorMessage) return UNKNOWN_HANDLER_NODE.description!;
+    if (state.debateInfo) return personaNodeSymbol.description!;
+    return UNKNOWN_HANDLER_NODE.description!;
+  };
+}

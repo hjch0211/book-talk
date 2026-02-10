@@ -47,5 +47,25 @@ export const DebateStarterNodeResponseSchema = AiResponseBaseSchema.extend({
   }),
 });
 
+export const DebatePersonaANodeResponseSchema = AiResponseBaseSchema.extend({
+  /** 결과 상태 */
+  status: z.enum(['SUCCESS', 'FAILED']),
+  /** 메시지 타입 */
+  type: z.enum([
+    /** 일반 응답 */
+    'PLAIN_ANSWER',
+  ]),
+  /** 응답 메시지 (type이 PLAIN_ANSWER일 때만) */
+  message: z.string().optional(),
+  /** 추론 과정 (프롬프트 응답 디버깅용) */
+  reason: z.string(),
+  /** data */
+  data: z.object({
+    /** 토론 참여 응답 */
+    response: z.object({ content: z.string(), type: z.enum(['DEBATE_ANSWER']) }),
+  }),
+});
+
 export type SupervisorNodeResponse = z.infer<typeof SupervisorNodeResponseSchema>;
 export type DebateStarterNodeResponse = z.infer<typeof DebateStarterNodeResponseSchema>;
+export type DebatePersonaANodeResponse = z.infer<typeof DebatePersonaANodeResponseSchema>;

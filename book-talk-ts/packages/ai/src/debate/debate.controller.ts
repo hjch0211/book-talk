@@ -4,47 +4,48 @@ import { validate } from '@src/api-validator.js';
 import {
   type ChatRequest,
   ChatRequestSchema,
-  type CreateRequest,
-  CreateRequestSchema,
+  type CreateChatRequest,
+  CreateChatRequestSchema,
   type SummarizeRequest,
 } from '@src/debate/_requests.js';
-import type { ChatResponse } from '@src/debate/_responses.js';
+import type { CreateChatResponse } from '@src/debate/_responses.js';
 import { DEBATE_SERVICE, type DebateService } from '@src/debate/debate.service.js';
+import { DEBATE_CHAT_SERVICE, type DebateChatService } from '@src/debate/debate-chat.service.js';
 
 @Controller()
 export class DebateController {
   constructor(
     @Inject(DEBATE_SERVICE)
-    private readonly debateService: DebateService
+    private readonly debateService: DebateService,
+    @Inject(DEBATE_CHAT_SERVICE)
+    private readonly debateChatService: DebateChatService
   ) {}
   /** 토론 요약 */
-  @Post('debate/summarization')
+  @Post('debates/summarization')
   summarize(@Body() request: SummarizeRequest): ApiResult<null> {
     void this.debateService.summarize(request);
     return toResult(null);
   }
 
-  // TODO: debate-chat으로 수정
-  /** 새 채팅방 생성 */
-  @Post('debate')
-  async create(@Body() request: CreateRequest): Promise<ApiResult<{ chatId: string }>> {
-    const validated = validate(CreateRequestSchema, request);
-    const response = await this.debateService.create(validated);
+  /** AI 토론 채팅방 생성 */
+  @Post('debates/chats')
+  async createChat(@Body() request: CreateChatRequest): Promise<ApiResult<CreateChatResponse>> {
+    const validated = validate(CreateChatRequestSchema, request);
+    const response = await this.debateChatService.create(validated);
     return toResult(response);
   }
 
-  /** 토론 대화 */
-  @Post('debate/chat')
-  async chat(@Body() request: ChatRequest): Promise<ApiResult<ChatResponse>> {
+  @Post('debates/chats/messages')
+  chat(@Body() request: ChatRequest): ApiResult<null> {
     const validated = validate(ChatRequestSchema, request);
-    const response = await this.debateService.chat(validated);
-    return toResult(response);
+    void this.debateChatService.chat(validated);
+    return toResult(null);
   }
 
   /** 채팅방 삭제 */
-  @Delete('debate/:chatId')
-  async remove(@Param('chatId') chatId: string): Promise<ApiResult<null>> {
-    await this.debateService.remove(chatId);
+  @Delete('debates/chats/:chatId')
+  async removeChat(@Param('chatId') chatId: string): Promise<ApiResult<null>> {
+    await this.debateChatService.remove(chatId);
     return toResult(null);
   }
 }
