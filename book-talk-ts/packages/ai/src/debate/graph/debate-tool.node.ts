@@ -6,6 +6,7 @@ import {
   GetDebateInfoToolNodeRequestSchema,
 } from './_requests.js';
 
+// TODO: Tool 노드 도입하기. circular 상황에서 어떻게 데이터를 줄 수 있을지 생각하기. 애초에 agent 요청에는 request format을 사용하지 말자.
 export const DEBATE_TOOL_NODE = Symbol.for('DEBATE_TOOL_NODE');
 
 export class DebateToolNode {
