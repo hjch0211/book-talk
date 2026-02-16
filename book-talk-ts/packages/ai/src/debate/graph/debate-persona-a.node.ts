@@ -41,7 +41,7 @@ export class DebatePersonaANode implements LangGraphNode<DebateState> {
         call: null,
       };
     } catch (e) {
-      Logger.error('[DebatePersonaANode] LLM invoke failed', e);
+      Logger.error(`[DebatePersonaANode] LLM invoke failed - request: ${request}`, e);
       return { errorMessage: '[DebatePersonaANode] LLM invoke failed' };
     }
   }

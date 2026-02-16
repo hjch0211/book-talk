@@ -40,7 +40,7 @@ export class DebateStarterNode implements LangGraphNode<DebateState> {
         call: null,
       };
     } catch (e) {
-      Logger.error('[DebateStarterNode] LLM invoke failed', e);
+      Logger.error(`[DebateStarterNode] LLM invoke failed - debateId: ${debateId}`, e);
       return { errorMessage: '[DebateStarterNode] LLM invoke failed' };
     }
   }

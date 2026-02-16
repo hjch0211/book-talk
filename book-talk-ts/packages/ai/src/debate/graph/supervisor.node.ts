@@ -43,7 +43,7 @@ export class SupervisorNode implements LangGraphNode<DebateState> {
 
       return { errorMessage: '[SupervisorNode] unexpected response' };
     } catch (e) {
-      Logger.error('[SupervisorNode] LLM invoke failed', e);
+      Logger.error(`[SupervisorNode] LLM invoke failed - request: ${request}`, e);
       return { errorMessage: '[SupervisorNode] LLM invoke failed' };
     }
   }

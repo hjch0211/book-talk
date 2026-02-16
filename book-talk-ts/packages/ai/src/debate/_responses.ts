@@ -12,15 +12,15 @@ export const SupervisorAgentResponseSchema = AiResponseBaseSchema.extend({
     'TOOL_CALLING',
   ]),
   /** 응답 메시지 (type이 PLAIN_ANSWER일 때만) */
-  message: z.string().optional(),
+  message: z.string().nullable(),
   /** 추론 과정 (프롬프트 응답 디버깅용) */
   reason: z.string(),
   /** data */
   data: z.object({
     /** 하위 agent 호출이 필요할 경우 명령 */
-    command: z.enum(['DEBATE_START']).optional(),
+    command: z.enum(['DEBATE_START']).nullable(),
     /** 하위 agent 호출이 필요 없을 경우 응답 */
-    response: z.object({ content: z.string(), type: z.enum(['PLAIN_ANSWER']) }).optional(),
+    response: z.object({ content: z.string(), type: z.enum(['PLAIN_ANSWER']) }).nullable(),
   }),
 });
 
@@ -35,15 +35,15 @@ export const DebateStarterAgentResponseSchema = AiResponseBaseSchema.extend({
     'TOOL_CALLING',
   ]),
   /** 응답 메시지 (type이 PLAIN_ANSWER일 때만) */
-  message: z.string().optional(),
+  message: z.string().nullable(),
   /** 추론 과정 (프롬프트 응답 디버깅용) */
   reason: z.string(),
   /** data */
   data: z.object({
     /** 하위 agent 호출이 필요할 경우 명령 */
-    command: z.enum(['GET_DEBATE_INFO']).optional(),
+    command: z.enum(['GET_DEBATE_INFO']).nullable(),
     /** 하위 agent 호출이 필요 없을 경우 응답 */
-    response: z.object({ content: z.string(), type: z.enum(['DEBATE_START_ANSWER']) }).optional(),
+    response: z.object({ content: z.string(), type: z.enum(['DEBATE_START_ANSWER']) }).nullable(),
   }),
 });
 
@@ -56,7 +56,7 @@ export const DebatePersonaAAgentResponseSchema = AiResponseBaseSchema.extend({
     'PLAIN_ANSWER',
   ]),
   /** 응답 메시지 (type이 PLAIN_ANSWER일 때만) */
-  message: z.string().optional(),
+  message: z.string().nullable(),
   /** 추론 과정 (프롬프트 응답 디버깅용) */
   reason: z.string(),
   /** data */
