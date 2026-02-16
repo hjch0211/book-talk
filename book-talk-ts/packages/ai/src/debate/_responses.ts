@@ -1,7 +1,7 @@
 import { AiResponseBaseSchema } from '@src/ai-response.js';
 import { z } from 'zod';
 
-export const SupervisorNodeResponseSchema = AiResponseBaseSchema.extend({
+export const SupervisorAgentResponseSchema = AiResponseBaseSchema.extend({
   /** 결과 상태 */
   status: z.enum(['SUCCESS', 'FAILED']),
   /** 메시지 타입 */
@@ -24,7 +24,7 @@ export const SupervisorNodeResponseSchema = AiResponseBaseSchema.extend({
   }),
 });
 
-export const DebateStarterNodeResponseSchema = AiResponseBaseSchema.extend({
+export const DebateStarterAgentResponseSchema = AiResponseBaseSchema.extend({
   /** 결과 상태 */
   status: z.enum(['SUCCESS', 'FAILED']),
   /** 메시지 타입 */
@@ -47,7 +47,7 @@ export const DebateStarterNodeResponseSchema = AiResponseBaseSchema.extend({
   }),
 });
 
-export const DebatePersonaANodeResponseSchema = AiResponseBaseSchema.extend({
+export const DebatePersonaAAgentResponseSchema = AiResponseBaseSchema.extend({
   /** 결과 상태 */
   status: z.enum(['SUCCESS', 'FAILED']),
   /** 메시지 타입 */
@@ -66,6 +66,6 @@ export const DebatePersonaANodeResponseSchema = AiResponseBaseSchema.extend({
   }),
 });
 
-export type SupervisorNodeResponse = z.infer<typeof SupervisorNodeResponseSchema>;
-export type DebateStarterNodeResponse = z.infer<typeof DebateStarterNodeResponseSchema>;
-export type DebatePersonaANodeResponse = z.infer<typeof DebatePersonaANodeResponseSchema>;
+export type SupervisorAgentResponse = z.infer<typeof SupervisorAgentResponseSchema>;
+export type DebateStarterAgentResponse = z.infer<typeof DebateStarterAgentResponseSchema>;
+export type DebatePersonaAAgentResponse = z.infer<typeof DebatePersonaAAgentResponseSchema>;

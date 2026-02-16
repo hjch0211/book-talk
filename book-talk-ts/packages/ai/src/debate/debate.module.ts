@@ -1,6 +1,11 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { Module } from '@nestjs/common';
 import { PROMPT_STUDIO_CLIENT, type PromptStudioClient } from '@src/client/prompt-studio.client.js';
+import {
+  DebatePersonaAAgentResponseSchema,
+  DebateStarterAgentResponseSchema,
+  SupervisorAgentResponseSchema,
+} from '@src/debate/_responses.js';
 import { DebateController } from '@src/debate/debate.controller.js';
 import { DEBATE_SERVICE, DebateService } from '@src/debate/debate.service.js';
 import { DEBATE_CHAT_SERVICE, DebateChatService } from '@src/debate/debate-chat.service.js';
@@ -16,6 +21,7 @@ import {
   UNKNOWN_HANDLER_NODE,
   UnknownHandlerNode,
 } from '@src/debate/graph/unknown-handler.node.js';
+import { createAgent, providerStrategy } from 'langchain';
 
 @Module({
   controllers: [DebateController],
@@ -26,42 +32,60 @@ import {
     {
       provide: SUPERVISOR_NODE,
       useFactory: async (promptStudioAgent: PromptStudioClient) => {
-        /** TODO: 환경변수로 빼야됨 */
-        const model = new ChatOpenAI({ model: 'gpt-4o-mini', temperature: 0 });
         const prompt = await promptStudioAgent.getPrompt('debates/supervisor');
         if (!prompt) {
           throw new Error(`[SupervisorNodeProvider] Prompt not found`);
         }
 
-        return new SupervisorNode(model, prompt);
+        const agent = createAgent({
+          model: new ChatOpenAI({ model: 'gpt-4o-mini', temperature: 0 }).withRetry({
+            stopAfterAttempt: 3,
+          }),
+          systemPrompt: prompt,
+          responseFormat: providerStrategy(SupervisorAgentResponseSchema),
+        });
+
+        return new SupervisorNode(agent);
       },
       inject: [PROMPT_STUDIO_CLIENT],
     },
     {
       provide: DEBATE_STARTER_NODE,
       useFactory: async (promptStudio: PromptStudioClient) => {
-        const model = new ChatOpenAI({ model: 'gpt-4o-mini', temperature: 0.7 });
-
         const prompt = await promptStudio.getPrompt('debates/debate-starter');
         if (!prompt) {
           throw new Error('[DebateStarterNode] prompt not found');
         }
 
-        return new DebateStarterNode(model, prompt);
+        const agent = createAgent({
+          model: new ChatOpenAI({ model: 'gpt-4o-mini', temperature: 0.7 }).withRetry({
+            stopAfterAttempt: 3,
+          }),
+          systemPrompt: prompt,
+          responseFormat: providerStrategy(DebateStarterAgentResponseSchema),
+        });
+
+        return new DebateStarterNode(agent);
       },
       inject: [PROMPT_STUDIO_CLIENT],
     },
     {
       provide: DEBATE_PERSONA_A_NODE,
       useFactory: async (promptStudio: PromptStudioClient) => {
-        const model = new ChatOpenAI({ model: 'gpt-4o-mini', temperature: 0.7 });
-
         const prompt = await promptStudio.getPrompt('debates/persona-a');
         if (!prompt) {
           throw new Error('[DebatePersonaANode] prompt not found');
         }
 
-        return new DebatePersonaANode(model, prompt);
+        const agent = createAgent({
+          model: new ChatOpenAI({ model: 'gpt-4o-mini', temperature: 0.7 }).withRetry({
+            stopAfterAttempt: 3,
+          }),
+          systemPrompt: prompt,
+          responseFormat: providerStrategy(DebatePersonaAAgentResponseSchema),
+        });
+
+        return new DebatePersonaANode(agent);
       },
       inject: [PROMPT_STUDIO_CLIENT],
     },
