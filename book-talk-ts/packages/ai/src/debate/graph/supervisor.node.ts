@@ -1,10 +1,8 @@
 import { AIMessage, HumanMessage } from '@langchain/core/messages';
 import { Logger } from '@nestjs/common';
-import type { SupervisorAgentResponse } from '@src/debate/_responses.js';
 import type { DebateState } from '@src/debate/graph/debate.state.js';
 import type { LangGraphNode } from '@src/lang-graph-node.js';
 import type { ReactAgent } from 'langchain';
-import { SupervisorAgentResponseSchema } from '../_responses.js';
 
 export const SUPERVISOR_NODE = Symbol.for('SUPERVISOR_NODE');
 
@@ -15,9 +13,8 @@ export class SupervisorNode implements LangGraphNode<DebateState> {
     const { request, debateId, chatHistory } = state;
 
     /** LLM 호출: 기존 메시지 + 현재 요청 포함 */
-    let llmResponseText: string;
     try {
-      const llmResponse = await this.agent.invoke({
+      const response = await this.agent.invoke({
         messages: [
           ...chatHistory.map((m) =>
             m.role === 'user' ? new HumanMessage(m.content) : new AIMessage(m.content)
@@ -25,39 +22,29 @@ export class SupervisorNode implements LangGraphNode<DebateState> {
           new HumanMessage(request),
         ],
       });
-      llmResponseText = JSON.stringify(llmResponse.structuredResponse);
+
+      /** 하위 agent 호출 */
+      if (response.structuredResponse.data?.command === 'DEBATE_START') {
+        return { call: 'DEBATE_START', debateId };
+      }
+
+      /** 호출 없이 즉시 종료 */
+      if (response.structuredResponse.data?.response) {
+        return {
+          response: {
+            status: response.structuredResponse.status,
+            type: response.structuredResponse.type,
+            message: response.structuredResponse.message,
+            reason: response.structuredResponse.reason,
+            data: response.structuredResponse.data.response,
+          },
+        };
+      }
+
+      return { errorMessage: '[SupervisorNode] unexpected response' };
     } catch (e) {
       Logger.error('[SupervisorNode] LLM invoke failed', e);
       return { errorMessage: '[SupervisorNode] LLM invoke failed' };
     }
-
-    /** 응답 검증 */
-    let parsedResponse: SupervisorAgentResponse;
-    try {
-      parsedResponse = SupervisorAgentResponseSchema.parse(JSON.parse(llmResponseText));
-    } catch (e) {
-      Logger.error('[SupervisorNode] response validation failed', e);
-      return { errorMessage: '[SupervisorNode] response validation failed' };
-    }
-
-    /** 하위 agent 호출 */
-    if (parsedResponse.data?.command === 'DEBATE_START') {
-      return { call: 'DEBATE_START', debateId: debateId };
-    }
-
-    /** 호출 없이 즉시 종료 */
-    if (parsedResponse.data?.response) {
-      return {
-        response: {
-          status: parsedResponse.status,
-          type: parsedResponse.type,
-          message: parsedResponse.message,
-          reason: parsedResponse.reason,
-          data: parsedResponse.data.response,
-        },
-      };
-    }
-
-    return { errorMessage: '[SupervisorNode] unexpected response' };
   }
 }

@@ -53,6 +53,7 @@ fun PatchRoundSpeakerRequest.validate() {
 
 fun CreateAiChatRequest.validate() {
     require(debateId.isNotBlank()) { "토론 ID는 필수입니다." }
+    require(persona.isNotBlank()) { "페르소나는 필수입니다." }
 }
 
 fun AiChatRequest.validate() {

@@ -92,7 +92,7 @@ export class BooktalkDebateClient implements DebateClient {
 
   async notifyChatCompleted(chatId: string): Promise<void> {
     try {
-      await axios.post(`${this.config.baseUrl}/debates/ai/chat${chatId}/completion`);
+      await axios.post(`${this.config.baseUrl}/debates/ai/chats/${chatId}/completion`);
     } catch (error) {
       Logger.error(`토론방 AI 채팅 완성 콜백 실패: ${error}`);
       throw error;

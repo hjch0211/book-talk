@@ -29,19 +29,19 @@ export class DebateChatService {
   async chat(request: ChatRequest): Promise<void> {
     const { message, chatId } = request;
 
-    const chat = await this.chatRepository.findOneBy({ id: chatId });
-    if (!chat || !chat?.debateId) {
+    const chat = await this.chatRepository.findOne({ where: { id: chatId }, relations: ['messages'] });
+    if (!chat || !chat.debateId) {
       throw new BadRequestException(`Chat not found: ${chatId}`);
     }
 
-    await this.messageRepository.save({ chatId, role: 'user', content: message });
+    await this.messageRepository.save({ chat, role: 'user', content: message });
 
     const response = await this.debateGraph.runAiDebate(
       chat.messages?.map((e: AiChatMessageEntity) => ({ role: e.role, content: e.content })) || [],
       message,
       chat.debateId
     );
-    await this.messageRepository.save({ chatId, role: 'assistant', content: response.message });
+    await this.messageRepository.save({ chat, role: 'assistant', content: response.message });
     await this.debateClient.notifyChatCompleted(chatId);
   }
 }

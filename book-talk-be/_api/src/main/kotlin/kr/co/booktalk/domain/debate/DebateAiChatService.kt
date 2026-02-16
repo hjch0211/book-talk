@@ -46,12 +46,7 @@ class DebateAiChatService(
             ?: httpBadRequest("토론을 찾을 수 없습니다.")
         if (debate.closedAt != null) httpBadRequest("종료된 토론입니다.")
 
-        val chat = aiChatRepository.save(
-            AiChatEntity(
-                debateId = request.debateId,
-                persona = request.persona,
-            )
-        )
+        val chat = aiChatRepository.save(AiChatEntity(debate = debate, persona = request.persona))
 
         return CreateAiChatResponse(chatId = chat.id.toString())
     }
@@ -77,7 +72,7 @@ class DebateAiChatService(
     fun onChatCompleted(chatId: String) {
         val chat = aiChatRepository.findByIdOrNull(chatId.toUUID())
             ?: httpBadRequest("채팅방을 찾을 수 없습니다.")
-        debateRealtimeService.broadcastAiChatCompleted(chatId, chat.debateId!!)
+        debateRealtimeService.broadcastAiChatCompleted(chatId, chat.debate.id.toString())
     }
 
     fun remove(chatId: String) {

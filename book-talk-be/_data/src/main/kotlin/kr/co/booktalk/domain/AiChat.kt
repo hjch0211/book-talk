@@ -12,7 +12,9 @@ import java.util.*
 @Table(name = "ai_chat")
 @EntityListeners(AuditingEntityListener::class)
 class AiChatEntity(
-    val debateId: String? = null,
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "debate_id", nullable = false)
+    val debate: DebateEntity,
 
     val persona: String,
 ) : AuditableUuidEntity()
