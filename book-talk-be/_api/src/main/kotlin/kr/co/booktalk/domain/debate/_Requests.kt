@@ -75,6 +75,16 @@ data class CreateChatRequest(
     val content: String
 )
 
+data class CreateAiChatRequest(
+    val debateId: String,
+    val persona: String,
+)
+
+data class AiChatRequest(
+    val chatId: String,
+    val message: String,
+)
+
 data class JoinDebateRequest(
     override val payload: Payload
 ) : WebSocketMessage<JoinDebateRequest.Payload>() {

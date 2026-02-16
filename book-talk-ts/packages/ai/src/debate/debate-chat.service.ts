@@ -1,4 +1,5 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
+import { DEBATE_CLIENT, type DebateClient } from '@src/client/debate.client.js';
 import {
   AI_CHAT_MESSAGE_REPOSITORY,
   AI_CHAT_REPOSITORY,
@@ -6,7 +7,7 @@ import {
   type AiChatRepository,
 } from '@src/data/data.module.js';
 import type { AiChatMessageEntity } from '@src/data/entity/ai-chat-message.entity.js';
-import type { ChatRequest, CreateChatRequest } from '@src/debate/_requests.js';
+import type { ChatRequest } from '@src/debate/_requests.js';
 import { DEBATE_GRAPH, type DebateGraph } from '@src/debate/graph/debate.graph.js';
 
 export const DEBATE_CHAT_SERVICE = Symbol.for('DEBATE_CHAT_SERVICE');
@@ -19,16 +20,10 @@ export class DebateChatService {
     @Inject(AI_CHAT_REPOSITORY)
     private readonly chatRepository: AiChatRepository,
     @Inject(AI_CHAT_MESSAGE_REPOSITORY)
-    private readonly messageRepository: AiChatMessageRepository
+    private readonly messageRepository: AiChatMessageRepository,
+    @Inject(DEBATE_CLIENT)
+    private readonly debateClient: DebateClient
   ) {}
-
-  async create(request: CreateChatRequest): Promise<{ chatId: string }> {
-    const { debateId } = request;
-
-    const chat = await this.chatRepository.save({ debateId });
-
-    return { chatId: chat.id };
-  }
 
   // TODO: stream 응답, 토큰 초과 시, 메시지 요약, retry 전략
   async chat(request: ChatRequest): Promise<void> {
@@ -41,15 +36,12 @@ export class DebateChatService {
 
     await this.messageRepository.save({ chatId, role: 'user', content: message });
 
-    void this.debateGraph.runAiDebate(
+    const response = await this.debateGraph.runAiDebate(
       chat.messages?.map((e: AiChatMessageEntity) => ({ role: e.role, content: e.content })) || [],
       message,
       chat.debateId
     );
-  }
-
-  /** 채팅방 삭제 */
-  async remove(chatId: string): Promise<void> {
-    await this.chatRepository.delete({ id: chatId });
+    await this.messageRepository.save({ chatId, role: 'assistant', content: response.message });
+    await this.debateClient.notifyChatCompleted(chatId);
   }
 }

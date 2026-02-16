@@ -56,6 +56,8 @@ export interface DebateClient {
   findOne(debateId: string): Promise<DebateInfo>;
   /** 토론방 AI 요약 완성 콜백 */
   notifySummaryCompleted(debateId: string): Promise<void>;
+  /** 토론방 AI 채팅 완성 콜백 */
+  notifyChatCompleted(chatId: string): Promise<void>;
 }
 
 /** Booktalk API 설정 */
@@ -87,11 +89,22 @@ export class BooktalkDebateClient implements DebateClient {
       throw error;
     }
   }
+
+  async notifyChatCompleted(chatId: string): Promise<void> {
+    try {
+      await axios.post(`${this.config.baseUrl}/debates/ai/chat${chatId}/completion`);
+    } catch (error) {
+      Logger.error(`토론방 AI 채팅 완성 콜백 실패: ${error}`);
+      throw error;
+    }
+  }
 }
 
 /** NoOp Debate Client */
 export class NoOpDebateClient implements DebateClient {
   async notifySummaryCompleted(_debateId: string): Promise<void> {}
+
+  async notifyChatCompleted(_chatId: string): Promise<void> {}
 
   async findOne(_debateId: string): Promise<DebateInfo> {
     return {

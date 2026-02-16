@@ -63,8 +63,12 @@ export class DebateGraph {
     return result.response;
   }
 
-  async runAiDebate(chatHistory: ChatHistory[], request: string, debateId: string) {
-    await this.aiDebateGraph.invoke(
+  async runAiDebate(
+    chatHistory: ChatHistory[],
+    request: string,
+    debateId: string
+  ): Promise<AiResponse> {
+    const result = await this.aiDebateGraph.invoke(
       { chatHistory, request, debateId },
       {
         callbacks: [new CallbackHandler()],
@@ -74,6 +78,7 @@ export class DebateGraph {
         },
       }
     );
+    return result.response;
   }
 
   private createModeratorGraph() {

@@ -10,6 +10,7 @@ class DebateController(
     private val debateService: DebateService,
     private val debateRoundSpeakerService: DebateRoundSpeakerService,
     private val debateChatService: DebateChatService,
+    private val debateAiChatService: DebateAiChatService,
     private val debateRealtimeService: DebateRealtimeService
 ) {
     /** 토론 생성 */
@@ -68,10 +69,36 @@ class DebateController(
         return debateChatService.findByDebateId(debateId, authAccount).toResult()
     }
 
+    /** AI 토론 채팅방 생성 */
+    @PostMapping("/debates/ai/chats")
+    fun createAiChat(@RequestBody request: CreateAiChatRequest, authAccount: AuthAccount): HttpResult<CreateAiChatResponse> {
+        request.validate()
+        return debateAiChatService.create(request).toResult()
+    }
+
+    /** AI 토론 채팅 */
+    @PostMapping("/debates/ai/chats/messages")
+    fun aiChat(@RequestBody request: AiChatRequest, authAccount: AuthAccount) {
+        request.validate()
+        debateAiChatService.chat(request)
+    }
+
+    /** AI 토론 채팅방 삭제 */
+    @DeleteMapping("/debates/ai/chats/{chatId}")
+    fun removeAiChat(@PathVariable chatId: String, authAccount: AuthAccount) {
+        debateAiChatService.remove(chatId)
+    }
+
     // TODO: AI server로 오는 요청에만 인가 필요
     /** AI 서버 - 토론방 요약 완성 callback */
     @PostMapping("/debates/{debateId}/summary/completion")
     fun callbackAiSummary(@PathVariable debateId: String) {
         debateRealtimeService.broadcastAiSummaryCompleted(debateId)
+    }
+
+    /** AI 서버 - AI 채팅 완성 callback */
+    @PostMapping("/debates/ai/chats/{chatId}/completion")
+    fun callbackAiChat(@PathVariable chatId: String) {
+        debateAiChatService.onChatCompleted(chatId)
     }
 }

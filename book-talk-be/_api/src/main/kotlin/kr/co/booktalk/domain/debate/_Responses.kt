@@ -14,6 +14,7 @@ enum class WSResponseMessageType {
     S_SPEAKER_UPDATE,
     S_DEBATE_ROUND_UPDATE,
     S_AI_SUMMARY_COMPLETED,
+    S_AI_CHAT_COMPLETED,
     S_VOICE_JOIN,
     S_VOICE_OFFER,
     S_VOICE_ANSWER,
@@ -79,6 +80,10 @@ data class CreateChatResponse(
     val accountName: String,
     val content: String,
     val createdAt: Instant
+)
+
+data class CreateAiChatResponse(
+    val chatId: String,
 )
 
 data class ChatResponse(
@@ -206,6 +211,16 @@ data class AiSummaryCompletedResponse(
 
     data class Payload(
         val debateId: String
+    )
+}
+
+data class AiChatCompletedResponse(
+    override val payload: Payload
+) : WebSocketMessage<AiChatCompletedResponse.Payload>() {
+    override val type: String = WSResponseMessageType.S_AI_CHAT_COMPLETED.name
+
+    data class Payload(
+        val chatId: String
     )
 }
 
