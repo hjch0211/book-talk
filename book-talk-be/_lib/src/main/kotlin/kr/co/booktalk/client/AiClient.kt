@@ -13,10 +13,17 @@ import kr.co.booktalk.config.LibProperties
 interface AiClient {
     /** 토론 요약 생성 */
     suspend fun summarizeDebate(request: SummarizeRequest)
+    /** AI 토론 채팅 */
+    suspend fun chat(request: AiChatClientRequest)
 }
 
 data class SummarizeRequest(
     val debateId: String,
+)
+
+data class AiChatClientRequest(
+    val chatId: String,
+    val message: String,
 )
 
 /** book-talk-ai */
@@ -27,7 +34,7 @@ class AiServerClient(
     private val logger = KotlinLogging.logger {}
 
     override suspend fun summarizeDebate(request: SummarizeRequest) {
-        val url = "${properties.baseUrl}/debate/summarization"
+        val url = "${properties.baseUrl}/debates/summarization"
 
         withContext(Dispatchers.IO) {
             httpClient.post(url) {
@@ -41,6 +48,22 @@ class AiServerClient(
             }
         }
     }
+
+    override suspend fun chat(request: AiChatClientRequest) {
+        val url = "${properties.baseUrl}/debates/chats/messages"
+
+        withContext(Dispatchers.IO) {
+            httpClient.post(url) {
+                contentType(ContentType.Application.Json)
+                setBody(mapOf("chatId" to request.chatId, "message" to request.message))
+            }
+        }.also {
+            if (!it.status.isSuccess()) {
+                logger.error { "AI 서버 chat 호출 실패: ${it.status}" }
+                throw RuntimeException("AI 서버 호출 실패: ${it.status}")
+            }
+        }
+    }
 }
 
 class NoOpAiClient : AiClient {
@@ -48,5 +71,9 @@ class NoOpAiClient : AiClient {
 
     override suspend fun summarizeDebate(request: SummarizeRequest) {
         logger.warn { "[NoOp] summarize: $request" }
+    }
+
+    override suspend fun chat(request: AiChatClientRequest) {
+        logger.warn { "[NoOp] chat: $request" }
     }
 }

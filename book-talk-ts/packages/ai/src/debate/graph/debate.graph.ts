@@ -11,7 +11,14 @@ import {
   UNKNOWN_HANDLER_NODE,
   type UnknownHandlerNode,
 } from '@src/debate/graph/unknown-handler.node.js';
-import { debateStarterEdge, debateToolEdge, supervisorEdge } from './debate.edges.js';
+import {
+  DebateToolInPersonaEdge,
+  debateStarterEdge,
+  debateToolEdge,
+  personaEdge,
+  supervisorEdge,
+} from './debate.edges.js';
+import { DEBATE_PERSONA_A_NODE, type DebatePersonaANode } from './debate-persona-a.node.js';
 import { DEBATE_TOOL_NODE, type DebateToolNode } from './debate-tool.node.js';
 import { SUPERVISOR_NODE, type SupervisorNode } from './supervisor.node.js';
 
@@ -20,6 +27,7 @@ export const DEBATE_GRAPH = Symbol.for('DEBATE_GRAPH');
 @Injectable()
 export class DebateGraph {
   private readonly moderatorGraph: ReturnType<typeof this.createModeratorGraph>;
+  private readonly aiDebateGraph: ReturnType<typeof this.createAiDebateGraph>;
 
   constructor(
     @Inject(SUPERVISOR_NODE)
@@ -29,9 +37,12 @@ export class DebateGraph {
     @Inject(DEBATE_STARTER_NODE)
     private readonly debateStarterNode: DebateStarterNode,
     @Inject(DEBATE_TOOL_NODE)
-    private readonly debateToolNode: DebateToolNode
+    private readonly debateToolNode: DebateToolNode,
+    @Inject(DEBATE_PERSONA_A_NODE)
+    private readonly debatePersonaANode: DebatePersonaANode
   ) {
     this.moderatorGraph = this.createModeratorGraph();
+    this.aiDebateGraph = this.createAiDebateGraph();
   }
 
   async runModerator(
@@ -45,6 +56,24 @@ export class DebateGraph {
         callbacks: [new CallbackHandler()],
         metadata: {
           runName: 'debate-moderator',
+          tags: ['debate'],
+        },
+      }
+    );
+    return result.response;
+  }
+
+  async runAiDebate(
+    chatHistory: ChatHistory[],
+    request: string,
+    debateId: string
+  ): Promise<AiResponse> {
+    const result = await this.aiDebateGraph.invoke(
+      { chatHistory, request, debateId },
+      {
+        callbacks: [new CallbackHandler()],
+        metadata: {
+          runName: 'debate-ai-debate',
           tags: ['debate'],
         },
       }
@@ -84,5 +113,40 @@ export class DebateGraph {
       ])
       .addEdge(UNKNOWN_HANDLER_NODE.description!, END)
       .compile();
+  }
+
+  private createAiDebateGraph() {
+    // TODO: 페르소나 추가 필요
+    const { node, symbol } = this.getPersonaConfig('a');
+
+    return new StateGraph(DebateStateAnnotation)
+      .addNode(symbol.description!, node.process.bind(node))
+      .addNode(
+        DEBATE_TOOL_NODE.description!,
+        this.debateToolNode.getDebateStarterTool.bind(this.debateToolNode)
+      )
+      .addNode(
+        UNKNOWN_HANDLER_NODE.description!,
+        this.unknownHandlerNode.process.bind(this.unknownHandlerNode)
+      )
+      .addEdge(START, symbol.description!)
+      .addConditionalEdges(symbol.description!, personaEdge, [
+        DEBATE_TOOL_NODE.description!,
+        UNKNOWN_HANDLER_NODE.description!,
+        END,
+      ])
+      .addConditionalEdges(DEBATE_TOOL_NODE.description!, DebateToolInPersonaEdge(symbol), [
+        symbol.description!,
+        UNKNOWN_HANDLER_NODE.description!,
+      ])
+      .addEdge(UNKNOWN_HANDLER_NODE.description!, END)
+      .compile();
+  }
+
+  private getPersonaConfig(persona: 'a') {
+    switch (persona) {
+      case 'a':
+        return { node: this.debatePersonaANode, symbol: DEBATE_PERSONA_A_NODE };
+    }
   }
 }

@@ -16,7 +16,7 @@ export const AiResponseBaseSchema = z.object({
     'TOOL_CALLING',
   ]),
   /** 응답 메시지 */
-  message: z.string(),
+  message: z.string().optional(),
   /** 추론 과정 (프롬프트 응답 디버깅용) */
   reason: z.string(),
   /** data */

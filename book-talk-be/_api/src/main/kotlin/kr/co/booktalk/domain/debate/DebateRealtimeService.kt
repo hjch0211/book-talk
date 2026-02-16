@@ -119,6 +119,15 @@ class DebateRealtimeService(
         broadcastToDebateRoom(debateId, objectMapper.writeValueAsString(response))
     }
 
+    fun broadcastAiChatCompleted(chatId: String, debateId: String) {
+        val response = AiChatCompletedResponse(
+            payload = AiChatCompletedResponse.Payload(
+                chatId = chatId
+            )
+        )
+        broadcastToDebateRoom(debateId, objectMapper.writeValueAsString(response))
+    }
+
     fun broadcastAiSummaryCompleted(debateId: String) {
         val response = AiSummaryCompletedResponse(
             payload = AiSummaryCompletedResponse.Payload(

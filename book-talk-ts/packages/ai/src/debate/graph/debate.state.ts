@@ -1,10 +1,9 @@
 import { Annotation } from '@langchain/langgraph';
 import type { AiResponse } from '@src/ai-response.js';
 import type { DebateInfo } from '@src/client/debate.client.js';
-import type { DebateStarterNodeRequest, GetDebateInfoToolNodeRequest } from './_requests.js';
 
 export type ChatHistory = { role: 'assistant' | 'user'; content: string };
-export type NodeRequest = DebateStarterNodeRequest | GetDebateInfoToolNodeRequest | null;
+export type Call = 'DEBATE_START' | 'GET_DEBATE_INFO' | null;
 
 export const DebateStateAnnotation = Annotation.Root({
   /** 지난 채팅 이력 (불변) */
@@ -42,8 +41,8 @@ export const DebateStateAnnotation = Annotation.Root({
     }),
   }),
 
-  /** 노드 간 요청 데이터 전달용 */
-  nodeRequest: Annotation<NodeRequest>({
+  /** 다른 노드 호출 */
+  call: Annotation<Call>({
     reducer: (_, update) => update,
     default: () => null,
   }),
