@@ -13,6 +13,20 @@ concurrency:
   group: deploy-ai
   cancel-in-progress: false
 
+env:
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  DB_HOST: ${{ secrets.AI_DB_HOST }}
+  DB_PORT: ${{ secrets.AI_DB_PORT }}
+  DB_NAME: ${{ secrets.DB_NAME }}
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  JPA_SHOW_SQL: ${{ vars.JPA_SHOW_SQL }}
+  LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
+  LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
+  LANGFUSE_BASE_URL: ${{ vars.LANGFUSE_BASE_URL }}
+  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  BOOKTALK_API_URL: ${{ vars.AI_BOOKTALK_API_URL }}
+
 jobs:
   deploy:
     name: Deploy AI Server
@@ -28,19 +42,12 @@ jobs:
         with:
           ref: ${{ github.event.inputs.branch }}
 
-      - name: Copy env file from server
-        run: cp ~/book-talk/book-talk-ts/packages/ai/.env.production packages/ai/.env.production
-
       - name: Validate prerequisites
         run: |
           docker --version
           docker compose version
           node --version
           yarn --version
-          if [ ! -f packages/ai/.env.production ]; then
-            echo "ERROR: packages/ai/.env.production not found"
-            exit 1
-          fi
 
       - name: Ensure Docker network exists
         run: docker network inspect booktalk-internal >/dev/null 2>&1 || docker network create booktalk-internal
@@ -52,14 +59,10 @@ jobs:
         run: yarn ai build
 
       - name: Stop existing AI container
-        run: |
-          export $(grep -v '^#' packages/ai/.env.production | xargs)
-          docker compose down
+        run: docker compose down
 
       - name: Build and start AI container
-        run: |
-          export $(grep -v '^#' packages/ai/.env.production | xargs)
-          docker compose up -d --build
+        run: docker compose up -d --build
 
       - name: Wait and health check
         run: |

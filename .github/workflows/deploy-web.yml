@@ -22,23 +22,21 @@ jobs:
         working-directory: book-talk-ts
     environment:
       name: production
+    env:
+      VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL }}
+      VITE_APP_ENV: production
+      VITE_CLOUDFLARE_TURN_URL: ${{ secrets.VITE_CLOUDFLARE_TURN_URL }}
+      VITE_CLOUDFLARE_API_TOKEN: ${{ secrets.VITE_CLOUDFLARE_API_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           ref: ${{ github.event.inputs.branch }}
 
-      - name: Copy env file from server
-        run: cp ~/book-talk/book-talk-ts/packages/web/.env.production packages/web/.env.production
-
       - name: Validate prerequisites
         run: |
           node --version
           yarn --version
-          if [ ! -f packages/web/.env.production ]; then
-            echo "ERROR: packages/web/.env.production not found"
-            exit 1
-          fi
 
       - name: Install dependencies
         run: yarn install

@@ -40,7 +40,8 @@ import { createAgent, providerStrategy } from 'langchain';
         const agent = createAgent({
           model: new ChatOpenAI({ model: 'gpt-4o-mini', temperature: 0 }).withRetry({
             stopAfterAttempt: 3,
-            onFailedAttempt: (e) => Logger.warn(`[SupervisorNode] retry ${e.attemptNumber}/3 - ${e.message}`),
+            onFailedAttempt: (e) =>
+              Logger.warn(`[SupervisorNode] retry ${e.attemptNumber}/3 - ${e.message}`),
           }),
           systemPrompt: prompt,
           responseFormat: providerStrategy(SupervisorAgentResponseSchema),
@@ -61,7 +62,8 @@ import { createAgent, providerStrategy } from 'langchain';
         const agent = createAgent({
           model: new ChatOpenAI({ model: 'gpt-4o-mini', temperature: 0.7 }).withRetry({
             stopAfterAttempt: 3,
-            onFailedAttempt: (e) => Logger.warn(`[DebateStarterNode] retry ${e.attemptNumber}/3 - ${e.message}`),
+            onFailedAttempt: (e) =>
+              Logger.warn(`[DebateStarterNode] retry ${e.attemptNumber}/3 - ${e.message}`),
           }),
           systemPrompt: prompt,
           responseFormat: providerStrategy(DebateStarterAgentResponseSchema),
@@ -82,7 +84,8 @@ import { createAgent, providerStrategy } from 'langchain';
         const agent = createAgent({
           model: new ChatOpenAI({ model: 'gpt-4o-mini', temperature: 0.7 }).withRetry({
             stopAfterAttempt: 3,
-            onFailedAttempt: (e) => Logger.warn(`[DebatePersonaANode] retry ${e.attemptNumber}/3 - ${e.message}`),
+            onFailedAttempt: (e) =>
+              Logger.warn(`[DebatePersonaANode] retry ${e.attemptNumber}/3 - ${e.message}`),
           }),
           systemPrompt: prompt,
           responseFormat: providerStrategy(DebatePersonaAAgentResponseSchema),
