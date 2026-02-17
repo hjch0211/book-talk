@@ -29,7 +29,10 @@ export class DebateChatService {
   async chat(request: ChatRequest): Promise<void> {
     const { message, chatId } = request;
 
-    const chat = await this.chatRepository.findOne({ where: { id: chatId }, relations: ['messages'] });
+    const chat = await this.chatRepository.findOne({
+      where: { id: chatId },
+      relations: ['messages'],
+    });
     if (!chat || !chat.debateId) {
       throw new BadRequestException(`Chat not found: ${chatId}`);
     }

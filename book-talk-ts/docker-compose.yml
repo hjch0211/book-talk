@@ -19,6 +19,7 @@ services:
       LANGFUSE_SECRET_KEY: ${LANGFUSE_SECRET_KEY}
       LANGFUSE_BASE_URL: ${LANGFUSE_BASE_URL}
       BOOKTALK_API_URL: ${BOOKTALK_API_URL}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
       NODE_ENV: production
     networks:
       - booktalk-internal

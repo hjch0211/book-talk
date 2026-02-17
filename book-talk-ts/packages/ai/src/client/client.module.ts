@@ -8,6 +8,12 @@ import {
   NoOpDebateClient,
 } from '@src/client/debate.client.js';
 import {
+  MONITOR_CLIENT,
+  type MonitorClient,
+  NoOpMonitorClient,
+  SlackMonitorClient,
+} from '@src/client/monitor.client.js';
+import {
   LangfusePromptStudioClient,
   NoOpPromptStudioClient,
   PROMPT_STUDIO_CLIENT,
@@ -15,6 +21,7 @@ import {
 } from '@src/client/prompt-studio.client.js';
 import { BooktalkProperties } from '@src/config/booktalk.properties.js';
 import { LangfuseProperties } from '@src/config/langfuse.properties.js';
+import { SlackProperties } from '@src/config/slack.properties.js';
 
 @Global()
 @Module({
@@ -62,8 +69,19 @@ import { LangfuseProperties } from '@src/config/langfuse.properties.js';
         return new NoOpDebateClient();
       },
     },
+    {
+      provide: MONITOR_CLIENT,
+      inject: [SlackProperties],
+      useFactory: (props: SlackProperties): MonitorClient => {
+        if (props.isValid()) {
+          return new SlackMonitorClient(props.webhookUrl);
+        }
+        Logger.warn('Slack 설정이 유효하지 않아 NoOp MonitorClient가 사용됩니다.');
+        return new NoOpMonitorClient();
+      },
+    },
   ],
-  exports: [PROMPT_STUDIO_CLIENT, DEBATE_CLIENT],
+  exports: [PROMPT_STUDIO_CLIENT, DEBATE_CLIENT, MONITOR_CLIENT],
 })
 export class ClientModule implements OnModuleDestroy {
   constructor(
