@@ -1,4 +1,5 @@
 import { Inject, Injectable } from '@nestjs/common';
+import { DEBATE_CLIENT, type DebateClient } from '@src/client/debate.client.js';
 import { DEBATE_SUMMARIZATION_REPOSITORY } from '@src/data/data.module.js';
 import type { DebateSummarizationRepository } from '@src/data/entity/debate-summarization.entity.js';
 import type { SummarizeRequest } from '@src/debate/_requests.js';
