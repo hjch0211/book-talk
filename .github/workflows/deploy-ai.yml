@@ -15,17 +15,17 @@ concurrency:
 
 env:
   OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-  DB_HOST: ${{ secrets.AI_DB_HOST }}
-  DB_PORT: ${{ secrets.AI_DB_PORT }}
+  DB_HOST: ${{ secrets.DB_HOST }}
+  DB_PORT: ${{ secrets.DB_PORT }}
   DB_NAME: ${{ secrets.DB_NAME }}
   DB_USER: ${{ secrets.DB_USER }}
   DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
-  JPA_SHOW_SQL: ${{ vars.JPA_SHOW_SQL }}
+  JPA_SHOW_SQL: ${{ secrets.JPA_SHOW_SQL }}
   LANGFUSE_SECRET_KEY: ${{ secrets.LANGFUSE_SECRET_KEY }}
   LANGFUSE_PUBLIC_KEY: ${{ secrets.LANGFUSE_PUBLIC_KEY }}
-  LANGFUSE_BASE_URL: ${{ vars.LANGFUSE_BASE_URL }}
+  LANGFUSE_BASE_URL: ${{ secrets.LANGFUSE_BASE_URL }}
   SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-  BOOKTALK_API_URL: ${{ vars.AI_BOOKTALK_API_URL }}
+  BOOKTALK_API_URL: ${{ secrets.BOOKTALK_API_URL }}
 
 jobs:
   deploy:
