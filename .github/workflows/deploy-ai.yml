@@ -1,13 +1,13 @@
 name: Deploy AI Server
+run-name: Deploy AI to ${{ inputs.environment }} by @${{ github.triggering_actor }}
 
 on:
   workflow_dispatch:
     inputs:
-      branch:
-        description: 'Branch to deploy'
+      environment:
+        description: 'Select Environment'
+        type: environment
         required: true
-        default: 'main'
-        type: string
 
 concurrency:
   group: deploy-ai
@@ -35,7 +35,7 @@ jobs:
       run:
         working-directory: book-talk-ts
     environment:
-      name: production
+      name: ${{ inputs.environment }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

@@ -1,13 +1,13 @@
 name: Deploy Web (Frontend)
+run-name: Deploy Web to ${{ inputs.environment }} by @${{ github.triggering_actor }}
 
 on:
   workflow_dispatch:
     inputs:
-      branch:
-        description: 'Branch to deploy'
+      environment:
+        description: 'Select Environment'
+        type: environment
         required: true
-        default: 'main'
-        type: string
 
 concurrency:
   group: deploy-web
@@ -21,7 +21,7 @@ jobs:
       run:
         working-directory: book-talk-ts
     environment:
-      name: production
+      name: ${{ inputs.environment }}
     env:
       VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
       VITE_APP_ENV: production
