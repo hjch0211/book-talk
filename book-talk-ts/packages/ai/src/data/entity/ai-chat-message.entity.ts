@@ -21,10 +21,7 @@ export class AiChatMessageEntity extends AuditableUuidEntity {
   @Column({ name: 'content' })
   content!: string;
 
-  @ManyToOne(
-    () => AiChatEntity,
-    (chat) => chat.messages
-  )
+  @ManyToOne(() => AiChatEntity)
   @JoinColumn({ name: 'chat_id' })
   chat?: Relation<AiChatEntity>;
 }
