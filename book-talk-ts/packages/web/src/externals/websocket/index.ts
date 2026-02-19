@@ -1,4 +1,5 @@
-export { DebateWebSocketClient, type WebSocketHandlers } from './client';
+export { AiChatWebSocketClient, type AiChatWebSocketHandlers } from './aiChat';
+export { DebateWebSocketClient, type DebateWebSocketHandlers } from './debate';
 export type {
   ChatMessageResponse,
   CurrentSpeakerInfo,
