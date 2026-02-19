@@ -46,21 +46,6 @@ export const useAiChatRealtimeConnection = () => {
     });
   });
 
-  /** WebSocket 해제 */
-  const disconnect = useEffectEvent(() => {
-    wsClientRef.current?.disconnect();
-    wsClientRef.current = null;
-    setIsConnected(false);
-  });
-
-  /** 언마운트 시 WS 정리 */
-  useEffect(() => {
-    return () => {
-      wsClientRef.current?.disconnect();
-      wsClientRef.current = null;
-    };
-  }, []);
-
   /** 하트비트 (5초 간격) */
   useEffect(() => {
     if (!isConnected || !wsClientRef.current) return;
@@ -82,7 +67,9 @@ export const useAiChatRealtimeConnection = () => {
   useEffect(() => {
     connect();
     return () => {
-      disconnect();
+      wsClientRef.current?.disconnect();
+      wsClientRef.current = null;
+      setIsConnected(false);
     };
   }, []);
 
