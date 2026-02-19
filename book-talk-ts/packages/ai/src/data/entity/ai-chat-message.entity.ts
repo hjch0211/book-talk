@@ -21,6 +21,10 @@ export class AiChatMessageEntity extends AuditableUuidEntity {
   @Column({ name: 'content' })
   content!: string;
 
+  /** 메시지 상태 (PENDING, COMPLETED, FAILED) */
+  @Column({ name: 'status', default: "'COMPLETED'" })
+  status!: 'PENDING' | 'COMPLETED' | 'FAILED';
+
   @ManyToOne(() => AiChatEntity)
   @JoinColumn({ name: 'chat_id' })
   chat?: Relation<AiChatEntity>;

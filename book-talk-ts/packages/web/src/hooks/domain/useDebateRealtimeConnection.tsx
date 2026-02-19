@@ -1,3 +1,4 @@
+import { findOneAiChatQueryOptions } from '@src/externals/aiChat';
 import {
   type Debate,
   findOneDebateQueryOptions,
@@ -13,10 +14,10 @@ import {
   WSRequestMessageType,
   WSResponseMessageType,
 } from '@src/externals/websocket';
-import {useModal, useWebRTC} from '@src/hooks';
+import { useModal, useWebRTC } from '@src/hooks';
+import AiSummarizationModal from '@src/routes/Debate/_components/modal/AiSummarizationModal.tsx';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import AiSummarizationModal from "@src/routes/Debate/_components/modal/AiSummarizationModal.tsx";
 
 export interface OnlineMember extends MemberInfo {
   isMe: boolean;
@@ -53,7 +54,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
   const [isDebateJoined, setIsDebateJoined] = useState<boolean>(false);
   const [raisedHands, setRaisedHands] = useState<RaisedHandInfo[]>([]);
   const wsClientRef = useRef<DebateWebSocketClient | null>(null);
-  const { openModal } = useModal()
+  const { openModal } = useModal();
 
   // Voice 연결 상태
   const [voiceConnectionStatus, setVoiceConnectionStatus] =
@@ -254,20 +255,29 @@ export const useDebateRealtimeConnection = (props: Props) => {
     }
   });
 
+  /** AI 채팅 완성 */
+  const onAiChatCompleted = useEffectEvent((chatId: string) => {
+    void queryClient.invalidateQueries({
+      queryKey: findOneAiChatQueryOptions(chatId).queryKey,
+    });
+  });
+
   /** AI 요약 완성 */
   const onAiSummaryCompleted = useEffectEvent(async () => {
     if (debateId) {
-      await queryClient.fetchQuery({
-        ...findOneDebateQueryOptions(debateId),
-        staleTime: 0,
-      }).then(debate => {
-        openModal(AiSummarizationModal, {
-          bookTitle: `${debate.bookInfo.title} - ${debate.bookInfo.author}`,
-          topic: debate.topic,
-          bookImageUrl: debate.bookInfo.imageUrl,
-          summarization: debate.aiSummarized ?? '',
+      await queryClient
+        .fetchQuery({
+          ...findOneDebateQueryOptions(debateId),
+          staleTime: 0,
+        })
+        .then((debate) => {
+          openModal(AiSummarizationModal, {
+            bookTitle: `${debate.bookInfo.title} - ${debate.bookInfo.author}`,
+            topic: debate.topic,
+            bookImageUrl: debate.bookInfo.imageUrl,
+            summarization: debate.aiSummarized ?? '',
+          });
         });
-      })
     }
   });
 
@@ -306,6 +316,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
       onVoiceSignaling: handleVoiceSignaling,
       onChatMessage,
       onAiSummaryCompleted,
+      onAiChatCompleted,
     });
 
     return () => {

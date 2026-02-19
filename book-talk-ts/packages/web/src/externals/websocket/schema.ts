@@ -26,6 +26,8 @@ export enum WSResponseMessageType {
   S_VOICE_OFFER = 'S_VOICE_OFFER',
   S_VOICE_ANSWER = 'S_VOICE_ANSWER',
   S_VOICE_ICE_CANDIDATE = 'S_VOICE_ICE_CANDIDATE',
+  S_AI_CHAT_COMPLETED = 'S_AI_CHAT_COMPLETED',
+  S_USER_MESSAGE_SAVED = 'S_USER_MESSAGE_SAVED',
 }
 
 // ============ Request Payload Schemas ============
@@ -203,6 +205,14 @@ export const AiSummaryCompletedPayloadSchema = z.object({
   debateId: z.string(),
 });
 
+export const AiChatCompletedPayloadSchema = z.object({
+  chatId: z.string(),
+});
+
+export const UserMessageSavedPayloadSchema = z.object({
+  chatId: z.string(),
+});
+
 export const VoiceJoinResponsePayloadSchema = z.object({
   debateId: z.string(),
   fromId: z.string(),
@@ -271,6 +281,16 @@ export const AiSummaryCompletedResponseSchema = z.object({
   payload: AiSummaryCompletedPayloadSchema,
 });
 
+export const AiChatCompletedResponseSchema = z.object({
+  type: z.literal(WSResponseMessageType.S_AI_CHAT_COMPLETED),
+  payload: AiChatCompletedPayloadSchema,
+});
+
+export const UserMessageSavedResponseSchema = z.object({
+  type: z.literal(WSResponseMessageType.S_USER_MESSAGE_SAVED),
+  payload: UserMessageSavedPayloadSchema,
+});
+
 export const VoiceJoinResponseSchema = z.object({
   type: z.literal(WSResponseMessageType.S_VOICE_JOIN),
   payload: VoiceJoinResponsePayloadSchema,
@@ -313,6 +333,7 @@ export const WebSocketMessageSchema = z.discriminatedUnion('type', [
   SpeakerUpdateResponseSchema,
   DebateRoundUpdateResponseSchema,
   AiSummaryCompletedResponseSchema,
+  AiChatCompletedResponseSchema,
   VoiceJoinResponseSchema,
   VoiceOfferResponseSchema,
   VoiceAnswerResponseSchema,
@@ -343,6 +364,7 @@ export type ChatMessageResponse = z.infer<typeof ChatMessageResponseSchema>;
 export type SpeakerUpdateResponse = z.infer<typeof SpeakerUpdateResponseSchema>;
 export type DebateRoundUpdateResponse = z.infer<typeof DebateRoundUpdateResponseSchema>;
 export type AiSummaryCompletedResponse = z.infer<typeof AiSummaryCompletedResponseSchema>;
+export type AiChatCompletedResponse = z.infer<typeof AiChatCompletedResponseSchema>;
 export type VoiceJoinResponse = z.infer<typeof VoiceJoinResponseSchema>;
 export type VoiceOfferResponse = z.infer<typeof VoiceOfferResponseSchema>;
 export type VoiceAnswerResponse = z.infer<typeof VoiceAnswerResponseSchema>;

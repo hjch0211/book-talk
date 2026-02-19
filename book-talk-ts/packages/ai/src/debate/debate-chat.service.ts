@@ -42,19 +42,35 @@ export class DebateChatService {
       chat: { id: chatId },
       role: 'user',
       content: message,
+      status: 'COMPLETED',
     });
 
-    const response = await this.debateGraph.runAiDebate(
-      messages.map((e) => ({ role: e.role, content: e.content })),
-      message,
-      chat.debateId
-    );
-
-    await this.messageRepository.save({
+    const pendingMessage = await this.messageRepository.save({
       chat: { id: chatId },
       role: 'assistant',
-      content: response.message || '',
+      content: '',
+      status: 'PENDING',
     });
+    void this.debateClient.notifyUserMessageSaved(chatId);
+
+    try {
+      const response = await this.debateGraph.runAiDebate(
+        messages.map((e) => ({ role: e.role, content: e.content })),
+        message,
+        chat.debateId
+      );
+
+      await this.messageRepository.update(pendingMessage.id, {
+        content: response.message || '',
+        status: 'COMPLETED',
+      });
+    } catch (error) {
+      await this.messageRepository.update(pendingMessage.id, {
+        status: 'FAILED',
+      });
+      throw error;
+    }
+
     await this.debateClient.notifyChatCompleted(chatId);
   }
 }
