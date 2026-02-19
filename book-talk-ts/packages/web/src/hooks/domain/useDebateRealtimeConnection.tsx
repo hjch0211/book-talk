@@ -1,3 +1,4 @@
+import { findOneAiChatQueryOptions } from '@src/externals/aiChat';
 import {
   type Debate,
   findOneDebateQueryOptions,
@@ -264,6 +265,13 @@ export const useDebateRealtimeConnection = (props: Props) => {
       onRoundStartBackdrop(roundType);
     }
 
+   /** AI 채팅 완성 */
+   const onAiChatCompleted = useEffectEvent((chatId: string) => {
+      void queryClient.invalidateQueries({
+          queryKey: findOneAiChatQueryOptions(chatId).queryKey,
+      });
+   });
+
     if (roundType === 'PRESENTATION' && debateId) {
       await queryClient
         .fetchQuery({ ...findOneDebateQueryOptions(debateId), staleTime: 0 })
@@ -322,6 +330,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
       onVoiceSignaling: handleVoiceSignaling,
       onChatMessage,
       onDebateStartNotified,
+      onAiChatCompleted,
     });
 
     return () => {

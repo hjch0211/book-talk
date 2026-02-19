@@ -15,9 +15,9 @@ export class DebateWebSocketClient {
   private reconnectAttempts = 0;
   private maxReconnectAttempts = 2;
   private reconnectDelay = 3000;
-  private handlers: WebSocketHandlers = {};
+  private handlers: DebateWebSocketHandlers = {};
 
-  connect(debateId: string, handlers: WebSocketHandlers) {
+  connect(debateId: string, handlers: DebateWebSocketHandlers) {
     this.debateId = debateId;
     this.handlers = handlers;
     this.establishConnection();
@@ -169,7 +169,7 @@ export class DebateWebSocketClient {
     const baseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
     const wsUrl = baseUrl.replace(/^http/, 'ws');
     const token = localStorage.getItem('accessToken');
-    return `${wsUrl}/ws?debateId=${this.debateId}&token=${encodeURIComponent(token || '')}`;
+    return `${wsUrl}/ws?token=${encodeURIComponent(token || '')}`;
   }
 
   private sendJoinMessage() {
@@ -188,7 +188,6 @@ export class DebateWebSocketClient {
             },
           };
 
-          // 약간의 지연 후 메시지 전송
           setTimeout(() => {
             this.ws?.send(JSON.stringify(joinMessage));
           }, 100);
@@ -223,7 +222,6 @@ export class DebateWebSocketClient {
         if (this.handlers.onDebateRoundUpdate) {
           this.handlers.onDebateRoundUpdate(message);
 
-          // currentSpeaker 정보가 있으면 SPEAKER_UPDATE로도 처리
           if (this.handlers.onSpeakerUpdate && message.payload?.currentSpeaker) {
             const speakerUpdate: SpeakerUpdateResponse = {
               type: WSResponseMessageType.S_SPEAKER_UPDATE,
@@ -266,6 +264,11 @@ export class DebateWebSocketClient {
           this.handlers.onDebateStartNotified();
         }
         break;
+      case WSResponseMessageType.S_AI_CHAT_COMPLETED:
+        if (this.handlers.onAiChatCompleted && message.payload) {
+          this.handlers.onAiChatCompleted(message.payload.chatId);
+        }
+        break;
       default:
     }
   }
@@ -283,7 +286,7 @@ export class DebateWebSocketClient {
   }
 }
 
-export interface WebSocketHandlers {
+export interface DebateWebSocketHandlers {
   onOnlineMembersUpdate?: (onlineAccountIds: Set<string>) => void;
   onConnectionStatus?: (connected: boolean) => void;
   onJoinSuccess?: () => void;
@@ -293,4 +296,5 @@ export interface WebSocketHandlers {
   onHandRaiseUpdate?: (raisedHands: RaisedHandInfo[]) => void;
   onChatMessage?: (chatId: number) => void;
   onDebateStartNotified?: () => void;
+  onAiChatCompleted?: (chatId: string) => void;
 }
