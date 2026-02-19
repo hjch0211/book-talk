@@ -1,4 +1,8 @@
-import { AiChatCompletedPayloadSchema, UserMessageSavedPayloadSchema, WSResponseMessageType } from './schema';
+import {
+  AiChatCompletedPayloadSchema,
+  UserMessageSavedPayloadSchema,
+  WSResponseMessageType,
+} from './schema';
 
 export class AiChatWebSocketClient {
   private ws: WebSocket | null = null;
@@ -19,7 +23,7 @@ export class AiChatWebSocketClient {
   }
 
   disconnect() {
-    if (this.ws) {
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       this.ws.close();
       this.ws = null;
     }

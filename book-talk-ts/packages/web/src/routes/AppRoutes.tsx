@@ -12,6 +12,7 @@ import { HomePage } from '@src/routes/Home';
 import { LandingPage } from '@src/routes/Landing';
 import { MyPage } from '@src/routes/MyPage';
 import { Route, Routes } from 'react-router-dom';
+import { DebateFull, DebatePage, MainPage, NotFound } from './index.ts';
 
 export function AppRoutes() {
   return (
@@ -26,7 +27,9 @@ export function AppRoutes() {
       <Route path="/terms-of-use" element={<TermsOfUsePage />} />
       <Route path="/my-page" element={<MyPage />} />
       <Route path="/debate/:debateId" element={<DebatePage />} />
-      <Route path="/debate-full" element={<DebateFull />} />
+    <Route path="/ai-chat" element={<AiChatPage />} />
+    <Route path="/ai-chat/:chatId" element={<AiChatRoomPage />} />
+    <Route path="/debate-full" element={<DebateFull />} />
       <Route path="/debate-expired" element={<DebateExpired />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
