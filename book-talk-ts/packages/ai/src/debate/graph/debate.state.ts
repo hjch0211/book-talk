@@ -6,21 +6,21 @@ export type ChatHistory = { role: 'assistant' | 'user'; content: string };
 export type Call = 'DEBATE_START' | 'GET_DEBATE_INFO' | null;
 
 export const DebateStateAnnotation = Annotation.Root({
-  /** 지난 채팅 이력 (불변) */
+  /** 지난 채팅 이력 */
   chatHistory: Annotation<ChatHistory[]>({
-    reducer: (current, update) => current || update,
+    reducer: (_, update) => update,
     default: () => [],
   }),
 
-  /** 사용자 요청 메시지 (불변) */
+  /** 사용자 요청 메시지 */
   request: Annotation<string>({
-    reducer: (current, update) => current || update,
+    reducer: (_, update) => update,
     default: () => '',
   }),
 
-  /** 토론방 ID (불변) */
+  /** 토론방 ID */
   debateId: Annotation<string>({
-    reducer: (current, update) => current || update,
+    reducer: (_, update) => update,
     default: () => '',
   }),
 
