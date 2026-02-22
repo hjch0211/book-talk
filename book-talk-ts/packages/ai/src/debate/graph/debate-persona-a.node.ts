@@ -11,6 +11,7 @@ export class DebatePersonaANode implements LangGraphNode<DebateState> {
 
   async process(state: DebateState): Promise<Partial<DebateState>> {
     const { request, debateInfo, chatHistory } = state;
+    console.log(request, debateInfo, chatHistory);
 
     /** debateInfo가 없으면 GetDebateInfoTool 호출 */
     if (!debateInfo) {
