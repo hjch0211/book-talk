@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-import { AiChatMessageEntity } from '@src/data/entity/ai-chat-message.entity.js';
 import { AuditableUuidEntity } from '@src/data/entity/base.entity.js';
-import { Column, type DataSource, Entity, OneToMany, type Relation, Repository } from 'typeorm';
+import { Column, type DataSource, Entity, Repository } from 'typeorm';
 
 @Entity('ai_chat')
 export class AiChatEntity extends AuditableUuidEntity {
@@ -12,12 +11,6 @@ export class AiChatEntity extends AuditableUuidEntity {
   /** persona: a, b, ... */
   @Column({ name: 'persona' })
   persona!: string;
-
-  @OneToMany(
-    () => AiChatMessageEntity,
-    (message) => message.chat
-  )
-  messages!: Relation<AiChatMessageEntity[]>;
 }
 
 @Injectable()

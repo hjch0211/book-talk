@@ -13,7 +13,7 @@ enum class WSRequestMessageType {
     C_VOICE_JOIN,
     C_VOICE_OFFER,
     C_VOICE_ANSWER,
-    C_VOICE_ICE_CANDIDATE
+    C_VOICE_ICE_CANDIDATE,
 }
 
 data class CreateRequest(
@@ -73,16 +73,6 @@ data class PatchRoundSpeakerRequest(
 data class CreateChatRequest(
     val debateId: String,
     val content: String
-)
-
-data class CreateAiChatRequest(
-    val debateId: String,
-    val persona: String,
-)
-
-data class AiChatRequest(
-    val chatId: String,
-    val message: String,
 )
 
 data class JoinDebateRequest(

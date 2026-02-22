@@ -23,7 +23,7 @@ export class DebateService {
     const { debateId } = request;
 
     const response = await this.debateGraph.runModerator([], '토론 시작', debateId);
-    await this.debateSummarizationRepository.save({ debateId, content: response.message });
+    await this.debateSummarizationRepository.save({ debateId, content: response.message || '' });
     await this.debateClient.notifySummaryCompleted(debateId);
   }
 }
