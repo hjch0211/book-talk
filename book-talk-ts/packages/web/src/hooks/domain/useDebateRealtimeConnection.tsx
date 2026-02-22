@@ -265,13 +265,6 @@ export const useDebateRealtimeConnection = (props: Props) => {
       onRoundStartBackdrop(roundType);
     }
 
-   /** AI 채팅 완성 */
-   const onAiChatCompleted = useEffectEvent((chatId: string) => {
-      void queryClient.invalidateQueries({
-          queryKey: findOneAiChatQueryOptions(chatId).queryKey,
-      });
-   });
-
     if (roundType === 'PRESENTATION' && debateId) {
       await queryClient
         .fetchQuery({ ...findOneDebateQueryOptions(debateId), staleTime: 0 })
@@ -284,6 +277,13 @@ export const useDebateRealtimeConnection = (props: Props) => {
           });
         });
     }
+  });
+
+  /** AI 채팅 완성 */
+  const onAiChatCompleted = useEffectEvent((chatId: string) => {
+    void queryClient.invalidateQueries({
+      queryKey: findOneAiChatQueryOptions(chatId).queryKey,
+    });
   });
 
   /** 토론 시작 알림 - debate 상태 최신화 */

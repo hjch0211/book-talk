@@ -83,10 +83,10 @@ export class BooktalkDebateClient implements DebateClient {
 
   async notifyUserMessageSaved(chatId: string): Promise<void> {
     try {
-        await axios.post(`${this.config.baseUrl}/ai/chats/${chatId}/user-message-saved`);
+      await axios.post(`${this.config.baseUrl}/ai/chats/${chatId}/user-message-saved`);
     } catch (error) {
-        Logger.error(`유저 메시지 저장 콜백 실패: ${error}`);
-        throw error;
+      Logger.error(`유저 메시지 저장 콜백 실패: ${error}`);
+      throw error;
     }
   }
 

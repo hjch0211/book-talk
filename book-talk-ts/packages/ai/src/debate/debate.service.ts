@@ -1,5 +1,4 @@
 import { Inject, Injectable } from '@nestjs/common';
-import { DEBATE_CLIENT, type DebateClient } from '@src/client/debate.client.js';
 import { DEBATE_SUMMARIZATION_REPOSITORY } from '@src/data/data.module.js';
 import type { DebateSummarizationRepository } from '@src/data/entity/debate-summarization.entity.js';
 import type { SummarizeRequest } from '@src/debate/_requests.js';
@@ -21,6 +20,6 @@ export class DebateService {
     const { debateId } = request;
 
     const response = await this.debateGraph.runModerator([], '토론 시작', debateId);
-    await this.debateSummarizationRepository.save({ debateId, content: response.message });
+    await this.debateSummarizationRepository.save({ debateId, content: response.message ?? '' });
   }
 }

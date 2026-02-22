@@ -19,7 +19,11 @@ export const AiChatMessageInfoSchema = z.object({
   id: z.string(),
   role: z.string(),
   content: z.string(),
-  status: z.enum([AiChatMessageStatus.PENDING, AiChatMessageStatus.COMPLETED, AiChatMessageStatus.FAILED]),
+  status: z.enum([
+    AiChatMessageStatus.PENDING,
+    AiChatMessageStatus.COMPLETED,
+    AiChatMessageStatus.FAILED,
+  ]),
   createdAt: z.string(),
 });
 
