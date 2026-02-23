@@ -43,6 +43,7 @@ export const useDebate = ({ debateId }: Props) => {
     mutationFn: (name: string) => signIn({ name }),
     onSuccess: async (data: { accessToken: string; refreshToken: string }) => {
       saveTokens(data.accessToken, data.refreshToken);
+      closeModal();
       await queryClient.invalidateQueries();
     },
     onError: (error: ApiError, name) => {
@@ -59,6 +60,7 @@ export const useDebate = ({ debateId }: Props) => {
     mutationFn: (name: string) => signUp({ name }),
     onSuccess: async (data: { accessToken: string; refreshToken: string }) => {
       saveTokens(data.accessToken, data.refreshToken);
+      closeModal();
       await queryClient.invalidateQueries();
     },
     onError: () => {

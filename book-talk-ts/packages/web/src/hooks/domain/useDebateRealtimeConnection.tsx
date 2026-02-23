@@ -13,17 +13,17 @@ import {
   WSRequestMessageType,
   WSResponseMessageType,
 } from '@src/externals/websocket';
-import {useModal, useWebRTC} from '@src/hooks';
+import { useModal, useToast, useWebRTC } from '@src/hooks';
+import AiSummarizationModal from '@src/routes/Debate/_components/modal/AiSummarizationModal.tsx';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import AiSummarizationModal from "@src/routes/Debate/_components/modal/AiSummarizationModal.tsx";
 
 export interface OnlineMember extends MemberInfo {
   isMe: boolean;
   isConnecting: boolean;
 }
 
-export type VoiceConnectionStatus = 'NOT_STARTED' | 'PENDING' | 'COMPLETED' | 'FAILED';
+export type VoiceConnectionStatus = 'NOT_STARTED' | 'PENDING' | 'COMPLETED' | 'FAILED' | 'MIC_PERMISSION_DENIED';
 
 interface Props {
   /** 토론 ID */
@@ -53,7 +53,8 @@ export const useDebateRealtimeConnection = (props: Props) => {
   const [isDebateJoined, setIsDebateJoined] = useState<boolean>(false);
   const [raisedHands, setRaisedHands] = useState<RaisedHandInfo[]>([]);
   const wsClientRef = useRef<DebateWebSocketClient | null>(null);
-  const { openModal } = useModal()
+  const { openModal } = useModal();
+  const { toast } = useToast();
 
   // Voice 연결 상태
   const [voiceConnectionStatus, setVoiceConnectionStatus] =
@@ -63,9 +64,12 @@ export const useDebateRealtimeConnection = (props: Props) => {
   /** WebRTC P2P 음성 연결 */
   const webRTC = useWebRTC({
     myId: debate.myMemberInfo?.id ?? '',
-    onError: (error: Error) => {
+    onConnectionError: (_: Error) => {
       setVoiceConnectionStatus('FAILED');
-      console.error('Voice chat error:', error);
+    },
+    onMediaError: (_: Error) => {
+      setVoiceConnectionStatus('MIC_PERMISSION_DENIED');
+      toast.warning('마이크 권한이 필요합니다. 브라우저 설정에서 마이크 접근을 허용해주세요.');
     },
     onReconnectNeeded: () => {
       if (!debate.myMemberInfo?.id || !debateId) return;
@@ -257,17 +261,19 @@ export const useDebateRealtimeConnection = (props: Props) => {
   /** AI 요약 완성 */
   const onAiSummaryCompleted = useEffectEvent(async () => {
     if (debateId) {
-      await queryClient.fetchQuery({
-        ...findOneDebateQueryOptions(debateId),
-        staleTime: 0,
-      }).then(debate => {
-        openModal(AiSummarizationModal, {
-          bookTitle: `${debate.bookInfo.title} - ${debate.bookInfo.author}`,
-          topic: debate.topic,
-          bookImageUrl: debate.bookInfo.imageUrl,
-          summarization: debate.aiSummarized ?? '',
+      await queryClient
+        .fetchQuery({
+          ...findOneDebateQueryOptions(debateId),
+          staleTime: 0,
+        })
+        .then((debate) => {
+          openModal(AiSummarizationModal, {
+            bookTitle: `${debate.bookInfo.title} - ${debate.bookInfo.author}`,
+            topic: debate.topic,
+            bookImageUrl: debate.bookInfo.imageUrl,
+            summarization: debate.aiSummarized ?? '',
+          });
         });
-      })
     }
   });
 

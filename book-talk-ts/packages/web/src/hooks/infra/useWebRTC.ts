@@ -5,8 +5,10 @@ import { WebRTCManager } from '../../libs/WebRTCManager.ts';
 interface Props {
   /** 내 계정 ID */
   myId: string;
-  /** 에러 콜백 */
-  onError: (error: Error) => void;
+  /** 연결 에러 콜백 (P2P 연결 실패 시) */
+  onConnectionError: (error: Error) => void;
+  /** 미디어 접근 에러 콜백 (마이크/카메라 권한 거부 등) */
+  onMediaError: (error: Error) => void;
   /** 재연결 필요 콜백 (연결 실패 시 호출) */
   onReconnectNeeded: () => void;
   /** Trickle ICE: ICE Candidate 전송 콜백 */
@@ -18,13 +20,14 @@ interface Props {
 }
 
 export const useWebRTC = (props: Props) => {
-  const { myId, onError, onReconnectNeeded, onIceCandidate, onPeerConnected, onPeerConnecting } =
+  const { myId, onConnectionError, onMediaError, onReconnectNeeded, onIceCandidate, onPeerConnected, onPeerConnecting } =
     props;
   const [remoteStreams, setRemoteStreams] = useState<RemoteStream[]>([]);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const managerRef = useRef<WebRTCManager | null>(null);
 
-  const onErrorEvent = useEffectEvent((error: Error) => onError(error));
+  const onConnectionErrorEvent = useEffectEvent((error: Error) => onConnectionError(error));
+  const onMediaErrorEvent = useEffectEvent((error: Error) => onMediaError(error));
   const onReconnectNeededEvent = useEffectEvent(() => onReconnectNeeded());
   const onIceCandidateEvent = useEffectEvent((info: IceCandidateInfo) => onIceCandidate(info));
   const onPeerConnectedEvent = useEffectEvent((peerId: string) => onPeerConnected(peerId));
@@ -36,10 +39,11 @@ export const useWebRTC = (props: Props) => {
     managerRef.current = new WebRTCManager(
       myId,
       setRemoteStreams,
-      onErrorEvent,
+      onConnectionErrorEvent,
       onReconnectNeededEvent,
       onIceCandidateEvent,
-      onPeerConnectedEvent
+      onPeerConnectedEvent,
+      onMediaErrorEvent
     );
   }, [myId]);
 

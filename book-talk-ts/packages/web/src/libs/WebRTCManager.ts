@@ -50,14 +50,16 @@ export class WebRTCManager {
     private readonly myId: string,
     /** Remote streams 변경 콜백 */
     private readonly onRemoteStreamsChange: (streams: RemoteStream[]) => void,
-    /** 에러 콜백 */
-    private readonly onError: (error: Error) => void,
+    /** 연결 에러 콜백 (P2P 연결 실패 시) */
+    private readonly onConnectionError: (error: Error) => void,
     /** 재연결 필요 콜백 (연결 실패 시 호출) */
     private readonly onReconnectNeeded: () => void,
     /** Trickle ICE: ICE Candidate 전송 콜백 */
     private readonly onIceCandidate: (info: IceCandidateInfo) => void,
     /** P2P 연결 완료 콜백 */
-    private readonly onPeerConnected: (peerId: string) => void
+    private readonly onPeerConnected: (peerId: string) => void,
+    /** 미디어 접근 에러 콜백 (마이크/카메라 권한 거부 등) */
+    private readonly onMediaError: (error: Error) => void
   ) {}
 
   /** 내 Local media stream */
@@ -85,7 +87,7 @@ export class WebRTCManager {
       return stream;
     } catch (err) {
       console.error('미디어 권한 요청 실패:', err);
-      this.onError(err as Error);
+      this.onMediaError(err as Error);
     }
   }
 
@@ -301,7 +303,7 @@ export class WebRTCManager {
         } else {
           console.error(`피어 ${peerId} 재연결 실패: 최대 재시도 횟수(${MAX_RETRIES}) 초과`);
           this.retryCount.delete(peerId);
-          this.onError(new Error(`재연결 실패: 최대 재시도 횟수(${MAX_RETRIES}) 초과`));
+          this.onConnectionError(new Error(`재연결 실패: 최대 재시도 횟수(${MAX_RETRIES}) 초과`));
         }
       } else if (pc.connectionState === 'closed') {
         this.peerConnections.delete(peerId);
