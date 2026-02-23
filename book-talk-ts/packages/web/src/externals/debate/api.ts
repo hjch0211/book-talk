@@ -1,4 +1,3 @@
-import { z } from 'zod/v4';
 import { authApiClient } from '../client';
 import {
   type ChatResponse,
@@ -66,7 +65,7 @@ export const createChat = async (request: CreateChatRequest): Promise<CreateChat
 };
 
 /** 토론 채팅 조회 */
-export const getChats = async (debateId: string): Promise<ChatResponse[]> => {
+export const getChats = async (debateId: string): Promise<ChatResponse> => {
   const response = await authApiClient.get(`/debates/${debateId}/chats`);
-  return z.array(ChatResponseSchema).parse(response.data.data);
+  return ChatResponseSchema.parse(response.data.data);
 };

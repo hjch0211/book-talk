@@ -107,14 +107,16 @@ export const CreateChatResponseSchema = z.object({
   createdAt: z.string(),
 });
 
-export const ChatResponseSchema = z.object({
-  id: z.number(),
-  debateId: z.string(),
-  accountId: z.string(),
-  accountName: z.string(),
-  content: z.string(),
-  createdAt: z.string(),
-});
+export const ChatResponseSchema = z.array(
+  z.object({
+    id: z.number(),
+    debateId: z.string(),
+    accountId: z.string(),
+    accountName: z.string(),
+    content: z.string(),
+    createdAt: z.string(),
+  })
+);
 
 export type CreateDebateRequest = z.infer<typeof CreateDebateRequestSchema>;
 export type JoinDebateRequest = z.infer<typeof JoinDebateRequestSchema>;
