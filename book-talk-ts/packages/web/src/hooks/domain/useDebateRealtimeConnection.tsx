@@ -23,7 +23,12 @@ export interface OnlineMember extends MemberInfo {
   isConnecting: boolean;
 }
 
-export type VoiceConnectionStatus = 'NOT_STARTED' | 'PENDING' | 'COMPLETED' | 'FAILED' | 'MIC_PERMISSION_DENIED';
+export type VoiceConnectionStatus =
+  | 'NOT_STARTED'
+  | 'PENDING'
+  | 'COMPLETED'
+  | 'FAILED'
+  | 'MIC_PERMISSION_DENIED';
 
 interface Props {
   /** 토론 ID */
@@ -73,7 +78,9 @@ export const useDebateRealtimeConnection = (props: Props) => {
     },
     onReconnectNeeded: () => {
       if (!debate.myMemberInfo?.id || !debateId) return;
-      setVoiceConnectionStatus('PENDING');
+      if (voiceConnectionStatus !== 'COMPLETED') {
+        setVoiceConnectionStatus('PENDING');
+      }
       setConnectedPeerIds(new Set());
       setOnlineMembers((prev) => prev.map((m) => ({ ...m, isConnecting: false })));
       wsClientRef.current?.sendVoiceMessage({
