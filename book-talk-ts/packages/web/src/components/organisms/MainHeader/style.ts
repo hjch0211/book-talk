@@ -29,3 +29,24 @@ export const LogoText = styled.div`
     text-align: center;
     color: #000000;
 `;
+
+export const NavMenuGroup = styled.nav`
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+`;
+
+export const NavMenuItemText = styled.span`
+    font-family: 'S-Core Dream', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: 1px;
+    color: #262626;
+    cursor: pointer;
+
+    &:hover {
+        color: #8E99FF;
+    }
+`;

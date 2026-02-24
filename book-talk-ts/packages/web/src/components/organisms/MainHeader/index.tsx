@@ -17,9 +17,10 @@ import { signOut } from '@src/externals/auth';
 import { clearTokens } from '@src/externals/client.ts';
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import logoSvg from '../../../assets/logo.svg';
 import UpdateNicknameModal from '../../../routes/Main/_components/NickNameModal/UpdateNicknameModal.tsx';
-import { LogoContainer, LogoWrapper } from './style.ts';
+import { LogoContainer, LogoWrapper, NavMenuGroup, NavMenuItemText } from './style.ts';
 
 const ProfileSection = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -59,7 +60,7 @@ const ProfileSection = () => {
   if (!me) return null;
 
   return (
-    <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, marginLeft: 'auto' }}>
+    <>
       <IconButton
         onClick={handleClick}
         size="small"
@@ -70,10 +71,10 @@ const ProfileSection = () => {
       >
         <Avatar
           sx={{
-            width: 40,
-            height: 40,
-            bgcolor: '#EADDFF',
-            color: '#4F378A',
+            width: 42,
+            height: 42,
+            bgcolor: '#D9D9D9',
+            border: '1px solid #FFFFFF',
             cursor: 'pointer',
           }}
         />
@@ -133,38 +134,43 @@ const ProfileSection = () => {
       </Menu>
 
       <UpdateNicknameModal open={isUpdateModalOpen} onClose={handleNicknameUpdateModalClose} />
-    </Box>
+    </>
   );
 };
 
 const MainHeader = () => {
-  return (
-    <>
-      <AppBar
-        position="sticky"
-        elevation={0}
-        sx={{
-          backgroundColor: 'rgba(255, 255, 255, 0.92)',
-          backdropFilter: 'blur(8px)',
-          borderBottom: 'none',
-          height: 84,
-          px: '120px',
-        }}
-      >
-        <Toolbar sx={{ height: '100%', gap: '374px' }}>
-          <LogoContainer>
-            <LogoWrapper>
-              <img src={logoSvg} alt="BookTalk Logo" width={182} height={44} />
-            </LogoWrapper>
-          </LogoContainer>
+  const navigate = useNavigate();
 
-          <Suspense fallback={<></>}>
+  return (
+    <AppBar
+      position="sticky"
+      elevation={0}
+      sx={{
+        backgroundColor: 'rgba(255, 255, 255, 0.92)',
+        backdropFilter: 'blur(8px)',
+        borderBottom: 'none',
+        height: 80,
+        px: '120px',
+      }}
+    >
+      <Toolbar sx={{ height: '100%', justifyContent: 'space-between', px: '0 !important' }}>
+        <LogoContainer>
+          <LogoWrapper>
+            <img src={logoSvg} alt="BookTalk Logo" width={182} height={44} />
+          </LogoWrapper>
+        </LogoContainer>
+
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: '24px' }}>
+          <NavMenuGroup>
+            <NavMenuItemText onClick={() => navigate('/home')}>북톡 홈</NavMenuItemText>
+            <NavMenuItemText onClick={() => navigate('/')}>북톡 소개</NavMenuItemText>
+          </NavMenuGroup>
+          <Suspense fallback={<Box sx={{ width: 42, height: 42 }} />}>
             <ProfileSection />
           </Suspense>
-        </Toolbar>
-      </AppBar>
-      <Box style={{ height: 84 }} />
-    </>
+        </Box>
+      </Toolbar>
+    </AppBar>
   );
 };
 
