@@ -1,4 +1,5 @@
 import { Box } from '@mui/material';
+import { urls } from '@src/constants/urls.ts';
 import { meQueryOption } from '@src/externals/account';
 import { useModal } from '@src/hooks';
 import { useSuspenseQuery } from '@tanstack/react-query';
@@ -68,11 +69,7 @@ export function MainPage() {
           </Suspense>
         </ButtonContainer>
 
-        <SurveyHyperLinkText
-          href="https://docs.google.com/forms/d/e/1FAIpQLSeJS7YMm1S1qAQbUZkn7fHmm1Xyo9zV6L3cDfekLYdQq-BlUg/viewform"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+        <SurveyHyperLinkText href={urls.INQUIRY} target="_blank" rel="noopener noreferrer">
           북톡에 대한 의견을 남겨주세요!
         </SurveyHyperLinkText>
       </MainTextContainer>

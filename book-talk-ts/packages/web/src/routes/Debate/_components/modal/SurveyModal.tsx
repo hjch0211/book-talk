@@ -1,5 +1,6 @@
 import CloseIcon from '@mui/icons-material/Close';
 import { Box, Button, IconButton, Rating, Typography } from '@mui/material';
+import { urls } from '@src/constants/urls.ts';
 import { useState } from 'react';
 import Modal from '../../../../components/organisms/Modal';
 
@@ -101,7 +102,7 @@ function SurveyModal({ onConfirm, isLoading = false, onClose, open }: Props) {
         >
           <Button
             disabled={isLoading}
-            href="https://docs.google.com/forms/d/e/1FAIpQLSeJS7YMm1S1qAQbUZkn7fHmm1Xyo9zV6L3cDfekLYdQq-BlUg/viewform"
+            href={urls.INQUIRY}
             target="_blank"
             rel="noopener noreferrer"
             sx={{
