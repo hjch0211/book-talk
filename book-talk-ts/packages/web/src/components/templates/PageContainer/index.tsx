@@ -1,13 +1,22 @@
 import type { ReactNode } from 'react';
-import { StyledPageContainer } from './style.ts';
+import { StyledContainer, StyledFixedWrapper, StyledRelativeWrapper } from './style.ts';
 
-interface PageWrapperProps {
+interface Props {
   children: ReactNode;
   bgColor?: string;
+  isRelative?: boolean;
 }
 
-const PageContainer = ({ children, bgColor }: PageWrapperProps) => {
-  return <StyledPageContainer bgColor={bgColor}>{children}</StyledPageContainer>;
+const PageContainer = ({ children, bgColor, isRelative }: Props) => {
+  const Wrapper = isRelative ? StyledRelativeWrapper : StyledFixedWrapper;
+
+  return (
+    <Wrapper bgColor={bgColor}>
+      <StyledContainer maxWidth={false} disableGutters>
+        {children}
+      </StyledContainer>
+    </Wrapper>
+  );
 };
 
 export default PageContainer;

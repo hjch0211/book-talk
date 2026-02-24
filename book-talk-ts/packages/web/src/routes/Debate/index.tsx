@@ -5,7 +5,7 @@ import type { VoiceConnectionStatus } from '@src/hooks/domain/useDebateRealtimeC
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense } from 'react';
 import { useParams } from 'react-router-dom';
-import MainContainer from '../../components/templates/MainContainer';
+import PageContainer from '../../components/templates/PageContainer';
 import { DebateHeader } from './_components/DebateHeader';
 import { DebateMemberList } from './_components/DebateMemberList';
 import { DebatePresentation } from './_components/DebatePresentation';
@@ -93,7 +93,7 @@ function DebatePageContent({ debateId }: Props) {
   }
 
   return (
-    <MainContainer>
+    <PageContainer>
       <DebateContainer>
         <DebateHeader
           debate={debate}
@@ -158,7 +158,7 @@ function DebatePageContent({ debateId }: Props) {
           </>
         )}
       </DebateContainer>
-    </MainContainer>
+    </PageContainer>
   );
 }
 

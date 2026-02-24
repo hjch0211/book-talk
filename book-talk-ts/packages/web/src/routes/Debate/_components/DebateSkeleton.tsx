@@ -1,5 +1,5 @@
 import debateLoadingGif from '@src/assets/debate-loading.gif';
-import MainContainer from '../../../components/templates/MainContainer';
+import PageContainer from '../../../components/templates/PageContainer';
 import {
   LoadingOverlay,
   LoadingSubText,
@@ -46,7 +46,7 @@ const MemberItemSkeleton = () => (
 
 export const DebateSkeleton = ({ title, content }: Props) => {
   return (
-    <MainContainer>
+    <PageContainer>
       <SkeletonContainer>
         {/* Navigation Bar */}
         <SkeletonNavigationBar>
@@ -97,6 +97,6 @@ export const DebateSkeleton = ({ title, content }: Props) => {
           <LoadingSubText>{content}</LoadingSubText>
         </LoadingOverlay>
       </SkeletonContainer>
-    </MainContainer>
+    </PageContainer>
   );
 };

@@ -139,28 +139,32 @@ const ProfileSection = () => {
 
 const MainHeader = () => {
   return (
-    <AppBar
-      position="static"
-      elevation={0}
-      sx={{
-        backgroundColor: '#FFFFFF',
-        borderBottom: 'none',
-        height: 84,
-        px: '120px',
-      }}
-    >
-      <Toolbar sx={{ height: '100%', gap: '374px' }}>
-        <LogoContainer>
-          <LogoWrapper>
-            <img src={logoSvg} alt="BookTalk Logo" width={182} height={44} />
-          </LogoWrapper>
-        </LogoContainer>
+    <>
+      <AppBar
+        position="sticky"
+        elevation={0}
+        sx={{
+          backgroundColor: 'rgba(255, 255, 255, 0.92)',
+          backdropFilter: 'blur(8px)',
+          borderBottom: 'none',
+          height: 84,
+          px: '120px',
+        }}
+      >
+        <Toolbar sx={{ height: '100%', gap: '374px' }}>
+          <LogoContainer>
+            <LogoWrapper>
+              <img src={logoSvg} alt="BookTalk Logo" width={182} height={44} />
+            </LogoWrapper>
+          </LogoContainer>
 
-        <Suspense fallback={<></>}>
-          <ProfileSection />
-        </Suspense>
-      </Toolbar>
-    </AppBar>
+          <Suspense fallback={<></>}>
+            <ProfileSection />
+          </Suspense>
+        </Toolbar>
+      </AppBar>
+      <Box style={{ height: 84 }} />
+    </>
   );
 };
 
