@@ -20,16 +20,6 @@ export const LogoWrapper = styled.div`
     height: 44px;
 `;
 
-export const LogoText = styled.div`
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', sans-serif;
-    font-style: normal;
-    font-weight: 700;
-    font-size: 14px;
-    line-height: 20px;
-    text-align: center;
-    color: #000000;
-`;
-
 export const NavMenuGroup = styled.nav`
     display: flex;
     flex-direction: row;

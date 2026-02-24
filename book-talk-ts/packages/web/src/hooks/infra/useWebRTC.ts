@@ -20,8 +20,15 @@ interface Props {
 }
 
 export const useWebRTC = (props: Props) => {
-  const { myId, onConnectionError, onMediaError, onReconnectNeeded, onIceCandidate, onPeerConnected, onPeerConnecting } =
-    props;
+  const {
+    myId,
+    onConnectionError,
+    onMediaError,
+    onReconnectNeeded,
+    onIceCandidate,
+    onPeerConnected,
+    onPeerConnecting,
+  } = props;
   const [remoteStreams, setRemoteStreams] = useState<RemoteStream[]>([]);
   const [localStream, setLocalStream] = useState<MediaStream | null>(null);
   const managerRef = useRef<WebRTCManager | null>(null);
