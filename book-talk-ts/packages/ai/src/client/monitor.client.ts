@@ -41,7 +41,7 @@ export class SlackMonitorClient implements MonitorClient {
         return [
           this.headerBlock(`:rotating_light: ${request.title}`),
           this.sectionBlock(`*- message*: ${request.message}`),
-          this.sectionBlock(`*- stack trace*:\n\`\`\`${request.stackTrace}\`\`\``),
+          this.sectionBlock(`*- stack trace*:\n\`\`\`${request.stackTrace.slice(0, 2900)}\`\`\``),
         ];
     }
   }

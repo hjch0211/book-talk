@@ -58,7 +58,7 @@ class SlackMonitorClient(
             SendRequest.Level.ERROR -> listOf(
                 headerBlock(":rotating_light: ${request.title}"),
                 sectionBlock("*- message*: ${request.message}".trimIndent()),
-                sectionBlock("*- stack trace*:\n```${request.stackTrace}```".trimIndent())
+                sectionBlock("*- stack trace*:\n```${request.stackTrace.take(2900)}```".trimIndent())
             )
         }
     }
