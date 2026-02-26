@@ -7,7 +7,7 @@ import preparationExample from '@src/assets/landing/preparation-example.png';
 import round1Example from '@src/assets/landing/round-1-example.png';
 import round2Example from '@src/assets/landing/round-2-example.png';
 import tooltipExample from '@src/assets/landing/tooltip-example.png';
-import MainHeader from '@src/components/organisms/MainHeader';
+import AppHeader from '@src/components/organisms/AppHeader';
 import PageContainer from '@src/components/templates/PageContainer';
 import { urls } from '@src/constants/urls';
 import { useNavigate } from 'react-router-dom';
@@ -63,7 +63,7 @@ export function LandingPage() {
 
   return (
     <PageContainer>
-      <MainHeader />
+      <AppHeader />
       <HeroSection>
         <HeroDecorLeft src={heroDeco1} alt="" aria-hidden="true" />
         <HeroDecorRight src={heroDeco2} alt="" aria-hidden="true" />

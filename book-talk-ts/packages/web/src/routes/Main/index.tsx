@@ -4,7 +4,7 @@ import { meQueryOption } from '@src/externals/account';
 import { useModal } from '@src/hooks';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense } from 'react';
-import MainHeader from '../../components/organisms/MainHeader';
+import AppHeader from '../../components/organisms/AppHeader';
 import PageContainer from '../../components/templates/PageContainer';
 import DebateCreationModal from './_components/DebateCreationModal';
 import {
@@ -57,7 +57,7 @@ const ButtonSection = () => {
 export function MainPage() {
   return (
     <PageContainer bgColor="linear-gradient(180deg, #FFFFFF 39.9%, #FBEAE7 100%)">
-      <MainHeader />
+      <AppHeader />
       <MainTextContainer>
         <Suspense fallback={<Box height="230px" />}>
           <TextSection />

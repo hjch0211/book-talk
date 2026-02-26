@@ -18,6 +18,7 @@ import { meQueryOption } from '@src/externals/account';
 import { signOut } from '@src/externals/auth';
 import { clearTokens } from '@src/externals/client.ts';
 import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import type React from 'react';
 import { Suspense, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoSvg from '../../../assets/logo.svg';
@@ -146,7 +147,7 @@ const ProfileSection = () => {
   );
 };
 
-const MainHeader = () => {
+const AppHeader = () => {
   const navigate = useNavigate();
 
   return (
@@ -184,4 +185,4 @@ const MainHeader = () => {
   );
 };
 
-export default MainHeader;
+export default AppHeader;
