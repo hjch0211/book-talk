@@ -11,6 +11,7 @@ data class LibProperties(
     val slack: SlackProperties = SlackProperties(),
     val ai: AiProperties = AiProperties(),
     val mail: MailProperties = MailProperties(),
+    val google: GoogleProperties = GoogleProperties(),
 ) {
     data class AesProperties(
         val secretString: String = "",
@@ -64,5 +65,13 @@ data class LibProperties(
     ) {
         fun isValid(): Boolean =
             host.isNotBlank() && username.isNotBlank() && password.isNotBlank() && fromEmail.isNotBlank()
+    }
+
+    data class GoogleProperties(
+        val clientId: String = "",
+        val clientSecret: String = "",
+        val redirectUri: String = "",
+    ) {
+        fun isValid(): Boolean = clientId.isNotBlank() && clientSecret.isNotBlank() && redirectUri.isNotBlank()
     }
 }

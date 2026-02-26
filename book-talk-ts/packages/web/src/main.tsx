@@ -1,4 +1,5 @@
 import { BaseGlobalStyle, TiptapGlobalStyle } from '@src/GlobalStyle.tsx';
+import { AppRoutes } from '@src/routes/AppRoutes.tsx';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
@@ -8,7 +9,6 @@ import {
   QueryClientProvider,
   ToastProvider,
 } from './providers';
-import { AppRoutes } from './routes';
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>

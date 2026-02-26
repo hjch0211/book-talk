@@ -1,7 +1,9 @@
 import { Box, Container } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-export const StyledFixedWrapper = styled(Box)<{ bgColor?: string }>(({ bgColor }) => ({
+export const StyledFixedWrapper = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'bgColor',
+})<{ bgColor?: string }>(({ bgColor }) => ({
   position: 'fixed',
   top: 0,
   left: 0,
@@ -11,7 +13,9 @@ export const StyledFixedWrapper = styled(Box)<{ bgColor?: string }>(({ bgColor }
   overflow: 'auto',
 }));
 
-export const StyledRelativeWrapper = styled(Box)<{ bgColor?: string }>(({ bgColor }) => ({
+export const StyledRelativeWrapper = styled(Box, {
+  shouldForwardProp: (prop) => prop !== 'bgColor',
+})<{ bgColor?: string }>(({ bgColor }) => ({
   position: 'relative',
   width: '100%',
   background: bgColor || 'transparent',

@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 
-export const LoginContainer = styled.div`
+export const SignContainer = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -10,7 +10,7 @@ export const LoginContainer = styled.div`
   padding-top: 150px;
 `;
 
-export const LoginTitle = styled.h1`
+export const SignTitle = styled.h1`
   width: 384px;
   font-style: normal;
   font-weight: 500;
@@ -21,7 +21,15 @@ export const LoginTitle = styled.h1`
   margin: 0;
 `;
 
-export const LoginFormSection = styled.div`
+export const SignFormSection = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 32px;
+  width: 384px;
+`;
+
+export const SignForm = styled.form`
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -105,4 +113,61 @@ export const ButtonsSection = styled.div`
   align-items: center;
   gap: 12px;
   width: 384px;
+`;
+
+export const ErrorMessage = styled.p`
+    font-style: normal;
+    font-weight: 200;
+    font-size: 12px;
+    line-height: 150%;
+    text-align: center;
+    letter-spacing: 0.3px;
+    color: #d32f2f;
+    margin: 0;
+    width: 100%;
+`;
+
+export const CountdownText = styled.span`
+  font-family: 'S-Core Dream', serif;
+  font-style: normal;
+  font-weight: 200;
+  font-size: 12px;
+  line-height: 150%;
+  letter-spacing: 0.3px;
+  color: #f59e0b;
+`;
+
+export const FieldGroup = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+`;
+
+export const InlineFieldRow = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 12px;
+  width: 384px;
+`;
+
+export const DescriptionText = styled.p`
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: 'S-Core Dream', serif;
+  font-style: normal;
+  font-weight: 200;
+  font-size: 12px;
+  line-height: 150%;
+  text-align: center;
+  letter-spacing: 0.3px;
+  color: #262626;
+  text-decoration: none;
+`;
+
+export const UrlLink = styled.a`
+  text-decoration-line: underline;
+  cursor: pointer;
 `;

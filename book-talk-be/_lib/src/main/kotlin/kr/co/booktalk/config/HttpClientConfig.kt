@@ -93,4 +93,16 @@ class HttpClientConfig {
             fromName = properties.mail.fromName,
         )
     }
+
+    @Bean
+    fun googleAuthClient(
+        httpClient: HttpClient,
+        properties: LibProperties,
+    ): GoogleAuthClient {
+        if (!properties.google.isValid()) {
+            logger.warn { "Google OAuth 설정이 비었습니다. NoOpGoogleAuthClient를 생성합니다." }
+            return NoOpGoogleAuthClient()
+        }
+        return GoogleOAuthClient(httpClient = httpClient, properties = properties.google)
+    }
 }

@@ -21,3 +21,4 @@ app:
   debate:
     max-member-count: ${APP_DEBATE_MAX_MEMBER_COUNT}
     round-speaker-seconds: ${APP_DEBATE_ROUND_SPEAKER_SECONDS}
+  frontend-url: ${APP_FRONTEND_URL}

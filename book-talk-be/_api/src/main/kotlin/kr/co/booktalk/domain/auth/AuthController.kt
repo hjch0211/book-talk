@@ -1,62 +1,79 @@
 package kr.co.booktalk.domain.auth
 
 import kr.co.booktalk.HttpResult
-import kr.co.booktalk.domain.account.AccountService
-import kr.co.booktalk.domain.account.UpdateRequest
-import kr.co.booktalk.domain.account.toAuthAccount
+import kr.co.booktalk.config.AppProperties
 import kr.co.booktalk.toResult
-import org.springframework.web.bind.annotation.PostMapping
-import org.springframework.web.bind.annotation.RequestBody
-import org.springframework.web.bind.annotation.RestController
+import org.springframework.web.bind.annotation.*
+import org.springframework.web.servlet.view.RedirectView
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @RestController
 class AuthController(
-    private val accountService: AccountService,
     private val authService: AuthService,
+    private val appProperties: AppProperties,
 ) {
-    /** 회원가입 */
+    /** NORMAL Account - 회원가입 */
     @PostMapping("/auth/sign-up")
     fun signUp(@RequestBody request: SignUpRequest): HttpResult<CreateTokensResponse> {
         request.validate()
-        val account = accountService.create(request.toAccountCreateRequest())
-        val tokens = authService.createTokens(CreateTokensRequest(account.id.toString()))
-        accountService.update(account.toAuthAccount(), UpdateRequest(tokens.refreshToken))
-        return tokens.toResult()
+        return authService.signUp(request).toResult()
     }
 
-    /** 중복 접속 확인 */
-    @PostMapping("/auth/check")
-    fun validateDuplicateSignIn(@RequestBody request: ValidateDuplicateSignInRequest) {
+    /** 이메일 인증 코드 발급 */
+    @PostMapping("/auth/email/code")
+    fun sendEmailCode(@RequestBody request: SendEmailCodeRequest) {
         request.validate()
-        val account = runCatching {
-            accountService.find(request.name)
-        }.getOrNull() ?: return
-        authService.validateDuplicateSignIn(account)
+        authService.sendEmailCode(request)
     }
 
-    /** 로그인 */
+    /** 이메일 인증 코드 인증 */
+    @PostMapping("/auth/email/verify")
+    fun verifyEmailCode(@RequestBody request: VerifyEmailCodeRequest) {
+        request.validate()
+        authService.verifyEmailCode(request)
+    }
+
+    /** NORMAL Account - 로그인 */
     @PostMapping("/auth/sign-in")
     fun signIn(@RequestBody request: SignInRequest): HttpResult<CreateTokensResponse> {
         request.validate()
-        val account = accountService.find(request.name)
-        authService.validateDuplicateSignIn(account)
-        val tokens = authService.createTokens(CreateTokensRequest(account.id.toString()))
-        accountService.update(account.toAuthAccount(), UpdateRequest(tokens.refreshToken))
-        return tokens.toResult()
+        return authService.signIn(request).toResult()
     }
 
     /** 로그아웃 */
     @PostMapping("/auth/sign-out")
     fun signOut(authAccount: AuthAccount) {
-        accountService.update(authAccount, UpdateRequest(null))
+        authService.signOut(authAccount)
     }
 
     /** Access Token 재발급 */
     @PostMapping("/auth/refresh")
     fun refresh(@RequestBody request: RefreshRequest): HttpResult<CreateTokensResponse> {
         request.validate()
-        val tokens = authService.refresh(request)
-        accountService.update(request.refreshToken, tokens.refreshToken)
-        return tokens.toResult()
+        return authService.refresh(request).toResult()
+    }
+
+    /** Google OAuth 로그인 시작 - Google 인증 서버로 리다이렉트 */
+    @GetMapping("/auth/google")
+    fun googleLogin(): RedirectView {
+        return RedirectView(authService.generateGoogleAuthUrl())
+    }
+
+    /** Google OAuth 콜백 */
+    @GetMapping("/auth/google/callback")
+    fun googleCallback(
+        @RequestParam(required = false) code: String?,
+        @RequestParam(required = false) error: String?,
+        @RequestParam(required = false) state: String?,
+    ): RedirectView {
+        val frontendBase = "${appProperties.frontendUrl}/auth/callback"
+        if (error != null || code == null || state == null) {
+            val encodedError = URLEncoder.encode(error ?: "invalid_request", StandardCharsets.UTF_8)
+            return RedirectView("$frontendBase?error=$encodedError")
+        }
+        val userInfo = authService.requestGoogleSignIn(code, state)
+        val tokens = authService.saveGoogleAccount(userInfo)
+        return RedirectView("$frontendBase?accessToken=${tokens.accessToken}&refreshToken=${tokens.refreshToken}")
     }
 }

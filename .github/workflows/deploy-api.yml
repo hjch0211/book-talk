@@ -45,6 +45,10 @@ env:
   MAIL_PASSWORD: ${{ secrets.MAIL_PASSWORD }}
   MAIL_FROM_EMAIL: ${{ secrets.MAIL_FROM_EMAIL }}
   MAIL_FROM_NAME: ${{ secrets.MAIL_FROM_NAME }}
+  GOOGLE_CLIENT_ID: ${{ secrets.GOOGLE_CLIENT_ID }}
+  GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+  GOOGLE_REDIRECT_URI: ${{ secrets.GOOGLE_REDIRECT_URI }}
+  APP_FRONTEND_URL: ${{ secrets.APP_FRONTEND_URL }}
 
 jobs:
   deploy:

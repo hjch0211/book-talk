@@ -22,12 +22,10 @@ import type React from 'react';
 import { Suspense, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoSvg from '../../../assets/logo.svg';
-import UpdateNicknameModal from '../../../routes/Main/_components/NickNameModal/UpdateNicknameModal.tsx';
 import { LogoContainer, LogoWrapper, NavMenuGroup, NavMenuItemText } from './style.ts';
 
 const ProfileSection = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [isUpdateModalOpen, setIsUpdateModalOpen] = useState(false);
   const open = Boolean(anchorEl);
   const { data: me } = useSuspenseQuery(meQueryOption);
   const navigate = useNavigate();
@@ -46,15 +44,6 @@ const ProfileSection = () => {
 
   const handleClose = () => {
     setAnchorEl(null);
-  };
-
-  const handleNicknameUpdateModalOpen = () => {
-    setAnchorEl(null);
-    setIsUpdateModalOpen(true);
-  };
-
-  const handleNicknameUpdateModalClose = () => {
-    setIsUpdateModalOpen(false);
   };
 
   const handleLoginPageNavigate = () => {
@@ -83,20 +72,22 @@ const ProfileSection = () => {
         anchorEl={anchorEl}
         open={open}
         onClose={handleClose}
-        PaperProps={{
-          elevation: 3,
-          sx: {
-            width: 220,
-            mt: 1.5,
-            '& .MuiMenuItem-root': {
-              typography: 'body2',
-              fontFamily: 'S-Core Dream',
-              fontWeight: 200,
-              fontSize: 16,
-              letterSpacing: 0.3,
-              color: '#434343',
-              py: 1.5,
-              px: 2,
+        slotProps={{
+          paper: {
+            elevation: 3,
+            sx: {
+              width: 220,
+              mt: 1.5,
+              '& .MuiMenuItem-root': {
+                typography: 'body2',
+                fontFamily: 'S-Core Dream',
+                fontWeight: 200,
+                fontSize: 16,
+                letterSpacing: 0.3,
+                color: '#434343',
+                py: 1.5,
+                px: 2,
+              },
             },
           },
         }}
@@ -104,8 +95,8 @@ const ProfileSection = () => {
         anchorOrigin={{ horizontal: 'right', vertical: 'bottom' }}
       >
         {me ? (
-          <>
-            <Box sx={{ px: 2, py: 1 }}>
+          [
+            <Box key="name" sx={{ px: 2, py: 1 }}>
               <Typography
                 sx={{
                   fontFamily: 'S-Core Dream',
@@ -117,21 +108,15 @@ const ProfileSection = () => {
               >
                 {me.name}
               </Typography>
-            </Box>
-            <Divider sx={{ my: 1 }} />
-            <MenuItem onClick={handleNicknameUpdateModalOpen}>
-              <ListItemIcon>
-                <Person fontSize="small" sx={{ color: '#7B7B7B' }} />
-              </ListItemIcon>
-              <ListItemText>닉네임 변경하기</ListItemText>
-            </MenuItem>
-            <MenuItem onClick={handleLogout}>
+            </Box>,
+            <Divider key="divider" sx={{ my: 1 }} />,
+            <MenuItem key="logout" onClick={handleLogout}>
               <ListItemIcon>
                 <Logout fontSize="small" sx={{ color: '#7B7B7B' }} />
               </ListItemIcon>
               <ListItemText>로그아웃</ListItemText>
-            </MenuItem>
-          </>
+            </MenuItem>,
+          ]
         ) : (
           <MenuItem onClick={handleLoginPageNavigate}>
             <ListItemIcon>
@@ -141,8 +126,6 @@ const ProfileSection = () => {
           </MenuItem>
         )}
       </Menu>
-
-      <UpdateNicknameModal open={isUpdateModalOpen} onClose={handleNicknameUpdateModalClose} />
     </>
   );
 };

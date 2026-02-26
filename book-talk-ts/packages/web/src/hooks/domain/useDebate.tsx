@@ -1,6 +1,4 @@
 import { meQueryOption } from '@src/externals/account';
-import { signIn, signUp } from '@src/externals/auth';
-import { type ApiError, saveTokens } from '@src/externals/client.ts';
 import { findOneDebateQueryOptions, joinDebate, updateDebate } from '@src/externals/debate';
 import { createSurvey } from '@src/externals/survey';
 import {
@@ -9,10 +7,8 @@ import {
   useDebateRound,
   useDebateVoiceChat,
   useModal,
-  useToast,
 } from '@src/hooks';
 import SurveyModal from '@src/routes/Debate/_components/modal/SurveyModal';
-import NicknameModal from '@src/routes/Main/_components/NickNameModal/NicknameModal.tsx';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { useEffect, useEffectEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
@@ -36,37 +32,6 @@ export const useDebate = ({ debateId }: Props) => {
   const { data: _me } = useSuspenseQuery(meQueryOption);
   const { data: debate } = useSuspenseQuery(findOneDebateQueryOptions(debateId, _me?.id));
   const { openModal, closeModal } = useModal();
-  const { toast } = useToast();
-
-  /** 로그인 */
-  const signInMutation = useMutation({
-    mutationFn: (name: string) => signIn({ name }),
-    onSuccess: async (data: { accessToken: string; refreshToken: string }) => {
-      saveTokens(data.accessToken, data.refreshToken);
-      closeModal();
-      await queryClient.invalidateQueries();
-    },
-    onError: (error: ApiError, name) => {
-      if (error?.status === 400 && error?.message === '존재하지 않는 계정입니다.') {
-        signUpMutation.mutate(name);
-        return;
-      }
-      toast.error('로그인 중 오류가 발생했습니다.');
-    },
-  });
-
-  /** 회원가입 */
-  const signUpMutation = useMutation({
-    mutationFn: (name: string) => signUp({ name }),
-    onSuccess: async (data: { accessToken: string; refreshToken: string }) => {
-      saveTokens(data.accessToken, data.refreshToken);
-      closeModal();
-      await queryClient.invalidateQueries();
-    },
-    onError: () => {
-      toast.error('회원가입 중 오류가 발생했습니다.');
-    },
-  });
 
   /** 토론 참여 */
   const joinDebateMutation = useMutation({
@@ -118,19 +83,14 @@ export const useDebate = ({ debateId }: Props) => {
     });
   });
 
-  const openNickNameModal = useEffectEvent(() => {
-    openModal(NicknameModal, {
-      onSubmit: (nickname: string) => {
-        signInMutation.mutate(nickname);
-      },
-      isLoading: signInMutation.isPending || signUpMutation.isPending,
-    });
+  const handleRedirectSignIn = useEffectEvent(() => {
+    navigate('/sign-in');
   });
 
   useEffect(() => {
     /** 로그인이 필요한 경우 */
     if (!_me?.id) {
-      openNickNameModal();
+      handleRedirectSignIn();
       return;
     }
 

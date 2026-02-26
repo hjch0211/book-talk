@@ -1,19 +1,23 @@
 package kr.co.booktalk.domain.auth
 
-data class CreateTokensRequest(
-    val id: String,
-)
-
 data class SignUpRequest(
+    val email: String,
     val name: String,
-)
-
-data class ValidateDuplicateSignInRequest(
-    val name: String
+    val password: String,
 )
 
 data class SignInRequest(
-    val name: String,
+    val email: String,
+    val password: String,
+)
+
+data class SendEmailCodeRequest(
+    val email: String,
+)
+
+data class VerifyEmailCodeRequest(
+    val email: String,
+    val code: String,
 )
 
 data class RefreshRequest(

@@ -1,7 +1,7 @@
 import styled from '@emotion/styled';
 import { Button, type ButtonProps } from '@mui/material';
 
-export type AppButtonVariant = 'filled' | 'outlined' | 'social' | 'rounded';
+export type AppButtonVariant = 'filled' | 'outlined' | 'social' | 'rounded' | 'inline';
 
 export interface AppButtonProps extends Omit<ButtonProps, 'variant'> {
   appVariant?: AppButtonVariant;
@@ -24,6 +24,13 @@ export const StyledButton = styled(Button, {
     text-align: center;
     text-transform: none;
     transition: box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease;
+  }
+
+  &&.Mui-disabled {
+    background: #f0f0f0;
+    border-color: #e0e0e0;
+    color: #b0b0b0;
+    cursor: none;
   }
 
   ${({ hoverAnimation }) =>
@@ -60,7 +67,7 @@ export const StyledButton = styled(Button, {
       color: #262626;
       border: 1px solid #c4c4c4;
     }
-    &&:hover { background: #f5f5f5; }
+    &&:hover { background: #fcfcfc; }
   `}
 
   ${({ appVariant }) =>
@@ -75,6 +82,21 @@ export const StyledButton = styled(Button, {
       gap: 8px;
     }
     &&:hover { background: #f9f9f9; }
+  `}
+
+  ${({ appVariant }) =>
+    appVariant === 'inline' &&
+    `
+    && {
+      width: 101px;
+      height: 52px;
+      border-radius: 14px;
+      background: #ffffff;
+      color: #7b7b7b;
+      border: 1px solid #d9d9d9;
+      flex-shrink: 0;
+    }
+    &&:hover { background: #fcfcfc; }
   `}
 
   ${({ appVariant }) =>

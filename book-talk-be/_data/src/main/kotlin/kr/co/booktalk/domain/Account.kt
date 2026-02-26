@@ -1,8 +1,6 @@
 package kr.co.booktalk.domain
 
-import jakarta.persistence.Entity
-import jakarta.persistence.EntityListeners
-import jakarta.persistence.Table
+import jakarta.persistence.*
 import kr.co.booktalk.AuditableUuidEntity
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import org.springframework.data.jpa.repository.JpaRepository
@@ -14,15 +12,26 @@ import java.util.*
 @Table(name = "account")
 @EntityListeners(AuditingEntityListener::class)
 class AccountEntity(
+    @Enumerated(EnumType.STRING)
+    var provider: Provider? = null,
+
+    var email: String = "",
+
     var name: String = "",
+
+    var password: String? = null,
 
     var refreshToken: String? = null
 ) : AuditableUuidEntity()
+
+enum class Provider {
+    GOOGLE
+}
 
 @Transactional(readOnly = true)
 @Repository
 interface AccountRepository : JpaRepository<AccountEntity, UUID> {
     fun existsByName(name: String): Boolean
-    fun findByName(name: String): AccountEntity?
+    fun findByEmail(email: String): AccountEntity?
     fun findByRefreshToken(refreshToken: String): AccountEntity?
 }
