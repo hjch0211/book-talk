@@ -17,23 +17,26 @@ import kr.co.booktalk.domain.DebateRoundEntity
 import kr.co.booktalk.client.MonitorClient
 import kr.co.booktalk.client.SendRequest
 import kr.co.booktalk.coroutineGlobalExceptionHandler
+import kr.co.booktalk.realtime.BaseRealtimeService
 import org.springframework.stereotype.Service
-import org.springframework.web.socket.TextMessage
-import org.springframework.web.socket.WebSocketSession
 
 @Service
 class DebateRealtimeService(
     private val debateOnlineAccountsCache: DebateOnlineAccountsCache,
     private val handRaiseCache: HandRaiseCache,
-    private val webSocketSessionCache: WebSocketSessionCache,
-    private val monitorClient: MonitorClient,
-    private val objectMapper: ObjectMapper,
+    webSocketSessionCache: WebSocketSessionCache,
+    monitorClient: MonitorClient,
+    objectMapper: ObjectMapper,
     private val appProperties: AppProperties
+) : BaseRealtimeService(
+    webSocketSessionCache = webSocketSessionCache,
+    monitorClient = monitorClient,
+    objectMapper = objectMapper,
+    scope = CoroutineScope(
+        SupervisorJob() + Dispatchers.IO + CoroutineName("debate-realtime-service") + coroutineGlobalExceptionHandler
+    ),
 ) {
     private val logger = KotlinLogging.logger {}
-    private val scope = CoroutineScope(
-        SupervisorJob() + Dispatchers.IO + CoroutineName("debate-realtime-service") + coroutineGlobalExceptionHandler
-    )
 
     @PreDestroy
     fun destroy() {
@@ -119,15 +122,6 @@ class DebateRealtimeService(
         broadcastToDebateRoom(debateId, objectMapper.writeValueAsString(response))
     }
 
-    fun broadcastAiChatCompleted(chatId: String, debateId: String) {
-        val response = AiChatCompletedResponse(
-            payload = AiChatCompletedResponse.Payload(
-                chatId = chatId
-            )
-        )
-        broadcastToDebateRoom(debateId, objectMapper.writeValueAsString(response))
-    }
-
     fun broadcastAiSummaryCompleted(debateId: String) {
         val response = AiSummaryCompletedResponse(
             payload = AiSummaryCompletedResponse.Payload(
@@ -135,15 +129,6 @@ class DebateRealtimeService(
             )
         )
         broadcastToDebateRoom(debateId, objectMapper.writeValueAsString(response))
-    }
-
-    fun sendToSession(accountId: String, messageJson: String) {
-        val session = webSocketSessionCache.get(accountId)
-        if (session != null) {
-            sendTextMessage(session, messageJson)
-        } else {
-            logger.warn { "세션을 찾을 수 없음: accountId=$accountId" }
-        }
     }
 
     private fun broadcastToDebateRoom(debateId: String, messageJson: String) {
@@ -156,30 +141,6 @@ class DebateRealtimeService(
             }
         } catch (e: Exception) {
             logger.error(e) { "토론방 브로드캐스트 실패: debateId=$debateId, messageJson=$messageJson" }
-            scope.launch {
-                monitorClient.send(
-                    SendRequest(
-                        title = "[book-talk-api] INTERNAL SERVER ERROR",
-                        message = "${e.message}",
-                        stackTrace = e.stackTraceToString(),
-                        level = SendRequest.Level.ERROR
-                    )
-                )
-            }
-        }
-    }
-
-    private fun sendTextMessage(session: WebSocketSession, messageJson: String) {
-        try {
-            if (session.isOpen) {
-                synchronized(session) {
-                    if (session.isOpen) {
-                        session.sendMessage(TextMessage(messageJson))
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            logger.error(e) { "메시지 전송 실패: sessionId=${session.id}" }
             scope.launch {
                 monitorClient.send(
                     SendRequest(

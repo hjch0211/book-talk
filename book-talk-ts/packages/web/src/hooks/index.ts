@@ -1,4 +1,6 @@
 export type { CurrentRoundInfo, RoundType } from '@src/externals/debate';
+export { useAiChat } from './domain/useAiChat';
+export { useAiChatRealtimeConnection } from './domain/useAiChatRealtimeConnection';
 export { useDebate } from './domain/useDebate';
 export { useDebateChat } from './domain/useDebateChat';
 export { useDebateRealtimeConnection } from './domain/useDebateRealtimeConnection.tsx';

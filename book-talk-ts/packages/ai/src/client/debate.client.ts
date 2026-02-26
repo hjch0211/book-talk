@@ -56,6 +56,8 @@ export interface DebateClient {
   findOne(debateId: string): Promise<DebateInfo>;
   /** 토론방 AI 요약 완성 콜백 */
   notifySummaryCompleted(debateId: string): Promise<void>;
+  /** 유저 메시지 저장 완료 콜백 */
+  notifyUserMessageSaved(chatId: string): Promise<void>;
   /** 토론방 AI 채팅 완성 콜백 */
   notifyChatCompleted(chatId: string): Promise<void>;
 }
@@ -90,9 +92,18 @@ export class BooktalkDebateClient implements DebateClient {
     }
   }
 
+  async notifyUserMessageSaved(chatId: string): Promise<void> {
+    try {
+      await axios.post(`${this.config.baseUrl}/ai/chats/${chatId}/user-message-saved`);
+    } catch (error) {
+      Logger.error(`유저 메시지 저장 콜백 실패: ${error}`);
+      throw error;
+    }
+  }
+
   async notifyChatCompleted(chatId: string): Promise<void> {
     try {
-      await axios.post(`${this.config.baseUrl}/debates/ai/chats/${chatId}/completion`);
+      await axios.post(`${this.config.baseUrl}/ai/chats/${chatId}/completion`);
     } catch (error) {
       Logger.error(`토론방 AI 채팅 완성 콜백 실패: ${error}`);
       throw error;
@@ -103,6 +114,8 @@ export class BooktalkDebateClient implements DebateClient {
 /** NoOp Debate Client */
 export class NoOpDebateClient implements DebateClient {
   async notifySummaryCompleted(_debateId: string): Promise<void> {}
+
+  async notifyUserMessageSaved(_chatId: string): Promise<void> {}
 
   async notifyChatCompleted(_chatId: string): Promise<void> {}
 

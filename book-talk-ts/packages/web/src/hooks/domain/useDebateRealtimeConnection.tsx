@@ -1,3 +1,4 @@
+import { findOneAiChatQueryOptions } from '@src/externals/aiChat';
 import {
   type Debate,
   findOneDebateQueryOptions,
@@ -265,6 +266,13 @@ export const useDebateRealtimeConnection = (props: Props) => {
     }
   });
 
+  /** AI 채팅 완성 */
+  const onAiChatCompleted = useEffectEvent((chatId: string) => {
+    void queryClient.invalidateQueries({
+      queryKey: findOneAiChatQueryOptions(chatId).queryKey,
+    });
+  });
+
   /** AI 요약 완성 */
   const onAiSummaryCompleted = useEffectEvent(async () => {
     if (debateId) {
@@ -319,6 +327,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
       onVoiceSignaling: handleVoiceSignaling,
       onChatMessage,
       onAiSummaryCompleted,
+      onAiChatCompleted,
     });
 
     return () => {
