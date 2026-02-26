@@ -7,6 +7,7 @@ import preparationExample from '@src/assets/landing/preparation-example.png';
 import round1Example from '@src/assets/landing/round-1-example.png';
 import round2Example from '@src/assets/landing/round-2-example.png';
 import tooltipExample from '@src/assets/landing/tooltip-example.png';
+import { AppButton } from '@src/components/molecules/AppButton';
 import AppHeader from '@src/components/organisms/AppHeader';
 import PageContainer from '@src/components/templates/PageContainer';
 import { urls } from '@src/constants/urls';
@@ -28,8 +29,6 @@ import {
   FooterLinks,
   FooterMenuGroup,
   FooterSeparator,
-  HeroCTAButton,
-  HeroCTAText,
   HeroDecorLeft,
   HeroDecorRight,
   HeroHeadHighlight,
@@ -76,9 +75,9 @@ export function LandingPage() {
               <br />
               <HeroHeadHighlight>혼자 읽자니</HeroHeadHighlight> 동기가 부족하고
             </HeroHeadline>
-            <HeroCTAButton onClick={() => navigate('/home')}>
-              <HeroCTAText>{'토론방 홈으로 가기 >'}</HeroCTAText>
-            </HeroCTAButton>
+            <AppButton appVariant="rounded" hoverAnimation onClick={() => navigate('/home')}>
+              {'토론방 홈으로 가기 >'}
+            </AppButton>
           </HeroTextRow>
         </HeroInner>
       </HeroSection>
@@ -224,9 +223,9 @@ export function LandingPage() {
                       alt="손들기 버튼"
                       style={{
                         position: 'absolute',
-                        right: 27,
+                        right: 31,
                         bottom: 56,
-                        width: 106,
+                        width: 100,
                         zIndex: 2,
                       }}
                     />
@@ -267,9 +266,9 @@ export function LandingPage() {
           </ProcessStepsContainer>
         </ProcessSection>
 
-        <HeroCTAButton onClick={() => navigate('/home')}>
-          <HeroCTAText>토론방 홈으로 가기 &gt;</HeroCTAText>
-        </HeroCTAButton>
+        <AppButton appVariant="rounded" hoverAnimation onClick={() => navigate('/home')}>
+          토론방 홈으로 가기 &gt;
+        </AppButton>
       </ProcessOuter>
 
       <FooterContainer>
