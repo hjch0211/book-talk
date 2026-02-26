@@ -19,3 +19,10 @@ lib:
     webhook-url: ${SLACK_WEBHOOK_URL}
   ai:
     base-url: ${AI_BASE_URL}
+  mail:
+    host: ${MAIL_HOST}
+    port: ${MAIL_PORT}
+    username: ${MAIL_USERNAME}
+    password: ${MAIL_PASSWORD}
+    from-email: ${MAIL_FROM_EMAIL}
+    from-name: ${MAIL_FROM_NAME}

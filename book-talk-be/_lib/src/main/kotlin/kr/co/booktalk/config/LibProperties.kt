@@ -10,6 +10,7 @@ data class LibProperties(
     val naver: NaverProperties = NaverProperties(),
     val slack: SlackProperties = SlackProperties(),
     val ai: AiProperties = AiProperties(),
+    val mail: MailProperties = MailProperties(),
 ) {
     data class AesProperties(
         val secretString: String = "",
@@ -51,5 +52,17 @@ data class LibProperties(
         val baseUrl: String = "",
     ) {
         fun isValid(): Boolean = baseUrl.isNotBlank()
+    }
+
+    data class MailProperties(
+        val host: String = "",
+        val port: Int = 587,
+        val username: String = "",
+        val password: String = "",
+        val fromEmail: String = "",
+        val fromName: String = "",
+    ) {
+        fun isValid(): Boolean =
+            host.isNotBlank() && username.isNotBlank() && password.isNotBlank() && fromEmail.isNotBlank()
     }
 }

@@ -9,6 +9,7 @@ import io.ktor.serialization.jackson.*
 import kr.co.booktalk.client.*
 import org.springframework.context.annotation.Bean
 import org.springframework.context.annotation.Configuration
+import org.springframework.mail.javamail.JavaMailSenderImpl
 
 @Configuration
 class HttpClientConfig {
@@ -70,5 +71,26 @@ class HttpClientConfig {
                 properties = properties.ai
             )
         }
+    }
+
+    @Bean
+    fun mailClient(properties: LibProperties): MailClient {
+        if (!properties.mail.isValid()) {
+            logger.warn { "Mail 설정이 비었습니다. NoOpMailClient를 생성합니다." }
+            return NoOpMailClient()
+        }
+        val mailSender = JavaMailSenderImpl().apply {
+            host = properties.mail.host
+            port = properties.mail.port
+            username = properties.mail.username
+            password = properties.mail.password
+            javaMailProperties["mail.smtp.auth"] = "true"
+            javaMailProperties["mail.smtp.starttls.enable"] = "true"
+        }
+        return JavaMailSenderMailClient(
+            mailSender = mailSender,
+            fromEmail = properties.mail.fromEmail,
+            fromName = properties.mail.fromName,
+        )
     }
 }

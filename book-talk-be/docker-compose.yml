@@ -76,6 +76,12 @@ services:
       NAVER_CLIENT_SECRET: ${NAVER_CLIENT_SECRET}
       SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
       AI_BASE_URL: ${AI_BASE_URL}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM_EMAIL: ${MAIL_FROM_EMAIL}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
     depends_on:
       postgres:
         condition: service_healthy
@@ -118,6 +124,10 @@ services:
       JWT_REFRESH_EXPIRING_TIME: ${JWT_REFRESH_EXPIRING_TIME}
       SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
       AI_BASE_URL: ${AI_BASE_URL}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
     depends_on:
       postgres:
         condition: service_healthy

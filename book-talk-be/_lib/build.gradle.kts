@@ -13,6 +13,7 @@ dependencies {
     implementation("at.favre.lib:bcrypt:0.10.2")
     api("com.auth0:java-jwt:4.4.0")
     implementation(libs.bundles.ktor.client)
+    implementation("org.springframework.boot:spring-boot-starter-mail")
 }
 
 kotlin {
