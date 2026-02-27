@@ -3,6 +3,7 @@ import { DebateFull } from '@src/routes/_Error/DebateFull';
 import { NotFound } from '@src/routes/_Error/NotFound';
 import { PrivacyPage } from '@src/routes/_Policy/Privacy';
 import { TermsOfUsePage } from '@src/routes/_Policy/TermsOfUse';
+import { ForgotPasswordPage } from '@src/routes/_Sign/ForgotPassword';
 import { GoogleCallbackPage } from '@src/routes/_Sign/GoogleCallback';
 import { SignInPage } from '@src/routes/_Sign/SignIn';
 import { SignUpPage } from '@src/routes/_Sign/SignUp';
@@ -18,6 +19,7 @@ export function AppRoutes() {
       <Route path="/home" element={<MainPage />} />
       <Route path="/sign-in" element={<SignInPage />} />
       <Route path="/sign-up" element={<SignUpPage />} />
+      <Route path="/forgot-password" element={<ForgotPasswordPage />} />
       <Route path="/auth/callback" element={<GoogleCallbackPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/terms-of-use" element={<TermsOfUsePage />} />

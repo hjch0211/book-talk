@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { Link } from 'react-router-dom';
 
 export const HeroSection = styled.section`
     position: relative;  
@@ -183,7 +184,7 @@ export const FeatureCardContent = styled.div`
     overflow: hidden;
 `;
 
-export const MoreLink = styled.a`
+export const MoreLink = styled(Link)`
     font-family: 'S-Core Dream', sans-serif;
     font-weight: 500;
     font-size: 14px;
@@ -299,7 +300,7 @@ export const ProcessImageCard = styled.div<ImageCardProps>`
     box-sizing: border-box;
     position: relative;
     overflow: hidden;
-    width: ${({ $prepare }) => ($prepare ? '662px' : '661px')};
+    width: 662px;
     height: 470px;
     border-radius: 24px;
     flex-shrink: 0;
@@ -471,6 +472,20 @@ export const FooterLink = styled.a`
     color: #262626;
     text-decoration: none;
     cursor: pointer;
+
+    &:hover {
+        text-decoration: underline;
+    }
+`;
+
+export const FooterNavLink = styled(Link)`
+    font-family: 'S-Core Dream', sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    line-height: 150%;
+    letter-spacing: 0.3px;
+    color: #262626;
+    text-decoration: none;
 
     &:hover {
         text-decoration: underline;

@@ -90,7 +90,9 @@ export function SignInPage() {
                 )}
               </FieldGroup>
             </FieldsWrapper>
-            <ForgotPassword type="button">비밀번호를 잊어버렸나요?</ForgotPassword>
+            <ForgotPassword type="button" onClick={() => navigate('/forgot-password')}>
+              비밀번호를 잊어버렸나요?
+            </ForgotPassword>
           </EmailSection>
           <ButtonsSection>
             {submitError && <ErrorMessage>{submitError}</ErrorMessage>}

@@ -5,10 +5,9 @@ import { AppTextField } from '@src/components/molecules/AppTextField';
 import AppHeader from '@src/components/organisms/AppHeader';
 import PageContainer from '@src/components/templates/PageContainer';
 import { Controller } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+
 import {
   ButtonsSection,
-  CountdownText,
   DescriptionText,
   DividerContainer,
   DividerLine,
@@ -22,13 +21,13 @@ import {
   SignContainer,
   SignForm,
   SignTitle,
+  SignTitleRow,
   SocialSection,
   UrlLink,
 } from '../style';
-import { formatCountdown, useSignUp } from './useSignUp';
+import { useSignUp } from './useSignUp';
 
 export function SignUpPage() {
-  const navigate = useNavigate();
   const {
     control,
     errors,
@@ -36,8 +35,6 @@ export function SignUpPage() {
     submitError,
     isLoading,
     emailVerifiedStatus,
-    countdown,
-    emailSuccess,
     emailCodeSuccess,
     handleSendCode,
     handleVerifyCode,
@@ -48,10 +45,12 @@ export function SignUpPage() {
     <PageContainer>
       <AppHeader />
       <SignContainer>
-        <SignTitle>회원가입</SignTitle>
-        <DescriptionText>
-          이미 계정이 있으신가요? <UrlLink onClick={() => navigate('/sign-in')}>로그인</UrlLink>
-        </DescriptionText>
+        <SignTitleRow>
+          <SignTitle>회원가입</SignTitle>
+          <DescriptionText>
+            이미 계정이 있으신가요? <UrlLink to="/sign-in">로그인</UrlLink>
+          </DescriptionText>
+        </SignTitleRow>
         <SignForm onSubmit={onSubmit}>
           <SocialSection>
             <AppButton
@@ -83,7 +82,7 @@ export function SignUpPage() {
                         ref={ref}
                         style={{ flex: 1 }}
                         error={!!errors.email}
-                        success={!!emailSuccess && !errors.email}
+                        success={emailVerifiedStatus !== 'IDLE' && !errors.email}
                         {...field}
                       />
                     )}
@@ -100,10 +99,6 @@ export function SignUpPage() {
                 {errors.email && (
                   <AppFieldMessage type="error">{errors.email.message}</AppFieldMessage>
                 )}
-                {!errors.email && emailSuccess && (
-                  <AppFieldMessage type="success">{emailSuccess}</AppFieldMessage>
-                )}
-                {countdown !== null && <CountdownText>{formatCountdown(countdown)}</CountdownText>}
               </FieldGroup>
 
               <FieldGroup>
@@ -205,8 +200,8 @@ export function SignUpPage() {
               </FieldGroup>
             </FieldsWrapper>
             <DescriptionText>
-              <UrlLink onClick={() => navigate('/terms-of-use')}>서비스이용약관</UrlLink>과{' '}
-              <UrlLink onClick={() => navigate('/privacy')}>개인정보처리방침</UrlLink>에 동의합니다
+              <UrlLink to="/terms-of-use">서비스이용약관</UrlLink>과{' '}
+              <UrlLink to="/privacy">개인정보처리방침</UrlLink>에 동의합니다
             </DescriptionText>
           </EmailSection>
           <ButtonsSection>

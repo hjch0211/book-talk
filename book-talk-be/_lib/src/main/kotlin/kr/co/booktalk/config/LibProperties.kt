@@ -64,7 +64,7 @@ data class LibProperties(
         val fromName: String = "",
     ) {
         fun isValid(): Boolean =
-            host.isNotBlank() && username.isNotBlank() && password.isNotBlank() && fromEmail.isNotBlank()
+            host.isNotBlank() && port in 1..65535 && username.isNotBlank() && password.isNotBlank() && fromEmail.isNotBlank()
     }
 
     data class GoogleProperties(

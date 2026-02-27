@@ -30,7 +30,7 @@ export const StyledButton = styled(Button, {
     background: #f0f0f0;
     border-color: #e0e0e0;
     color: #b0b0b0;
-    cursor: none;
+    cursor: not-allowed;
   }
 
   ${({ hoverAnimation }) =>

@@ -16,25 +16,27 @@ import signedProfileSvg from '@src/assets/header/signed-profile.svg';
 import unsignedProfileSvg from '@src/assets/header/unsigned-profile.svg';
 import { meQueryOption } from '@src/externals/account';
 import { signOut } from '@src/externals/auth';
-import { clearTokens } from '@src/externals/client.ts';
-import { useMutation, useSuspenseQuery } from '@tanstack/react-query';
+import { clearTokens } from '@src/externals/client';
+import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import type React from 'react';
 import { Suspense, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoSvg from '../../../assets/logo.svg';
-import { LogoContainer, LogoWrapper, NavMenuGroup, NavMenuItemText } from './style.ts';
+import { LogoContainer, LogoWrapper, NavMenuGroup, NavMenuItemText } from './style';
 
 const ProfileSection = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const { data: me } = useSuspenseQuery(meQueryOption);
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const logoutMutation = useMutation({
     mutationFn: signOut,
     onSettled: () => {
       clearTokens();
-      window.location.reload();
+      queryClient.clear();
+      navigate('/');
     },
   });
 

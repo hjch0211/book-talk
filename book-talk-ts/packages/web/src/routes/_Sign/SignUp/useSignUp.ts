@@ -8,6 +8,7 @@ import {
   verifyEmailCode,
 } from '@src/externals/auth';
 import { saveTokens } from '@src/externals/client';
+import { useToast } from '@src/hooks/infra/useToast';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
@@ -15,8 +16,6 @@ import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
 
 export type EmailVerifiedStatus = 'IDLE' | 'SENDING' | 'SENT' | 'VERIFYING' | 'VERIFIED';
-
-const COUNTDOWN_SECONDS = 299;
 
 export const formatCountdown = (seconds: number) => {
   const m = Math.floor(seconds / 60);
@@ -41,13 +40,13 @@ type SignUpFormValues = z.infer<typeof SignUpFormSchema>;
 
 export function useSignUp() {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { data: me } = useQuery(meQueryOption);
   const [emailVerifiedStatus, setEmailVerifiedStatus] = useState<EmailVerifiedStatus>('IDLE');
-  const [countdown, setCountdown] = useState<number | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
-  const [emailSuccess, setEmailSuccess] = useState<string | null>(null);
   const [emailCodeSuccess, setEmailCodeSuccess] = useState<string | null>(null);
+  const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
 
   const {
     control,
@@ -61,32 +60,12 @@ export function useSignUp() {
   });
 
   useEffect(() => {
-    if (me) navigate('/');
+    if (me) navigate('/home');
   }, [me, navigate]);
-
-  useEffect(() => {
-    if (emailVerifiedStatus === 'SENT') {
-      setCountdown(COUNTDOWN_SECONDS);
-    } else if (emailVerifiedStatus === 'VERIFIED' || emailVerifiedStatus === 'IDLE') {
-      setCountdown(null);
-    }
-  }, [emailVerifiedStatus]);
-
-  useEffect(() => {
-    if (countdown === null) return;
-    if (countdown === 0) {
-      setEmailVerifiedStatus('IDLE');
-      setError('emailCode', { message: '인증 시간이 만료되었습니다. 다시 시도해주세요.' });
-      setCountdown(null);
-      return;
-    }
-    const timer = setTimeout(() => setCountdown((prev) => (prev !== null ? prev - 1 : null)), 1000);
-    return () => clearTimeout(timer);
-  }, [countdown, setError]);
 
   const handleSendCode = async () => {
     const email = getValues('email');
-    setEmailSuccess(null);
+    setVerifiedEmail(null);
     if (!email) {
       setError('email', { message: '이메일을 입력해주세요.' });
       return;
@@ -95,10 +74,10 @@ export function useSignUp() {
     try {
       await sendEmailCode({ email });
       setEmailVerifiedStatus('SENT');
-      setEmailSuccess('인증 코드가 발송되었습니다.');
-    } catch (error) {
+      toast.success('검증 코드가 전송되었습니다.');
+    } catch {
       setEmailVerifiedStatus('IDLE');
-      setError('email', { message: extractError(error, '인증 코드 발송 중 오류가 발생했습니다.') });
+      setError('email', { message: '인증 코드 발송 중 오류가 발생했습니다.' });
     }
   };
 
@@ -109,6 +88,7 @@ export function useSignUp() {
     try {
       await verifyEmailCode({ email, code: emailCode });
       setEmailVerifiedStatus('VERIFIED');
+      setVerifiedEmail(email);
       setEmailCodeSuccess('이메일이 확인되었습니다.');
     } catch (error) {
       setEmailVerifiedStatus('SENT');
@@ -120,7 +100,7 @@ export function useSignUp() {
 
   const submitHandler: SubmitHandler<SignUpFormValues> = async (data) => {
     setSubmitError(null);
-    if (emailVerifiedStatus !== 'VERIFIED') {
+    if (emailVerifiedStatus !== 'VERIFIED' || data.email !== verifiedEmail) {
       setError('emailCode', { message: '이메일 인증을 완료해주세요.' });
       return;
     }
@@ -143,8 +123,6 @@ export function useSignUp() {
     submitError,
     isLoading,
     emailVerifiedStatus,
-    countdown,
-    emailSuccess,
     emailCodeSuccess,
     handleSendCode,
     handleVerifyCode,

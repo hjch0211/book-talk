@@ -21,6 +21,7 @@ class AccountController(
     /** 내 계정 정보 업데이트 */
     @PatchMapping("/accounts/me")
     fun patchMy(authAccount: AuthAccount, @RequestBody request: PatchMyRequest) {
+        request.validate()
         accountService.patchMy(authAccount, request)
     }
 }

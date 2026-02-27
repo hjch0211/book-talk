@@ -27,6 +27,7 @@ import {
   FooterCopyright,
   FooterLink,
   FooterLinks,
+  FooterNavLink,
   FooterMenuGroup,
   FooterSeparator,
   HeroDecorLeft,
@@ -116,7 +117,7 @@ export function LandingPage() {
               </FeatureCardContent>
               <FeatureCardGradient />
             </FeatureCard>
-            <MoreLink onClick={() => navigate('/home')}>토론방 더보러가기 &gt;</MoreLink>
+            <MoreLink to="/home">토론방 더보러가기 &gt;</MoreLink>
           </FeatureItem>
         </FeaturesGrid>
       </FeaturesSection>
@@ -275,9 +276,9 @@ export function LandingPage() {
         <FooterBigText>BOOKTALK</FooterBigText>
         <FooterLinks>
           <FooterMenuGroup>
-            <FooterLink onClick={() => navigate('/privacy')}>개인정보처리방침</FooterLink>
+            <FooterNavLink to="/privacy">개인정보처리방침</FooterNavLink>
             <FooterSeparator>|</FooterSeparator>
-            <FooterLink onClick={() => navigate('/terms-of-use')}>이용약관</FooterLink>
+            <FooterNavLink to="/terms-of-use">이용약관</FooterNavLink>
             <FooterSeparator>|</FooterSeparator>
             <FooterLink href={urls.INQUIRY} target="_blank" rel="noopener noreferrer">
               문의하기

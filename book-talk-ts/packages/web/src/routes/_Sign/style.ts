@@ -1,4 +1,5 @@
 import styled from '@emotion/styled';
+import { Link } from 'react-router-dom';
 
 export const SignContainer = styled.div`
   display: flex;
@@ -10,8 +11,14 @@ export const SignContainer = styled.div`
   padding-top: 150px;
 `;
 
-export const SignTitle = styled.h1`
+export const SignTitleRow = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   width: 384px;
+`;
+
+export const SignTitle = styled.h1`
   font-style: normal;
   font-weight: 500;
   font-size: 20px;
@@ -127,16 +134,6 @@ export const ErrorMessage = styled.p`
     width: 100%;
 `;
 
-export const CountdownText = styled.span`
-  font-family: 'S-Core Dream', serif;
-  font-style: normal;
-  font-weight: 200;
-  font-size: 12px;
-  line-height: 150%;
-  letter-spacing: 0.3px;
-  color: #f59e0b;
-`;
-
 export const FieldGroup = styled.div`
   display: flex;
   flex-direction: column;
@@ -167,7 +164,7 @@ export const DescriptionText = styled.p`
   text-decoration: none;
 `;
 
-export const UrlLink = styled.a`
+export const UrlLink = styled(Link)`
   text-decoration-line: underline;
-  cursor: pointer;
+  color: inherit;
 `;

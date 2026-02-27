@@ -86,6 +86,9 @@ class HttpClientConfig {
             password = properties.mail.password
             javaMailProperties["mail.smtp.auth"] = "true"
             javaMailProperties["mail.smtp.starttls.enable"] = "true"
+            javaMailProperties["mail.smtp.connectiontimeout"] = "5000"
+            javaMailProperties["mail.smtp.timeout"] = "5000"
+            javaMailProperties["mail.smtp.writetimeout"] = "5000"
         }
         return JavaMailSenderMailClient(
             mailSender = mailSender,

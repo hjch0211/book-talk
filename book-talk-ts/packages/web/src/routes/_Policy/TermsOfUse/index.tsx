@@ -47,7 +47,7 @@ export function TermsOfUsePage() {
       <AppHeader />
       <PolicyWrapper>
         <PolicyTitle>Booktalk 서비스 이용약관</PolicyTitle>
-        <PolicyDate>시행일자: 2025년 02월 27일</PolicyDate>
+        <PolicyDate>시행일자: 2026년 02월 27일</PolicyDate>
         <PolicyDivider />
 
         <ChapterTitle>제1장 총칙</ChapterTitle>
