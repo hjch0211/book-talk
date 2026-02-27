@@ -58,5 +58,4 @@ class NoOpGoogleAuthClient : GoogleAuthClient {
         logger.warn { "[NoOp] Google OAuth exchange skipped (Google config missing)." }
         return GoogleUserInfo(email = "")
     }
-    }
 }
