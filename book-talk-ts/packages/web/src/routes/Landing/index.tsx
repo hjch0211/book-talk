@@ -10,7 +10,7 @@ import tooltipExample from '@src/assets/landing/tooltip-example.png';
 import { AppButton } from '@src/components/molecules/AppButton';
 import AppHeader from '@src/components/organisms/AppHeader';
 import PageContainer from '@src/components/templates/PageContainer';
-import { urls } from '@src/constants/urls';
+import { urls } from '@src/constants/urls.ts';
 import { useNavigate } from 'react-router-dom';
 import {
   FeatureBadge,
@@ -275,13 +275,9 @@ export function LandingPage() {
         <FooterBigText>BOOKTALK</FooterBigText>
         <FooterLinks>
           <FooterMenuGroup>
-            <FooterLink href={urls.PRIVACY} target="_blank" rel="noopener noreferrer">
-              개인정보처리방침
-            </FooterLink>
+            <FooterLink onClick={() => navigate('/privacy')}>개인정보처리방침</FooterLink>
             <FooterSeparator>|</FooterSeparator>
-            <FooterLink href={urls.TERMS_OF_USE} target="_blank" rel="noopener noreferrer">
-              이용약관
-            </FooterLink>
+            <FooterLink onClick={() => navigate('/terms-of-use')}>이용약관</FooterLink>
             <FooterSeparator>|</FooterSeparator>
             <FooterLink href={urls.INQUIRY} target="_blank" rel="noopener noreferrer">
               문의하기
