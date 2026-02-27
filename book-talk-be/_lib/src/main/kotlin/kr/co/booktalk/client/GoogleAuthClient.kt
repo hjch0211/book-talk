@@ -55,7 +55,8 @@ class NoOpGoogleAuthClient : GoogleAuthClient {
     private val logger = KotlinLogging.logger {}
 
     override suspend fun exchangeCode(code: String): GoogleUserInfo {
-        logger.warn { "[NoOp] Google OAuth exchangeCode: $code" }
+        logger.warn { "[NoOp] Google OAuth exchange skipped (Google config missing)." }
         return GoogleUserInfo(email = "")
+    }
     }
 }
