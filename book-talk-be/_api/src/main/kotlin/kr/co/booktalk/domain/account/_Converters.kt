@@ -6,6 +6,7 @@ import kr.co.booktalk.domain.auth.AuthAccount
 fun AccountEntity.toResponse(): FindMyResponse {
     return FindMyResponse(
         id = id.toString(),
+        email = email,
         name = name,
         createdAt = createdAt
     )

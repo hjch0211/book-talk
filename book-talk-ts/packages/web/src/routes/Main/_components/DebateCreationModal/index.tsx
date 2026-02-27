@@ -1,18 +1,14 @@
 import { Search } from '@mui/icons-material';
 import { Typography } from '@mui/material';
 import { meQueryOption } from '@src/externals/account';
-import { signIn, signUp, validateDuplicateSignIn } from '@src/externals/auth';
 import { type BookData, searchBooksQueryOptions } from '@src/externals/book';
-import { type ApiError, saveTokens } from '@src/externals/client.ts';
 import {
   type CreateDebateRequest,
   createDebate,
   findOneDebateQueryOptions,
 } from '@src/externals/debate';
-import { useToast } from '@src/hooks';
-import { useDebounce } from '@src/hooks/infra/useDebounce';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Modal from '../../../../components/organisms/Modal';
 import {
@@ -45,84 +41,9 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
   const [showDropdown, setShowDropdown] = useState(false);
   const [selectedBook, setSelectedBook] = useState<BookData | null>(null);
-  const [nickname, setNickname] = useState('');
-  const [nicknameValidation, setNicknameValidation] = useState<{
-    status: 'idle' | 'error' | 'success';
-    content: string;
-  }>({ status: 'idle', content: '' });
   const searchWrapperRef = useRef<HTMLDivElement>(null);
-  const { toast } = useToast();
 
   const { data: me } = useQuery(meQueryOption);
-
-  const checkNickname = useCallback(async (name: string) => {
-    if (!name.trim()) {
-      setNicknameValidation({ status: 'idle', content: '' });
-      return;
-    }
-
-    try {
-      await validateDuplicateSignIn({ name: name.trim() });
-      setNicknameValidation({ status: 'success', content: '사용 가능한 닉네임입니다.' });
-    } catch (_) {
-      setNicknameValidation({
-        status: 'error',
-        content: '사용중인 닉네임입니다. 다른 닉네임을 입력해주세요.',
-      });
-    }
-  }, []);
-
-  const { debouncedCallback: debouncedCheckNickname } = useDebounce(checkNickname, {
-    delay: 1000,
-  });
-
-  const signInMutation = useMutation({
-    mutationFn: (name: string) => signIn({ name }),
-    onSuccess: async (data) => {
-      saveTokens(data.accessToken, data.refreshToken);
-      await queryClient.invalidateQueries();
-      if (selectedBook?.isbn && topic.trim()) {
-        const request: CreateDebateRequest = {
-          bookTitle: selectedBook.title,
-          bookISBN: selectedBook.isbn,
-          bookAuthor: selectedBook.author,
-          bookDescription: selectedBook.description,
-          bookImageUrl: selectedBook.imageUrl,
-          topic,
-        };
-        createDebateMutation.mutate(request);
-      }
-    },
-    onError: (error: ApiError, variables) => {
-      if (error?.status === 400 && error?.message === '존재하지 않는 계정입니다.') {
-        signUpMutation.mutate(variables);
-      } else {
-        toast.error('로그인 중 오류가 발생했습니다.');
-      }
-    },
-  });
-
-  const signUpMutation = useMutation({
-    mutationFn: (name: string) => signUp({ name }),
-    onSuccess: async (data) => {
-      saveTokens(data.accessToken, data.refreshToken);
-      await queryClient.invalidateQueries();
-      if (selectedBook?.isbn && topic.trim()) {
-        const request: CreateDebateRequest = {
-          bookTitle: selectedBook.title,
-          bookISBN: selectedBook.isbn,
-          bookAuthor: selectedBook.author,
-          bookDescription: selectedBook.description,
-          bookImageUrl: selectedBook.imageUrl,
-          topic,
-        };
-        createDebateMutation.mutate(request);
-      }
-    },
-    onError: () => {
-      toast.error('회원가입 중 오류가 발생했습니다.');
-    },
-  });
 
   const { data: searchResults, isLoading } = useQuery(
     searchBooksQueryOptions({ query: debouncedSearchQuery, page: 1, size: 20 })
@@ -166,23 +87,8 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
     setShowDropdown(false);
   };
 
-  const handleNicknameChange = (value: string) => {
-    setNickname(value);
-    debouncedCheckNickname(value);
-  };
-
   const handleSubmit = () => {
     if (!selectedBook || !selectedBook.isbn || !topic.trim()) {
-      return;
-    }
-
-    if (!me) {
-      if (!nickname.trim()) {
-        toast.error('닉네임을 입력해주세요.');
-        return;
-      }
-
-      signInMutation.mutate(nickname.trim());
       return;
     }
 
@@ -197,10 +103,7 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
     createDebateMutation.mutate(request);
   };
 
-  const isFormValid =
-    selectedBook?.isbn &&
-    topic.trim() &&
-    (me || (nickname.trim() && nicknameValidation.status !== 'error'));
+  const isFormValid = selectedBook?.isbn && topic.trim();
 
   return (
     <Modal open={open} onClose={onClose} width={860} height={me ? 548 : 568}>
@@ -208,19 +111,6 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
         <ModalTitle>토론방 생성하기</ModalTitle>
 
         <FormContainer>
-          {!me && (
-            <StyledTextField
-              label="사용할 닉네임을 입력해주세요"
-              placeholder="최대 5글자"
-              variant="outlined"
-              width="300px"
-              value={nickname}
-              onChange={(e) => handleNicknameChange(e.target.value)}
-              error={nicknameValidation.status === 'error'}
-              helperText={nicknameValidation.content}
-            />
-          )}
-
           <SearchInputWrapper ref={searchWrapperRef}>
             <StyledTextField
               label="책 제목"
@@ -282,12 +172,10 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
 
         <SubmitButton
           onClick={handleSubmit}
-          disabled={!isFormValid || createDebateMutation.isPending || signInMutation.isPending}
+          disabled={!isFormValid || createDebateMutation.isPending}
           isValid={!!isFormValid}
         >
-          {createDebateMutation.isPending || signInMutation.isPending
-            ? '생성 중...'
-            : '토론방 생성'}
+          {createDebateMutation.isPending ? '생성 중...' : '토론방 생성'}
         </SubmitButton>
       </ModalContainer>
     </Modal>

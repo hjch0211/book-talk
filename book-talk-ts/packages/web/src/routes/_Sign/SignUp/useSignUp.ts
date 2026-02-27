@@ -1,0 +1,131 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { meQueryOption } from '@src/externals/account';
+import {
+  googleLogin,
+  SignUpRequestSchema,
+  sendEmailCode,
+  signUp,
+  verifyEmailCode,
+} from '@src/externals/auth';
+import { saveTokens } from '@src/externals/client';
+import { useToast } from '@src/hooks/infra/useToast';
+import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { type SubmitHandler, useForm } from 'react-hook-form';
+import { useNavigate } from 'react-router-dom';
+import { z } from 'zod';
+
+export type EmailVerifiedStatus = 'IDLE' | 'SENDING' | 'SENT' | 'VERIFYING' | 'VERIFIED';
+
+export const formatCountdown = (seconds: number) => {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+};
+
+const extractError = (error: unknown, fallback: string): string => {
+  if (error instanceof Error) return error.message;
+  return fallback;
+};
+
+const SignUpFormSchema = SignUpRequestSchema.extend({
+  emailCode: z.string(),
+  passwordConfirm: z.string(),
+}).refine((data) => data.password === data.passwordConfirm, {
+  message: '비밀번호가 일치하지 않습니다.',
+  path: ['passwordConfirm'],
+});
+
+type SignUpFormValues = z.infer<typeof SignUpFormSchema>;
+
+export function useSignUp() {
+  const navigate = useNavigate();
+  const { toast } = useToast();
+  const { data: me } = useQuery(meQueryOption);
+  const [emailVerifiedStatus, setEmailVerifiedStatus] = useState<EmailVerifiedStatus>('IDLE');
+  const [isLoading, setIsLoading] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [emailCodeSuccess, setEmailCodeSuccess] = useState<string | null>(null);
+  const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
+
+  const {
+    control,
+    handleSubmit,
+    setError,
+    getValues,
+    formState: { errors },
+  } = useForm<SignUpFormValues>({
+    resolver: zodResolver(SignUpFormSchema),
+    defaultValues: { email: '', emailCode: '', name: '', password: '', passwordConfirm: '' },
+  });
+
+  useEffect(() => {
+    if (me) navigate('/home');
+  }, [me, navigate]);
+
+  const handleSendCode = async () => {
+    const email = getValues('email');
+    setVerifiedEmail(null);
+    if (!email) {
+      setError('email', { message: '이메일을 입력해주세요.' });
+      return;
+    }
+    setEmailVerifiedStatus('SENDING');
+    try {
+      await sendEmailCode({ email });
+      setEmailVerifiedStatus('SENT');
+      toast.success('검증 코드가 전송되었습니다.');
+    } catch {
+      setEmailVerifiedStatus('IDLE');
+      setError('email', { message: '인증 코드 발송 중 오류가 발생했습니다.' });
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    const { email, emailCode } = getValues();
+    setEmailCodeSuccess(null);
+    setEmailVerifiedStatus('VERIFYING');
+    try {
+      await verifyEmailCode({ email, code: emailCode });
+      setEmailVerifiedStatus('VERIFIED');
+      setVerifiedEmail(email);
+      setEmailCodeSuccess('이메일이 확인되었습니다.');
+    } catch (error) {
+      setEmailVerifiedStatus('SENT');
+      setError('emailCode', {
+        message: extractError(error, '인증 코드 확인 중 오류가 발생했습니다.'),
+      });
+    }
+  };
+
+  const submitHandler: SubmitHandler<SignUpFormValues> = async (data) => {
+    setSubmitError(null);
+    if (emailVerifiedStatus !== 'VERIFIED' || data.email !== verifiedEmail) {
+      setError('emailCode', { message: '이메일 인증을 완료해주세요.' });
+      return;
+    }
+    setIsLoading(true);
+    try {
+      const tokens = await signUp({ email: data.email, name: data.name, password: data.password });
+      saveTokens(tokens.accessToken, tokens.refreshToken);
+      navigate('/home');
+    } catch (error) {
+      setSubmitError(extractError(error, '회원가입 중 오류가 발생했습니다.'));
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  return {
+    control,
+    errors,
+    onSubmit: handleSubmit(submitHandler),
+    submitError,
+    isLoading,
+    emailVerifiedStatus,
+    emailCodeSuccess,
+    handleSendCode,
+    handleVerifyCode,
+    handleGoogleLogin: googleLogin,
+  };
+}

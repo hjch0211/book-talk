@@ -6,6 +6,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties
 data class AppProperties(
     val cors: CorsProperties = CorsProperties(),
     val debate: DebateProperties = DebateProperties(),
+    val frontendUrl: String = "",
 ) {
     data class CorsProperties(
         val allowedOrigins: List<String> = emptyList(),

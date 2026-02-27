@@ -1,10 +1,10 @@
 import { Box } from '@mui/material';
+import { urls } from '@src/constants/urls.ts';
 import { meQueryOption } from '@src/externals/account';
 import { useModal } from '@src/hooks';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense } from 'react';
-import MainHeader from '../../components/organisms/MainHeader';
-import MainContainer from '../../components/templates/MainContainer';
+import AppHeader from '../../components/organisms/AppHeader';
 import PageContainer from '../../components/templates/PageContainer';
 import DebateCreationModal from './_components/DebateCreationModal';
 import {
@@ -57,28 +57,22 @@ const ButtonSection = () => {
 export function MainPage() {
   return (
     <PageContainer bgColor="linear-gradient(180deg, #FFFFFF 39.9%, #FBEAE7 100%)">
-      <MainContainer>
-        <MainHeader />
-        <MainTextContainer>
-          <Suspense fallback={<Box height="230px" />}>
-            <TextSection />
+      <AppHeader />
+      <MainTextContainer>
+        <Suspense fallback={<Box height="230px" />}>
+          <TextSection />
+        </Suspense>
+
+        <ButtonContainer>
+          <Suspense fallback={<></>}>
+            <ButtonSection />
           </Suspense>
+        </ButtonContainer>
 
-          <ButtonContainer>
-            <Suspense fallback={<></>}>
-              <ButtonSection />
-            </Suspense>
-          </ButtonContainer>
-
-          <SurveyHyperLinkText
-            href="https://docs.google.com/forms/d/e/1FAIpQLSeJS7YMm1S1qAQbUZkn7fHmm1Xyo9zV6L3cDfekLYdQq-BlUg/viewform"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            북톡에 대한 의견을 남겨주세요!
-          </SurveyHyperLinkText>
-        </MainTextContainer>
-      </MainContainer>
+        <SurveyHyperLinkText href={urls.INQUIRY} target="_blank" rel="noopener noreferrer">
+          북톡에 대한 의견을 남겨주세요!
+        </SurveyHyperLinkText>
+      </MainTextContainer>
     </PageContainer>
   );
 }

@@ -15,12 +15,13 @@ class AccountController(
     /** 내 계정 정보 조회 */
     @GetMapping("/accounts/me")
     fun findMy(authAccount: AuthAccount): HttpResult<FindMyResponse> {
-        return accountService.find(authAccount).toResult()
+        return accountService.findMy(authAccount).toResult()
     }
 
     /** 내 계정 정보 업데이트 */
     @PatchMapping("/accounts/me")
     fun patchMy(authAccount: AuthAccount, @RequestBody request: PatchMyRequest) {
+        request.validate()
         accountService.patchMy(authAccount, request)
     }
 }

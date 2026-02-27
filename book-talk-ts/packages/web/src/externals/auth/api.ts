@@ -1,15 +1,18 @@
+import { env } from '@src/configs/env';
 import { apiClient } from '../client';
 import {
   type CreateTokensResponse,
   CreateTokensResponseSchema,
   type RefreshRequest,
   RefreshRequestSchema,
+  type SendEmailCodeRequest,
+  SendEmailCodeRequestSchema,
   type SignInRequest,
   SignInRequestSchema,
   type SignUpRequest,
   SignUpRequestSchema,
-  type ValidateDuplicateSignInRequest,
-  ValidateDuplicateSignInRequestSchema,
+  type VerifyEmailCodeRequest,
+  VerifyEmailCodeRequestSchema,
 } from './schema';
 
 /** 회원가입 */
@@ -26,6 +29,18 @@ export const signIn = async (request: SignInRequest): Promise<CreateTokensRespon
   return CreateTokensResponseSchema.parse(response.data.data);
 };
 
+/** 이메일 인증 코드 발급 */
+export const sendEmailCode = async (request: SendEmailCodeRequest): Promise<void> => {
+  const validatedData = SendEmailCodeRequestSchema.parse(request);
+  await apiClient.post('/auth/email/code', validatedData);
+};
+
+/** 이메일 인증 코드 확인 */
+export const verifyEmailCode = async (request: VerifyEmailCodeRequest): Promise<void> => {
+  const validatedData = VerifyEmailCodeRequestSchema.parse(request);
+  await apiClient.post('/auth/email/verify', validatedData);
+};
+
 /** 토큰 갱신 */
 export const refreshAccessToken = async (
   request: RefreshRequest
@@ -40,10 +55,7 @@ export const signOut = async (): Promise<void> => {
   await apiClient.post('/auth/sign-out');
 };
 
-/** 중복 접속 확인 */
-export const validateDuplicateSignIn = async (
-  request: ValidateDuplicateSignInRequest
-): Promise<void> => {
-  const validatedData = ValidateDuplicateSignInRequestSchema.parse(request);
-  await apiClient.post('/auth/check', validatedData);
+/** Google OAuth 로그인 - 백엔드 /auth/google 로 브라우저 리다이렉트 */
+export const googleLogin = () => {
+  window.location.href = `${env.BASE_URL}/auth/google`;
 };

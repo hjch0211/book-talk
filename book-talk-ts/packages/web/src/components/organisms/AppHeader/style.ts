@@ -1,0 +1,45 @@
+import styled from '@emotion/styled';
+
+export const LogoContainer = styled.div`
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    width: 182px;
+    height: 44px;
+`;
+
+export const LogoWrapper = styled.div`
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 13px;
+    width: 182px;
+    height: 44px;
+`;
+
+export const NavMenuGroup = styled.nav`
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+`;
+
+export const NavMenuItemText = styled.button`
+    font-family: 'S-Core Dream', sans-serif;
+    font-weight: 500;
+    font-size: 16px;
+    line-height: 24px;
+    letter-spacing: 1px;
+    color: #262626;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+
+    &:hover {
+        color: #8E99FF;
+    }
+`;
