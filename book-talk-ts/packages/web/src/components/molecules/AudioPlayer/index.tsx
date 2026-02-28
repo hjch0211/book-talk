@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { hiddenAudioStyle } from './style';
+import { HiddenAudio } from './style';
 
 interface AudioPlayerProps {
   /** 재생할 MediaStream */
@@ -53,5 +53,5 @@ export function AudioPlayer({ stream, isAudioActive, onAutoplayBlocked }: AudioP
     });
   }, [isAudioActive]);
 
-  return <audio ref={audioRef} playsInline style={hiddenAudioStyle} />;
+  return <HiddenAudio ref={audioRef} playsInline />;
 }

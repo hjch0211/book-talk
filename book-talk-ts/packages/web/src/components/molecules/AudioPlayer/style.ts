@@ -1,3 +1,5 @@
-export const hiddenAudioStyle: React.CSSProperties = {
-  display: 'none',
-};
+import styled from '@emotion/styled';
+
+export const HiddenAudio = styled.audio`
+  display: none;
+`;

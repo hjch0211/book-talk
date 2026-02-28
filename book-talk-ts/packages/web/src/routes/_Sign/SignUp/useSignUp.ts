@@ -10,7 +10,7 @@ import {
 import { saveTokens } from '@src/externals/client';
 import { useToast } from '@src/hooks/infra/useToast';
 import { useQuery } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import { z } from 'zod';
@@ -23,13 +23,8 @@ export const formatCountdown = (seconds: number) => {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 };
 
-const extractError = (error: unknown, fallback: string): string => {
-  if (error instanceof Error) return error.message;
-  return fallback;
-};
-
 const SignUpFormSchema = SignUpRequestSchema.extend({
-  emailCode: z.string(),
+  emailCode: z.string().length(6, '인증 코드는 6자리입니다'),
   passwordConfirm: z.string(),
 }).refine((data) => data.password === data.passwordConfirm, {
   message: '비밀번호가 일치하지 않습니다.',
@@ -47,12 +42,35 @@ export function useSignUp() {
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [emailCodeSuccess, setEmailCodeSuccess] = useState<string | null>(null);
   const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
+  const [countdown, setCountdown] = useState(299);
+  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  const startCountdown = () => {
+    if (countdownRef.current) clearInterval(countdownRef.current);
+    setCountdown(299);
+    countdownRef.current = setInterval(() => {
+      setCountdown((prev) => {
+        if (prev <= 1) {
+          clearInterval(countdownRef.current!);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (countdownRef.current) clearInterval(countdownRef.current);
+    };
+  }, []);
 
   const {
     control,
     handleSubmit,
     setError,
     getValues,
+    trigger,
     formState: { errors },
   } = useForm<SignUpFormValues>({
     resolver: zodResolver(SignUpFormSchema),
@@ -64,16 +82,15 @@ export function useSignUp() {
   }, [me, navigate]);
 
   const handleSendCode = async () => {
+    const isValid = await trigger('email');
+    if (!isValid) return;
     const email = getValues('email');
     setVerifiedEmail(null);
-    if (!email) {
-      setError('email', { message: '이메일을 입력해주세요.' });
-      return;
-    }
     setEmailVerifiedStatus('SENDING');
     try {
       await sendEmailCode({ email });
       setEmailVerifiedStatus('SENT');
+      startCountdown();
       toast.success('검증 코드가 전송되었습니다.');
     } catch {
       setEmailVerifiedStatus('IDLE');
@@ -82,18 +99,21 @@ export function useSignUp() {
   };
 
   const handleVerifyCode = async () => {
+    const isValid = await trigger('emailCode');
+    if (!isValid) return;
     const { email, emailCode } = getValues();
     setEmailCodeSuccess(null);
     setEmailVerifiedStatus('VERIFYING');
     try {
       await verifyEmailCode({ email, code: emailCode });
+      if (countdownRef.current) clearInterval(countdownRef.current);
       setEmailVerifiedStatus('VERIFIED');
       setVerifiedEmail(email);
       setEmailCodeSuccess('이메일이 확인되었습니다.');
     } catch (error) {
       setEmailVerifiedStatus('SENT');
       setError('emailCode', {
-        message: extractError(error, '인증 코드 확인 중 오류가 발생했습니다.'),
+        message: error instanceof Error ? error.message : '인증 코드 확인 중 오류가 발생했습니다.',
       });
     }
   };
@@ -110,11 +130,14 @@ export function useSignUp() {
       saveTokens(tokens.accessToken, tokens.refreshToken);
       navigate('/home');
     } catch (error) {
-      setSubmitError(extractError(error, '회원가입 중 오류가 발생했습니다.'));
+      setSubmitError(error instanceof Error ? error.message : '회원가입 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
   };
+
+  const showCountdown =
+    (emailVerifiedStatus === 'SENT' || emailVerifiedStatus === 'VERIFYING') && countdown > 0;
 
   return {
     control,
@@ -124,6 +147,8 @@ export function useSignUp() {
     isLoading,
     emailVerifiedStatus,
     emailCodeSuccess,
+    countdown,
+    showCountdown,
     handleSendCode,
     handleVerifyCode,
     handleGoogleLogin: googleLogin,

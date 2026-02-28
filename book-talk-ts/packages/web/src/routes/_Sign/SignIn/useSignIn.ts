@@ -11,11 +11,6 @@ import type { z } from 'zod';
 
 type SignInFormValues = z.infer<typeof SignInRequestSchema>;
 
-const extractError = (error: unknown, fallback: string): string => {
-  if (error instanceof Error) return error.message;
-  return fallback;
-};
-
 export function useSignIn() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -47,7 +42,7 @@ export function useSignIn() {
       toast.success(`반가워요 ${user?.name}님!`);
       navigate('/home');
     } catch (error) {
-      setSubmitError(extractError(error, '로그인 중 오류가 발생했습니다.'));
+      setSubmitError(error instanceof Error ? error.message : '로그인 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }

@@ -48,7 +48,6 @@ export const DebateSkeleton = ({ title, content }: Props) => {
   return (
     <PageContainer>
       <SkeletonContainer>
-        {/* Navigation Bar */}
         <SkeletonNavigationBar>
           <SkeletonNavContent>
             <SkeletonTitle variant="text" animation="wave" />
@@ -59,7 +58,6 @@ export const DebateSkeleton = ({ title, content }: Props) => {
           </SkeletonNavContent>
         </SkeletonNavigationBar>
 
-        {/* Main Content */}
         <SkeletonMainContent>
           <SkeletonPresentationArea>
             <SkeletonPresentationTitle variant="text" animation="wave" />
@@ -71,7 +69,6 @@ export const DebateSkeleton = ({ title, content }: Props) => {
           </SkeletonPresentationArea>
         </SkeletonMainContent>
 
-        {/* Member List */}
         <SkeletonMemberListContainer>
           <SkeletonMemberListHeader variant="text" animation="wave" />
           <MemberItemSkeleton />
@@ -80,17 +77,14 @@ export const DebateSkeleton = ({ title, content }: Props) => {
           <MemberItemSkeleton />
         </SkeletonMemberListContainer>
 
-        {/* Chat Input */}
         <SkeletonChatInputContainer>
           <SkeletonChatInputBox variant="rectangular" animation="wave" />
         </SkeletonChatInputContainer>
 
-        {/* Action Button */}
         <SkeletonActionButtonContainer>
           <SkeletonActionButton variant="rectangular" animation="wave" />
         </SkeletonActionButtonContainer>
 
-        {/* Loading Overlay */}
         <LoadingOverlay>
           <img src={debateLoadingGif} alt="로딩 중" width={316} />
           <LoadingText>{title}</LoadingText>

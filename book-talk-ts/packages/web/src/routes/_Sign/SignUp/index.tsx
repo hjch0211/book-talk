@@ -1,3 +1,4 @@
+import { InputAdornment, Typography } from '@mui/material';
 import GoogleIcon from '@src/assets/sign/google-icon.svg';
 import { AppButton } from '@src/components/molecules/AppButton';
 import { AppFieldMessage } from '@src/components/molecules/AppFieldMessage';
@@ -5,7 +6,6 @@ import { AppTextField } from '@src/components/molecules/AppTextField';
 import AppHeader from '@src/components/organisms/AppHeader';
 import PageContainer from '@src/components/templates/PageContainer';
 import { Controller } from 'react-hook-form';
-
 import {
   ButtonsSection,
   DescriptionText,
@@ -16,6 +16,7 @@ import {
   EmailSection,
   ErrorMessage,
   FieldGroup,
+  FieldsSection,
   FieldsWrapper,
   InlineFieldRow,
   SignContainer,
@@ -25,7 +26,7 @@ import {
   SocialSection,
   UrlLink,
 } from '../style';
-import { useSignUp } from './useSignUp';
+import { formatCountdown, useSignUp } from './useSignUp';
 
 export function SignUpPage() {
   const {
@@ -36,6 +37,8 @@ export function SignUpPage() {
     isLoading,
     emailVerifiedStatus,
     emailCodeSuccess,
+    countdown,
+    showCountdown,
     handleSendCode,
     handleVerifyCode,
     handleGoogleLogin,
@@ -70,134 +73,162 @@ export function SignUpPage() {
           </SocialSection>
           <EmailSection>
             <FieldsWrapper>
-              <FieldGroup>
-                <InlineFieldRow>
+              <FieldsSection>
+                <FieldGroup>
+                  <InlineFieldRow>
+                    <Controller
+                      name="email"
+                      control={control}
+                      render={({ field: { ref, ...field } }) => (
+                        <AppTextField
+                          type="email"
+                          placeholder="이메일"
+                          ref={ref}
+                          style={{ flex: 1 }}
+                          error={!!errors.email}
+                          success={emailVerifiedStatus !== 'IDLE' && !errors.email}
+                          {...field}
+                        />
+                      )}
+                    />
+                    <AppButton
+                      appVariant="inline"
+                      type="button"
+                      onClick={handleSendCode}
+                      disabled={emailVerifiedStatus === 'SENDING'}
+                    >
+                      {emailVerifiedStatus === 'SENDING'
+                        ? '전송 중'
+                        : emailVerifiedStatus === 'IDLE'
+                          ? '코드 전송'
+                          : '재전송'}
+                    </AppButton>
+                  </InlineFieldRow>
+                  {errors.email && (
+                    <AppFieldMessage type="error">{errors.email.message}</AppFieldMessage>
+                  )}
+                </FieldGroup>
+
+                <FieldGroup>
+                  <InlineFieldRow>
+                    <Controller
+                      name="emailCode"
+                      control={control}
+                      render={({ field: { ref, ...field } }) => (
+                        <AppTextField
+                          placeholder="이메일 검증 코드"
+                          ref={ref}
+                          style={{ flex: 1 }}
+                          disabled={
+                            emailVerifiedStatus === 'IDLE' ||
+                            emailVerifiedStatus === 'SENDING' ||
+                            emailVerifiedStatus === 'VERIFIED'
+                          }
+                          error={!!errors.emailCode}
+                          success={!!emailCodeSuccess && !errors.emailCode}
+                          slotProps={{
+                            input: {
+                              endAdornment: showCountdown ? (
+                                <InputAdornment position="end">
+                                  <Typography
+                                    sx={{
+                                      fontFamily: 'S-Core Dream',
+                                      fontSize: 12,
+                                      fontWeight: 400,
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    {formatCountdown(countdown)}
+                                  </Typography>
+                                </InputAdornment>
+                              ) : undefined,
+                            },
+                          }}
+                          {...field}
+                        />
+                      )}
+                    />
+                    <AppButton
+                      appVariant="inline"
+                      type="button"
+                      onClick={handleVerifyCode}
+                      disabled={emailVerifiedStatus !== 'SENT'}
+                    >
+                      {emailVerifiedStatus === 'VERIFIED'
+                        ? '완료'
+                        : emailVerifiedStatus === 'VERIFYING'
+                          ? '확인 중'
+                          : '확인'}
+                    </AppButton>
+                  </InlineFieldRow>
+                  {errors.emailCode && (
+                    <AppFieldMessage type="error">{errors.emailCode.message}</AppFieldMessage>
+                  )}
+                  {!errors.emailCode && emailCodeSuccess && (
+                    <AppFieldMessage type="success">{emailCodeSuccess}</AppFieldMessage>
+                  )}
+                </FieldGroup>
+              </FieldsSection>
+
+              <FieldsSection>
+                <FieldGroup>
                   <Controller
-                    name="email"
+                    name="name"
                     control={control}
                     render={({ field: { ref, ...field } }) => (
                       <AppTextField
-                        type="email"
-                        placeholder="이메일"
+                        placeholder="닉네임 (최대 10자)"
                         ref={ref}
-                        style={{ flex: 1 }}
-                        error={!!errors.email}
-                        success={emailVerifiedStatus !== 'IDLE' && !errors.email}
+                        error={!!errors.name}
                         {...field}
                       />
                     )}
                   />
-                  <AppButton
-                    appVariant="inline"
-                    type="button"
-                    onClick={handleSendCode}
-                    disabled={emailVerifiedStatus === 'SENDING'}
-                  >
-                    {emailVerifiedStatus === 'SENDING' ? '전송 중' : '코드 전송'}
-                  </AppButton>
-                </InlineFieldRow>
-                {errors.email && (
-                  <AppFieldMessage type="error">{errors.email.message}</AppFieldMessage>
-                )}
-              </FieldGroup>
+                  {errors.name && (
+                    <AppFieldMessage type="error">{errors.name.message}</AppFieldMessage>
+                  )}
+                </FieldGroup>
+              </FieldsSection>
 
-              <FieldGroup>
-                <InlineFieldRow>
+              <FieldsSection>
+                <FieldGroup>
                   <Controller
-                    name="emailCode"
+                    name="password"
                     control={control}
                     render={({ field: { ref, ...field } }) => (
                       <AppTextField
-                        placeholder="인증코드"
+                        type="password"
+                        placeholder="비밀번호 (8자 이상, 영문, 숫자, 특수 문자)"
                         ref={ref}
-                        style={{ flex: 1 }}
-                        disabled={
-                          emailVerifiedStatus === 'IDLE' ||
-                          emailVerifiedStatus === 'SENDING' ||
-                          emailVerifiedStatus === 'VERIFIED'
-                        }
-                        error={!!errors.emailCode}
-                        success={!!emailCodeSuccess && !errors.emailCode}
+                        error={!!errors.password}
                         {...field}
                       />
                     )}
                   />
-                  <AppButton
-                    appVariant="inline"
-                    type="button"
-                    onClick={handleVerifyCode}
-                    disabled={emailVerifiedStatus !== 'SENT'}
-                  >
-                    {emailVerifiedStatus === 'VERIFIED'
-                      ? '완료'
-                      : emailVerifiedStatus === 'VERIFYING'
-                        ? '확인 중'
-                        : '확인'}
-                  </AppButton>
-                </InlineFieldRow>
-                {errors.emailCode && (
-                  <AppFieldMessage type="error">{errors.emailCode.message}</AppFieldMessage>
-                )}
-                {!errors.emailCode && emailCodeSuccess && (
-                  <AppFieldMessage type="success">{emailCodeSuccess}</AppFieldMessage>
-                )}
-              </FieldGroup>
-
-              <FieldGroup>
-                <Controller
-                  name="name"
-                  control={control}
-                  render={({ field: { ref, ...field } }) => (
-                    <AppTextField
-                      placeholder="닉네임 (최대 10자)"
-                      ref={ref}
-                      error={!!errors.name}
-                      {...field}
-                    />
+                  {errors.password && (
+                    <AppFieldMessage type="error">{errors.password.message}</AppFieldMessage>
                   )}
-                />
-                {errors.name && (
-                  <AppFieldMessage type="error">{errors.name.message}</AppFieldMessage>
-                )}
-              </FieldGroup>
+                </FieldGroup>
 
-              <FieldGroup>
-                <Controller
-                  name="password"
-                  control={control}
-                  render={({ field: { ref, ...field } }) => (
-                    <AppTextField
-                      type="password"
-                      placeholder="비밀번호 (8자 이상, 영문, 숫자, 특수문자 포함)"
-                      ref={ref}
-                      error={!!errors.password}
-                      {...field}
-                    />
+                <FieldGroup>
+                  <Controller
+                    name="passwordConfirm"
+                    control={control}
+                    render={({ field: { ref, ...field } }) => (
+                      <AppTextField
+                        type="password"
+                        placeholder="비밀번호 확인"
+                        ref={ref}
+                        error={!!errors.passwordConfirm}
+                        {...field}
+                      />
+                    )}
+                  />
+                  {errors.passwordConfirm && (
+                    <AppFieldMessage type="error">{errors.passwordConfirm.message}</AppFieldMessage>
                   )}
-                />
-                {errors.password && (
-                  <AppFieldMessage type="error">{errors.password.message}</AppFieldMessage>
-                )}
-              </FieldGroup>
-
-              <FieldGroup>
-                <Controller
-                  name="passwordConfirm"
-                  control={control}
-                  render={({ field: { ref, ...field } }) => (
-                    <AppTextField
-                      type="password"
-                      placeholder="비밀번호 확인"
-                      ref={ref}
-                      error={!!errors.passwordConfirm}
-                      {...field}
-                    />
-                  )}
-                />
-                {errors.passwordConfirm && (
-                  <AppFieldMessage type="error">{errors.passwordConfirm.message}</AppFieldMessage>
-                )}
-              </FieldGroup>
+                </FieldGroup>
+              </FieldsSection>
             </FieldsWrapper>
             <DescriptionText>
               <UrlLink to="/terms-of-use">서비스이용약관</UrlLink>과{' '}

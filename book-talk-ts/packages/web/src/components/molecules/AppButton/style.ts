@@ -11,7 +11,7 @@ export interface AppButtonProps extends Omit<ButtonProps, 'variant'> {
 export const StyledButton = styled(Button, {
   shouldForwardProp: (prop) => prop !== 'appVariant' && prop !== 'hoverAnimation',
 })<{ appVariant: AppButtonVariant; hoverAnimation?: boolean }>`
-  && {
+  & {
     width: 100%;
     height: 50px;
     border-radius: 12px;
@@ -45,7 +45,7 @@ export const StyledButton = styled(Button, {
   ${({ appVariant }) =>
     appVariant === 'filled' &&
     `
-    && {
+    & {
       color: #0a0a0a;
       border: 1px solid transparent;
       background:
@@ -62,7 +62,7 @@ export const StyledButton = styled(Button, {
   ${({ appVariant }) =>
     appVariant === 'outlined' &&
     `
-    && {
+    & {
       background: transparent;
       color: #262626;
       border: 1px solid #c4c4c4;
@@ -73,7 +73,7 @@ export const StyledButton = styled(Button, {
   ${({ appVariant }) =>
     appVariant === 'social' &&
     `
-    && {
+    & {
       height: 52px;
       border-radius: 14px;
       background: #ffffff;
@@ -87,14 +87,13 @@ export const StyledButton = styled(Button, {
   ${({ appVariant }) =>
     appVariant === 'inline' &&
     `
-    && {
-      width: 101px;
+    & {
+      width: 102px;
       height: 52px;
       border-radius: 14px;
       background: #ffffff;
       color: #7b7b7b;
       border: 1px solid #d9d9d9;
-      flex-shrink: 0;
     }
     &&:hover { background: #fcfcfc; }
   `}
@@ -102,7 +101,7 @@ export const StyledButton = styled(Button, {
   ${({ appVariant }) =>
     appVariant === 'rounded' &&
     `
-    && {
+    & {
       width: fit-content;
       height: 59px;
       border-radius: 48px;

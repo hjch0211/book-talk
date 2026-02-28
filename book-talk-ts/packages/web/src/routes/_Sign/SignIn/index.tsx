@@ -15,7 +15,6 @@ import {
   EmailSection,
   ErrorMessage,
   FieldGroup,
-  FieldsWrapper,
   ForgotPassword,
   SignContainer,
   SignForm,
@@ -51,45 +50,43 @@ export function SignInPage() {
             </DividerContainer>
           </SocialSection>
           <EmailSection>
-            <FieldsWrapper>
-              <FieldGroup>
-                <Controller
-                  name="email"
-                  control={control}
-                  render={({ field: { ref, ...field } }) => (
-                    <AppTextField
-                      type="email"
-                      placeholder="이메일"
-                      ref={ref}
-                      error={!!errors.email}
-                      success={!errors.email && !!field.value}
-                      {...field}
-                    />
-                  )}
-                />
-                {errors.email && (
-                  <AppFieldMessage type="error">{errors.email.message}</AppFieldMessage>
+            <FieldGroup>
+              <Controller
+                name="email"
+                control={control}
+                render={({ field: { ref, ...field } }) => (
+                  <AppTextField
+                    type="email"
+                    placeholder="이메일"
+                    ref={ref}
+                    error={!!errors.email}
+                    success={!errors.email && !!field.value}
+                    {...field}
+                  />
                 )}
-              </FieldGroup>
-              <FieldGroup>
-                <Controller
-                  name="password"
-                  control={control}
-                  render={({ field: { ref, ...field } }) => (
-                    <AppTextField
-                      type="password"
-                      placeholder="비밀번호"
-                      ref={ref}
-                      error={!!errors.password}
-                      {...field}
-                    />
-                  )}
-                />
-                {errors.password && (
-                  <AppFieldMessage type="error">{errors.password.message}</AppFieldMessage>
+              />
+              {errors.email && (
+                <AppFieldMessage type="error">{errors.email.message}</AppFieldMessage>
+              )}
+            </FieldGroup>
+            <FieldGroup>
+              <Controller
+                name="password"
+                control={control}
+                render={({ field: { ref, ...field } }) => (
+                  <AppTextField
+                    type="password"
+                    placeholder="비밀번호"
+                    ref={ref}
+                    error={!!errors.password}
+                    {...field}
+                  />
                 )}
-              </FieldGroup>
-            </FieldsWrapper>
+              />
+              {errors.password && (
+                <AppFieldMessage type="error">{errors.password.message}</AppFieldMessage>
+              )}
+            </FieldGroup>
             <ForgotPassword type="button" onClick={() => navigate('/forgot-password')}>
               비밀번호를 잊어버렸나요?
             </ForgotPassword>
