@@ -3,6 +3,7 @@ package kr.co.booktalk.domain.debate
 import kr.co.booktalk.WebSocketMessage
 import kr.co.booktalk.domain.DebateMemberRole
 import kr.co.booktalk.domain.DebateRoundType
+import org.springframework.data.domain.Page
 import java.time.Instant
 
 enum class WSResponseMessageType {
@@ -25,6 +26,28 @@ data class CreateResponse(
     val id: String,
 )
 
+data class FindAllResponse(
+    val page: Page<DebateInfo>
+) {
+    data class DebateInfo(
+        val id: String,
+        val bookInfo: BookInfo,
+        val topic: String,
+        val description: String? = null,
+        val maxMemberCount: Long,
+        val currentMemberCount: Long,
+        val startAt: Instant,
+        val closedAt: Instant? = null,
+        val createdAt: Instant,
+    ) {
+        data class BookInfo(
+            val title: String,
+            val author: String,
+            val imageUrl: String? = null,
+        )
+    }
+}
+
 data class CreateRoundResponse(
     val id: Long,
 )
@@ -38,6 +61,7 @@ data class FindOneResponse(
     val topic: String,
     val description: String? = null,
     val aiSummarized: String? = null,
+    val startAt: Instant,
     val closedAt: Instant? = null,
     val createdAt: Instant,
     val updatedAt: Instant,

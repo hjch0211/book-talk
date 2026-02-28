@@ -11,7 +11,50 @@ export const CreateDebateRequestSchema = z.object({
     .min(1, '토론 주제를 입력해주세요')
     .max(200, '토론 주제는 200자 이내로 입력해주세요'),
   description: z.string().max(500, '토론 설명은 500자 이내로 입력해주세요').nullish(),
+  maxMemberCount: z
+    .number()
+    .int()
+    .min(2, '참여자 수는 최소 2명입니다')
+    .max(4, '참여자 수는 최대 4명입니다'),
+  startAt: z
+    .string()
+    .min(1, '토론 일정을 선택해주세요')
+    .refine(
+      (val) => !Number.isNaN(new Date(val).getTime()) && new Date(val) > new Date(),
+      '토론 일정은 현재 시각 이후여야 합니다'
+    ),
 });
+
+export const DebateFormSchema = z
+  .object({
+    topic: z
+      .string()
+      .min(1, '토론 주제를 입력해주세요')
+      .max(60, '토론 주제는 60자 이내로 입력해주세요'),
+
+    description: z.string().max(300, '토론 설명은 300자 이내로 입력해주세요').optional(),
+
+    bookISBN: z.string().min(1, '책을 선택해주세요'),
+
+    scheduledDate: z.string().min(1, '토론 일자를 선택해주세요'),
+
+    scheduledTime: z.string().min(1, '토론 시간을 선택해주세요'),
+
+    participantCount: z.number().min(2).max(10),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.scheduledDate || !data.scheduledTime) return;
+
+    const startAt = new Date(`${data.scheduledDate}T${data.scheduledTime}`);
+
+    if (startAt <= new Date()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: '토론 일정은 현재 시각 이후여야 합니다',
+        path: ['scheduledTime'],
+      });
+    }
+  });
 
 export const JoinDebateRequestSchema = z.object({
   debateId: z.string().min(1, '토론 ID를 입력해주세요'),
@@ -48,8 +91,8 @@ export const RoundInfoSchema = z.object({
 export const BookInfoSchema = z.object({
   title: z.string(),
   author: z.string(),
-  description: z.string(),
-  imageUrl: z.string(),
+  description: z.string().nullish(),
+  imageUrl: z.string().nullish(),
 });
 
 export const FindOneDebateResponseSchema = z.object({
@@ -61,6 +104,7 @@ export const FindOneDebateResponseSchema = z.object({
   topic: z.string(),
   description: z.string().nullish(),
   aiSummarized: z.string().nullish(),
+  startAt: z.string(),
   closedAt: z.string().nullish(),
   createdAt: z.string(),
   updatedAt: z.string(),
@@ -118,7 +162,43 @@ export const ChatResponseSchema = z.array(
   })
 );
 
+export const FindAllDebateBookInfoSchema = z.object({
+  title: z.string(),
+  author: z.string(),
+  imageUrl: z.string().nullish(),
+});
+
+export const FindAllDebateInfoSchema = z.object({
+  id: z.string(),
+  bookInfo: FindAllDebateBookInfoSchema,
+  topic: z.string(),
+  description: z.string().nullish(),
+  maxMemberCount: z.number(),
+  currentMemberCount: z.number(),
+  closedAt: z.string().nullish(),
+  startAt: z.string(),
+  createdAt: z.string(),
+});
+
+export const PageSchema = <T extends z.ZodTypeAny>(itemSchema: T) =>
+  z.object({
+    content: z.array(itemSchema),
+    totalElements: z.number(),
+    totalPages: z.number(),
+    number: z.number(),
+    size: z.number(),
+  });
+
+export const FindAllDebateResponseSchema = z.object({
+  page: PageSchema(FindAllDebateInfoSchema),
+});
+
+export type FindAllDebateInfo = z.infer<typeof FindAllDebateInfoSchema>;
+export type FindAllDebateResponse = z.infer<typeof FindAllDebateResponseSchema>;
+
 export type CreateDebateRequest = z.infer<typeof CreateDebateRequestSchema>;
+export type DebateForm = z.infer<typeof DebateFormSchema>;
+
 export type JoinDebateRequest = z.infer<typeof JoinDebateRequestSchema>;
 export type UpdateDebateRequest = z.infer<typeof UpdateDebateRequestSchema>;
 export type FindOneDebateResponse = z.infer<typeof FindOneDebateResponseSchema>;

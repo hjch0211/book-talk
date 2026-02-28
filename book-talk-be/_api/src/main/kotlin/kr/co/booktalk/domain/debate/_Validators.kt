@@ -4,9 +4,9 @@ import kr.co.booktalk.domain.DebateEntity
 import java.time.Instant
 
 fun CreateRequest.validate() {
-    Instant.now()
-    require(bookImageUrl?.isNotBlank() == true) { "bookImageUrl은 필수입니다." }
     require(topic.isNotBlank()) { "topic은 필수입니다." }
+    require(maxMemberCount in 2..4) { "maxMemberCount는 2~4 사이여야 합니다." }
+    require(startAt > Instant.now()) { "startAt은 현재 시각 이후여야 합니다." }
 }
 
 fun JoinRequest.validate() {

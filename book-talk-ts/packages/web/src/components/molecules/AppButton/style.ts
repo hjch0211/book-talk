@@ -1,5 +1,5 @@
-import styled from '@emotion/styled';
 import { Button, type ButtonProps } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
 export type AppButtonVariant = 'filled' | 'outlined' | 'social' | 'rounded' | 'inline';
 
@@ -12,7 +12,6 @@ export const StyledButton = styled(Button, {
   shouldForwardProp: (prop) => prop !== 'appVariant' && prop !== 'hoverAnimation',
 })<{ appVariant: AppButtonVariant; hoverAnimation?: boolean }>`
   & {
-    width: 100%;
     height: 50px;
     border-radius: 12px;
     font-family: 'S-Core Dream', sans-serif;

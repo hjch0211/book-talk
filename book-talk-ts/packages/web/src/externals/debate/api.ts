@@ -10,6 +10,8 @@ import {
   CreateDebateRequestSchema,
   type CreateRoundSpeakerRequest,
   CreateRoundSpeakerRequestSchema,
+  type FindAllDebateResponse,
+  FindAllDebateResponseSchema,
   type FindOneDebateResponse,
   FindOneDebateResponseSchema,
   type JoinDebateRequest,
@@ -19,6 +21,16 @@ import {
   type UpdateDebateRequest,
   UpdateDebateRequestSchema,
 } from './schema';
+
+/** 토론 목록 조회 */
+export const findAllDebates = async (params?: {
+  page?: number;
+  size?: number;
+  keyword?: string;
+}): Promise<FindAllDebateResponse> => {
+  const response = await authApiClient.get('/debates', { params });
+  return FindAllDebateResponseSchema.parse(response.data.data);
+};
 
 /** 토론 생성 */
 export const createDebate = async (request: CreateDebateRequest): Promise<{ id: string }> => {

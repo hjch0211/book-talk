@@ -3,7 +3,11 @@ package kr.co.booktalk.domain
 import jakarta.persistence.*
 import kr.co.booktalk.AuditableUuidEntity
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
+import org.springframework.data.domain.Page
+import org.springframework.data.domain.Pageable
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
@@ -25,6 +29,10 @@ class DebateEntity(
 
     val description: String? = null,
 
+    val maxMemberCount: Int,
+
+    val startAt: Instant,
+
     var closedAt: Instant? = null,
 ) : AuditableUuidEntity()
 
@@ -36,4 +44,10 @@ interface DebateRepository : JpaRepository<DebateEntity, UUID> {
      * Scheduler에서 자동 종료 대상 토론을 찾기 위해 사용
      */
     fun findAllByCreatedAtBeforeAndClosedAtIsNull(createdAt: Instant): List<DebateEntity>
+
+    @Query(
+        value = "SELECT d FROM DebateEntity d JOIN d.book b WHERE d.book IN :books ORDER BY b.author ASC",
+        countQuery = "SELECT COUNT(d) FROM DebateEntity d WHERE d.book IN :books"
+    )
+    fun findAllByBookIn(@Param("books") books: List<BookEntity>, pageable: Pageable): Page<DebateEntity>
 }

@@ -3,9 +3,9 @@ import { meQueryOption } from '@src/externals/account';
 import { googleLogin, SignInRequestSchema, signIn } from '@src/externals/auth';
 import { saveTokens } from '@src/externals/client';
 import { useToast } from '@src/hooks/infra/useToast';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useState } from 'react';
-import { type SubmitHandler, useForm } from 'react-hook-form';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 import type { z } from 'zod';
 
@@ -16,8 +16,6 @@ export function useSignIn() {
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { data: me } = useQuery(meQueryOption);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (me) navigate('/home');
@@ -32,28 +30,28 @@ export function useSignIn() {
     defaultValues: { email: '', password: '' },
   });
 
-  const submitHandler: SubmitHandler<SignInFormValues> = async (data) => {
-    setSubmitError(null);
-    setIsLoading(true);
-    try {
-      const tokens = await signIn(data);
+  const signInMutation = useMutation({
+    mutationFn: signIn,
+    onSuccess: async (tokens) => {
       saveTokens(tokens.accessToken, tokens.refreshToken);
+      await queryClient.invalidateQueries({ queryKey: meQueryOption.queryKey });
       const user = await queryClient.fetchQuery(meQueryOption);
       toast.success(`반가워요 ${user?.name}님!`);
       navigate('/home');
-    } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : '로그인 중 오류가 발생했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    },
+  });
 
   return {
     control,
     errors,
-    onSubmit: handleSubmit(submitHandler),
-    submitError,
-    isLoading,
+    onSubmit: handleSubmit((data) => signInMutation.mutate(data)),
+    submitError:
+      signInMutation.error instanceof Error
+        ? signInMutation.error.message
+        : signInMutation.isError
+          ? '로그인 중 오류가 발생했습니다.'
+          : null,
+    isLoading: signInMutation.isPending,
     handleGoogleLogin: googleLogin,
   };
 }

@@ -1,5 +1,5 @@
 import { queryOptions } from '@tanstack/react-query';
-import { findOneDebate, getChats } from './api';
+import { findAllDebates, findOneDebate, getChats } from './api';
 import type { FindOneDebateResponse, MemberInfo } from './schema';
 
 /** 프론트에서 사용하는 라운드 타입 (서버의 null을 PREPARATION으로 변환) */
@@ -109,4 +109,16 @@ export const getChatsQueryOptions = (
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes
     retry: 3,
+  });
+
+export const findAllDebatesQueryOptions = (params?: {
+  page?: number;
+  size?: number;
+  keyword?: string;
+}) =>
+  queryOptions({
+    queryKey: ['debates', 'all', params],
+    queryFn: () => findAllDebates(params),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
   });

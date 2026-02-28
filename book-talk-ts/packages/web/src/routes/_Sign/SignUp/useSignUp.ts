@@ -9,7 +9,7 @@ import {
 } from '@src/externals/auth';
 import { saveTokens } from '@src/externals/client';
 import { useToast } from '@src/hooks/infra/useToast';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
@@ -35,11 +35,10 @@ type SignUpFormValues = z.infer<typeof SignUpFormSchema>;
 
 export function useSignUp() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const { toast } = useToast();
   const { data: me } = useQuery(meQueryOption);
   const [emailVerifiedStatus, setEmailVerifiedStatus] = useState<EmailVerifiedStatus>('IDLE');
-  const [isLoading, setIsLoading] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [emailCodeSuccess, setEmailCodeSuccess] = useState<string | null>(null);
   const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
   const [countdown, setCountdown] = useState(299);
@@ -118,22 +117,23 @@ export function useSignUp() {
     }
   };
 
-  const submitHandler: SubmitHandler<SignUpFormValues> = async (data) => {
-    setSubmitError(null);
+  const signUpMutation = useMutation({
+    mutationFn: (data: { email: string; name: string; password: string }) => signUp(data),
+    onSuccess: async (tokens) => {
+      saveTokens(tokens.accessToken, tokens.refreshToken);
+      await queryClient.invalidateQueries({ queryKey: meQueryOption.queryKey });
+      const user = await queryClient.fetchQuery(meQueryOption);
+      toast.success(`반가워요 ${user?.name}님!`);
+      navigate('/home');
+    },
+  });
+
+  const submitHandler: SubmitHandler<SignUpFormValues> = (data) => {
     if (emailVerifiedStatus !== 'VERIFIED' || data.email !== verifiedEmail) {
       setError('emailCode', { message: '이메일 인증을 완료해주세요.' });
       return;
     }
-    setIsLoading(true);
-    try {
-      const tokens = await signUp({ email: data.email, name: data.name, password: data.password });
-      saveTokens(tokens.accessToken, tokens.refreshToken);
-      navigate('/home');
-    } catch (error) {
-      setSubmitError(error instanceof Error ? error.message : '회원가입 중 오류가 발생했습니다.');
-    } finally {
-      setIsLoading(false);
-    }
+    signUpMutation.mutate({ email: data.email, name: data.name, password: data.password });
   };
 
   const showCountdown =
@@ -143,8 +143,13 @@ export function useSignUp() {
     control,
     errors,
     onSubmit: handleSubmit(submitHandler),
-    submitError,
-    isLoading,
+    submitError:
+      signUpMutation.error instanceof Error
+        ? signUpMutation.error.message
+        : signUpMutation.isError
+          ? '회원가입 중 오류가 발생했습니다.'
+          : null,
+    isLoading: signUpMutation.isPending,
     emailVerifiedStatus,
     emailCodeSuccess,
     countdown,

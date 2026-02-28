@@ -22,7 +22,7 @@ import type React from 'react';
 import { Suspense, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoSvg from '../../../assets/logo.svg';
-import { LogoContainer, LogoWrapper, NavMenuGroup, NavMenuItemText } from './style';
+import { LogoContainer, LogoLink, NavMenuGroup, NavMenuItemText } from './style';
 
 const ProfileSection = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
@@ -149,9 +149,9 @@ const AppHeader = () => {
     >
       <Toolbar sx={{ height: '100%', justifyContent: 'space-between', px: '0 !important' }}>
         <LogoContainer>
-          <LogoWrapper>
+          <LogoLink onClick={() => navigate('/home')}>
             <img src={logoSvg} alt="BookTalk Logo" width={182} height={44} />
-          </LogoWrapper>
+          </LogoLink>
         </LogoContainer>
 
         <Box sx={{ display: 'flex', alignItems: 'center', gap: '24px' }}>

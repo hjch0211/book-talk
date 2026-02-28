@@ -6,6 +6,8 @@ import jakarta.persistence.Table
 import kr.co.booktalk.AuditableLongIdEntity
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 
@@ -28,4 +30,14 @@ class BookEntity(
 @Repository
 interface BookRepository : JpaRepository<BookEntity, Long> {
     fun findByIsbn(isbn: String): BookEntity?
+
+    @Query("""
+        SELECT b FROM BookEntity b
+        WHERE LOWER(b.title) LIKE LOWER(CONCAT('%', :input, '%'))
+        OR LOWER(b.author) LIKE LOWER(CONCAT('%', :input, '%'))
+        ORDER BY b.author ASC
+    """)
+    fun findAllBySearch(@Param("input") input: String): List<BookEntity>
+
+    fun findAllByOrderByAuthorAsc(): List<BookEntity>
 }

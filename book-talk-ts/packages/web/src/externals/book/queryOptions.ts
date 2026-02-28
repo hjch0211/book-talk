@@ -1,12 +1,14 @@
-import { queryOptions } from '@tanstack/react-query';
+import { infiniteQueryOptions } from '@tanstack/react-query';
 import { searchBooks } from './api';
-import type { SearchBookRequest } from './schema';
 
-export const searchBooksQueryOptions = (params: SearchBookRequest) =>
-  queryOptions({
-    queryKey: ['books', 'search', params.query, params.page, params.size],
-    queryFn: () => searchBooks(params),
-    enabled: !!params.query && params.query.length > 0,
-    staleTime: 1000 * 60 * 5, // 5 minutes
-    gcTime: 1000 * 60 * 10, // 10 minutes
+export const infiniteSearchBooksQueryOptions = (query: string, size = 20) =>
+  infiniteQueryOptions({
+    queryKey: ['books', 'search', 'infinite', query, size],
+    queryFn: ({ pageParam }) => searchBooks({ query, page: pageParam, size }),
+    initialPageParam: 1,
+    getNextPageParam: (lastPage, _allPages, lastPageParam) =>
+      lastPage.isLastPage ? undefined : lastPageParam + 1,
+    enabled: !!query && query.length > 0,
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
   });

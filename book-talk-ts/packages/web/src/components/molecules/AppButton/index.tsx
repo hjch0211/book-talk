@@ -2,6 +2,7 @@ import { type AppButtonProps, StyledButton } from '@src/components/molecules/App
 
 export function AppButton({
   appVariant = 'filled',
+  fullWidth = true,
   hoverAnimation,
   children,
   ...props
@@ -9,6 +10,7 @@ export function AppButton({
   return (
     <StyledButton
       appVariant={appVariant}
+      fullWidth={fullWidth}
       hoverAnimation={hoverAnimation}
       variant={appVariant === 'outlined' ? 'outlined' : 'contained'}
       disableElevation

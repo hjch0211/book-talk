@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 export const HeroSection = styled.section`
     position: relative;  
     width: 100%;
-    height: 100vh;
+    height: 760px;
 `;
 
 export const HeroDecorLeft = styled.img`

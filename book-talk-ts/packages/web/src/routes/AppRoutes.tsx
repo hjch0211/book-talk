@@ -8,15 +8,15 @@ import { GoogleCallbackPage } from '@src/routes/_Sign/GoogleCallback';
 import { SignInPage } from '@src/routes/_Sign/SignIn';
 import { SignUpPage } from '@src/routes/_Sign/SignUp';
 import { DebatePage } from '@src/routes/Debate';
+import { HomePage } from '@src/routes/Home';
 import { LandingPage } from '@src/routes/Landing';
-import { MainPage } from '@src/routes/Main';
 import { Route, Routes } from 'react-router-dom';
 
 export function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<LandingPage />} />
-      <Route path="/home" element={<MainPage />} />
+      <Route path="/home" element={<HomePage />} />
       <Route path="/sign-in" element={<SignInPage />} />
       <Route path="/sign-up" element={<SignUpPage />} />
       <Route path="/forgot-password" element={<ForgotPasswordPage />} />

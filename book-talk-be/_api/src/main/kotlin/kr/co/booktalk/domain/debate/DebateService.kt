@@ -12,13 +12,13 @@ import kr.co.booktalk.client.AiClient
 import kr.co.booktalk.client.MonitorClient
 import kr.co.booktalk.client.SendRequest
 import kr.co.booktalk.client.SummarizeRequest
-import kr.co.booktalk.config.AppProperties
 import kr.co.booktalk.coroutineGlobalExceptionHandler
 import kr.co.booktalk.domain.*
 import kr.co.booktalk.domain.auth.AuthAccount
 import kr.co.booktalk.httpBadRequest
 import kr.co.booktalk.toUUID
 import org.openapitools.jackson.nullable.JsonNullable
+import org.springframework.data.domain.PageRequest
 import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
@@ -30,7 +30,6 @@ class DebateService(
     private val debateRepository: DebateRepository,
     private val debateMemberRepository: DebateMemberRepository,
     private val debateRoundRepository: DebateRoundRepository,
-    private val appProperties: AppProperties,
     private val presentationRepository: PresentationRepository,
     private val debateRoundSpeakerRepository: DebateRoundSpeakerRepository,
     private val debateRoundSpeakerService: DebateRoundSpeakerService,
@@ -76,6 +75,20 @@ class DebateService(
         return CreateResponse(debate.id.toString())
     }
 
+    fun findAll(input: String?, page: Int, size: Int): FindAllResponse {
+        val books = if (input.isNullOrBlank()) bookRepository.findAllByOrderByAuthorAsc()
+                    else bookRepository.findAllBySearch(input)
+        if (books.isEmpty()) return FindAllResponse(page = org.springframework.data.domain.Page.empty())
+
+        val debates = debateRepository.findAllByBookIn(books, PageRequest.of(page, size))
+        val memberCounts = debateMemberRepository.countByDebates(debates.content)
+            .associate { it.debateId to it.count }
+
+        return FindAllResponse(
+            page = debates.map { it.toDebateInfo(memberCounts[it.id] ?: 0) }
+        )
+    }
+
     fun findOne(id: String): FindOneResponse {
         val debate = debateRepository.findByIdOrNull(id.toUUID())
             ?: httpBadRequest("존재하지 않는 토론방입니다.")
@@ -98,8 +111,8 @@ class DebateService(
         val debate = debateRepository.findByIdOrNull(request.debateId.toUUID())
             ?.validateJoinable()
             ?: httpBadRequest("존재하지 않는 토론입니다.")
-        if (debateMemberRepository.countByDebateForUpdate(debate) >= appProperties.debate.maxMemberCount) {
-            httpBadRequest("토론방의 최대 정원(${appProperties.debate.maxMemberCount}명)을 초과했습니다.")
+        if (debateMemberRepository.countByDebateForUpdate(debate) >= debate.maxMemberCount) {
+            httpBadRequest("토론방의 최대 정원(${debate.maxMemberCount}명)을 초과했습니다.")
         }
 
         debateMemberRepository.save(

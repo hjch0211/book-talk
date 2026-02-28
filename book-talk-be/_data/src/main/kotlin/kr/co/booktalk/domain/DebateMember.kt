@@ -6,9 +6,15 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Lock
 import org.springframework.data.jpa.repository.Query
+import org.springframework.data.repository.query.Param
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
+
+interface DebateMemberCountProjection {
+    val debateId: UUID
+    val count: Long
+}
 
 @Entity
 @Table(name = "debate_member")
@@ -40,4 +46,7 @@ interface DebateMemberRepository : JpaRepository<DebateMemberEntity, Long> {
 
     fun findAllByDebateOrderByCreatedAtAsc(debate: DebateEntity): List<DebateMemberEntity>
     fun existsByDebateAndAccountId(debate: DebateEntity, accountId: UUID): Boolean
+
+    @Query("SELECT m.debate.id as debateId, COUNT(m) as count FROM DebateMemberEntity m WHERE m.debate IN :debates GROUP BY m.debate.id")
+    fun countByDebates(@Param("debates") debates: List<DebateEntity>): List<DebateMemberCountProjection>
 }

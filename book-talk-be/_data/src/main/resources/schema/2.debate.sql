@@ -1,15 +1,17 @@
 create table if not exists debate
 (
-    id             uuid         not null primary key,
-    host_id        uuid         not null,
-    book_id        bigint       not null,
-    topic          varchar(100) not null,
-    description    varchar(300) null,
-    closed_at      timestamp    null,
+    id               uuid         not null primary key,
+    host_id          uuid         not null,
+    book_id          bigint       not null,
+    topic            varchar(100) not null,
+    description      varchar(300) null,
+    max_member_count int          not null, -- 2 ~ 4
+    start_at         timestamp    not null,
+    closed_at        timestamp    null,
 
-    created_at     timestamp    not null,
-    updated_at     timestamp    not null,
-    archived_at    timestamp    null
+    created_at       timestamp    not null,
+    updated_at       timestamp    not null,
+    archived_at      timestamp    null
 );
 
 create table if not exists debate_member

@@ -1,7 +1,6 @@
 import CloseIcon from '@mui/icons-material/Close';
-import { Box, IconButton, Modal as MuiModal } from '@mui/material';
 import type { ReactNode } from 'react';
-import { closeButtonStyle, getBoxStyle, modalStyle } from './style.ts';
+import { CloseButton, ModalBox, StyledModal } from './style.ts';
 
 interface ModalProps {
   open: boolean;
@@ -12,25 +11,18 @@ interface ModalProps {
   showCloseButton?: boolean;
 }
 
-const Modal = ({
-  open,
-  onClose,
-  width = 808,
-  height = 548,
-  children,
-  showCloseButton = true,
-}: ModalProps) => {
+const Modal = ({ open, onClose, width, height, children, showCloseButton = true }: ModalProps) => {
   return (
-    <MuiModal open={open} onClose={onClose} sx={modalStyle}>
-      <Box sx={getBoxStyle(width, height)}>
+    <StyledModal open={open} onClose={onClose}>
+      <ModalBox width={width} height={height}>
         {showCloseButton && (
-          <IconButton onClick={onClose} sx={closeButtonStyle}>
+          <CloseButton onClick={onClose}>
             <CloseIcon />
-          </IconButton>
+          </CloseButton>
         )}
         {children}
-      </Box>
-    </MuiModal>
+      </ModalBox>
+    </StyledModal>
   );
 };
 

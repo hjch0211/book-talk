@@ -3,6 +3,7 @@ package kr.co.booktalk.domain.debate
 import kr.co.booktalk.WebSocketMessage
 import kr.co.booktalk.domain.DebateRoundType
 import org.openapitools.jackson.nullable.JsonNullable
+import java.time.Instant
 
 enum class WSRequestMessageType {
     C_JOIN_DEBATE,
@@ -19,6 +20,8 @@ enum class WSRequestMessageType {
 data class CreateRequest(
     val topic: String,
     val description: String?,
+    val maxMemberCount: Int,
+    val startAt: Instant,
     val bookTitle: String,
     val bookISBN: String,
     val bookAuthor: String,
