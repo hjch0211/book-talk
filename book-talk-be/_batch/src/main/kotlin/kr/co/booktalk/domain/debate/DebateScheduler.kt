@@ -6,14 +6,18 @@ import kotlinx.coroutines.*
 import kr.co.booktalk.client.MonitorClient
 import kr.co.booktalk.client.SendRequest
 import kr.co.booktalk.coroutineGlobalExceptionHandler
+import kr.co.booktalk.domain.DebateRepository
+import kr.co.booktalk.domain.DebateRoundRepository
 import org.springframework.scheduling.annotation.Scheduled
 import org.springframework.stereotype.Component
 import org.springframework.transaction.annotation.Transactional
+import java.time.Instant
 
 @Component
 class DebateScheduler(
-    private val debateService: DebateService,
-    private val monitorClient: MonitorClient
+    private val monitorClient: MonitorClient,
+    private val debateRepository: DebateRepository,
+    private val debateRoundRepository: DebateRoundRepository
 ) {
     private val logger = KotlinLogging.logger {}
     private val scope = CoroutineScope(
@@ -25,12 +29,22 @@ class DebateScheduler(
         scope.cancel()
     }
 
-    /** 매일 0시에 생성된 지 24시간이 지난 토론 자동 종료 */
+    /** 매일 0시에 생성된 지 1주일이 지난 토론 자동 종료 */
     @Scheduled(cron = "0 0 0 * * *")
     @Transactional
     fun closeExpiredDebates() {
         try {
-            debateService.closeExpiredDebates()
+            val expiredDebates = debateRepository.findAllByCreatedAtBeforeAndClosedAtIsNull(
+                Instant.now().minusSeconds(7 * 24 * 60 * 60)
+            )
+            if (expiredDebates.isEmpty()) return
+
+            expiredDebates.forEach { debate ->
+                debate.closedAt = Instant.now()
+                debateRoundRepository.findByDebateIdAndEndedAtIsNull(debate.id!!)?.let { currentRound ->
+                    currentRound.endedAt = Instant.now()
+                }
+            }
         } catch (e: Exception) {
             logger.error(e) { "토론 자동 종료 처리 실패" }
             scope.launch {

@@ -181,21 +181,6 @@ class DebateService(
         }
     }
 
-    @Transactional
-    fun closeExpiredDebates() {
-        val expiredDebates = debateRepository.findAllByCreatedAtBeforeAndClosedAtIsNull(
-            Instant.now().minusSeconds(24 * 60 * 60)
-        )
-        if (expiredDebates.isEmpty()) return
-
-        expiredDebates.forEach { debate ->
-            debate.closedAt = Instant.now()
-            debateRoundRepository.findByDebateIdAndEndedAtIsNull(debate.id!!)?.let { currentRound ->
-                currentRound.endedAt = Instant.now()
-            }
-        }
-    }
-
     fun summarizeDebate(debateId: String) {
         scope.launch {
             try {
