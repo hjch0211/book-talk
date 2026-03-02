@@ -3,6 +3,11 @@ package kr.co.booktalk.domain.debate
 import kr.co.booktalk.domain.DebateEntity
 import java.time.Instant
 
+fun FindAllRequest.validate() {
+    require(page >= 0) { "page는 0 이상이어야 합니다." }
+    require(size in 1..100) { "size는 1 이상 100 이하여야 합니다." }
+}
+
 fun CreateRequest.validate() {
     require(topic.isNotBlank()) { "topic은 필수입니다." }
     require(maxMemberCount in 2..4) { "maxMemberCount는 2~4 사이여야 합니다." }

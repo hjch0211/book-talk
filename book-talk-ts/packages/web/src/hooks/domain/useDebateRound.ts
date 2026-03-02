@@ -83,7 +83,7 @@ export const useDebateRound = (props: Props) => {
 
   /** PRESENTATION 라운드 시작 (PREPARATION → PRESENTATION) */
   const startPresentationRound = useEffectEvent(async () => {
-    if (!debateId || currentRoundInfo?.id) return;
+    if (!debateId || currentRoundInfo?.type !== 'PREPARATION') return;
 
     await updateDebateMutation.mutateAsync({
       debateId,

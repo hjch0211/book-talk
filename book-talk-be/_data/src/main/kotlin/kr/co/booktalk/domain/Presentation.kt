@@ -4,6 +4,7 @@ import jakarta.persistence.*
 import kr.co.booktalk.AuditableUuidEntity
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Modifying
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -27,4 +28,8 @@ class PresentationEntity(
 @Repository
 interface PresentationRepository : JpaRepository<PresentationEntity, UUID> {
     fun findAllByDebateOrderByCreatedAtAsc(debate: DebateEntity): List<PresentationEntity>
+
+    @Modifying
+    @Transactional
+    fun deleteByDebateAndAccount(debate: DebateEntity, account: AccountEntity)
 }

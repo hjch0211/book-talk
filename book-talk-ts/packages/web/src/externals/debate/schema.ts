@@ -5,6 +5,7 @@ export const CreateDebateRequestSchema = z.object({
   bookISBN: z.string().min(1, '책 ISBN을 입력해주세요'),
   bookAuthor: z.string().min(1, '책 저자를 입력해주세요'),
   bookDescription: z.string().nullish(),
+  detailUrl: z.string().min(1, '책 상세 URL을 입력해주세요'),
   bookImageUrl: z.string().nullish(),
   topic: z
     .string()
@@ -79,7 +80,7 @@ export const PresentationInfoSchema = z.object({
 
 export const RoundInfoSchema = z.object({
   id: z.number(),
-  type: z.enum(['PRESENTATION', 'FREE']),
+  type: z.enum(['PREPARATION', 'PRESENTATION', 'FREE']),
   currentSpeakerId: z.number().nullish(),
   currentSpeakerAccountId: z.string().nullish(),
   nextSpeakerAccountId: z.string().nullish(),
@@ -93,6 +94,7 @@ export const BookInfoSchema = z.object({
   author: z.string(),
   description: z.string().nullish(),
   imageUrl: z.string().nullish(),
+  detailUrl: z.string(),
 });
 
 export const FindOneDebateResponseSchema = z.object({
@@ -166,6 +168,7 @@ export const FindAllDebateBookInfoSchema = z.object({
   title: z.string(),
   author: z.string(),
   imageUrl: z.string().nullish(),
+  detailUrl: z.string(),
 });
 
 export const FindAllDebateInfoSchema = z.object({
@@ -174,7 +177,7 @@ export const FindAllDebateInfoSchema = z.object({
   topic: z.string(),
   description: z.string().nullish(),
   maxMemberCount: z.number(),
-  currentMemberCount: z.number(),
+  members: z.array(MemberInfoSchema),
   closedAt: z.string().nullish(),
   startAt: z.string(),
   createdAt: z.string(),

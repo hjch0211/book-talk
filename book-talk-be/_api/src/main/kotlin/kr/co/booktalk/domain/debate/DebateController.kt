@@ -16,11 +16,10 @@ class DebateController(
     /** 토론 목록 조회 */
     @GetMapping("/debates")
     fun findAll(
-        @RequestParam(required = false) input: String?,
-        @RequestParam(defaultValue = "0") page: Int,
-        @RequestParam(defaultValue = "20") size: Int,
+        @ModelAttribute request: FindAllRequest,
     ): HttpResult<FindAllResponse> {
-        return debateService.findAll(input, page, size).toResult()
+        request.validate()
+        return debateService.findAll(request).toResult()
     }
 
     /** 토론 생성 */
@@ -50,6 +49,12 @@ class DebateController(
     fun join(@RequestBody request: JoinRequest, authAccount: AuthAccount) {
         request.validate()
         debateService.join(request, authAccount)
+    }
+
+    /** 토론 참여 취소 */
+    @DeleteMapping("/debates/{debateId}/participants")
+    fun cancelJoin(@PathVariable debateId: String, authAccount: AuthAccount) {
+        debateService.cancelJoin(debateId, authAccount)
     }
 
     /** 발언자 생성 */

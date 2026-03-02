@@ -28,6 +28,7 @@ class DebateRoundSpeakerService(
     fun create(request: CreateRoundSpeakerRequest) {
         val debateRound = debateRoundRepository.findByIdOrNull(request.debateRoundId)
             ?: httpBadRequest("존재하지 않는 토론 라운드입니다.")
+        if (debateRound.type == DebateRoundType.PREPARATION) httpBadRequest("PREPARATION 라운드에는 발언자를 지정할 수 없습니다.")
         val speaker = accountRepository.findByIdOrNull(request.nextSpeakerId.toUUID())
             ?: httpBadRequest("존재하지 않는 계정입니다.")
         if (!debateMemberRepository.existsByDebateAndAccountId(debateRound.debate, speaker.id!!))

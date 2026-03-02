@@ -23,6 +23,7 @@ import org.springframework.data.repository.findByIdOrNull
 import org.springframework.stereotype.Service
 import org.springframework.transaction.annotation.Transactional
 import java.time.Instant
+import java.time.temporal.ChronoUnit
 
 @Service
 class DebateService(
@@ -59,6 +60,7 @@ class DebateService(
                 title = request.bookTitle,
                 author = request.bookAuthor,
                 description = request.bookDescription?.trim()?.take(5000),
+                detailUrl= request.detailUrl,
                 imageUrl = request.bookImageUrl
             )
         )
@@ -72,21 +74,46 @@ class DebateService(
             )
         )
         presentationRepository.save(PresentationEntity(debate, host, "{}"))
+        debateRoundService.create(CreateRoundRequest(debate.id.toString(), DebateRoundType.PREPARATION))
         return CreateResponse(debate.id.toString())
     }
 
-    fun findAll(input: String?, page: Int, size: Int): FindAllResponse {
-        val books = if (input.isNullOrBlank()) bookRepository.findAllByOrderByAuthorAsc()
-                    else bookRepository.findAllBySearch(input)
+    fun findAll(request: FindAllRequest): FindAllResponse {
+        val books = if (request.keyword.isNullOrBlank()) bookRepository.findAllByOrderByAuthorAsc()
+                    else bookRepository.findAllBySearch(request.keyword)
         if (books.isEmpty()) return FindAllResponse(page = org.springframework.data.domain.Page.empty())
 
-        val debates = debateRepository.findAllByBookIn(books, PageRequest.of(page, size))
-        val memberCounts = debateMemberRepository.countByDebates(debates.content)
-            .associate { it.debateId to it.count }
+        val debates = debateRepository.findAllWithFilters(
+            books = books,
+            accountId = request.accountId?.toUUID(),
+            roundType = request.round,
+            pageable = PageRequest.of(request.page, request.size),
+        )
+        val membersMap = debateMemberRepository.findAllByDebateIn(debates.content)
+            .groupBy { it.debate.id }
 
         return FindAllResponse(
-            page = debates.map { it.toDebateInfo(memberCounts[it.id] ?: 0) }
+            page = debates.map { it.toDebateInfo(membersMap[it.id] ?: emptyList()) }
         )
+    }
+
+    @Transactional
+    fun cancelJoin(debateId: String, authAccount: AuthAccount) {
+        val account = accountRepository.findByIdOrNull(authAccount.id.toUUID()) ?: httpBadRequest("존재하지 않는 사용자입니다.")
+        val debate = debateRepository.findByIdOrNull(debateId.toUUID()) ?: httpBadRequest("존재하지 않는 토론입니다.")
+
+        val currentRound = debateRoundRepository.findByDebateIdAndEndedAtIsNull(debate.id!!)
+        if (currentRound?.type != DebateRoundType.PREPARATION) httpBadRequest("PREPARATION 단계에서만 참여를 취소할 수 있습니다.")
+
+        if (debate.startAt < Instant.now().plus(3, ChronoUnit.DAYS)) {
+            httpBadRequest("토론 시작 3일 전부터는 참여를 취소할 수 없습니다.")
+        }
+
+        val member = debateMemberRepository.findByDebateAndAccountForUpdate(debate, account) ?: httpBadRequest("토론 참여자가 아닙니다.")
+        if (member.role == DebateMemberRole.HOST) httpBadRequest("방장은 참여를 취소할 수 없습니다.")
+
+        debateMemberRepository.delete(member)
+        presentationRepository.deleteByDebateAndAccount(debate, account)
     }
 
     fun findOne(id: String): FindOneResponse {
@@ -133,20 +160,26 @@ class DebateService(
         val members = debateMemberRepository.findAllByDebateOrderByCreatedAtAsc(debate)
         if (members.isEmpty()) httpBadRequest("토론 참여자가 없습니다.")
 
+        if (debate.startAt.isAfter(Instant.now())) httpBadRequest("아직 시작되지 않은 토론입니다.")
+
         val currentRound = debateRoundRepository.findByDebateIdAndEndedAtIsNull(debate.id!!)
         val currentRoundType = currentRound?.type
 
         /** 토론 라운드 처리 */
         when {
+            /** 동일 라운드 타입 요청 → 무시 */
             currentRoundType != null && request.roundType.name == currentRoundType.name -> null
 
-            currentRoundType != null && request.roundType == UpdateRequest.RoundType.PRESENTATION ->
+            /** PREPARATION 이후 단계(PRESENTATION/FREE)에서 PRESENTATION 재요청 → 불가 */
+            currentRoundType != DebateRoundType.PREPARATION && request.roundType == UpdateRequest.RoundType.PRESENTATION ->
                 httpBadRequest("이미 라운드가 시작되었습니다.")
 
+            /** PRESENTATION이 아닌 상태에서 FREE 전환 요청 → 불가 (PREPARATION → FREE 포함) */
             currentRoundType != DebateRoundType.PRESENTATION && request.roundType == UpdateRequest.RoundType.FREE ->
                 httpBadRequest("PRESENTATION 라운드에서만 FREE 라운드로 전환할 수 있습니다.")
 
-            currentRoundType != DebateRoundType.PRESENTATION && request.roundType == UpdateRequest.RoundType.PRESENTATION -> {
+            /** PREPARATION → PRESENTATION: 첫 번째 발언자 지정 및 다음 발언자 예약 */
+            currentRoundType == DebateRoundType.PREPARATION && request.roundType == UpdateRequest.RoundType.PRESENTATION -> {
                 val newRound = debateRoundService.create(
                     CreateRoundRequest(debate.id.toString(), DebateRoundType.PRESENTATION)
                 )
@@ -157,6 +190,7 @@ class DebateService(
                 debateRoundService.patch(PatchRoundRequest(newRound.id, JsonNullable.of(nextSpeakerId)))
             }
 
+            /** PRESENTATION → FREE: 첫 번째 발언자 지정 (이후 순서는 스케줄러가 처리) */
             currentRoundType != DebateRoundType.FREE && request.roundType == UpdateRequest.RoundType.FREE -> {
                 val newRound = debateRoundService.create(
                     CreateRoundRequest(debate.id.toString(), DebateRoundType.FREE)

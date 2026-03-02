@@ -11,11 +11,6 @@ import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
 
-interface DebateMemberCountProjection {
-    val debateId: UUID
-    val count: Long
-}
-
 @Entity
 @Table(name = "debate_member")
 @EntityListeners(AuditingEntityListener::class)
@@ -47,6 +42,13 @@ interface DebateMemberRepository : JpaRepository<DebateMemberEntity, Long> {
     fun findAllByDebateOrderByCreatedAtAsc(debate: DebateEntity): List<DebateMemberEntity>
     fun existsByDebateAndAccountId(debate: DebateEntity, accountId: UUID): Boolean
 
-    @Query("SELECT m.debate.id as debateId, COUNT(m) as count FROM DebateMemberEntity m WHERE m.debate IN :debates GROUP BY m.debate.id")
-    fun countByDebates(@Param("debates") debates: List<DebateEntity>): List<DebateMemberCountProjection>
+    @Query("SELECT m FROM DebateMemberEntity m JOIN FETCH m.account WHERE m.debate IN :debates")
+    fun findAllByDebateIn(@Param("debates") debates: List<DebateEntity>): List<DebateMemberEntity>
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT m FROM DebateMemberEntity m WHERE m.debate = :debate AND m.account = :account")
+    fun findByDebateAndAccountForUpdate(
+        @Param("debate") debate: DebateEntity,
+        @Param("account") account: AccountEntity,
+    ): DebateMemberEntity?
 }

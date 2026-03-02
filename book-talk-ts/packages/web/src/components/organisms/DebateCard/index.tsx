@@ -19,8 +19,6 @@ import {
   DebateCardButton,
 } from './style.ts';
 
-export type DebateCardData = FindAllDebateInfo;
-
 function formatKoreanDate(isoString: string): string {
   const date = new Date(isoString);
   const kstDate = new Date(date.getTime() + 9 * 60 * 60 * 1000);
@@ -31,21 +29,17 @@ function formatKoreanDate(isoString: string): string {
 }
 
 interface DebateCardProps {
-  data: DebateCardData;
-  onApply?: (id: string) => void;
-  onEnter?: (id: string) => void;
+  myId: string;
+  data: FindAllDebateInfo;
+  onButtonClick?: (debate: FindAllDebateInfo) => void;
 }
 
-export function DebateCard({ data, onApply, onEnter }: DebateCardProps) {
-  const isActive = data.closedAt === null;
+export function DebateCard({ myId, data, onButtonClick }: DebateCardProps) {
+  const isEntered = !!data.members.find((m) => m.id === myId);
   const scheduledAt = formatKoreanDate(data.startAt);
 
   const handleButtonClick = () => {
-    if (isActive) {
-      onEnter?.(data.id);
-    } else {
-      onApply?.(data.id);
-    }
+    onButtonClick?.(data);
   };
 
   return (
@@ -64,7 +58,7 @@ export function DebateCard({ data, onApply, onEnter }: DebateCardProps) {
         <CardPeopleRow>
           <CardCountGroup>
             <CardPersonIcon />
-            <CardCurrentCount>{data.currentMemberCount}</CardCurrentCount>
+            <CardCurrentCount>{data.members.length}</CardCurrentCount>
             <CardMaxCountWrapper>
               <CardMaxCount>/{data.maxMemberCount}</CardMaxCount>
             </CardMaxCountWrapper>
@@ -72,8 +66,8 @@ export function DebateCard({ data, onApply, onEnter }: DebateCardProps) {
           <CardDate>{scheduledAt}</CardDate>
         </CardPeopleRow>
 
-        <DebateCardButton isActive={isActive} onClick={handleButtonClick} disableRipple>
-          {isActive ? '토론방 입장하기' : '참여신청하기'}
+        <DebateCardButton isEntered={isEntered} onClick={handleButtonClick} disableRipple>
+          {isEntered ? '참여신청하기' : '토론방 입장하기'}
         </DebateCardButton>
       </CardBody>
     </CardRoot>

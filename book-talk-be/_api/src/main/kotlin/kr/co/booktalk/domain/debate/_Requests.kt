@@ -17,6 +17,14 @@ enum class WSRequestMessageType {
     C_VOICE_ICE_CANDIDATE
 }
 
+data class FindAllRequest(
+    val keyword: String? = null,
+    val accountId: String? = null,
+    val round: DebateRoundType? = null,
+    val page: Int = 0,
+    val size: Int = 20,
+)
+
 data class CreateRequest(
     val topic: String,
     val description: String?,
@@ -26,6 +34,7 @@ data class CreateRequest(
     val bookISBN: String,
     val bookAuthor: String,
     val bookDescription: String? = null,
+    val detailUrl: String,
     val bookImageUrl: String? = null,
 )
 

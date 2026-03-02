@@ -1,7 +1,16 @@
 import { Button, type ButtonProps } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-export type AppButtonVariant = 'filled' | 'outlined' | 'social' | 'rounded' | 'inline';
+export type AppButtonVariant =
+  | 'filled'
+  | 'outlined'
+  | 'social'
+  | 'rounded'
+  | 'inline'
+  | 'debate-join'
+  | 'debate-enter'
+  | 'debate-closed'
+  | 'debate-cancel';
 
 export interface AppButtonProps extends Omit<ButtonProps, 'variant'> {
   appVariant?: AppButtonVariant;
@@ -9,7 +18,7 @@ export interface AppButtonProps extends Omit<ButtonProps, 'variant'> {
 }
 
 export const StyledButton = styled(Button, {
-  shouldForwardProp: (prop) => prop !== 'appVariant' && prop !== 'hoverAnimation',
+  shouldForwardProp: (prop) => prop !== 'appVariant' && prop !== 'hoverAnimation' && prop !== 'sx',
 })<{ appVariant: AppButtonVariant; hoverAnimation?: boolean }>`
   & {
     height: 50px;
@@ -105,7 +114,7 @@ export const StyledButton = styled(Button, {
       height: 59px;
       border-radius: 48px;
       padding: 16px 32px;
-      font-size: 18px;
+    font-size: 18px;
       letter-spacing: 1px;
       color: #262626;
       border: 1px solid transparent;
@@ -117,5 +126,71 @@ export const StyledButton = styled(Button, {
     &&:hover {
       box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
     }
+  `}
+
+  ${({ appVariant }) =>
+    appVariant === 'debate-join' &&
+    `
+    & {
+      height: 34px;
+      border-radius: 7px;
+      font-weight: 200;
+      font-size: 12px;
+      letter-spacing: 0.3px;
+      border: 1px solid transparent;
+      background:
+        linear-gradient(#AACDFF, #AACDFF) padding-box,
+        linear-gradient(180deg, #AACDFF 0%, #5F84FF 100%) border-box;
+      color: #000000;
+    }
+    &&:hover { background: #d8dcf0; }
+  `}
+
+  ${({ appVariant }) =>
+    appVariant === 'debate-enter' &&
+    `
+    & {
+      height: 34px;
+      border-radius: 7px;
+      font-weight: 200;
+      font-size: 12px;
+      letter-spacing: 0.3px;
+      background: #ffffff;
+      border: 1px solid #262626;
+      color: #000000;
+    }
+    &&:hover { background: #f5f5f5; }
+  `}
+
+  ${({ appVariant }) =>
+    appVariant === 'debate-closed' &&
+    `
+    & {
+      height: 60px;
+      border-radius: 10px;
+      font-weight: 500;
+      font-size: 14px;
+      letter-spacing: 0.3px;
+      background: #C4C4C4;
+      border: 1px solid #D9D9D9;
+      color: #7B7B7B;
+      cursor: default;
+    }
+    &&:hover { background: #C4C4C4; }
+  `}
+
+  ${({ appVariant }) =>
+    appVariant === 'debate-cancel' &&
+    `
+    & {
+      height: 60px;
+      border-radius: 10px;
+      font-weight: 500;
+      font-size: 14px;
+      letter-spacing: 0.3px;
+      background: #FFFFFF;
+      color: #262626;
+    }
+    &&:hover { background: #f5f5f5; }
   `}
 `;

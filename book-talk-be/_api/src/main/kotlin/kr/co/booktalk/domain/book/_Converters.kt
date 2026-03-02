@@ -20,6 +20,7 @@ fun SearchResponse.toResponse(): SearchBookResponse {
                 author = it.author,
                 publisher = it.publisher,
                 description = it.description,
+                detailUrl = it.detailUrl,
                 imageUrl = it.imageUrl
             )
         },

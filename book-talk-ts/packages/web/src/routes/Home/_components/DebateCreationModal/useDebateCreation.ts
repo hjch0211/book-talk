@@ -143,6 +143,7 @@ export function useDebateCreation(onClose: () => void) {
       bookISBN: selectedBook.isbn,
       bookAuthor: selectedBook.author,
       bookDescription: selectedBook.description,
+      detailUrl: selectedBook.detailUrl,
       bookImageUrl: selectedBook.imageUrl,
       topic: data.topic,
       description: data.description || undefined,

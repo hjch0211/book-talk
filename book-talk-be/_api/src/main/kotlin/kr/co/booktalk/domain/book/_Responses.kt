@@ -13,6 +13,7 @@ data class SearchBookResponse(
         val author: String,
         val publisher: String,
         val description: String,
+        val detailUrl: String,
         val imageUrl: String,
     )
 }

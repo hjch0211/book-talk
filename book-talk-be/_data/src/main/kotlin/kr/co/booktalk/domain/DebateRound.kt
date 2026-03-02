@@ -27,7 +27,7 @@ class DebateRoundEntity(
 ) : AuditableLongIdEntity()
 
 enum class DebateRoundType {
-    PRESENTATION, FREE
+    PREPARATION, PRESENTATION, FREE
 }
 
 @Transactional(readOnly = true)

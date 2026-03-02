@@ -38,6 +38,7 @@ fun DebateEntity.toResponse(
             author = book.author,
             description = book.description ?: "",
             imageUrl = book.imageUrl ?: "",
+            detailUrl = book.detailUrl,
         ),
         topic = topic,
         description = description,
@@ -67,18 +68,19 @@ fun DebateRoundEntity.toRoundInfo(
     )
 }
 
-fun DebateEntity.toDebateInfo(currentMemberCount: Long): FindAllResponse.DebateInfo {
+fun DebateEntity.toDebateInfo(members: List<DebateMemberEntity>): FindAllResponse.DebateInfo {
     return FindAllResponse.DebateInfo(
         id = id.toString(),
         bookInfo = FindAllResponse.DebateInfo.BookInfo(
             title = book.title,
             author = book.author,
             imageUrl = book.imageUrl,
+            detailUrl = book.detailUrl,
         ),
         topic = topic,
         description = description,
         maxMemberCount = maxMemberCount.toLong(),
-        currentMemberCount = currentMemberCount,
+        members = members.map { FindAllResponse.DebateInfo.MemberInfo(it.account.id.toString(), it.account.name, it.role) },
         startAt = startAt,
         closedAt = closedAt,
         createdAt = createdAt,

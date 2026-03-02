@@ -1,4 +1,4 @@
-import { queryOptions } from '@tanstack/react-query';
+import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
 import { findAllDebates, findOneDebate, getChats } from './api';
 import type { FindOneDebateResponse, MemberInfo } from './schema';
 
@@ -57,15 +57,16 @@ function transformToCurrentRoundInfo(
       (p) => p.accountId === round.currentSpeakerAccountId
     )?.id;
 
+    const roundType = round.type ?? 'PREPARATION';
     return {
       id: round.id,
-      type: round.type ?? 'PREPARATION',
+      type: roundType,
       currentPresentationId,
       currentSpeaker: resolveCurrentSpeaker(debate),
       nextSpeaker: resolveNextSpeaker(debate),
       createdAt: round.createdAt,
       endedAt: round.endedAt,
-      isEditable: false,
+      isEditable: roundType === 'PREPARATION',
     };
   }
 
@@ -115,10 +116,30 @@ export const findAllDebatesQueryOptions = (params?: {
   page?: number;
   size?: number;
   keyword?: string;
+  accountId?: string;
+  round?: RoundType;
 }) =>
   queryOptions({
     queryKey: ['debates', 'all', params],
     queryFn: () => findAllDebates(params),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+  });
+
+export const infiniteDebatesQueryOptions = (params?: {
+  size?: number;
+  keyword?: string;
+  accountId?: string;
+  round?: RoundType;
+}) =>
+  infiniteQueryOptions({
+    queryKey: ['debates', 'all', 'infinite', params],
+    queryFn: ({ pageParam }) => findAllDebates({ ...params, page: pageParam }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, _, lastPageParam) => {
+      const { totalPages, number } = lastPage.page;
+      return number + 1 < totalPages ? lastPageParam + 1 : undefined;
+    },
     staleTime: 1000 * 60 * 5,
     gcTime: 1000 * 60 * 10,
   });

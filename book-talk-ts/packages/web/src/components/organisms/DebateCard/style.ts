@@ -1,5 +1,5 @@
 import { PermIdentity } from '@mui/icons-material';
-import { Box, Button, Typography } from '@mui/material';
+import { Box, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
 export const CardRoot = styled(Box)({
@@ -157,48 +157,3 @@ export const CardDate = styled(Typography)({
   letterSpacing: '0.3px',
   color: '#262626',
 });
-
-export const DebateCardButton = styled(Button, {
-  shouldForwardProp: (prop) => prop !== 'isActive',
-})<{ isActive: boolean }>`
-  && {
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: center;
-    gap: 3px;
-    width: 100%;
-    height: 34px;
-    padding: 0;
-    min-width: 0;
-    border-radius: 7px;
-    font-style: normal;
-    font-weight: 200;
-    font-size: 12px;
-    line-height: 150%;
-    letter-spacing: 0.3px;
-    text-transform: none;
-    flex-shrink: 0;
-  }
-
-  ${({ isActive }) =>
-    isActive
-      ? `
-    && {
-      background: #ffffff;
-      border: 1px solid #262626;
-      color: #000000;
-    }
-    &&:hover { background: #f5f5f5; }
-  `
-      : `
-    && {
-      border: 1px solid transparent;
-      background:
-        linear-gradient(#f7f8ff, #f7f8ff) padding-box,
-        linear-gradient(180deg, #AACDFF 0%, #5F84FF 100%) border-box;
-      color: #000000;
-    }
-    &&:hover { background: #d8dcf0; }
-  `}
-`;

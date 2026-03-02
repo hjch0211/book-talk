@@ -33,9 +33,10 @@ data class FindAllResponse(
         val id: String,
         val bookInfo: BookInfo,
         val topic: String,
+        val currentRound: DebateRoundType? = null,
         val description: String? = null,
         val maxMemberCount: Long,
-        val currentMemberCount: Long,
+        val members: List<MemberInfo>,
         val startAt: Instant,
         val closedAt: Instant? = null,
         val createdAt: Instant,
@@ -43,7 +44,15 @@ data class FindAllResponse(
         data class BookInfo(
             val title: String,
             val author: String,
+            val description: String? = null,
             val imageUrl: String? = null,
+            val detailUrl: String,
+        )
+
+        data class MemberInfo(
+            val id: String,
+            val name: String,
+            val role: DebateMemberRole,
         )
     }
 }
@@ -72,6 +81,7 @@ data class FindOneResponse(
         val author: String,
         val description: String? = null,
         val imageUrl: String? = null,
+        val detailUrl: String,
     )
 
     data class MemberInfo(

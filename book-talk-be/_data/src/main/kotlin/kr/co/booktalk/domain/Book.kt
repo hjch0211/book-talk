@@ -23,6 +23,8 @@ class BookEntity(
 
     val description: String? = null,
 
+    val detailUrl: String,
+
     val imageUrl: String? = null
 ) : AuditableLongIdEntity()
 

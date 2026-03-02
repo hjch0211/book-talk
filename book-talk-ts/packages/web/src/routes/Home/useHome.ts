@@ -1,20 +1,23 @@
 import { meQueryOption } from '@src/externals/account';
-import { findOneDebateQueryOptions, joinDebate } from '@src/externals/debate';
+import type { FindAllDebateInfo } from '@src/externals/debate/schema';
 import { useModal, useToast } from '@src/hooks';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import DebateCreationModal from './_components/DebateCreationModal';
+import DebateParticipationModal from './_components/DebateParticipationModal';
 
 export function useHome() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { openModal } = useModal();
   const { toast } = useToast();
   const { data: me } = useQuery(meQueryOption);
-  const [searchValue, setSearchValue] = useState('');
-  const [queryKeyword, setQueryKeyword] = useState('');
-  const [page, setPage] = useState(1);
-  const queryClient = useQueryClient();
+
+  const queryKeyword = searchParams.get('keyword') ?? '';
+  const page = Number(searchParams.get('page') ?? '1');
+
+  const [searchValue, setSearchValue] = useState(queryKeyword);
 
   const handleCreateDebate = () => {
     if (!me) {
@@ -25,43 +28,48 @@ export function useHome() {
     openModal(DebateCreationModal);
   };
 
+  const handleSearchChange = (value: string) => {
+    setSearchValue(value);
+  };
+
   const handleSearch = () => {
-    setQueryKeyword(searchValue);
-    setPage(1);
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      if (searchValue) {
+        next.set('keyword', searchValue);
+      } else {
+        next.delete('keyword');
+      }
+      next.set('page', '1');
+      return next;
+    });
   };
 
-  /** 토론 참여 */
-  const joinDebateMutation = useMutation({
-    mutationFn: (debateId: string) => joinDebate({ debateId }),
-    onSuccess: (_, debateId) => {
-      void queryClient.invalidateQueries({
-        queryKey: findOneDebateQueryOptions(debateId).queryKey,
-      });
-    },
-    onError: () => {
-      navigate('/debate-full');
-    },
-  });
-
-  const handleApply = (id: string) => {
-    // TODO: call joinDebate API then navigate
-    navigate(`/debate/${id}`);
+  const setPage = (nextPage: number) => {
+    setSearchParams((prev) => {
+      const next = new URLSearchParams(prev);
+      next.set('page', String(nextPage));
+      return next;
+    });
   };
 
-  const handleEnter = (id: string) => {
-    navigate(`/debate/${id}`);
+  const openDebateParticipationModal = (debate: FindAllDebateInfo) => {
+    if (!me) {
+      toast.warning('로그인이 필요합니다.');
+      navigate('/sign-in');
+      return;
+    }
+    openModal(DebateParticipationModal, { debate, myId: me.id });
   };
 
   return {
     searchValue,
-    setSearchValue,
+    handleSearchChange,
     queryKeyword,
     page,
     setPage,
-    joinDebateMutation,
     handleCreateDebate,
     handleSearch,
-    handleApply,
-    handleEnter,
+    openDebateParticipationModal,
   };
 }

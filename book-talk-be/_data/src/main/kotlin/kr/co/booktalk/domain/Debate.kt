@@ -46,8 +46,32 @@ interface DebateRepository : JpaRepository<DebateEntity, UUID> {
     fun findAllByCreatedAtBeforeAndClosedAtIsNull(createdAt: Instant): List<DebateEntity>
 
     @Query(
-        value = "SELECT d FROM DebateEntity d JOIN d.book b WHERE d.book IN :books ORDER BY b.author ASC",
-        countQuery = "SELECT COUNT(d) FROM DebateEntity d WHERE d.book IN :books"
+        value = """
+            SELECT d FROM DebateEntity d JOIN d.book b
+            WHERE d.book IN :books
+            AND (:accountId IS NULL OR EXISTS (
+                SELECT m FROM DebateMemberEntity m WHERE m.debate = d AND m.account.id = :accountId
+            ))
+            AND (:roundType IS NULL OR EXISTS (
+                SELECT r FROM DebateRoundEntity r WHERE r.debate = d AND r.type = :roundType AND r.endedAt IS NULL
+            ))
+            ORDER BY b.author ASC
+        """,
+        countQuery = """
+            SELECT COUNT(d) FROM DebateEntity d
+            WHERE d.book IN :books
+            AND (:accountId IS NULL OR EXISTS (
+                SELECT m FROM DebateMemberEntity m WHERE m.debate = d AND m.account.id = :accountId
+            ))
+            AND (:roundType IS NULL OR EXISTS (
+                SELECT r FROM DebateRoundEntity r WHERE r.debate = d AND r.type = :roundType AND r.endedAt IS NULL
+            ))
+        """
     )
-    fun findAllByBookIn(@Param("books") books: List<BookEntity>, pageable: Pageable): Page<DebateEntity>
+    fun findAllWithFilters(
+        @Param("books") books: List<BookEntity>,
+        @Param("accountId") accountId: UUID?,
+        @Param("roundType") roundType: DebateRoundType?,
+        pageable: Pageable,
+    ): Page<DebateEntity>
 }

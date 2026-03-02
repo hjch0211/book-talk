@@ -27,6 +27,8 @@ export const findAllDebates = async (params?: {
   page?: number;
   size?: number;
   keyword?: string;
+  accountId?: string;
+  round?: string;
 }): Promise<FindAllDebateResponse> => {
   const response = await authApiClient.get('/debates', { params });
   return FindAllDebateResponseSchema.parse(response.data.data);
@@ -49,6 +51,11 @@ export const findOneDebate = async (id: string): Promise<FindOneDebateResponse> 
 export const joinDebate = async (request: JoinDebateRequest): Promise<void> => {
   const validatedData = JoinDebateRequestSchema.parse(request);
   await authApiClient.post('/debates/participants', validatedData);
+};
+
+/** 토론 참여 취소 */
+export const cancelDebate = async (debateId: string): Promise<void> => {
+  await authApiClient.delete(`/debates/${debateId}/participants`);
 };
 
 /** 토론 상태 수정 */
