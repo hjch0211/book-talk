@@ -13,6 +13,7 @@ export const CardGrid = styled(Box)({
   display: 'flex',
   flexDirection: 'column',
   gap: '48px',
+  minHeight: '830px',
 });
 
 export const CardRow = styled(Box)({

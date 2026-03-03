@@ -1,25 +1,25 @@
 import { z } from 'zod';
 
 export const CreateDebateRequestSchema = z.object({
-  bookTitle: z.string().min(1, '책 제목을 입력해주세요'),
-  bookISBN: z.string().min(1, '책 ISBN을 입력해주세요'),
-  bookAuthor: z.string().min(1, '책 저자를 입력해주세요'),
+  bookTitle: z.string().min(1, { message: '책 제목을 입력해주세요' }),
+  bookISBN: z.string().min(1, { message: '책 ISBN을 입력해주세요' }),
+  bookAuthor: z.string().min(1, { message: '책 저자를 입력해주세요' }),
   bookDescription: z.string().nullish(),
-  detailUrl: z.string().min(1, '책 상세 URL을 입력해주세요'),
+  detailUrl: z.string().min(1, { message: '책 상세 URL을 입력해주세요' }),
   bookImageUrl: z.string().nullish(),
   topic: z
     .string()
-    .min(1, '토론 주제를 입력해주세요')
-    .max(200, '토론 주제는 200자 이내로 입력해주세요'),
-  description: z.string().max(500, '토론 설명은 500자 이내로 입력해주세요').nullish(),
+    .min(1, { message: '토론 주제를 입력해주세요' })
+    .max(200, { message: '토론 주제는 200자 이내로 입력해주세요' }),
+  description: z.string().max(500, { message: '토론 설명은 500자 이내로 입력해주세요' }).nullish(),
   maxMemberCount: z
     .number()
     .int()
-    .min(2, '참여자 수는 최소 2명입니다')
-    .max(4, '참여자 수는 최대 4명입니다'),
+    .min(2, { message: '참여자 수는 최소 2명입니다' })
+    .max(4, { message: '참여자 수는 최대 4명입니다' }),
   startAt: z
     .string()
-    .min(1, '토론 일정을 선택해주세요')
+    .min(1, { message: '토론 일정을 선택해주세요' })
     .refine(
       (val) => !Number.isNaN(new Date(val).getTime()) && new Date(val) > new Date(),
       '토론 일정은 현재 시각 이후여야 합니다'
@@ -30,16 +30,19 @@ export const DebateFormSchema = z
   .object({
     topic: z
       .string()
-      .min(1, '토론 주제를 입력해주세요')
-      .max(60, '토론 주제는 60자 이내로 입력해주세요'),
+      .min(1, { message: '토론 주제를 입력해주세요' })
+      .max(60, { message: '토론 주제는 60자 이내로 입력해주세요' }),
 
-    description: z.string().max(300, '토론 설명은 300자 이내로 입력해주세요').optional(),
+    description: z
+      .string()
+      .max(300, { message: '토론 설명은 300자 이내로 입력해주세요' })
+      .optional(),
 
-    bookISBN: z.string().min(1, '책을 선택해주세요'),
+    bookISBN: z.string().min(1, { message: '책을 선택해주세요' }),
 
-    scheduledDate: z.string().min(1, '토론 일자를 선택해주세요'),
+    scheduledDate: z.string().min(1, { message: '토론 일자를 선택해주세요' }),
 
-    scheduledTime: z.string().min(1, '토론 시간을 선택해주세요'),
+    scheduledTime: z.string().min(1, { message: '토론 시간을 선택해주세요' }),
 
     participantCount: z.number().min(2).max(10),
   })
@@ -57,14 +60,50 @@ export const DebateFormSchema = z
     }
   });
 
+export const DebateModificationFormSchema = z
+  .object({
+    topic: z
+      .string()
+      .min(1, { message: '토론 주제를 입력해주세요' })
+      .max(60, { message: '토론 주제는 60자 이내로 입력해주세요' }),
+
+    description: z
+      .string()
+      .max(300, { message: '토론 설명은 300자 이내로 입력해주세요' })
+      .optional(),
+
+    scheduledDate: z.string().min(1, { message: '토론 일자를 선택해주세요' }),
+
+    scheduledTime: z.string().min(1, { message: '토론 시간을 선택해주세요' }),
+
+    participantCount: z.number().min(2).max(4),
+  })
+  .superRefine((data, ctx) => {
+    if (!data.scheduledDate || !data.scheduledTime) return;
+
+    const startAt = new Date(`${data.scheduledDate}T${data.scheduledTime}`);
+
+    if (startAt <= new Date()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: '토론 일정은 현재 시각 이후여야 합니다',
+        path: ['scheduledTime'],
+      });
+    }
+  });
+
 export const JoinDebateRequestSchema = z.object({
-  debateId: z.string().min(1, '토론 ID를 입력해주세요'),
+  debateId: z.string().min(1, { message: '토론 ID를 입력해주세요' }),
 });
 
 export const UpdateDebateRequestSchema = z.object({
-  debateId: z.string().min(1, '토론 ID를 입력해주세요'),
+  debateId: z.string().min(1, { message: '토론 ID를 입력해주세요' }),
   roundType: z.enum(['PREPARATION', 'PRESENTATION', 'FREE']),
   ended: z.boolean(),
+  topic: z.string().min(1).max(200),
+  description: z.string().max(500).nullish(),
+  maxMemberCount: z.number().int().min(2).max(4),
+  startAt: z.string(),
 });
 
 export const MemberInfoSchema = z.object({
@@ -104,6 +143,7 @@ export const FindOneDebateResponseSchema = z.object({
   currentRound: RoundInfoSchema.nullish(),
   bookInfo: BookInfoSchema,
   topic: z.string(),
+  maxMemberCount: z.number(),
   description: z.string().nullish(),
   aiSummarized: z.string().nullish(),
   startAt: z.string(),
@@ -114,7 +154,7 @@ export const FindOneDebateResponseSchema = z.object({
 });
 
 export const CreateRoundRequestSchema = z.object({
-  debateId: z.string().min(1, '토론 ID를 입력해주세요'),
+  debateId: z.string().min(1, { message: '토론 ID를 입력해주세요' }),
   type: z.enum(['PRESENTATION', 'FREE']),
 });
 
@@ -130,7 +170,7 @@ export const PatchRoundRequestSchema = z.object({
 
 export const CreateRoundSpeakerRequestSchema = z.object({
   debateRoundId: z.number(),
-  nextSpeakerId: z.string().min(1, '다음 발언자 ID를 입력해주세요'),
+  nextSpeakerId: z.string().min(1, { message: '다음 발언자 ID를 입력해주세요' }),
 });
 
 export const PatchRoundSpeakerRequestSchema = z.object({
@@ -140,8 +180,8 @@ export const PatchRoundSpeakerRequestSchema = z.object({
 });
 
 export const CreateChatRequestSchema = z.object({
-  debateId: z.string().min(1, '토론 ID를 입력해주세요'),
-  content: z.string().min(1, '채팅 내용을 입력해주세요'),
+  debateId: z.string().min(1, { message: '토론 ID를 입력해주세요' }),
+  content: z.string().min(1, { message: '채팅 내용을 입력해주세요' }),
 });
 
 export const CreateChatResponseSchema = z.object({
@@ -167,6 +207,7 @@ export const ChatResponseSchema = z.array(
 export const FindAllDebateBookInfoSchema = z.object({
   title: z.string(),
   author: z.string(),
+  description: z.string().nullish(),
   imageUrl: z.string().nullish(),
   detailUrl: z.string(),
 });
@@ -175,6 +216,7 @@ export const FindAllDebateInfoSchema = z.object({
   id: z.string(),
   bookInfo: FindAllDebateBookInfoSchema,
   topic: z.string(),
+  currentRound: z.enum(['PREPARATION', 'PRESENTATION', 'FREE']).nullish(),
   description: z.string().nullish(),
   maxMemberCount: z.number(),
   members: z.array(MemberInfoSchema),
@@ -201,6 +243,7 @@ export type FindAllDebateResponse = z.infer<typeof FindAllDebateResponseSchema>;
 
 export type CreateDebateRequest = z.infer<typeof CreateDebateRequestSchema>;
 export type DebateForm = z.infer<typeof DebateFormSchema>;
+export type DebateModificationForm = z.infer<typeof DebateModificationFormSchema>;
 
 export type JoinDebateRequest = z.infer<typeof JoinDebateRequestSchema>;
 export type UpdateDebateRequest = z.infer<typeof UpdateDebateRequestSchema>;

@@ -50,8 +50,8 @@ const formatTime = (isoString: string): string => {
 };
 
 const DebateParticipationModal = ({ open, onClose, debate, myId }: Props) => {
-  const { handleJoin, handleCancel, handleEnter, isJoinPending, isCancelPending } =
-    useDebateParticipation(debate, onClose);
+  const { handleJoin, handleCancel, handleEnter, handleEdit, isJoinPending, isCancelPending } =
+    useDebateParticipation(debate, onClose, myId);
   const myRole = debate.members.find((m) => m.id === myId)?.role;
   const isFull = !myRole && debate.members.length >= debate.maxMemberCount;
 
@@ -112,11 +112,12 @@ const DebateParticipationModal = ({ open, onClose, debate, myId }: Props) => {
           </ContentArea>
 
           <DebateActionButtons
-            myRole={'MEMBER'}
+            myRole={myRole}
             isFull={isFull}
             onJoin={handleJoin}
             onCancel={handleCancel}
             onEnter={handleEnter}
+            onEdit={handleEdit}
             isJoinPending={isJoinPending}
             isCancelPending={isCancelPending}
           />

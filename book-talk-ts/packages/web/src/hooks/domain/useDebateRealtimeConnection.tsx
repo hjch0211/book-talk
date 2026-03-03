@@ -252,7 +252,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
   });
 
   /** 라운드 업데이트 */
-  const onDebateRoundUpdate = useEffectEvent((roundInfo: DebateRoundUpdateResponse) => {
+  const onDebateRoundUpdate = useEffectEvent(async (roundInfo: DebateRoundUpdateResponse) => {
     if (debateId) {
       void queryClient.invalidateQueries({
         queryKey: findOneDebateQueryOptions(debateId).queryKey,
@@ -263,24 +263,27 @@ export const useDebateRealtimeConnection = (props: Props) => {
     if (roundType === 'PRESENTATION' || roundType === 'FREE') {
       onRoundStartBackdrop(roundType);
     }
-  });
 
-  /** AI 요약 완성 */
-  const onAiSummaryCompleted = useEffectEvent(async () => {
-    if (debateId) {
+    if (roundType === 'PRESENTATION' && debateId) {
       await queryClient
-        .fetchQuery({
-          ...findOneDebateQueryOptions(debateId),
-          staleTime: 0,
-        })
+        .fetchQuery({ ...findOneDebateQueryOptions(debateId), staleTime: 0 })
         .then((debate) => {
           openModal(AiSummarizationModal, {
             bookTitle: `${debate.bookInfo.title} - ${debate.bookInfo.author}`,
             topic: debate.topic,
-            bookImageUrl: debate.bookInfo.imageUrl,
+            bookImageUrl: debate.bookInfo.imageUrl ?? '',
             summarization: debate.aiSummarized ?? '',
           });
         });
+    }
+  });
+
+  /** 토론 시작 알림 - debate 상태 최신화 */
+  const onDebateStartNotified = useEffectEvent(() => {
+    if (debateId) {
+      void queryClient.invalidateQueries({
+        queryKey: findOneDebateQueryOptions(debateId).queryKey,
+      });
     }
   });
 
@@ -318,7 +321,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
       onDebateRoundUpdate,
       onVoiceSignaling: handleVoiceSignaling,
       onChatMessage,
-      onAiSummaryCompleted,
+      onDebateStartNotified,
     });
 
     return () => {

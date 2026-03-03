@@ -4,22 +4,28 @@ import { googleLogin, SignInRequestSchema, signIn } from '@src/externals/auth';
 import { saveTokens } from '@src/externals/client';
 import { useToast } from '@src/hooks/infra/useToast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect } from 'react';
+import { useEffect, useEffectEvent } from 'react';
 import { useForm } from 'react-hook-form';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import type { z } from 'zod';
 
 type SignInFormValues = z.infer<typeof SignInRequestSchema>;
 
 export function useSignIn() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const redirectTo = (location.state as { redirect?: string })?.redirect ?? '/home';
   const queryClient = useQueryClient();
   const { toast } = useToast();
   const { data: me } = useQuery(meQueryOption);
+  const handleRedirectTo = useEffectEvent(() => {
+    console.log(redirectTo);
+    navigate(redirectTo);
+  });
 
   useEffect(() => {
-    if (me) navigate('/home');
-  }, [me, navigate]);
+    if (me) handleRedirectTo();
+  }, [me]);
 
   const {
     control,
@@ -34,10 +40,10 @@ export function useSignIn() {
     mutationFn: signIn,
     onSuccess: async (tokens) => {
       saveTokens(tokens.accessToken, tokens.refreshToken);
-      await queryClient.invalidateQueries({ queryKey: meQueryOption.queryKey });
+      await queryClient.invalidateQueries();
       const user = await queryClient.fetchQuery(meQueryOption);
       toast.success(`반가워요 ${user?.name}님!`);
-      navigate('/home');
+      navigate(redirectTo);
     },
   });
 

@@ -19,6 +19,7 @@ interface Props {
   onJoin: () => void;
   onCancel: () => void;
   onEnter: () => void;
+  onEdit: () => void;
   isJoinPending: boolean;
   isCancelPending: boolean;
 }
@@ -29,13 +30,19 @@ export function DebateActionButtons({
   onJoin,
   onCancel,
   onEnter,
+  onEdit,
   isJoinPending,
   isCancelPending,
 }: Props) {
   if (isFull) {
     return (
       <ButtonSection>
-        <AppButton appVariant="debate-closed" sx={{ width: 250 }} disableRipple>
+        <AppButton
+          appVariant="debate-closed"
+          fullWidth={false}
+          style={{ width: 250 }}
+          disableRipple
+        >
           참여신청 마감
         </AppButton>
         <Caption>{CAPTIONS.FULL}</Caption>
@@ -47,15 +54,15 @@ export function DebateActionButtons({
     return (
       <ButtonRow>
         <AppButton
-          appVariant="debate-cancel"
-          sx={{ width: 200 }}
+          appVariant="transparent"
+          style={{ width: 200 }}
           onClick={onCancel}
           loading={isCancelPending}
         >
           참여신청 취소하기
         </AppButton>
         <ButtonSection>
-          <AppButton appVariant="filled" sx={{ width: 250, height: 60 }} onClick={onEnter}>
+          <AppButton appVariant="filled" style={{ width: 250, height: 60 }} onClick={onEnter}>
             토론방 입장하기
           </AppButton>
           <Caption>{CAPTIONS.MEMBER}</Caption>
@@ -66,12 +73,17 @@ export function DebateActionButtons({
 
   if (myRole === 'HOST') {
     return (
-      <ButtonSection>
-        <AppButton appVariant="filled" sx={{ width: 250, height: 60 }} onClick={onEnter}>
-          토론방 입장하기
+      <ButtonRow>
+        <AppButton appVariant="transparent" style={{ width: 162, height: 60 }} onClick={onEdit}>
+          토론정보 수정하기
         </AppButton>
-        <Caption>{CAPTIONS.HOST}</Caption>
-      </ButtonSection>
+        <ButtonSection>
+          <AppButton appVariant="filled" style={{ width: 250, height: 60 }} onClick={onEnter}>
+            토론방 입장하기
+          </AppButton>
+          <Caption>{CAPTIONS.HOST}</Caption>
+        </ButtonSection>
+      </ButtonRow>
     );
   }
 
@@ -80,7 +92,7 @@ export function DebateActionButtons({
       appVariant="filled"
       onClick={onJoin}
       loading={isJoinPending}
-      sx={{ width: 250, height: 60 }}
+      style={{ width: 250, height: 60 }}
     >
       참여 신청하기
     </AppButton>

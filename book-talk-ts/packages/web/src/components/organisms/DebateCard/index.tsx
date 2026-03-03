@@ -1,4 +1,5 @@
 import type { FindAllDebateInfo } from '@src/externals/debate/schema';
+import type { ReactNode } from 'react';
 import {
   CardBody,
   CardClubTitle,
@@ -16,7 +17,6 @@ import {
   CardRoot,
   CardTitleSection,
   CardTopic,
-  DebateCardButton,
 } from './style.ts';
 
 function formatKoreanDate(isoString: string): string {
@@ -29,18 +29,12 @@ function formatKoreanDate(isoString: string): string {
 }
 
 interface DebateCardProps {
-  myId: string;
   data: FindAllDebateInfo;
-  onButtonClick?: (debate: FindAllDebateInfo) => void;
+  children: ReactNode;
 }
 
-export function DebateCard({ myId, data, onButtonClick }: DebateCardProps) {
-  const isEntered = !!data.members.find((m) => m.id === myId);
+export function DebateCard({ data, children }: DebateCardProps) {
   const scheduledAt = formatKoreanDate(data.startAt);
-
-  const handleButtonClick = () => {
-    onButtonClick?.(data);
-  };
 
   return (
     <CardRoot>
@@ -66,9 +60,7 @@ export function DebateCard({ myId, data, onButtonClick }: DebateCardProps) {
           <CardDate>{scheduledAt}</CardDate>
         </CardPeopleRow>
 
-        <DebateCardButton isEntered={isEntered} onClick={handleButtonClick} disableRipple>
-          {isEntered ? '참여신청하기' : '토론방 입장하기'}
-        </DebateCardButton>
+        {children}
       </CardBody>
     </CardRoot>
   );

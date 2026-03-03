@@ -128,11 +128,9 @@ class DebateRealtimeService(
         broadcastToDebateRoom(debateId, objectMapper.writeValueAsString(response))
     }
 
-    fun broadcastAiSummaryCompleted(debateId: String) {
-        val response = AiSummaryCompletedResponse(
-            payload = AiSummaryCompletedResponse.Payload(
-                debateId = debateId
-            )
+    fun broadcastDebateStartNotify(debateId: String) {
+        val response = DebateStartNotifyResponse(
+            payload = DebateStartNotifyResponse.Payload(debateId = debateId)
         )
         broadcastToDebateRoom(debateId, objectMapper.writeValueAsString(response))
     }

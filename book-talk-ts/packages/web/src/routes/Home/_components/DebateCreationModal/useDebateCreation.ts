@@ -1,12 +1,8 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { meQueryOption } from '@src/externals/account';
 import { type BookData, infiniteSearchBooksQueryOptions } from '@src/externals/book';
-import {
-  createDebate,
-  type DebateForm,
-  DebateFormSchema,
-  findOneDebateQueryOptions,
-} from '@src/externals/debate';
+import { createDebate, type DebateForm, DebateFormSchema } from '@src/externals/debate';
+import { useToast } from '@src/hooks';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -15,6 +11,7 @@ import { useNavigate } from 'react-router-dom';
 export function useDebateCreation(onClose: () => void) {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { toast } = useToast();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [debouncedSearchQuery, setDebouncedSearchQuery] = useState('');
@@ -57,7 +54,7 @@ export function useDebateCreation(onClose: () => void) {
       topic: '',
       description: '',
       bookISBN: '',
-      scheduledDate: '',
+      scheduledDate: new Date().toLocaleDateString('en-CA'),
       scheduledTime: '',
       participantCount: 2,
     },
@@ -94,9 +91,7 @@ export function useDebateCreation(onClose: () => void) {
   const createDebateMutation = useMutation({
     mutationFn: createDebate,
     onSuccess: async (data) => {
-      await queryClient.invalidateQueries({
-        queryKey: findOneDebateQueryOptions().queryKey,
-      });
+      await queryClient.invalidateQueries();
 
       reset();
       setSearchQuery('');
@@ -107,7 +102,7 @@ export function useDebateCreation(onClose: () => void) {
       navigate(`/debate/${data.id}`);
     },
     onError: (error) => {
-      console.error('토론방 생성 실패:', error);
+      toast.error(error instanceof Error ? error.message : '토론방 생성에 실패했습니다.');
     },
   });
 

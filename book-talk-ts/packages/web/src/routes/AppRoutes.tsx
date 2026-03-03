@@ -10,6 +10,7 @@ import { SignUpPage } from '@src/routes/_Sign/SignUp';
 import { DebatePage } from '@src/routes/Debate';
 import { HomePage } from '@src/routes/Home';
 import { LandingPage } from '@src/routes/Landing';
+import { MyPage } from '@src/routes/MyPage';
 import { Route, Routes } from 'react-router-dom';
 
 export function AppRoutes() {
@@ -23,6 +24,7 @@ export function AppRoutes() {
       <Route path="/auth/callback" element={<GoogleCallbackPage />} />
       <Route path="/privacy" element={<PrivacyPage />} />
       <Route path="/terms-of-use" element={<TermsOfUsePage />} />
+      <Route path="/my-page" element={<MyPage />} />
       <Route path="/debate/:debateId" element={<DebatePage />} />
       <Route path="/debate-full" element={<DebateFull />} />
       <Route path="/debate-expired" element={<DebateExpired />} />

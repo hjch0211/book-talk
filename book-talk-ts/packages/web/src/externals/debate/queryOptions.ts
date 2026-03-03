@@ -53,11 +53,13 @@ function transformToCurrentRoundInfo(
 ): CurrentRoundInfo {
   if (debate.currentRound) {
     const round = debate.currentRound;
-    const currentPresentationId = debate.presentations.find(
-      (p) => p.accountId === round.currentSpeakerAccountId
-    )?.id;
-
     const roundType = round.type ?? 'PREPARATION';
+
+    const currentPresentationId =
+      roundType === 'PREPARATION'
+        ? debate.presentations.find((p) => p.accountId === myAccountId)?.id
+        : debate.presentations.find((p) => p.accountId === round.currentSpeakerAccountId)?.id;
+
     return {
       id: round.id,
       type: roundType,
@@ -116,8 +118,8 @@ export const findAllDebatesQueryOptions = (params?: {
   page?: number;
   size?: number;
   keyword?: string;
-  accountId?: string;
-  round?: RoundType;
+  hostId?: string;
+  canJoin?: boolean;
 }) =>
   queryOptions({
     queryKey: ['debates', 'all', params],
@@ -126,11 +128,11 @@ export const findAllDebatesQueryOptions = (params?: {
     gcTime: 1000 * 60 * 10,
   });
 
-export const infiniteDebatesQueryOptions = (params?: {
+export const myPageDebatesQueryOptions = (params?: {
   size?: number;
   keyword?: string;
-  accountId?: string;
-  round?: RoundType;
+  hostId?: string;
+  canJoin?: boolean;
 }) =>
   infiniteQueryOptions({
     queryKey: ['debates', 'all', 'infinite', params],

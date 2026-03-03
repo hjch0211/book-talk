@@ -2,18 +2,19 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { meQueryOption } from '@src/externals/account';
 import {
   googleLogin,
-  SignUpRequestSchema,
-  sendEmailCode,
+  SignUpFormSchema,
+  type SignUpFormValues,
+  sendSignUpOtp,
   signUp,
-  verifyEmailCode,
+  verifySignUpOtp,
 } from '@src/externals/auth';
 import { saveTokens } from '@src/externals/client';
+import { useCountdown } from '@src/hooks/infra/useCountdown';
 import { useToast } from '@src/hooks/infra/useToast';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { type SubmitHandler, useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
-import { z } from 'zod';
 
 export type EmailVerifiedStatus = 'IDLE' | 'SENDING' | 'SENT' | 'VERIFYING' | 'VERIFIED';
 
@@ -23,16 +24,6 @@ export const formatCountdown = (seconds: number) => {
   return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
 };
 
-const SignUpFormSchema = SignUpRequestSchema.extend({
-  emailCode: z.string().length(6, '인증 코드는 6자리입니다'),
-  passwordConfirm: z.string(),
-}).refine((data) => data.password === data.passwordConfirm, {
-  message: '비밀번호가 일치하지 않습니다.',
-  path: ['passwordConfirm'],
-});
-
-type SignUpFormValues = z.infer<typeof SignUpFormSchema>;
-
 export function useSignUp() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -41,28 +32,7 @@ export function useSignUp() {
   const [emailVerifiedStatus, setEmailVerifiedStatus] = useState<EmailVerifiedStatus>('IDLE');
   const [emailCodeSuccess, setEmailCodeSuccess] = useState<string | null>(null);
   const [verifiedEmail, setVerifiedEmail] = useState<string | null>(null);
-  const [countdown, setCountdown] = useState(299);
-  const countdownRef = useRef<ReturnType<typeof setInterval> | null>(null);
-
-  const startCountdown = () => {
-    if (countdownRef.current) clearInterval(countdownRef.current);
-    setCountdown(299);
-    countdownRef.current = setInterval(() => {
-      setCountdown((prev) => {
-        if (prev <= 1) {
-          clearInterval(countdownRef.current!);
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-  };
-
-  useEffect(() => {
-    return () => {
-      if (countdownRef.current) clearInterval(countdownRef.current);
-    };
-  }, []);
+  const { countdown, start: startCountdown, stop: stopCountdown } = useCountdown(299);
 
   const {
     control,
@@ -87,7 +57,7 @@ export function useSignUp() {
     setVerifiedEmail(null);
     setEmailVerifiedStatus('SENDING');
     try {
-      await sendEmailCode({ email });
+      await sendSignUpOtp({ email });
       setEmailVerifiedStatus('SENT');
       startCountdown();
       toast.success('검증 코드가 전송되었습니다.');
@@ -104,8 +74,8 @@ export function useSignUp() {
     setEmailCodeSuccess(null);
     setEmailVerifiedStatus('VERIFYING');
     try {
-      await verifyEmailCode({ email, code: emailCode });
-      if (countdownRef.current) clearInterval(countdownRef.current);
+      await verifySignUpOtp({ email, code: emailCode });
+      stopCountdown();
       setEmailVerifiedStatus('VERIFIED');
       setVerifiedEmail(email);
       setEmailCodeSuccess('이메일이 확인되었습니다.');
@@ -121,7 +91,7 @@ export function useSignUp() {
     mutationFn: (data: { email: string; name: string; password: string }) => signUp(data),
     onSuccess: async (tokens) => {
       saveTokens(tokens.accessToken, tokens.refreshToken);
-      await queryClient.invalidateQueries({ queryKey: meQueryOption.queryKey });
+      await queryClient.invalidateQueries();
       const user = await queryClient.fetchQuery(meQueryOption);
       toast.success(`반가워요 ${user?.name}님!`);
       navigate('/home');

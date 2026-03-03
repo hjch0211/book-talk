@@ -41,6 +41,7 @@ fun DebateEntity.toResponse(
             detailUrl = book.detailUrl,
         ),
         topic = topic,
+        maxMemberCount = maxMemberCount.toLong(),
         description = description,
         aiSummarized = aiSummarized,
         startAt = startAt,

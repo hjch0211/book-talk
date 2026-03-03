@@ -1,14 +1,22 @@
 import AppHeader from '@src/components/organisms/AppHeader';
 import PageContainer from '@src/components/templates/PageContainer';
-import { SignContainer, SignTitle } from '../style';
+import { SignContainer } from '../style';
+import { Step1EmailVerification } from './_components/Step1EmailVerification';
+import { Step2ResetPassword } from './_components/Step2ResetPassword';
+import { useForgotPassword } from './useForgotPassword';
 
-// TODO: 디자인 반영하기
 export function ForgotPasswordPage() {
+  const { verifiedEmail, step1, step2 } = useForgotPassword();
+
   return (
     <PageContainer>
       <AppHeader />
       <SignContainer>
-        <SignTitle>비밀번호 찾기</SignTitle>
+        {verifiedEmail === null ? (
+          <Step1EmailVerification step1={step1} />
+        ) : (
+          <Step2ResetPassword step2={step2} />
+        )}
       </SignContainer>
     </PageContainer>
   );

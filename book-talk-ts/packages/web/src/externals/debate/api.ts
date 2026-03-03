@@ -27,8 +27,8 @@ export const findAllDebates = async (params?: {
   page?: number;
   size?: number;
   keyword?: string;
-  accountId?: string;
-  round?: string;
+  hostId?: string;
+  canJoin?: boolean;
 }): Promise<FindAllDebateResponse> => {
   const response = await authApiClient.get('/debates', { params });
   return FindAllDebateResponseSchema.parse(response.data.data);
@@ -56,6 +56,11 @@ export const joinDebate = async (request: JoinDebateRequest): Promise<void> => {
 /** 토론 참여 취소 */
 export const cancelDebate = async (debateId: string): Promise<void> => {
   await authApiClient.delete(`/debates/${debateId}/participants`);
+};
+
+/** 토론 삭제 */
+export const deleteDebate = async (debateId: string): Promise<void> => {
+  await authApiClient.delete(`/debates/${debateId}`);
 };
 
 /** 토론 상태 수정 */

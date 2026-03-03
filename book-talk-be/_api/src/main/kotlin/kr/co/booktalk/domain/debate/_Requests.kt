@@ -19,8 +19,8 @@ enum class WSRequestMessageType {
 
 data class FindAllRequest(
     val keyword: String? = null,
-    val accountId: String? = null,
-    val round: DebateRoundType? = null,
+    val hostId: String? = null,
+    val canJoin: Boolean? = null,
     val page: Int = 0,
     val size: Int = 20,
 )
@@ -46,6 +46,10 @@ data class UpdateRequest(
     val debateId: String,
     val roundType: RoundType,
     val ended: Boolean,
+    val topic: String,
+    val description: String?,
+    val maxMemberCount: Int,
+    val startAt: Instant,
 ) {
     enum class RoundType {
         PREPARATION, PRESENTATION, FREE

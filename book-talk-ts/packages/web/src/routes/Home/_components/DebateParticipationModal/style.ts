@@ -71,7 +71,7 @@ export const BookImageBox = styled(Box, {
     width: 61px;
     height: 89px;
     background-color: #ECECEC;
-    ${({ imageUrl }) => imageUrl ? `background-image: url(${imageUrl});` : ''}
+    ${({ imageUrl }) => (imageUrl ? `background-image: url(${imageUrl});` : '')}
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;

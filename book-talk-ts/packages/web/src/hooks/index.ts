@@ -5,6 +5,7 @@ export { useDebateRealtimeConnection } from './domain/useDebateRealtimeConnectio
 export { useDebateRound } from './domain/useDebateRound';
 export { useDebateVoiceChat } from './domain/useDebateVoiceChat';
 export { usePresentation } from './domain/usePresentation';
+export { useCountdown } from './infra/useCountdown';
 export { useJsonPatch } from './infra/useJsonPatch';
 export { useModal } from './infra/useModal';
 export { useToast } from './infra/useToast';

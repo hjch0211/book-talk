@@ -14,7 +14,7 @@ export function AppPagination({ count, page, onChange }: AppPaginationProps) {
       onChange={(_, newPage) => onChange(newPage)}
       showFirstButton
       showLastButton
-      siblingCount={4}
+      siblingCount={3}
     />
   );
 }

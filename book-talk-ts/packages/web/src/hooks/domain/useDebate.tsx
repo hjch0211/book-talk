@@ -39,9 +39,10 @@ export const useDebate = ({ debateId }: Props) => {
   const updateDebateMutation = useMutation({
     mutationFn: updateDebate,
     onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: findOneDebateQueryOptions(debateId).queryKey,
-      });
+      void queryClient.invalidateQueries();
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : '토론 상태 변경에 실패했습니다.');
     },
   });
 
@@ -51,6 +52,9 @@ export const useDebate = ({ debateId }: Props) => {
     onSuccess: () => {
       closeModal();
       navigateToExpiredPage();
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : '설문조사 제출에 실패했습니다.');
     },
   });
 
@@ -148,6 +152,10 @@ export const useDebate = ({ debateId }: Props) => {
       debateId,
       roundType: debate.currentRoundInfo.type,
       ended: true,
+      topic: debate.topic,
+      description: debate.description,
+      maxMemberCount: debate.maxMemberCount,
+      startAt: debate.startAt,
     });
   });
 

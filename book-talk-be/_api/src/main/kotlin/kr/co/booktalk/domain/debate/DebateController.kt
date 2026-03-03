@@ -51,6 +51,12 @@ class DebateController(
         debateService.join(request, authAccount)
     }
 
+    /** 토론 삭제 */
+    @DeleteMapping("/debates/{debateId}")
+    fun deleteDebate(@PathVariable debateId: String, authAccount: AuthAccount) {
+        debateService.archive(debateId, authAccount)
+    }
+
     /** 토론 참여 취소 */
     @DeleteMapping("/debates/{debateId}/participants")
     fun cancelJoin(@PathVariable debateId: String, authAccount: AuthAccount) {
@@ -102,13 +108,6 @@ class DebateController(
     @DeleteMapping("/debates/ai/chats/{chatId}")
     fun removeAiChat(@PathVariable chatId: String, authAccount: AuthAccount) {
         debateAiChatService.remove(chatId)
-    }
-
-    // TODO: AI server로 오는 요청에만 인가 필요
-    /** AI 서버 - 토론방 요약 완성 callback */
-    @PostMapping("/debates/{debateId}/summary/completion")
-    fun callbackAiSummary(@PathVariable debateId: String) {
-        debateRealtimeService.broadcastAiSummaryCompleted(debateId)
     }
 
     /** AI 서버 - AI 채팅 완성 callback */

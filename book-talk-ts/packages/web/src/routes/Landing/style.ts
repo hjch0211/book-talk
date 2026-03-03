@@ -308,7 +308,7 @@ export const ProcessImageCard = styled.div<ImageCardProps>`
       $prepare
         ? `
         background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(142, 153, 255, 0.2) 84.62%), #FFFFFF;
-        padding: 60px 90px 100px 60px;
+        padding: 0px 90px 100px 60px;
         `
         : ''}
 `;
@@ -436,13 +436,15 @@ export const FooterBigText = styled.div`
     width: 100%;
     bottom: 100px;
     text-align: center;
-    font-family: 'Pretendard', sans-serif;
+    font-feature-settings: 'liga' off, 'clig' off;
+    -webkit-text-stroke-width: 2px;
+    -webkit-text-stroke-color: #FFF;
+    font-size: 300px;
+    font-style: normal;
     font-weight: 900;
-    font-size: 280px;
     line-height: 150%;
     letter-spacing: -17px;
     color: transparent;
-    -webkit-text-stroke: 2px #FFFFFF;
     white-space: nowrap;
     user-select: none;
 `;

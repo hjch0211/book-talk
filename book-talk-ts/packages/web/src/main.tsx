@@ -5,6 +5,7 @@ import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import {
   DesignSystemProvider,
+  InnerModalProvider,
   ModalProvider,
   QueryClientProvider,
   ToastProvider,
@@ -18,9 +19,11 @@ createRoot(document.getElementById('root')!).render(
       <DesignSystemProvider>
         <QueryClientProvider>
           <ToastProvider>
-            <ModalProvider>
-              <AppRoutes />
-            </ModalProvider>
+            <InnerModalProvider>
+              <ModalProvider>
+                <AppRoutes />
+              </ModalProvider>
+            </InnerModalProvider>
           </ToastProvider>
         </QueryClientProvider>
       </DesignSystemProvider>

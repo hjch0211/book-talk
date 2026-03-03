@@ -79,6 +79,7 @@ interface InfiniteDebateListSectionProps {
   hasNextPage: boolean;
   isFetchingNextPage: boolean;
   onLoadMore: () => void;
+  showButton?: boolean;
 }
 
 export function InfiniteDebateListSection({
@@ -88,6 +89,7 @@ export function InfiniteDebateListSection({
   hasNextPage,
   isFetchingNextPage,
   onLoadMore,
+  showButton = true,
 }: InfiniteDebateListSectionProps) {
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -124,12 +126,14 @@ export function InfiniteDebateListSection({
               const isEntered = !!debate.members.find((m) => m.id === myId);
               return (
                 <DebateCard key={debate.id} data={debate}>
-                  <AppButton
-                    appVariant={isEntered ? 'debate-enter' : 'debate-join'}
-                    onClick={() => onButtonClick(debate)}
-                  >
-                    {isEntered ? '토론방 입장하기' : '참여신청하기'}
-                  </AppButton>
+                  {showButton && (
+                    <AppButton
+                      appVariant={isEntered ? 'debate-enter' : 'debate-join'}
+                      onClick={() => onButtonClick(debate)}
+                    >
+                      {isEntered ? '토론방 입장하기' : '참여신청하기'}
+                    </AppButton>
+                  )}
                 </DebateCard>
               );
             })}

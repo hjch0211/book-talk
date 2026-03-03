@@ -1,8 +1,19 @@
-import { Stack } from '@mui/material';
+import { Stack, Tooltip } from '@mui/material';
 import type { RoundType } from '@src/hooks';
+import { useQueryClient } from '@tanstack/react-query';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import raiseHandSvg from '../../../assets/raise-hand.svg';
 import { ActionButton } from '../style.ts';
 import { MicrophoneControlButton } from './MicrophoneControlButton.tsx';
+
+const KST_OFFSET = 9 * 60 * 60 * 1000;
+const toKst = (isoString: string) => new Date(new Date(isoString).getTime() + KST_OFFSET);
+const formatTime = (isoString: string): string => {
+  const d = toKst(isoString);
+  const h = d.getUTCHours();
+  const m = d.getUTCMinutes();
+  return m === 0 ? `${h}시` : `${h}시 ${m}분`;
+};
 
 interface RoundActionsProps {
   /** 현재 라운드 타입 */
@@ -13,6 +24,8 @@ interface RoundActionsProps {
   isCurrentSpeaker: boolean;
   /** 토론 시작 핸들러 */
   onStartDebate: () => void;
+  /** 토론 예정 시작 시간 (ISO string) */
+  startAt: string;
   /** 발표 종료 핸들러 */
   onEndPresentation: () => void;
   /** 손들기 토글 핸들러 */
@@ -39,11 +52,41 @@ export function RoundActions({
   isVoiceChatJoined,
   isVoiceMuted,
   onToggleMute,
+  startAt,
 }: RoundActionsProps) {
+  const queryClient = useQueryClient();
+  const [now, setNow] = useState(() => new Date());
+  const invalidatedRef = useRef(false);
+
+  const handleInvalidateQuries = useEffectEvent(() => {
+    void queryClient.invalidateQueries();
+  });
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const current = new Date();
+      setNow(current);
+      if (!invalidatedRef.current && current >= new Date(startAt)) {
+        invalidatedRef.current = true;
+        handleInvalidateQuries();
+      }
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [startAt]);
+
+  const isStarted = now >= new Date(startAt);
+
   return (
     <Stack spacing={2}>
       {roundType === 'PREPARATION' && myRole === 'HOST' && (
-        <ActionButton onClick={onStartDebate}>토론 시작하기</ActionButton>
+        <Tooltip
+          title={!isStarted && startAt ? `${formatTime(startAt)}부터 시작 가능합니다` : ''}
+          arrow
+        >
+          <ActionButton disabled={!isStarted} onClick={onStartDebate} sx={{ display: 'flex' }}>
+            토론 시작하기
+          </ActionButton>
+        </Tooltip>
       )}
       {roundType === 'PRESENTATION' && (
         <ActionButton disabled={!isCurrentSpeaker} onClick={onEndPresentation}>

@@ -6,6 +6,7 @@ import kotlinx.coroutines.*
 import kr.co.booktalk.client.MonitorClient
 import kr.co.booktalk.client.SendRequest
 import kr.co.booktalk.coroutineGlobalExceptionHandler
+import kr.co.booktalk.domain.DebateRepository
 import kr.co.booktalk.domain.DebateRoundSpeakerRepository
 import kr.co.booktalk.domain.DebateRoundType
 import org.springframework.scheduling.annotation.Scheduled
@@ -21,6 +22,8 @@ import java.time.Instant
 class DebateScheduler(
     private val debateRoundSpeakerRepository: DebateRoundSpeakerRepository,
     private val debateRoundSpeakerService: DebateRoundSpeakerService,
+    private val debateRepository: DebateRepository,
+    private val debateRealtimeService: DebateRealtimeService,
     private val monitorClient: MonitorClient
 ) {
     private val logger = KotlinLogging.logger {}
@@ -69,6 +72,26 @@ class DebateScheduler(
                         )
                     )
                 }
+            }
+        }
+    }
+
+    /**
+     * 토론 시작 시간 알림
+     * - startAt이 지났고 아직 종료되지 않은 토론의 온라인 멤버에게 알림 브로드캐스트
+     * - 프론트엔드에서 debate 상태를 최신화하도록 유도
+     */
+    @Scheduled(fixedDelay = 59000)
+    fun notifyDebateStart() {
+        val debates = debateRepository
+            .findAllByStartAtBeforeAndClosedAtIsNull(Instant.now())
+            .ifEmpty { return }
+
+        debates.forEach { debate ->
+            runCatching {
+                debateRealtimeService.broadcastDebateStartNotify(debate.id.toString())
+            }.onFailure { e ->
+                logger.error(e) { "토론 시작 알림 실패: debateId=${debate.id}" }
             }
         }
     }

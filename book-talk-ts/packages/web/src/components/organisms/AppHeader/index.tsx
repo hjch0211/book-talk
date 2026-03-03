@@ -1,4 +1,4 @@
-import { Logout, Person } from '@mui/icons-material';
+import { Logout, ManageAccounts, Person } from '@mui/icons-material';
 import {
   AppBar,
   Box,
@@ -14,12 +14,13 @@ import {
 } from '@mui/material';
 import signedProfileSvg from '@src/assets/header/signed-profile.svg';
 import unsignedProfileSvg from '@src/assets/header/unsigned-profile.svg';
+import { SuspenseErrorBoundary } from '@src/components';
 import { meQueryOption } from '@src/externals/account';
 import { signOut } from '@src/externals/auth';
 import { clearTokens } from '@src/externals/client';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import type React from 'react';
-import { Suspense, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoSvg from '../../../assets/logo.svg';
 import { LogoContainer, LogoLink, NavMenuGroup, NavMenuItemText } from './style';
@@ -112,6 +113,18 @@ const ProfileSection = () => {
               </Typography>
             </Box>,
             <Divider key="divider" sx={{ my: 1 }} />,
+            <MenuItem
+              key="mypage"
+              onClick={() => {
+                handleClose();
+                navigate('/my-page');
+              }}
+            >
+              <ListItemIcon>
+                <ManageAccounts fontSize="small" sx={{ color: '#7B7B7B' }} />
+              </ListItemIcon>
+              <ListItemText>마이페이지</ListItemText>
+            </MenuItem>,
             <MenuItem key="logout" onClick={handleLogout}>
               <ListItemIcon>
                 <Logout fontSize="small" sx={{ color: '#7B7B7B' }} />
@@ -159,11 +172,12 @@ const AppHeader = () => {
             <NavMenuItemText onClick={() => navigate('/home')}>북톡 홈</NavMenuItemText>
             <NavMenuItemText onClick={() => navigate('/')}>북톡 소개</NavMenuItemText>
           </NavMenuGroup>
-          <Suspense
-            fallback={<Skeleton animation="wave" variant="circular" width={36} height={36} />}
+          <SuspenseErrorBoundary
+            onSuspense={<Skeleton animation="wave" variant="circular" width={36} height={36} />}
+            onError={<img src={unsignedProfileSvg} width={36} height={36} alt="프로필" />}
           >
             <ProfileSection />
-          </Suspense>
+          </SuspenseErrorBoundary>
         </Box>
       </Toolbar>
     </AppBar>

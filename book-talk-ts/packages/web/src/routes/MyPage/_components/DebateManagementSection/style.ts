@@ -1,0 +1,29 @@
+import styled from '@emotion/styled';
+import { Box, Typography } from '@mui/material';
+
+export const DebateSection = styled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '30px',
+  width: 1200,
+});
+
+export const SectionTitle = styled(Typography)({
+  fontFamily: 'S-Core Dream',
+  fontWeight: 500,
+  fontSize: 18,
+  lineHeight: '150%',
+  letterSpacing: '1px',
+  color: '#000000',
+  width: '100%',
+});
+
+export const EmptyText = styled(Typography)({
+  fontFamily: 'S-Core Dream',
+  fontWeight: 200,
+  fontSize: 16,
+  lineHeight: '150%',
+  letterSpacing: '0.3px',
+  color: '#B6B6B6',
+});

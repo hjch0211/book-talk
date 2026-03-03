@@ -21,6 +21,8 @@ fun JoinRequest.validate() {
 fun UpdateRequest.validate() {
     require(debateId.isNotBlank()) { "debateId는 필수입니다." }
     requireNotNull(roundType) { "roundType은 필수입니다." }
+    require(topic.isNotBlank()) { "topic은 공백일 수 없습니다." }
+    require(maxMemberCount in 2..4) { "maxMemberCount는 2~4 사이여야 합니다." }
 }
 
 fun DebateEntity.validateJoinable(): DebateEntity {

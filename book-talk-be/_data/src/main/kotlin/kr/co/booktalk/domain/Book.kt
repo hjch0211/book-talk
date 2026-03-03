@@ -4,6 +4,7 @@ import jakarta.persistence.Entity
 import jakarta.persistence.EntityListeners
 import jakarta.persistence.Table
 import kr.co.booktalk.AuditableLongIdEntity
+import org.hibernate.annotations.SQLRestriction
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -14,6 +15,7 @@ import org.springframework.transaction.annotation.Transactional
 @Entity
 @Table(name = "book")
 @EntityListeners(AuditingEntityListener::class)
+@SQLRestriction("archived_at IS NULL")
 class BookEntity(
     val isbn: String,
 

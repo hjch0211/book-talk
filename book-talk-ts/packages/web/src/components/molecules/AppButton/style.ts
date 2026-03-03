@@ -10,7 +10,7 @@ export type AppButtonVariant =
   | 'debate-join'
   | 'debate-enter'
   | 'debate-closed'
-  | 'debate-cancel';
+  | 'transparent';
 
 export interface AppButtonProps extends Omit<ButtonProps, 'variant'> {
   appVariant?: AppButtonVariant;
@@ -139,11 +139,15 @@ export const StyledButton = styled(Button, {
       letter-spacing: 0.3px;
       border: 1px solid transparent;
       background:
-        linear-gradient(#AACDFF, #AACDFF) padding-box,
+        linear-gradient(#f7f8ff, #f7f8ff) padding-box,
         linear-gradient(180deg, #AACDFF 0%, #5F84FF 100%) border-box;
       color: #000000;
     }
-    &&:hover { background: #d8dcf0; }
+    &&:hover {
+      background:
+        linear-gradient(#eef0ff, #eef0ff) padding-box,
+        linear-gradient(180deg, #AACDFF 0%, #5F84FF 100%) border-box;
+    }
   `}
 
   ${({ appVariant }) =>
@@ -180,7 +184,7 @@ export const StyledButton = styled(Button, {
   `}
 
   ${({ appVariant }) =>
-    appVariant === 'debate-cancel' &&
+    appVariant === 'transparent' &&
     `
     & {
       height: 60px;
