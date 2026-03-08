@@ -8,6 +8,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
+import kr.co.booktalk.config.AppProperties
 import kr.co.booktalk.client.AiClient
 import kr.co.booktalk.client.MailClient
 import kr.co.booktalk.client.MonitorClient
@@ -48,6 +49,7 @@ class DebateService(
     private val mailClient: MailClient,
     private val debateRealtimeService: DebateRealtimeService,
     private val debateNotificationRepository: DebateNotificationRepository,
+    private val appProperties: AppProperties,
 ) {
     private val logger = KotlinLogging.logger {}
     private val scope = CoroutineScope(
@@ -172,6 +174,7 @@ class DebateService(
         )
 
         presentationRepository.save(PresentationEntity(debate, account, "{}"))
+        notifyDebateJoined(debate, account)
     }
 
     @Transactional
@@ -283,9 +286,27 @@ class DebateService(
         notifyDebateDeleted(members, debate)
     }
 
+    private fun notifyDebateJoined(debate: DebateEntity, joinedAccount: AccountEntity) {
+        val debateUrl = "${appProperties.frontendUrl}/debate/${debate.id}"
+        scope.launch {
+            try {
+                mailClient.send(
+                    SendMailRequest(
+                        to = debate.host.email,
+                        subject = "[BookTalk] 토론에 새 참여자가 들어왔습니다",
+                        html = """<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>새 참여자 알림</title></head><body style="margin:0;padding:0;background-color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="padding:24px 0;"><tr><td align="center"><table role="presentation" width="480" cellspacing="0" cellpadding="0" border="0" style="max-width:480px;background-color:#ffffff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.06);padding:32px 28px 28px;"><tr><td align="center" style="padding:0 0 16px 0;"><h1 style="margin:0;font-size:20px;font-weight:700;color:#111827;">새 참여자 알림</h1></td></tr><tr><td style="padding:0 0 20px 0;"><p style="margin:0;font-size:14px;line-height:1.6;color:#4b5563;"><strong>${joinedAccount.name}</strong>님이 토론에 참여했습니다.</p></td></tr><tr><td style="background-color:#f9fafb;border-radius:8px;padding:16px 20px;"><p style="margin:0 0 8px 0;font-size:13px;color:#6b7280;">토론 주제</p><p style="margin:0;font-size:15px;font-weight:600;color:#111827;">${debate.topic}</p></td></tr><tr><td align="center" style="padding:24px 0 0 0;"><a href="$debateUrl" style="display:inline-block;padding:12px 24px;background-color:#111827;color:#ffffff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600;">토론방 바로가기</a></td></tr></table></td></tr></table></body></html>""",
+                    )
+                )
+            } catch (e: Exception) {
+                logger.error(e) { "새 참여자 이메일 발송 실패 - debateId=${debate.id}, joinedAccountId=${joinedAccount.id}" }
+            }
+        }
+    }
+
     private fun notifyDebateUpdated(members: List<DebateMemberEntity>, debate: DebateEntity) {
         val kst = debate.startAt.atZone(java.time.ZoneId.of("Asia/Seoul"))
         val startAtKst = "${kst.year}.${kst.monthValue.toString().padStart(2, '0')}.${kst.dayOfMonth.toString().padStart(2, '0')} ${kst.hour}시${if (kst.minute != 0) " ${kst.minute}분" else ""}"
+        val debateUrl = "${appProperties.frontendUrl}/debate/${debate.id}"
         scope.launch {
             members
                 .filter { it.role != DebateMemberRole.HOST }
@@ -295,7 +316,7 @@ class DebateService(
                             SendMailRequest(
                                 to = member.account.email,
                                 subject = "[BookTalk] 참여 중인 토론 정보가 변경되었습니다",
-                                html = """<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>토론 정보 변경 안내</title></head><body style="margin:0;padding:0;background-color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="padding:24px 0;"><tr><td align="center"><table role="presentation" width="480" cellspacing="0" cellpadding="0" border="0" style="max-width:480px;background-color:#ffffff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.06);padding:32px 28px 28px;"><tr><td align="center" style="padding:0 0 16px 0;"><h1 style="margin:0;font-size:20px;font-weight:700;color:#111827;">토론 정보 변경 안내</h1></td></tr><tr><td style="padding:0 0 20px 0;"><p style="margin:0;font-size:14px;line-height:1.6;color:#4b5563;">참여 중인 토론의 정보가 변경되었습니다.</p></td></tr><tr><td style="padding:0 0 20px 0;background-color:#f9fafb;border-radius:8px;padding:16px 20px;"><p style="margin:0 0 8px 0;font-size:13px;color:#6b7280;">토론 주제</p><p style="margin:0;font-size:15px;font-weight:600;color:#111827;">${debate.topic}</p></td></tr><tr><td style="padding:12px 0 0 0;"><table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td style="padding:4px 0;font-size:13px;color:#6b7280;">토론 일정</td><td style="padding:4px 0;font-size:13px;color:#111827;text-align:right;">$startAtKst</td></tr><tr><td style="padding:4px 0;font-size:13px;color:#6b7280;">모집 인원</td><td style="padding:4px 0;font-size:13px;color:#111827;text-align:right;">${debate.maxMemberCount}명</td></tr></table></td></tr><tr><td align="center" style="padding:24px 0 0 0;"><p style="margin:0;font-size:12px;color:#9ca3af;">본인이 참여하지 않은 토론이라면 이 메일을 무시하셔도 됩니다.</p></td></tr></table></td></tr></table></body></html>""",
+                                html = """<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>토론 정보 변경 안내</title></head><body style="margin:0;padding:0;background-color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="padding:24px 0;"><tr><td align="center"><table role="presentation" width="480" cellspacing="0" cellpadding="0" border="0" style="max-width:480px;background-color:#ffffff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.06);padding:32px 28px 28px;"><tr><td align="center" style="padding:0 0 16px 0;"><h1 style="margin:0;font-size:20px;font-weight:700;color:#111827;">토론 정보 변경 안내</h1></td></tr><tr><td style="padding:0 0 20px 0;"><p style="margin:0;font-size:14px;line-height:1.6;color:#4b5563;">참여 중인 토론의 정보가 변경되었습니다.</p></td></tr><tr><td style="padding:0 0 20px 0;background-color:#f9fafb;border-radius:8px;padding:16px 20px;"><p style="margin:0 0 8px 0;font-size:13px;color:#6b7280;">토론 주제</p><p style="margin:0;font-size:15px;font-weight:600;color:#111827;">${debate.topic}</p></td></tr><tr><td style="padding:12px 0 0 0;"><table width="100%" cellspacing="0" cellpadding="0" border="0"><tr><td style="padding:4px 0;font-size:13px;color:#6b7280;">토론 일정</td><td style="padding:4px 0;font-size:13px;color:#111827;text-align:right;">$startAtKst</td></tr><tr><td style="padding:4px 0;font-size:13px;color:#6b7280;">모집 인원</td><td style="padding:4px 0;font-size:13px;color:#111827;text-align:right;">${debate.maxMemberCount}명</td></tr></table></td></tr><tr><td align="center" style="padding:24px 0 0 0;"><a href="$debateUrl" style="display:inline-block;padding:12px 24px;background-color:#111827;color:#ffffff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600;">토론방 바로가기</a></td></tr><tr><td align="center" style="padding:16px 0 0 0;"><p style="margin:0;font-size:12px;color:#9ca3af;">본인이 참여하지 않은 토론이라면 이 메일을 무시하셔도 됩니다.</p></td></tr></table></td></tr></table></body></html>""",
                             )
                         )
                     } catch (e: Exception) {
@@ -315,7 +336,7 @@ class DebateService(
                             SendMailRequest(
                                 to = member.account.email,
                                 subject = "[BookTalk] 참여 중인 토론방이 삭제되었습니다",
-                                html = """<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>토론방 삭제 안내</title></head><body style="margin:0;padding:0;background-color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="padding:24px 0;"><tr><td align="center"><table role="presentation" width="480" cellspacing="0" cellpadding="0" border="0" style="max-width:480px;background-color:#ffffff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.06);padding:32px 28px 28px;"><tr><td align="center" style="padding:0 0 16px 0;"><h1 style="margin:0;font-size:20px;font-weight:700;color:#111827;">토론방 삭제 안내</h1></td></tr><tr><td style="padding:0 0 20px 0;"><p style="margin:0;font-size:14px;line-height:1.6;color:#4b5563;">참여 중이던 토론방이 방장에 의해 삭제되었습니다.</p></td></tr><tr><td style="background-color:#f9fafb;border-radius:8px;padding:16px 20px;"><p style="margin:0 0 8px 0;font-size:13px;color:#6b7280;">토론 주제</p><p style="margin:0;font-size:15px;font-weight:600;color:#111827;">${debate.topic}</p></td></tr><tr><td align="center" style="padding:24px 0 0 0;"><p style="margin:0;font-size:12px;color:#9ca3af;">본인이 참여하지 않은 토론이라면 이 메일을 무시하셔도 됩니다.</p></td></tr></table></td></tr></table></body></html>""",
+                                html = """<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>토론방 삭제 안내</title></head><body style="margin:0;padding:0;background-color:#f5f5f5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" border="0" style="padding:24px 0;"><tr><td align="center"><table role="presentation" width="480" cellspacing="0" cellpadding="0" border="0" style="max-width:480px;background-color:#ffffff;border-radius:8px;box-shadow:0 6px 18px rgba(0,0,0,.06);padding:32px 28px 28px;"><tr><td align="center" style="padding:0 0 16px 0;"><h1 style="margin:0;font-size:20px;font-weight:700;color:#111827;">토론방 삭제 안내</h1></td></tr><tr><td style="padding:0 0 20px 0;"><p style="margin:0;font-size:14px;line-height:1.6;color:#4b5563;">참여 중이던 토론방이 방장에 의해 삭제되었습니다.</p></td></tr><tr><td style="background-color:#f9fafb;border-radius:8px;padding:16px 20px;"><p style="margin:0 0 8px 0;font-size:13px;color:#6b7280;">토론 주제</p><p style="margin:0;font-size:15px;font-weight:600;color:#111827;">${debate.topic}</p></td></tr><tr><td align="center" style="padding:24px 0 0 0;"><a href="${appProperties.frontendUrl}" style="display:inline-block;padding:12px 24px;background-color:#111827;color:#ffffff;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600;">BookTalk 바로가기</a></td></tr><tr><td align="center" style="padding:16px 0 0 0;"><p style="margin:0;font-size:12px;color:#9ca3af;">본인이 참여하지 않은 토론이라면 이 메일을 무시하셔도 됩니다.</p></td></tr></table></td></tr></table></body></html>""",
                             )
                         )
                     } catch (e: Exception) {
