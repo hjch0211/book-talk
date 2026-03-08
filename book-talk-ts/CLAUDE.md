@@ -101,7 +101,6 @@ All forms use `react-hook-form` + `zodResolver` + schemas from the relevant `@sr
 
 ### Zod v4 Rules
 
-- Use `z.email()` (not `z.string().email()`)
 - Pass messages as objects: `.min(1, { message: '...' })`, `.regex(/.../, { message: '...' })`
 
 ### Toast & Mutations

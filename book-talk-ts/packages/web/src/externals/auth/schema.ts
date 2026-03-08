@@ -10,7 +10,7 @@ const passwordSchema = z
   });
 
 export const SignUpRequestSchema = z.object({
-  email: z.email({ message: '올바른 이메일 형식이 아닙니다' }),
+  email: z.string().email({ message: '올바른 이메일 형식이 아닙니다' }),
   name: z
     .string()
     .min(1, { message: '이름을 입력해주세요' })
@@ -22,30 +22,30 @@ export const SignUpRequestSchema = z.object({
 });
 
 export const SignInRequestSchema = z.object({
-  email: z.email({ message: '올바른 이메일 형식이 아닙니다' }),
+  email: z.string().email({ message: '올바른 이메일 형식이 아닙니다' }),
   password: z.string().min(1, { message: '비밀번호를 입력해주세요' }),
 });
 
 export const SendSignUpOtpRequestSchema = z.object({
-  email: z.email({ message: '올바른 이메일 형식이 아닙니다' }),
+  email: z.string().email({ message: '올바른 이메일 형식이 아닙니다' }),
 });
 
 export const VerifySignUpOtpRequestSchema = z.object({
-  email: z.email({ message: '올바른 이메일 형식이 아닙니다' }),
+  email: z.string().email({ message: '올바른 이메일 형식이 아닙니다' }),
   code: z.string().length(6, { message: '인증 코드는 6자리입니다' }),
 });
 
 export const SendPasswordResetOtpRequestSchema = z.object({
-  email: z.email({ message: '올바른 이메일 형식이 아닙니다' }),
+  email: z.string().email({ message: '올바른 이메일 형식이 아닙니다' }),
 });
 
 export const VerifyPasswordResetOtpRequestSchema = z.object({
-  email: z.email({ message: '올바른 이메일 형식이 아닙니다' }),
+  email: z.string().email({ message: '올바른 이메일 형식이 아닙니다' }),
   code: z.string().length(6, { message: '인증 코드는 6자리입니다' }),
 });
 
 export const ResetPasswordRequestSchema = z.object({
-  email: z.email({ message: '올바른 이메일 형식이 아닙니다' }),
+  email: z.string().email({ message: '올바른 이메일 형식이 아닙니다' }),
   newPassword: passwordSchema,
 });
 
@@ -58,7 +58,7 @@ export const SignUpFormSchema = SignUpRequestSchema.extend({
 });
 
 export const ForgotPasswordStep1FormSchema = z.object({
-  email: z.email({ message: '올바른 이메일 형식이 아닙니다' }),
+  email: z.string().email({ message: '올바른 이메일 형식이 아닙니다' }),
   emailCode: z.string().length(6, { message: '인증 코드는 6자리입니다' }),
 });
 
