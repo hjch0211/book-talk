@@ -34,9 +34,7 @@ interface OtherDebatesSectionProps {
 }
 
 function OtherDebatesSection({ excludeIds, myId, onButtonClick }: OtherDebatesSectionProps) {
-  const { data } = useSuspenseQuery(
-    findAllDebatesQueryOptions({ page: 0, size: 8, canJoin: true })
-  );
+  const { data } = useSuspenseQuery(findAllDebatesQueryOptions({ page: 0, size: 8 }));
   const others = data.page.content.filter((d) => !excludeIds.has(d.id)).slice(0, 4);
 
   if (others.length === 0) return null;
@@ -83,7 +81,6 @@ function DebateListContent({
       page: page - 1,
       size: CARDS_PER_PAGE,
       keyword: queryKeyword,
-      canJoin: true,
     })
   );
   const { data: me } = useSuspenseQuery(meQueryOption);

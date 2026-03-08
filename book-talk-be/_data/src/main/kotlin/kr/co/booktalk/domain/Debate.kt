@@ -77,7 +77,13 @@ interface DebateRepository : JpaRepository<DebateEntity, UUID> {
             WHERE d.book IN :books
             AND (:hostId IS NULL OR d.host.id = :hostId)
             AND (:canJoin IS NULL OR (:canJoin = TRUE AND d.startAt > CURRENT_TIMESTAMP AND d.closedAt IS NULL AND (SELECT COUNT(m) FROM DebateMemberEntity m WHERE m.debate = d) < d.maxMemberCount))
-            ORDER BY b.author ASC
+            ORDER BY
+                CASE
+                    WHEN d.closedAt IS NOT NULL THEN 2
+                    WHEN d.startAt <= CURRENT_TIMESTAMP THEN 1
+                    ELSE 0
+                END ASC,
+                b.author ASC
         """,
         countQuery = """
             SELECT COUNT(d) FROM DebateEntity d
