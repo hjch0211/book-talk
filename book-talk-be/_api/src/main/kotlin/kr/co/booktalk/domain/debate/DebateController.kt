@@ -13,6 +13,15 @@ class DebateController(
     private val debateAiChatService: DebateAiChatService,
     private val debateRealtimeService: DebateRealtimeService
 ) {
+    /** 토론 목록 조회 */
+    @GetMapping("/debates")
+    fun findAll(
+        @ModelAttribute request: FindAllRequest,
+    ): HttpResult<FindAllResponse> {
+        request.validate()
+        return debateService.findAll(request).toResult()
+    }
+
     /** 토론 생성 */
     @PostMapping("/debates")
     fun create(@RequestBody request: CreateRequest, authAccount: AuthAccount): HttpResult<CreateResponse> {
@@ -40,6 +49,18 @@ class DebateController(
     fun join(@RequestBody request: JoinRequest, authAccount: AuthAccount) {
         request.validate()
         debateService.join(request, authAccount)
+    }
+
+    /** 토론 삭제 */
+    @DeleteMapping("/debates/{debateId}")
+    fun deleteDebate(@PathVariable debateId: String, authAccount: AuthAccount) {
+        debateService.archive(debateId, authAccount)
+    }
+
+    /** 토론 참여 취소 */
+    @DeleteMapping("/debates/{debateId}/participants")
+    fun cancelJoin(@PathVariable debateId: String, authAccount: AuthAccount) {
+        debateService.cancelJoin(debateId, authAccount)
     }
 
     /** 발언자 생성 */
@@ -87,13 +108,6 @@ class DebateController(
     @DeleteMapping("/debates/ai/chats/{chatId}")
     fun removeAiChat(@PathVariable chatId: String, authAccount: AuthAccount) {
         debateAiChatService.remove(chatId)
-    }
-
-    // TODO: AI server로 오는 요청에만 인가 필요
-    /** AI 서버 - 토론방 요약 완성 callback */
-    @PostMapping("/debates/{debateId}/summary/completion")
-    fun callbackAiSummary(@PathVariable debateId: String) {
-        debateRealtimeService.broadcastAiSummaryCompleted(debateId)
     }
 
     /** AI 서버 - AI 채팅 완성 callback */

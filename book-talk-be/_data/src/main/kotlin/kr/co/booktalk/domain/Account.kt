@@ -2,8 +2,10 @@ package kr.co.booktalk.domain
 
 import jakarta.persistence.*
 import kr.co.booktalk.AuditableUuidEntity
+import org.hibernate.annotations.SQLRestriction
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import org.springframework.data.jpa.repository.JpaRepository
+import org.springframework.data.jpa.repository.Query
 import org.springframework.stereotype.Repository
 import org.springframework.transaction.annotation.Transactional
 import java.util.*
@@ -11,6 +13,7 @@ import java.util.*
 @Entity
 @Table(name = "account")
 @EntityListeners(AuditingEntityListener::class)
+@SQLRestriction("archived_at IS NULL")
 class AccountEntity(
     @Enumerated(EnumType.STRING)
     var provider: Provider? = null,
@@ -34,4 +37,7 @@ interface AccountRepository : JpaRepository<AccountEntity, UUID> {
     fun existsByName(name: String): Boolean
     fun findByEmail(email: String): AccountEntity?
     fun findByRefreshToken(refreshToken: String): AccountEntity?
+
+    @Query("SELECT * FROM account WHERE email = :email", nativeQuery = true)
+    fun findByEmailWithArchived(email: String): AccountEntity?
 }

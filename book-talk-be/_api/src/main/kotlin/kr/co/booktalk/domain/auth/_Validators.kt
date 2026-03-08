@@ -15,15 +15,33 @@ fun SignInRequest.validate() {
     require(password.isNotBlank()) { "유효하지 않은 비밀번호입니다." }
 }
 
-fun SendEmailCodeRequest.validate() {
-    require(email.isNotBlank()) { "유효하지 않은 이메일입니다." }
+fun SendSignUpOtpRequest.validate() {
+    require(email.isEmail()) { "유효하지 않은 이메일입니다." }
 }
 
-fun VerifyEmailCodeRequest.validate() {
-    require(email.isNotBlank()) { "유효하지 않은 이메일입니다." }
+fun VerifySignUpOtpRequest.validate() {
+    require(email.isEmail()) { "유효하지 않은 이메일입니다." }
     require(code.isNotBlank()) { "유효하지 않은 인증 코드입니다." }
+}
+
+fun SendPasswordResetOtpRequest.validate() {
+    require(email.isEmail()) { "유효하지 않은 이메일입니다." }
+}
+
+fun VerifyPasswordResetOtpRequest.validate() {
+    require(email.isEmail()) { "유효하지 않은 이메일입니다." }
+    require(code.isNotBlank()) { "유효하지 않은 인증 코드입니다." }
+}
+
+fun ResetPasswordRequest.validate() {
+    require(email.isEmail()) { "유효하지 않은 이메일입니다." }
+    require(newPassword.isPassword()) { "유효하지 않은 비밀번호입니다." }
 }
 
 fun RefreshRequest.validate() {
     require(refreshToken.isNotBlank()) { "유효하지 않은 리프레시 토큰입니다." }
+}
+
+fun VerifyPasswordRequest.validate() {
+    require(password.isNotBlank()) { "비밀번호를 입력해 주세요." }
 }

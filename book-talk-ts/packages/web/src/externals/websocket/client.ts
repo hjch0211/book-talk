@@ -261,9 +261,9 @@ export class DebateWebSocketClient {
           this.handlers.onChatMessage(message.payload.chatId);
         }
         break;
-      case WSResponseMessageType.S_AI_SUMMARY_COMPLETED:
-        if (this.handlers.onAiSummaryCompleted && message.payload) {
-          this.handlers.onAiSummaryCompleted(message.payload.debateId);
+      case WSResponseMessageType.S_DEBATE_START_NOTIFIED:
+        if (this.handlers.onDebateStartNotified) {
+          this.handlers.onDebateStartNotified();
         }
         break;
       default:
@@ -292,5 +292,5 @@ export interface WebSocketHandlers {
   onVoiceSignaling?: (message: WebSocketMessage) => void;
   onHandRaiseUpdate?: (raisedHands: RaisedHandInfo[]) => void;
   onChatMessage?: (chatId: number) => void;
-  onAiSummaryCompleted?: (debateId: string) => void;
+  onDebateStartNotified?: () => void;
 }

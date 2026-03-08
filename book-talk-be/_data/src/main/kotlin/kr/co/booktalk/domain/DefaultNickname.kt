@@ -2,6 +2,7 @@ package kr.co.booktalk.domain
 
 import jakarta.persistence.*
 import kr.co.booktalk.AuditableLongIdEntity
+import org.hibernate.annotations.SQLRestriction
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
@@ -11,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional
 @Entity
 @Table(name = "default_nickname")
 @EntityListeners(AuditingEntityListener::class)
+@SQLRestriction("archived_at IS NULL")
 class DefaultNicknameEntity(
     val name: String,
     val num: Int,

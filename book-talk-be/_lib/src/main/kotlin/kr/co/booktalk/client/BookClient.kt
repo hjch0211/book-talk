@@ -36,6 +36,7 @@ data class SearchResponse(
         val author: String,
         val publisher: String,
         val description: String,
+        val detailUrl: String,
         val imageUrl: String,
     )
 }
@@ -68,6 +69,7 @@ class NaverBookClient(
                     author = it.author,
                     publisher = it.publisher,
                     description = it.description,
+                    detailUrl = it.link,
                     imageUrl = it.image
                 )
             },

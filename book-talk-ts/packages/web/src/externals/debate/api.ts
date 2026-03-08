@@ -10,6 +10,8 @@ import {
   CreateDebateRequestSchema,
   type CreateRoundSpeakerRequest,
   CreateRoundSpeakerRequestSchema,
+  type FindAllDebateResponse,
+  FindAllDebateResponseSchema,
   type FindOneDebateResponse,
   FindOneDebateResponseSchema,
   type JoinDebateRequest,
@@ -19,6 +21,18 @@ import {
   type UpdateDebateRequest,
   UpdateDebateRequestSchema,
 } from './schema';
+
+/** 토론 목록 조회 */
+export const findAllDebates = async (params?: {
+  page?: number;
+  size?: number;
+  keyword?: string;
+  hostId?: string;
+  canJoin?: boolean;
+}): Promise<FindAllDebateResponse> => {
+  const response = await authApiClient.get('/debates', { params });
+  return FindAllDebateResponseSchema.parse(response.data.data);
+};
 
 /** 토론 생성 */
 export const createDebate = async (request: CreateDebateRequest): Promise<{ id: string }> => {
@@ -37,6 +51,16 @@ export const findOneDebate = async (id: string): Promise<FindOneDebateResponse> 
 export const joinDebate = async (request: JoinDebateRequest): Promise<void> => {
   const validatedData = JoinDebateRequestSchema.parse(request);
   await authApiClient.post('/debates/participants', validatedData);
+};
+
+/** 토론 참여 취소 */
+export const cancelDebate = async (debateId: string): Promise<void> => {
+  await authApiClient.delete(`/debates/${debateId}/participants`);
+};
+
+/** 토론 삭제 */
+export const deleteDebate = async (debateId: string): Promise<void> => {
+  await authApiClient.delete(`/debates/${debateId}`);
 };
 
 /** 토론 상태 수정 */

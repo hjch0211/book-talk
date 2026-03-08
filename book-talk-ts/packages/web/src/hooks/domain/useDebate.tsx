@@ -1,5 +1,5 @@
 import { meQueryOption } from '@src/externals/account';
-import { findOneDebateQueryOptions, joinDebate, updateDebate } from '@src/externals/debate';
+import { findOneDebateQueryOptions, updateDebate } from '@src/externals/debate';
 import { createSurvey } from '@src/externals/survey';
 import {
   useDebateChat,
@@ -7,6 +7,7 @@ import {
   useDebateRound,
   useDebateVoiceChat,
   useModal,
+  useToast,
 } from '@src/hooks';
 import SurveyModal from '@src/routes/Debate/_components/modal/SurveyModal';
 import { useMutation, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
@@ -32,27 +33,16 @@ export const useDebate = ({ debateId }: Props) => {
   const { data: _me } = useSuspenseQuery(meQueryOption);
   const { data: debate } = useSuspenseQuery(findOneDebateQueryOptions(debateId, _me?.id));
   const { openModal, closeModal } = useModal();
-
-  /** 토론 참여 */
-  const joinDebateMutation = useMutation({
-    mutationFn: (debateId: string) => joinDebate({ debateId }),
-    onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: findOneDebateQueryOptions(debateId).queryKey,
-      });
-    },
-    onError: () => {
-      navigate('/debate-full');
-    },
-  });
+  const { toast } = useToast();
 
   /** 토론 상태 수정 */
   const updateDebateMutation = useMutation({
     mutationFn: updateDebate,
     onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: findOneDebateQueryOptions(debateId).queryKey,
-      });
+      void queryClient.invalidateQueries();
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : '토론 상태 변경에 실패했습니다.');
     },
   });
 
@@ -63,10 +53,9 @@ export const useDebate = ({ debateId }: Props) => {
       closeModal();
       navigateToExpiredPage();
     },
-  });
-
-  const onAutoJoin = useEffectEvent((targetDebateId: string) => {
-    joinDebateMutation.mutate(targetDebateId);
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : '설문조사 제출에 실패했습니다.');
+    },
   });
 
   const navigateToExpiredPage = useEffectEvent(() => {
@@ -87,10 +76,21 @@ export const useDebate = ({ debateId }: Props) => {
     navigate('/sign-in');
   });
 
+  const handleRedirectHome = useEffectEvent(() => {
+    toast.warning('토론 참여자만 참여 가능합니다.');
+    navigate('/');
+  });
+
   useEffect(() => {
     /** 로그인이 필요한 경우 */
     if (!_me?.id) {
       handleRedirectSignIn();
+      return;
+    }
+
+    /** 토론 멤버가 아닌 경우 */
+    if (!debate.myMemberInfo) {
+      handleRedirectHome();
       return;
     }
 
@@ -107,12 +107,7 @@ export const useDebate = ({ debateId }: Props) => {
       navigateToExpiredPage();
       return;
     }
-
-    /** 멤버가 아니면 자동으로 가입 시도 */
-    if (debateId && _me?.id && !debate.myMemberInfo && joinDebateMutation.isIdle) {
-      onAutoJoin(debateId);
-    }
-  }, [debateId, _me?.id, debate.myMemberInfo, joinDebateMutation.isIdle, debate.closedAt]);
+  }, [_me?.id, debate.myMemberInfo, debate.closedAt]);
 
   const round = useDebateRound({ debate, debateId, currentRoundInfo: debate.currentRoundInfo });
 
@@ -157,6 +152,10 @@ export const useDebate = ({ debateId }: Props) => {
       debateId,
       roundType: debate.currentRoundInfo.type,
       ended: true,
+      topic: debate.topic,
+      description: debate.description,
+      maxMemberCount: debate.maxMemberCount,
+      startAt: debate.startAt,
     });
   });
 

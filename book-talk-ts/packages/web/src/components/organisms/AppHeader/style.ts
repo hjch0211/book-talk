@@ -10,14 +10,8 @@ export const LogoContainer = styled.div`
     height: 44px;
 `;
 
-export const LogoWrapper = styled.div`
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 13px;
-    width: 182px;
-    height: 44px;
+export const LogoLink = styled.div`
+    cursor: pointer;
 `;
 
 export const NavMenuGroup = styled.nav`

@@ -1,5 +1,6 @@
 import CloseIcon from '@mui/icons-material/Close';
-import { Box, Button, IconButton, Rating, Typography } from '@mui/material';
+import { Box, IconButton, Rating, Typography } from '@mui/material';
+import { AppButton } from '@src/components/molecules/AppButton';
 import { urls } from '@src/constants/urls.ts';
 import { useState } from 'react';
 import Modal from '../../../../components/organisms/Modal';
@@ -21,7 +22,7 @@ function SurveyModal({ onConfirm, isLoading = false, onClose, open }: Props) {
   };
 
   return (
-    <Modal open={open} onClose={onClose} width={666} height={406} showCloseButton={false}>
+    <Modal open={open} onClose={onClose} showCloseButton={false}>
       <Box
         sx={{
           display: 'flex',
@@ -90,79 +91,28 @@ function SurveyModal({ onConfirm, isLoading = false, onClose, open }: Props) {
         </Box>
 
         {/* Buttons */}
-        <Box
-          sx={{
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'flex-start',
-            gap: '30px',
-            width: '451px',
-            height: '76px',
-          }}
-        >
-          <Button
-            disabled={isLoading}
-            href={urls.INQUIRY}
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{
-              boxSizing: 'border-box',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              padding: '8px 16px',
-              height: '76px',
-              background: '#FFFFFF',
-              border: '1px solid #9D9D9D',
-              boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)',
-              borderRadius: '8px',
-              lineHeight: '125%',
-              letterSpacing: '0.3px',
-              color: '#262626',
-              '&:hover': {
-                background: '#f5f5f5',
-                border: '1px solid #9D9D9D',
-              },
-              '&:disabled': {
-                opacity: 0.5,
-              },
-            }}
-          >
-            문의 내용 남기기
-          </Button>
+        <Box sx={{ display: 'flex', flexDirection: 'row', alignItems: 'flex-start', gap: '30px' }}>
+          <a href={urls.INQUIRY} target="_blank" rel="noopener noreferrer">
+            <AppButton
+              appVariant="outlined"
+              fullWidth={false}
+              disabled={isLoading}
+              sx={{ height: 76 }}
+            >
+              문의 내용 남기기
+            </AppButton>
+          </a>
 
-          <Button
+          <AppButton
+            appVariant="filled"
+            fullWidth={false}
             onClick={handleConfirm}
-            disabled={isLoading || !rating || rating === 0}
-            sx={{
-              boxSizing: 'border-box',
-              display: 'flex',
-              flexDirection: 'column',
-              justifyContent: 'center',
-              alignItems: 'center',
-              padding: '8px 20px',
-              width: '200px',
-              height: '76px',
-              background: '#D8DBFF',
-              boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)',
-              borderRadius: '8px',
-              border: 'none',
-              lineHeight: '125%',
-              textAlign: 'center',
-              letterSpacing: '0.3px',
-              color: '#262626',
-              '&:hover': {
-                background: '#c5c9ff',
-                border: 'none',
-              },
-              '&:disabled': {
-                opacity: 0.5,
-              },
-            }}
+            disabled={isLoading || !rating}
+            loading={isLoading}
+            sx={{ width: 200, height: 76 }}
           >
-            {isLoading ? '제출 중...' : '완료'}
-          </Button>
+            완료
+          </AppButton>
         </Box>
       </Box>
     </Modal>

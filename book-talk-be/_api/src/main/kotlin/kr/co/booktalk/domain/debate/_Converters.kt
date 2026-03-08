@@ -9,6 +9,8 @@ fun CreateRequest.toEntity(host: AccountEntity, book: BookEntity): DebateEntity 
         book = book,
         topic = topic,
         description = description,
+        maxMemberCount = maxMemberCount,
+        startAt = startAt,
     )
 }
 
@@ -36,10 +38,13 @@ fun DebateEntity.toResponse(
             author = book.author,
             description = book.description ?: "",
             imageUrl = book.imageUrl ?: "",
+            detailUrl = book.detailUrl,
         ),
         topic = topic,
+        maxMemberCount = maxMemberCount.toLong(),
         description = description,
         aiSummarized = aiSummarized,
+        startAt = startAt,
         closedAt = closedAt,
         createdAt = createdAt,
         updatedAt = updatedAt,
@@ -61,6 +66,25 @@ fun DebateRoundEntity.toRoundInfo(
         currentSpeakerEndedAt = currentSpeakerEndedAt,
         createdAt = createdAt,
         endedAt = endedAt,
+    )
+}
+
+fun DebateEntity.toDebateInfo(members: List<DebateMemberEntity>): FindAllResponse.DebateInfo {
+    return FindAllResponse.DebateInfo(
+        id = id.toString(),
+        bookInfo = FindAllResponse.DebateInfo.BookInfo(
+            title = book.title,
+            author = book.author,
+            imageUrl = book.imageUrl,
+            detailUrl = book.detailUrl,
+        ),
+        topic = topic,
+        description = description,
+        maxMemberCount = maxMemberCount.toLong(),
+        members = members.map { FindAllResponse.DebateInfo.MemberInfo(it.account.id.toString(), it.account.name, it.role) },
+        startAt = startAt,
+        closedAt = closedAt,
+        createdAt = createdAt,
     )
 }
 

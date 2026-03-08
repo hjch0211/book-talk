@@ -3,21 +3,17 @@ package kr.co.booktalk.cache
 import org.springframework.stereotype.Component
 import java.time.Duration
 
-/** 이메일 인증 코드 cache (email: code, email: isVerified) */
+/** 비밀번호 재설정 OTP cache (email: code, email: isVerified) */
 @Component
-class EmailVerificationCache(private val cacheClient: CacheClient) {
+class PasswordResetOtpCache(private val cacheClient: CacheClient) {
     companion object {
-        private const val PREFIX = "email:verification:"
+        private const val PREFIX = "otp:password-reset:"
         private val TTL: Duration = Duration.ofMinutes(5)
     }
 
     fun set(email: String, code: String) {
         cacheClient.set(codeKey(email), code, TTL)
         cacheClient.delete(verifiedKey(email))
-    }
-
-    fun get(email: String): String? {
-        return cacheClient.get(codeKey(email))
     }
 
     fun delete(email: String) {

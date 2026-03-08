@@ -5,6 +5,7 @@ create table if not exists book
     author      varchar(50)   not null,
     title       varchar(100)  not null,
     description varchar(5000) null,
+    detail_url varchar(300)   null,
     image_url   varchar(300)  null,
 
     created_at  timestamp     not null default now(),

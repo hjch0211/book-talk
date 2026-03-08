@@ -4,6 +4,7 @@ import heroDeco2 from '@src/assets/landing/hero-deco-2.svg';
 import landingExample1 from '@src/assets/landing/landing-example-1.png';
 import landingExample2 from '@src/assets/landing/landing-example-2.png';
 import preparationExample from '@src/assets/landing/preparation-example.png';
+import presentationFinishButton from '@src/assets/landing/presentation-finish-button.png';
 import round1Example from '@src/assets/landing/round-1-example.png';
 import round2Example from '@src/assets/landing/round-2-example.png';
 import tooltipExample from '@src/assets/landing/tooltip-example.png';
@@ -27,8 +28,8 @@ import {
   FooterCopyright,
   FooterLink,
   FooterLinks,
-  FooterNavLink,
   FooterMenuGroup,
+  FooterNavLink,
   FooterSeparator,
   HeroDecorLeft,
   HeroDecorRight,
@@ -136,14 +137,7 @@ export function LandingPage() {
               </ProcessTabs>
               <ProcessContent>
                 <ProcessImageCard $prepare>
-                  <img
-                    src={preparationExample}
-                    alt="발표 페이지 예시"
-                    style={{
-                      width: 542,
-                      height: 460,
-                    }}
-                  />
+                  <img src={preparationExample} alt="발표 페이지 예시" style={{ width: 542 }} />
                 </ProcessImageCard>
                 <ProcessDescription $width="343px">
                   <ProcessDescInner>
@@ -189,6 +183,17 @@ export function LandingPage() {
                       width: '100%',
                       height: '100%',
                       objectFit: 'cover',
+                    }}
+                  />
+                  <img
+                    src={presentationFinishButton}
+                    alt="발표 끝내기 버튼"
+                    style={{
+                      position: 'absolute',
+                      right: 30,
+                      bottom: 94,
+                      width: 102,
+                      zIndex: 2,
                     }}
                   />
                   <ProcessCardGradient />

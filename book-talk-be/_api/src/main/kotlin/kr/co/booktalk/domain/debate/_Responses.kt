@@ -3,6 +3,7 @@ package kr.co.booktalk.domain.debate
 import kr.co.booktalk.WebSocketMessage
 import kr.co.booktalk.domain.DebateMemberRole
 import kr.co.booktalk.domain.DebateRoundType
+import org.springframework.data.domain.Page
 import java.time.Instant
 
 enum class WSResponseMessageType {
@@ -13,17 +14,48 @@ enum class WSResponseMessageType {
     S_CHAT_MESSAGE,
     S_SPEAKER_UPDATE,
     S_DEBATE_ROUND_UPDATE,
-    S_AI_SUMMARY_COMPLETED,
     S_AI_CHAT_COMPLETED,
     S_VOICE_JOIN,
     S_VOICE_OFFER,
     S_VOICE_ANSWER,
-    S_VOICE_ICE_CANDIDATE
+    S_VOICE_ICE_CANDIDATE,
+    S_DEBATE_START_NOTIFIED,
 }
 
 data class CreateResponse(
     val id: String,
 )
+
+data class FindAllResponse(
+    val page: Page<DebateInfo>
+) {
+    data class DebateInfo(
+        val id: String,
+        val bookInfo: BookInfo,
+        val topic: String,
+        val currentRound: DebateRoundType? = null,
+        val description: String? = null,
+        val maxMemberCount: Long,
+        val members: List<MemberInfo>,
+        val startAt: Instant,
+        val closedAt: Instant? = null,
+        val createdAt: Instant,
+    ) {
+        data class BookInfo(
+            val title: String,
+            val author: String,
+            val description: String? = null,
+            val imageUrl: String? = null,
+            val detailUrl: String,
+        )
+
+        data class MemberInfo(
+            val id: String,
+            val name: String,
+            val role: DebateMemberRole,
+        )
+    }
+}
 
 data class CreateRoundResponse(
     val id: Long,
@@ -36,8 +68,10 @@ data class FindOneResponse(
     val currentRound: RoundInfo? = null,
     val bookInfo: BookInfo,
     val topic: String,
+    val maxMemberCount: Long,
     val description: String? = null,
     val aiSummarized: String? = null,
+    val startAt: Instant,
     val closedAt: Instant? = null,
     val createdAt: Instant,
     val updatedAt: Instant,
@@ -48,6 +82,7 @@ data class FindOneResponse(
         val author: String,
         val description: String? = null,
         val imageUrl: String? = null,
+        val detailUrl: String,
     )
 
     data class MemberInfo(
@@ -204,16 +239,6 @@ data class DebateRoundUpdateResponse(
     }
 }
 
-data class AiSummaryCompletedResponse(
-    override val payload: Payload
-) : WebSocketMessage<AiSummaryCompletedResponse.Payload>() {
-    override val type: String = WSResponseMessageType.S_AI_SUMMARY_COMPLETED.name
-
-    data class Payload(
-        val debateId: String
-    )
-}
-
 data class AiChatCompletedResponse(
     override val payload: Payload
 ) : WebSocketMessage<AiChatCompletedResponse.Payload>() {
@@ -221,6 +246,16 @@ data class AiChatCompletedResponse(
 
     data class Payload(
         val chatId: String
+    )
+}
+
+data class DebateStartNotifyResponse(
+    override val payload: Payload
+) : WebSocketMessage<DebateStartNotifyResponse.Payload>() {
+    override val type: String = WSResponseMessageType.S_DEBATE_START_NOTIFIED.name
+
+    data class Payload(
+        val debateId: String
     )
 }
 

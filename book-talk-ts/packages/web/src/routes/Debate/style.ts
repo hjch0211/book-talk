@@ -758,6 +758,7 @@ export const ActionButton = styled(Button)<{ borderColor?: string; backgroundCol
         border: 1px solid #C4C4C4;
         color: #9D9D9D;
         cursor: not-allowed;
+        pointer-events: auto;
         box-shadow: none;
 
         &::before {

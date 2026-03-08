@@ -54,8 +54,6 @@ export interface RoundInfo {
 export interface DebateClient {
   /** 토론방 단건 조회 */
   findOne(debateId: string): Promise<DebateInfo>;
-  /** 토론방 AI 요약 완성 콜백 */
-  notifySummaryCompleted(debateId: string): Promise<void>;
   /** 토론방 AI 채팅 완성 콜백 */
   notifyChatCompleted(chatId: string): Promise<void>;
 }
@@ -81,15 +79,6 @@ export class BooktalkDebateClient implements DebateClient {
     }
   }
 
-  async notifySummaryCompleted(debateId: string): Promise<void> {
-    try {
-      await axios.post(`${this.config.baseUrl}/debates/${debateId}/summary/completion`);
-    } catch (error) {
-      Logger.error(`토론방 요약 완성 콜백 실패: ${error}`);
-      throw error;
-    }
-  }
-
   async notifyChatCompleted(chatId: string): Promise<void> {
     try {
       await axios.post(`${this.config.baseUrl}/debates/ai/chats/${chatId}/completion`);
@@ -102,8 +91,6 @@ export class BooktalkDebateClient implements DebateClient {
 
 /** NoOp Debate Client */
 export class NoOpDebateClient implements DebateClient {
-  async notifySummaryCompleted(_debateId: string): Promise<void> {}
-
   async notifyChatCompleted(_chatId: string): Promise<void> {}
 
   async findOne(_debateId: string): Promise<DebateInfo> {

@@ -2,7 +2,6 @@ import {
   type CurrentRoundInfo,
   createRoundSpeaker,
   type Debate,
-  findOneDebateQueryOptions,
   patchRoundSpeaker,
   updateDebate,
 } from '@src/externals/debate';
@@ -44,9 +43,7 @@ export const useDebateRound = (props: Props) => {
   const updateDebateMutation = useMutation({
     mutationFn: updateDebate,
     onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: findOneDebateQueryOptions(debateId).queryKey,
-      });
+      void queryClient.invalidateQueries();
     },
   });
 
@@ -54,9 +51,7 @@ export const useDebateRound = (props: Props) => {
   const createRoundSpeakerMutation = useMutation({
     mutationFn: createRoundSpeaker,
     onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: findOneDebateQueryOptions(debateId).queryKey,
-      });
+      void queryClient.invalidateQueries();
     },
   });
 
@@ -64,9 +59,7 @@ export const useDebateRound = (props: Props) => {
   const patchRoundSpeakerMutation = useMutation({
     mutationFn: patchRoundSpeaker,
     onSuccess: () => {
-      void queryClient.invalidateQueries({
-        queryKey: findOneDebateQueryOptions(debateId).queryKey,
-      });
+      void queryClient.invalidateQueries();
     },
   });
 
@@ -83,12 +76,16 @@ export const useDebateRound = (props: Props) => {
 
   /** PRESENTATION 라운드 시작 (PREPARATION → PRESENTATION) */
   const startPresentationRound = useEffectEvent(async () => {
-    if (!debateId || currentRoundInfo?.id) return;
+    if (!debateId || currentRoundInfo?.type !== 'PREPARATION') return;
 
     await updateDebateMutation.mutateAsync({
       debateId,
       roundType: 'PRESENTATION',
       ended: false,
+      topic: debate.topic,
+      description: debate.description,
+      maxMemberCount: debate.maxMemberCount,
+      startAt: debate.startAt,
     });
   });
 

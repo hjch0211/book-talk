@@ -1,18 +1,24 @@
 import { env } from '@src/configs/env';
-import { apiClient } from '../client';
+import { apiClient, authApiClient } from '../client';
 import {
   type CreateTokensResponse,
   CreateTokensResponseSchema,
   type RefreshRequest,
   RefreshRequestSchema,
-  type SendEmailCodeRequest,
-  SendEmailCodeRequestSchema,
+  type ResetPasswordRequest,
+  ResetPasswordRequestSchema,
+  type SendPasswordResetOtpRequest,
+  SendPasswordResetOtpRequestSchema,
+  type SendSignUpOtpRequest,
+  SendSignUpOtpRequestSchema,
   type SignInRequest,
   SignInRequestSchema,
   type SignUpRequest,
   SignUpRequestSchema,
-  type VerifyEmailCodeRequest,
-  VerifyEmailCodeRequestSchema,
+  type VerifyPasswordResetOtpRequest,
+  VerifyPasswordResetOtpRequestSchema,
+  type VerifySignUpOtpRequest,
+  VerifySignUpOtpRequestSchema,
 } from './schema';
 
 /** 회원가입 */
@@ -29,16 +35,36 @@ export const signIn = async (request: SignInRequest): Promise<CreateTokensRespon
   return CreateTokensResponseSchema.parse(response.data.data);
 };
 
-/** 이메일 인증 코드 발급 */
-export const sendEmailCode = async (request: SendEmailCodeRequest): Promise<void> => {
-  const validatedData = SendEmailCodeRequestSchema.parse(request);
+/** OTP 발급 - 회원가입 */
+export const sendSignUpOtp = async (request: SendSignUpOtpRequest): Promise<void> => {
+  const validatedData = SendSignUpOtpRequestSchema.parse(request);
   await apiClient.post('/auth/email/code', validatedData);
 };
 
-/** 이메일 인증 코드 확인 */
-export const verifyEmailCode = async (request: VerifyEmailCodeRequest): Promise<void> => {
-  const validatedData = VerifyEmailCodeRequestSchema.parse(request);
+/** OTP 인증 - 회원가입 */
+export const verifySignUpOtp = async (request: VerifySignUpOtpRequest): Promise<void> => {
+  const validatedData = VerifySignUpOtpRequestSchema.parse(request);
   await apiClient.post('/auth/email/verify', validatedData);
+};
+
+/** OTP 발급 - 비밀번호 재설정 */
+export const sendPasswordResetOtp = async (request: SendPasswordResetOtpRequest): Promise<void> => {
+  const validatedData = SendPasswordResetOtpRequestSchema.parse(request);
+  await apiClient.post('/auth/password/reset/code', validatedData);
+};
+
+/** OTP 인증 - 비밀번호 재설정 */
+export const verifyPasswordResetOtp = async (
+  request: VerifyPasswordResetOtpRequest
+): Promise<void> => {
+  const validatedData = VerifyPasswordResetOtpRequestSchema.parse(request);
+  await apiClient.post('/auth/password/reset/verify', validatedData);
+};
+
+/** 비밀번호 재설정 */
+export const resetPassword = async (request: ResetPasswordRequest): Promise<void> => {
+  const validatedData = ResetPasswordRequestSchema.parse(request);
+  await apiClient.post('/auth/password/reset', validatedData);
 };
 
 /** 토큰 갱신 */
@@ -58,4 +84,9 @@ export const signOut = async (): Promise<void> => {
 /** Google OAuth 로그인 - 백엔드 /auth/google 로 브라우저 리다이렉트 */
 export const googleLogin = () => {
   window.location.href = `${env.BASE_URL}/auth/google`;
+};
+
+/** 비밀번호 검증 */
+export const verifyPassword = async (password: string): Promise<void> => {
+  await authApiClient.post('/auth/verify-password', { password });
 };

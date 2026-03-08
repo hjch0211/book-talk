@@ -22,7 +22,8 @@ data class SendRequest(
     val level: Level,
 ) {
     enum class Level {
-        ERROR
+        INFO,
+        ERROR,
     }
 }
 
@@ -55,6 +56,10 @@ class SlackMonitorClient(
 
     private fun buildBlocks(request: SendRequest): List<Any> {
         return when (request.level) {
+            SendRequest.Level.INFO -> listOf(
+                headerBlock(":information_source: ${request.title}"),
+                sectionBlock("*- message*: ${request.message}".trimIndent())
+            )
             SendRequest.Level.ERROR -> listOf(
                 headerBlock(":rotating_light: ${request.title}"),
                 sectionBlock("*- message*: ${request.message}".trimIndent()),

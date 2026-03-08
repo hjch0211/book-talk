@@ -13,6 +13,7 @@ export const BookDataSchema = z.object({
   publisher: z.string(),
   description: z.string().optional().default(''),
   imageUrl: z.string(),
+  detailUrl: z.string().optional().default(''),
 });
 
 export const SearchBookResponseSchema = z.object({

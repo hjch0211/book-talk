@@ -20,18 +20,39 @@ class AuthController(
         return authService.signUp(request).toResult()
     }
 
-    /** 이메일 인증 코드 발급 */
+    /** OTP 발급 - 회원가입 */
     @PostMapping("/auth/email/code")
-    fun sendEmailCode(@RequestBody request: SendEmailCodeRequest) {
+    fun sendSignUpOtp(@RequestBody request: SendSignUpOtpRequest) {
         request.validate()
-        authService.sendEmailCode(request)
+        authService.sendSignUpOtp(request)
     }
 
-    /** 이메일 인증 코드 인증 */
+    /** OTP 인증 - 회원가입 */
     @PostMapping("/auth/email/verify")
-    fun verifyEmailCode(@RequestBody request: VerifyEmailCodeRequest) {
+    fun verifySignUpOtp(@RequestBody request: VerifySignUpOtpRequest) {
         request.validate()
-        authService.verifyEmailCode(request)
+        authService.verifySignUpOtp(request)
+    }
+
+    /** OTP 발급 - 비밀번호 재설정 */
+    @PostMapping("/auth/password/reset/code")
+    fun sendPasswordResetOtp(@RequestBody request: SendPasswordResetOtpRequest) {
+        request.validate()
+        authService.sendPasswordResetOtp(request)
+    }
+
+    /** OTP 인증 - 비밀번호 재설정 */
+    @PostMapping("/auth/password/reset/verify")
+    fun verifyPasswordResetOtp(@RequestBody request: VerifyPasswordResetOtpRequest) {
+        request.validate()
+        authService.verifyPasswordResetOtp(request)
+    }
+
+    /** 비밀번호 재설정 */
+    @PostMapping("/auth/password/reset")
+    fun resetPassword(@RequestBody request: ResetPasswordRequest) {
+        request.validate()
+        authService.resetPassword(request)
     }
 
     /** NORMAL Account - 로그인 */
@@ -39,6 +60,13 @@ class AuthController(
     fun signIn(@RequestBody request: SignInRequest): HttpResult<CreateTokensResponse> {
         request.validate()
         return authService.signIn(request).toResult()
+    }
+
+    /** 비밀번호 검증 */
+    @PostMapping("/auth/verify-password")
+    fun verifyPassword(authAccount: AuthAccount, @RequestBody request: VerifyPasswordRequest) {
+        request.validate()
+        authService.verifyPassword(authAccount, request)
     }
 
     /** 로그아웃 */

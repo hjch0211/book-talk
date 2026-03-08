@@ -38,7 +38,7 @@ export const usePresentation = (props: Props) => {
     mutationFn: ({ id, patches }: { id: string; patches: PatchContentRequest[] }) =>
       patchPresentationContent(id, patches),
     onSuccess: (_, variables) => {
-      queryClient.invalidateQueries({
+      void queryClient.invalidateQueries({
         queryKey: ['presentation', variables.id],
       });
     },

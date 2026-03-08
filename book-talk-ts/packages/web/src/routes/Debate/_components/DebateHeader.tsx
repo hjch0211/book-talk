@@ -23,7 +23,7 @@ export function DebateHeader({ debate, isHost, endDebate }: Props) {
     openModal(AiSummarizationModal, {
       bookTitle: `${debate.bookInfo.title} - ${debate.bookInfo.author}`,
       topic: debate.topic,
-      bookImageUrl: debate.bookInfo.imageUrl,
+      bookImageUrl: debate.bookInfo.imageUrl || '',
       summarization: debate.aiSummarized ?? '',
     });
   };
@@ -35,7 +35,8 @@ export function DebateHeader({ debate, isHost, endDebate }: Props) {
     }
 
     try {
-      await navigator.clipboard.writeText(window.location.href);
+      const url = `${window.location.origin}/home?debateId=${debate.id}`;
+      await navigator.clipboard.writeText(url);
       toast.info('클립보드에 복사되었습니다.');
     } catch {
       toast.error('클립보드 복사에 실패했습니다. 다시 시도해주세요.');

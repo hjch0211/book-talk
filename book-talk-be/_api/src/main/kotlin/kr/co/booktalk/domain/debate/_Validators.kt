@@ -3,10 +3,15 @@ package kr.co.booktalk.domain.debate
 import kr.co.booktalk.domain.DebateEntity
 import java.time.Instant
 
+fun FindAllRequest.validate() {
+    require(page >= 0) { "page는 0 이상이어야 합니다." }
+    require(size in 1..100) { "size는 1 이상 100 이하여야 합니다." }
+}
+
 fun CreateRequest.validate() {
-    Instant.now()
-    require(bookImageUrl?.isNotBlank() == true) { "bookImageUrl은 필수입니다." }
     require(topic.isNotBlank()) { "topic은 필수입니다." }
+    require(maxMemberCount in 2..4) { "maxMemberCount는 2~4 사이여야 합니다." }
+    require(startAt > Instant.now()) { "startAt은 현재 시각 이후여야 합니다." }
 }
 
 fun JoinRequest.validate() {
@@ -16,6 +21,8 @@ fun JoinRequest.validate() {
 fun UpdateRequest.validate() {
     require(debateId.isNotBlank()) { "debateId는 필수입니다." }
     requireNotNull(roundType) { "roundType은 필수입니다." }
+    require(topic.isNotBlank()) { "topic은 공백일 수 없습니다." }
+    require(maxMemberCount in 2..4) { "maxMemberCount는 2~4 사이여야 합니다." }
 }
 
 fun DebateEntity.validateJoinable(): DebateEntity {

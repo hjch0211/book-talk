@@ -1,5 +1,5 @@
-import { queryOptions } from '@tanstack/react-query';
-import { findOneDebate, getChats } from './api';
+import { infiniteQueryOptions, queryOptions } from '@tanstack/react-query';
+import { findAllDebates, findOneDebate, getChats } from './api';
 import type { FindOneDebateResponse, MemberInfo } from './schema';
 
 /** 프론트에서 사용하는 라운드 타입 (서버의 null을 PREPARATION으로 변환) */
@@ -53,19 +53,22 @@ function transformToCurrentRoundInfo(
 ): CurrentRoundInfo {
   if (debate.currentRound) {
     const round = debate.currentRound;
-    const currentPresentationId = debate.presentations.find(
-      (p) => p.accountId === round.currentSpeakerAccountId
-    )?.id;
+    const roundType = round.type ?? 'PREPARATION';
+
+    const currentPresentationId =
+      roundType === 'PREPARATION'
+        ? debate.presentations.find((p) => p.accountId === myAccountId)?.id
+        : debate.presentations.find((p) => p.accountId === round.currentSpeakerAccountId)?.id;
 
     return {
       id: round.id,
-      type: round.type ?? 'PREPARATION',
+      type: roundType,
       currentPresentationId,
       currentSpeaker: resolveCurrentSpeaker(debate),
       nextSpeaker: resolveNextSpeaker(debate),
       createdAt: round.createdAt,
       endedAt: round.endedAt,
-      isEditable: false,
+      isEditable: roundType === 'PREPARATION',
     };
   }
 
@@ -109,4 +112,36 @@ export const getChatsQueryOptions = (
     staleTime: 1000 * 60 * 5, // 5 minutes
     gcTime: 1000 * 60 * 10, // 10 minutes
     retry: 3,
+  });
+
+export const findAllDebatesQueryOptions = (params?: {
+  page?: number;
+  size?: number;
+  keyword?: string;
+  hostId?: string;
+  canJoin?: boolean;
+}) =>
+  queryOptions({
+    queryKey: ['debates', 'all', params],
+    queryFn: () => findAllDebates(params),
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
+  });
+
+export const myPageDebatesQueryOptions = (params?: {
+  size?: number;
+  keyword?: string;
+  hostId?: string;
+  canJoin?: boolean;
+}) =>
+  infiniteQueryOptions({
+    queryKey: ['debates', 'all', 'infinite', params],
+    queryFn: ({ pageParam }) => findAllDebates({ ...params, page: pageParam }),
+    initialPageParam: 0,
+    getNextPageParam: (lastPage, _, lastPageParam) => {
+      const { totalPages, number } = lastPage.page;
+      return number + 1 < totalPages ? lastPageParam + 1 : undefined;
+    },
+    staleTime: 1000 * 60 * 5,
+    gcTime: 1000 * 60 * 10,
   });

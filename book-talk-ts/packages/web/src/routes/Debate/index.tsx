@@ -1,9 +1,8 @@
-import { AudioActivationBanner, AudioPlayer } from '@src/components';
+import { AudioActivationBanner, AudioPlayer, SuspenseErrorBoundary } from '@src/components';
 import { meQueryOption } from '@src/externals/account';
 import { type RoundType, useDebate, useModal } from '@src/hooks';
 import type { VoiceConnectionStatus } from '@src/hooks/domain/useDebateRealtimeConnection.tsx';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { Suspense } from 'react';
 import { useParams } from 'react-router-dom';
 import PageContainer from '../../components/templates/PageContainer';
 import { DebateHeader } from './_components/DebateHeader';
@@ -125,6 +124,7 @@ function DebatePageContent({ debateId }: Props) {
           myRole={myMemberInfo?.role || ''}
           isCurrentSpeaker={debate.currentRoundInfo.currentSpeaker?.accountId === myMemberInfo?.id}
           onStartDebate={handleOpenStartModal}
+          startAt={debate.startAt}
           onEndPresentation={round.endPresentation}
           onToggleHand={connection.toggleHand}
           isMyHandRaised={myMemberInfo?.id ? connection.isHandRaised(myMemberInfo.id) : false}
@@ -166,11 +166,14 @@ export function DebatePage() {
   const { debateId } = useParams<{ debateId: string }>();
 
   return (
-    <Suspense
+    <SuspenseErrorBoundary
       key={debateId}
-      fallback={<DebateSkeleton title={'토론방에 입장 중...'} content={'잠시만 기다려주세요'} />}
+      onSuspense={<DebateSkeleton title={'토론방에 입장 중...'} content={'잠시만 기다려주세요'} />}
+      onError={
+        <DebateSkeleton title={'오류가 발생했습니다'} content={'페이지를 새로고침 해주세요'} />
+      }
     >
       <DebatePageContent debateId={debateId} />
-    </Suspense>
+    </SuspenseErrorBoundary>
   );
 }

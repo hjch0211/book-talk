@@ -1,7 +1,16 @@
-import styled from '@emotion/styled';
 import { Button, type ButtonProps } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
-export type AppButtonVariant = 'filled' | 'outlined' | 'social' | 'rounded' | 'inline';
+export type AppButtonVariant =
+  | 'filled'
+  | 'outlined'
+  | 'social'
+  | 'rounded'
+  | 'inline'
+  | 'debate-join'
+  | 'debate-enter'
+  | 'debate-closed'
+  | 'transparent';
 
 export interface AppButtonProps extends Omit<ButtonProps, 'variant'> {
   appVariant?: AppButtonVariant;
@@ -9,10 +18,9 @@ export interface AppButtonProps extends Omit<ButtonProps, 'variant'> {
 }
 
 export const StyledButton = styled(Button, {
-  shouldForwardProp: (prop) => prop !== 'appVariant' && prop !== 'hoverAnimation',
+  shouldForwardProp: (prop) => prop !== 'appVariant' && prop !== 'hoverAnimation' && prop !== 'sx',
 })<{ appVariant: AppButtonVariant; hoverAnimation?: boolean }>`
-  && {
-    width: 100%;
+  & {
     height: 50px;
     border-radius: 12px;
     font-family: 'S-Core Dream', sans-serif;
@@ -45,7 +53,7 @@ export const StyledButton = styled(Button, {
   ${({ appVariant }) =>
     appVariant === 'filled' &&
     `
-    && {
+    & {
       color: #0a0a0a;
       border: 1px solid transparent;
       background:
@@ -62,7 +70,7 @@ export const StyledButton = styled(Button, {
   ${({ appVariant }) =>
     appVariant === 'outlined' &&
     `
-    && {
+    & {
       background: transparent;
       color: #262626;
       border: 1px solid #c4c4c4;
@@ -73,7 +81,7 @@ export const StyledButton = styled(Button, {
   ${({ appVariant }) =>
     appVariant === 'social' &&
     `
-    && {
+    & {
       height: 52px;
       border-radius: 14px;
       background: #ffffff;
@@ -87,14 +95,13 @@ export const StyledButton = styled(Button, {
   ${({ appVariant }) =>
     appVariant === 'inline' &&
     `
-    && {
-      width: 101px;
+    & {
+      width: 102px;
       height: 52px;
       border-radius: 14px;
       background: #ffffff;
       color: #7b7b7b;
       border: 1px solid #d9d9d9;
-      flex-shrink: 0;
     }
     &&:hover { background: #fcfcfc; }
   `}
@@ -102,12 +109,12 @@ export const StyledButton = styled(Button, {
   ${({ appVariant }) =>
     appVariant === 'rounded' &&
     `
-    && {
+    & {
       width: fit-content;
       height: 59px;
       border-radius: 48px;
       padding: 16px 32px;
-      font-size: 18px;
+    font-size: 18px;
       letter-spacing: 1px;
       color: #262626;
       border: 1px solid transparent;
@@ -119,5 +126,75 @@ export const StyledButton = styled(Button, {
     &&:hover {
       box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
     }
+  `}
+
+  ${({ appVariant }) =>
+    appVariant === 'debate-join' &&
+    `
+    & {
+      height: 34px;
+      border-radius: 7px;
+      font-weight: 200;
+      font-size: 12px;
+      letter-spacing: 0.3px;
+      border: 1px solid transparent;
+      background:
+        linear-gradient(#f7f8ff, #f7f8ff) padding-box,
+        linear-gradient(180deg, #AACDFF 0%, #5F84FF 100%) border-box;
+      color: #000000;
+    }
+    &&:hover {
+      background:
+        linear-gradient(#eef0ff, #eef0ff) padding-box,
+        linear-gradient(180deg, #AACDFF 0%, #5F84FF 100%) border-box;
+    }
+  `}
+
+  ${({ appVariant }) =>
+    appVariant === 'debate-enter' &&
+    `
+    & {
+      height: 34px;
+      border-radius: 7px;
+      font-weight: 200;
+      font-size: 12px;
+      letter-spacing: 0.3px;
+      background: #ffffff;
+      border: 1px solid #262626;
+      color: #000000;
+    }
+    &&:hover { background: #f5f5f5; }
+  `}
+
+  ${({ appVariant }) =>
+    appVariant === 'debate-closed' &&
+    `
+    & {
+      height: 60px;
+      border-radius: 10px;
+      font-weight: 500;
+      font-size: 14px;
+      letter-spacing: 0.3px;
+      background: #C4C4C4;
+      border: 1px solid #D9D9D9;
+      color: #7B7B7B;
+      cursor: default;
+    }
+    &&:hover { background: #C4C4C4; }
+  `}
+
+  ${({ appVariant }) =>
+    appVariant === 'transparent' &&
+    `
+    & {
+      height: 60px;
+      border-radius: 10px;
+      font-weight: 500;
+      font-size: 14px;
+      letter-spacing: 0.3px;
+      background: #FFFFFF;
+      color: #262626;
+    }
+    &&:hover { background: #f5f5f5; }
   `}
 `;
