@@ -53,7 +53,7 @@ const DebateParticipationModal = ({ open, onClose, debate, myId }: Props) => {
   const { handleJoin, handleCancel, handleEnter, handleEdit, isJoinPending, isCancelPending } =
     useDebateParticipation(debate, onClose, myId);
   const myRole = debate.members.find((m) => m.id === myId)?.role;
-  const isFull = !myRole && debate.members.length >= debate.maxMemberCount;
+  const isFull = (!myRole && debate.members.length >= debate.maxMemberCount) || !!debate.closedAt;
 
   return (
     <Modal open={open} onClose={onClose} width={880}>

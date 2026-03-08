@@ -36,12 +36,14 @@ export function DebateListSection({
               const isEntered = !!debate.members.find((m) => m.id === myId);
               return (
                 <DebateCard key={debate.id} data={debate}>
-                  <AppButton
-                    appVariant={isEntered ? 'debate-enter' : 'debate-join'}
-                    onClick={() => onButtonClick(debate)}
-                  >
-                    {isEntered ? '토론방 입장하기' : '참여신청하기'}
-                  </AppButton>
+                  {!debate.closedAt && (
+                    <AppButton
+                      appVariant={isEntered ? 'debate-enter' : 'debate-join'}
+                      onClick={() => onButtonClick(debate)}
+                    >
+                      {isEntered ? '토론방 입장하기' : '참여신청하기'}
+                    </AppButton>
+                  )}
                 </DebateCard>
               );
             })}
@@ -53,12 +55,14 @@ export function DebateListSection({
               const isEntered = !!debate.members.find((m) => m.id === myId);
               return (
                 <DebateCard key={debate.id} data={debate}>
-                  <AppButton
-                    appVariant={isEntered ? 'debate-enter' : 'debate-join'}
-                    onClick={() => onButtonClick(debate)}
-                  >
-                    {isEntered ? '토론방 입장하기' : '참여신청하기'}
-                  </AppButton>
+                  {!debate.closedAt && (
+                    <AppButton
+                      appVariant={isEntered ? 'debate-enter' : 'debate-join'}
+                      onClick={() => onButtonClick(debate)}
+                    >
+                      {isEntered ? '토론방 입장하기' : '참여신청하기'}
+                    </AppButton>
+                  )}
                 </DebateCard>
               );
             })}
@@ -126,7 +130,7 @@ export function InfiniteDebateListSection({
               const isEntered = !!debate.members.find((m) => m.id === myId);
               return (
                 <DebateCard key={debate.id} data={debate}>
-                  {showButton && (
+                  {showButton && !debate.closedAt && (
                     <AppButton
                       appVariant={isEntered ? 'debate-enter' : 'debate-join'}
                       onClick={() => onButtonClick(debate)}
