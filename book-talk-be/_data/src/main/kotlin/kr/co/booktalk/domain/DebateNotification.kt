@@ -40,11 +40,11 @@ interface DebateNotificationRepository : JpaRepository<DebateNotificationEntity,
 
     @Modifying
     @Transactional
-    @Query("UPDATE DebateNotificationEntity n SET n.archivedAt = :now WHERE n.debate = :debate AND n.archivedAt IS NULL")
-    fun archiveAllByDebate(@Param("debate") debate: DebateEntity, @Param("now") now: Instant)
+    @Query("DELETE FROM DebateNotificationEntity n WHERE n.debate = :debate")
+    fun deleteAllByDebate(@Param("debate") debate: DebateEntity)
 
     @Modifying
     @Transactional
-    @Query("UPDATE DebateNotificationEntity n SET n.archivedAt = :now WHERE n.debate IN :debates AND n.archivedAt IS NULL")
-    fun archiveAllByDebateIn(@Param("debates") debates: List<DebateEntity>, @Param("now") now: Instant)
+    @Query("DELETE FROM DebateNotificationEntity n WHERE n.debate IN :debates")
+    fun deleteAllByDebateIn(@Param("debates") debates: List<DebateEntity>)
 }

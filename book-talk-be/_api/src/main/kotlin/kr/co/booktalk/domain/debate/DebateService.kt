@@ -186,10 +186,24 @@ class DebateService(
         /** 토론 정보 수정 (시작 전에만 가능) — 시작 후에는 라운드 관리로 진입 */
         if (debate.startAt.isAfter(now)) {
             if (debate.closedAt != null) httpBadRequest("종료된 토론의 정보는 수정할 수 없습니다.")
+            if (request.startAt.isBefore(now)) httpBadRequest("토론 시작 시간은 현재 시간 이후여야 합니다.")
             debate.topic = request.topic
             debate.description = request.description
             debate.maxMemberCount = request.maxMemberCount
             debate.startAt = request.startAt
+            debateNotificationRepository.deleteAllByDebate(debate)
+            val notificationOffsets = listOf(
+                3 * 24 * 3600L, // 3일 전
+                2 * 24 * 3600L, // 2일 전
+                24 * 3600L,     // 1일 전
+                3600L,          // 1시간 전
+            )
+            notificationOffsets.forEach { offsetSeconds ->
+                val scheduledAt = debate.startAt.minusSeconds(offsetSeconds)
+                if (scheduledAt.isAfter(now)) {
+                    debateNotificationRepository.save(DebateNotificationEntity(debate = debate, scheduledAt = scheduledAt))
+                }
+            }
             notifyDebateUpdated(members, debate)
             return
         }
@@ -263,7 +277,7 @@ class DebateService(
         debateChatRepository.archiveAllByDebate(debate, now)
         presentationRepository.archiveAllByDebate(debate, now)
         debateSummarizationRepository.archiveAllByDebate(debate, now)
-        debateNotificationRepository.archiveAllByDebate(debate, now)
+        debateNotificationRepository.deleteAllByDebate(debate)
         debateMemberRepository.archiveAllByDebate(debate, now)
         debate.archivedAt = now
         notifyDebateDeleted(members, debate)

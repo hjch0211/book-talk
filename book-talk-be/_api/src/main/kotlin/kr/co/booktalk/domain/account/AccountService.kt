@@ -64,7 +64,7 @@ class AccountService(
         presentationRepository.archiveAllByAccount(me, now)
         debateMemberRepository.archiveAllByAccount(me, now)
         if (hostedDebates.isNotEmpty()) {
-            debateNotificationRepository.archiveAllByDebateIn(hostedDebates, now)
+            debateNotificationRepository.deleteAllByDebateIn(hostedDebates)
         }
         debateRepository.archiveAllByHost(me, now)
         surveyRepository.archiveAllByAccount(me, now)
