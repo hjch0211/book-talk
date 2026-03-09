@@ -11,24 +11,21 @@ export const TabSection = styled(Box)({
 });
 
 export const TabNavWrapper = styled(Box)({
-  position: 'relative',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
   gap: '16px',
-  isolation: 'isolate',
   width: 1200,
 });
 
 export const TabNav = styled(Box)({
-  boxSizing: 'border-box',
+  position: 'relative',
   display: 'flex',
   flexDirection: 'row',
   justifyContent: 'space-between',
   alignItems: 'flex-start',
   gap: '50px',
-  width: 1200,
-  height: 48,
+  width: '100%',
   borderBottom: '1px solid #C4C4C4',
 });
 
@@ -68,6 +65,5 @@ export const TabIndicator = styled(Box, {
   bottom: 0,
   left: indicatorLeft,
   borderRadius: 2,
-  zIndex: 1,
   transition: 'left 0.2s ease',
 }));
