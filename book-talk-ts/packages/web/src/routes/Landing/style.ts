@@ -360,10 +360,9 @@ export const ProcessDescription = styled.div<DescriptionProps>`
     flex-direction: column;
     align-items: flex-start;
     gap: 48px;
-    width: ${({ $width }) => $width ?? '427px'};
-    height: 470px;
+    height: 100%;
     flex-shrink: 0;
-    justify-content: center;
+    justify-content: start;
 `;
 
 export const ProcessDescInner = styled.div`

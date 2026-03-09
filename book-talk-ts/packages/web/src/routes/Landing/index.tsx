@@ -139,7 +139,7 @@ export function LandingPage() {
                 <ProcessImageCard $prepare>
                   <img src={preparationExample} alt="발표 페이지 예시" style={{ width: 542 }} />
                 </ProcessImageCard>
-                <ProcessDescription $width="343px">
+                <ProcessDescription>
                   <ProcessDescInner>
                     <ProcessSubTitle>토론준비</ProcessSubTitle>
                     <ProcessSubDesc>
@@ -162,7 +162,7 @@ export function LandingPage() {
                 <ProcessTab $active={false}>2 라운드</ProcessTab>
               </ProcessTabs>
               <ProcessContent $gap="120px" $justify="space-between">
-                <ProcessDescription $width="427px">
+                <ProcessDescription>
                   <ProcessDescInner>
                     <ProcessSubTitle>1 라운드 - 발표</ProcessSubTitle>
                     <ProcessSubDesc>토론이 시작되면 한 명씩 돌아가면서 발표합니다.</ProcessSubDesc>
@@ -249,7 +249,7 @@ export function LandingPage() {
                     }}
                   />
                 </div>
-                <ProcessDescription $width="504px">
+                <ProcessDescription>
                   <ProcessDescInner>
                     <ProcessSubTitle>2 라운드 - 자유토론</ProcessSubTitle>
                     <ProcessSubDesc>
