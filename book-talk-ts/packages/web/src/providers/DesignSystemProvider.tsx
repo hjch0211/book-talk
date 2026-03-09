@@ -10,13 +10,56 @@ import type React from 'react';
 import { breakPoints } from '../constants/breakPoints.ts';
 import { appColor } from '../constants/color.ts';
 
+declare module '@mui/material/styles' {
+  interface TypographyVariants {
+    labelL: React.CSSProperties;
+    labelM: React.CSSProperties;
+  }
+  interface TypographyVariantsOptions {
+    labelL?: React.CSSProperties;
+    labelM?: React.CSSProperties;
+  }
+}
+
+declare module '@mui/material/Typography' {
+  interface TypographyPropsVariantOverrides {
+    labelL: true;
+    labelM: true;
+  }
+}
+
 const muiTypographyConfig: TypographyVariantsOptions = {
   fontFamily: ['S-Core Dream', 'SpoqaHanSansNeo-Regular', 'sans-serif'].join(','),
   h1: { fontSize: 80, color: appColor.primary },
   h2: { fontSize: 26, color: appColor.primary },
   body1: { fontSize: 16, letterSpacing: '2px' },
-  body2: { fontSize: 16, fontWeight: 500 },
+  body2: {
+    fontSize: 16,
+    fontWeight: 200,
+    lineHeight: '180%',
+    letterSpacing: '0.3px',
+    color: '#434343',
+  },
   button: { fontSize: 26, letterSpacing: '2px' },
+  labelL: {
+    fontFamily: 'S-Core Dream',
+    fontSize: 16,
+    fontStyle: 'normal',
+    fontWeight: 500,
+    lineHeight: '24px',
+    letterSpacing: '1px',
+    textAlign: 'center',
+    color: '#262626',
+  },
+  labelM: {
+    fontFamily: 'S-Core Dream',
+    fontSize: 14,
+    fontStyle: 'normal',
+    fontWeight: 500,
+    lineHeight: '20px',
+    letterSpacing: '0.3px',
+    color: '#262626',
+  },
 };
 
 const muiPaletteConfig: PaletteOptions = {
@@ -35,6 +78,13 @@ const configMuiComponents: Components = {
       'html, body': { height: '100%', width: '100%', backgroundColor: appColor.backGround },
     },
   },
+  MuiButtonBase: {
+    styleOverrides: {
+      root: {
+        transition: 'all 0.3s ease !important',
+      },
+    },
+  },
 };
 
 /**
@@ -50,6 +100,23 @@ export const DesignSystemProvider = ({ children }: { children: React.ReactNode }
         palette: { ...muiPaletteConfig },
         breakpoints: { ...muiBreakpointsConfig },
         components: { ...configMuiComponents },
+        transitions: {
+          duration: {
+            shortest: 300,
+            shorter: 300,
+            short: 300,
+            standard: 300,
+            complex: 300,
+            enteringScreen: 300,
+            leavingScreen: 300,
+          },
+          easing: {
+            easeInOut: 'ease',
+            easeOut: 'ease',
+            easeIn: 'ease',
+            sharp: 'ease',
+          },
+        },
       })
     )}
   >

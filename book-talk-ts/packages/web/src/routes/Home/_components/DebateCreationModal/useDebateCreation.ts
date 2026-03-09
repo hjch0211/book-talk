@@ -4,7 +4,7 @@ import { type BookData, infiniteSearchBooksQueryOptions } from '@src/externals/b
 import { createDebate, type DebateForm, DebateFormSchema } from '@src/externals/debate';
 import { useToast } from '@src/hooks';
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useNavigate } from 'react-router-dom';
 
@@ -20,6 +20,7 @@ export function useDebateCreation(onClose: () => void) {
 
   const searchWrapperRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const sentinelRef = useRef<HTMLDivElement>(null);
 
   const { data: me } = useQuery(meQueryOption);
 
@@ -32,15 +33,6 @@ export function useDebateCreation(onClose: () => void) {
   } = useInfiniteQuery(infiniteSearchBooksQueryOptions(debouncedSearchQuery, 20));
 
   const searchResults = searchData?.pages.flatMap((p) => p.content) ?? [];
-
-  const handleDropdownScroll = useEffectEvent(() => {
-    const el = dropdownRef.current;
-    if (!el || !hasNextPage || isFetchingNextPage) return;
-
-    if (el.scrollTop + el.clientHeight >= el.scrollHeight - 60) {
-      void fetchNextPage();
-    }
-  });
 
   const {
     control,
@@ -69,13 +61,21 @@ export function useDebateCreation(onClose: () => void) {
   }, [searchQuery]);
 
   useEffect(() => {
-    if (!showDropdown) return;
-    const el = dropdownRef.current;
-    if (!el) return;
+    const sentinel = sentinelRef.current;
+    if (!sentinel || !showDropdown) return;
 
-    el.addEventListener('scroll', handleDropdownScroll);
-    return () => el.removeEventListener('scroll', handleDropdownScroll);
-  }, [showDropdown]);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          void fetchNextPage();
+        }
+      },
+      { root: dropdownRef.current, threshold: 0.1 }
+    );
+
+    observer.observe(sentinel);
+    return () => observer.disconnect();
+  }, [showDropdown, hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -162,6 +162,7 @@ export function useDebateCreation(onClose: () => void) {
     debouncedSearchQuery,
     searchWrapperRef,
     dropdownRef,
+    sentinelRef,
     handleSearchChange,
     handleSearchFocus,
     handleBookSelect,

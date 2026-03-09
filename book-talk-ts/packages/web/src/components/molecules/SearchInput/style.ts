@@ -29,6 +29,6 @@ export const StyledInput = styled(OutlinedInput)`
 
   &&:hover fieldset,
   &&.Mui-focused fieldset {
-    border-color: #8979ff;
+    border: 1px solid #8E99FF;
   }
 `;

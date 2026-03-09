@@ -31,6 +31,7 @@ export const StyledPagination = styled(Pagination)`
     line-height: 143%;
     letter-spacing: 0.17px;
     color: #262626;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
   }
 
   & .MuiPaginationItem-previousNext,

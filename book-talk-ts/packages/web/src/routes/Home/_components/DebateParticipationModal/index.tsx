@@ -20,9 +20,6 @@ import {
   ModalContainer,
   ModalTitle,
   TextSection,
-  WarningAsterisk,
-  WarningNotice,
-  WarningText,
 } from './style';
 import { useDebateParticipation } from './useDebateParticipation';
 
@@ -98,15 +95,6 @@ const DebateParticipationModal = ({ open, onClose, debate, myId }: Props) => {
                     </MetaValue>
                   </MetaRow>
                 </MetaSection>
-
-                {!myRole && !isFull && (
-                  <WarningNotice>
-                    <WarningAsterisk>*</WarningAsterisk>
-                    <WarningText>
-                      토론이 시작되기 3일 전부터는 참여신청을 취소할 수 없습니다.
-                    </WarningText>
-                  </WarningNotice>
-                )}
               </InfoColumn>
             </ContentRow>
           </ContentArea>

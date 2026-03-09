@@ -1,8 +1,11 @@
-import { AccessTime, CalendarMonth, Search } from '@mui/icons-material';
-import { InputAdornment, MenuItem } from '@mui/material';
+import { Search } from '@mui/icons-material';
+import { MenuItem } from '@mui/material';
 import { AppButton } from '@src/components/molecules/AppButton';
 import { AppFieldMessage } from '@src/components/molecules/AppFieldMessage';
 import { AppTextField } from '@src/components/molecules/AppTextField';
+import { AppDatePicker } from '@src/components/organisms/AppDatePicker';
+import { AppTimePicker } from '@src/components/organisms/AppTimePicker';
+import dayjs from 'dayjs';
 import { Controller } from 'react-hook-form';
 import Modal from '../../../../components/organisms/Modal';
 import {
@@ -23,7 +26,6 @@ import {
   ParticipantSelect,
   RequiredMark,
   ScheduleRow,
-  ScheduleTextField,
   SearchDropdown,
   SearchInputWrapper,
   SearchResultItem,
@@ -51,6 +53,7 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
     debouncedSearchQuery,
     searchWrapperRef,
     dropdownRef,
+    sentinelRef,
     handleSearchChange,
     handleSearchFocus,
     handleBookSelect,
@@ -72,7 +75,7 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
             </FieldLabelRow>
 
             <SearchInputWrapper ref={searchWrapperRef}>
-              <InputBox highlight={!!searchQuery}>
+              <InputBox>
                 <Search sx={{ fontSize: 24, flexShrink: 0 }} />
                 <StyledInput
                   placeholder="토론하고 싶은 책을 검색해보세요"
@@ -110,6 +113,7 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
                           </SearchResultItem>
                         ))}
                         {isFetchingNextBooks && <NoResultText>불러오는 중...</NoResultText>}
+                        <div ref={sentinelRef} style={{ height: 1 }} />
                       </>
                     ) : debouncedSearchQuery ? (
                       <NoResultText>검색 결과가 없습니다</NoResultText>
@@ -211,18 +215,14 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
                 name="scheduledDate"
                 control={control}
                 render={({ field }) => (
-                  <ScheduleTextField
-                    {...field}
-                    type="date"
-                    slotProps={{
-                      input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <CalendarMonth sx={{ fontSize: 24 }} />
-                          </InputAdornment>
-                        ),
-                      },
+                  <AppDatePicker
+                    value={field.value ? dayjs(field.value) : null}
+                    onChange={(newValue) => {
+                      if (newValue?.isValid()) {
+                        field.onChange(newValue.format('YYYY-MM-DD'));
+                      }
                     }}
+                    disablePast
                   />
                 )}
               />
@@ -231,17 +231,12 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
                 name="scheduledTime"
                 control={control}
                 render={({ field }) => (
-                  <ScheduleTextField
-                    {...field}
-                    type="time"
-                    slotProps={{
-                      input: {
-                        endAdornment: (
-                          <InputAdornment position="end">
-                            <AccessTime sx={{ fontSize: 24 }} />
-                          </InputAdornment>
-                        ),
-                      },
+                  <AppTimePicker
+                    value={field.value ? dayjs(`2000-01-01T${field.value}`) : null}
+                    onChange={(newValue) => {
+                      if (newValue?.isValid()) {
+                        field.onChange(newValue.format('HH:mm'));
+                      }
                     }}
                   />
                 )}

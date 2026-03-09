@@ -10,26 +10,6 @@ export const BackNavRow = styled(Box)({
   width: '100%',
 });
 
-export const BackNavContent = styled(Box)({
-  display: 'flex',
-  flexDirection: 'row',
-  alignItems: 'center',
-  gap: '10px',
-  width: 1200,
-  height: 24,
-  cursor: 'pointer',
-  margin: '0 auto',
-});
-
-export const BackNavText = styled(Typography)({
-  fontFamily: 'S-Core Dream',
-  fontWeight: 500,
-  fontSize: 16,
-  lineHeight: '24px',
-  letterSpacing: '1px',
-  color: '#000000',
-});
-
 export const ContentWrapper = styled(Box)({
   display: 'flex',
   flexDirection: 'column',

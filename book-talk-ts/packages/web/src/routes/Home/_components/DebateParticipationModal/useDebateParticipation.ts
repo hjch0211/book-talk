@@ -37,7 +37,6 @@ export function useDebateParticipation(
       await queryClient.invalidateQueries();
       toast.success('참여 신청이 완료되었습니다.');
       onClose();
-      navigate(`/debate/${debate.id}`);
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : '참여 신청에 실패했습니다.');

@@ -78,7 +78,7 @@ export const FieldHint = styled(Typography)`
     color: #262626;
 `;
 
-export const InputBox = styled(Box)<{ highlight?: boolean }>`
+export const InputBox = styled(Box)`
     box-sizing: border-box;
     display: flex;
     flex-direction: row;
@@ -87,9 +87,18 @@ export const InputBox = styled(Box)<{ highlight?: boolean }>`
     width: 670px;
     height: 49px;
     background: #FFFFFF;
-    border: 1px solid ${({ highlight }) => (highlight ? '#8E99FF' : '#C4C4C4')};
+    border: 1px solid #d9d9d9;
     border-radius: 6px;
     gap: 12px;
+    transition: border-color 0.2s ease;
+
+    &:hover {
+        border-color: #d9d9d9;
+    }
+
+    &:focus-within {
+        border-color: #8E99FF;
+    }
 `;
 
 export const StyledInput = styled.input`
@@ -106,7 +115,11 @@ export const StyledInput = styled.input`
     min-width: 0;
 
     &::placeholder {
-        color: #C4C4C4;
+        color: rgba(0, 0, 0, 0.6);
+        opacity: 1;
+        font-weight: 200;
+        font-size: 14px;
+        letter-spacing: 0.3px;
     }
 `;
 
@@ -242,11 +255,11 @@ export const ScheduleTextField = styled(TextField)`
         color: #262626;
 
         fieldset {
-            border-color: #C4C4C4;
+            border-color: #d9d9d9;
         }
 
         &:hover fieldset {
-            border-color: #C4C4C4;
+            border-color: #d9d9d9;
         }
 
         &.Mui-focused fieldset {
@@ -279,11 +292,11 @@ export const ParticipantSelect = styled(Select<number>)`
     border-radius: 6px;
 
     .MuiOutlinedInput-notchedOutline {
-        border-color: #C4C4C4;
+        border-color: #d9d9d9;
     }
 
     &:hover .MuiOutlinedInput-notchedOutline {
-        border-color: #C4C4C4;
+        border-color: #d9d9d9;
     }
 
     &.Mui-focused .MuiOutlinedInput-notchedOutline {

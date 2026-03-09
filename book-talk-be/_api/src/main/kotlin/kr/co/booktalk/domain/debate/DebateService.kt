@@ -126,12 +126,6 @@ class DebateService(
         val account = accountRepository.findByIdOrNull(authAccount.id.toUUID()) ?: httpBadRequest("존재하지 않는 사용자입니다.")
         val debate = debateRepository.findByIdOrNull(debateId.toUUID()) ?: httpBadRequest("존재하지 않는 토론입니다.")
 
-        val currentRound = debateRoundRepository.findByDebateIdAndEndedAtIsNull(debate.id!!)
-
-        if (debate.startAt < Instant.now().plus(3, ChronoUnit.DAYS)) {
-            httpBadRequest("토론 시작 3일 전부터는 참여를 취소할 수 없습니다.")
-        }
-
         val member = debateMemberRepository.findByDebateAndAccountForUpdate(debate, account) ?: httpBadRequest("토론 참여자가 아닙니다.")
         if (member.role == DebateMemberRole.HOST) httpBadRequest("방장은 참여를 취소할 수 없습니다.")
 

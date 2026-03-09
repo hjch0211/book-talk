@@ -26,7 +26,7 @@ type FilterChip = 'applied' | 'created' | 'joined';
 const SECTION_TITLES: Record<FilterChip, string> = {
   applied: '신청한 토론방',
   created: '생성한 토론방',
-  joined: '참여한 토론방',
+  joined: '참여 완료한 토론방',
 };
 
 interface MyProfileDebateListSectionProps {

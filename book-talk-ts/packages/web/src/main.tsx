@@ -1,3 +1,5 @@
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { BaseGlobalStyle, TiptapGlobalStyle } from '@src/GlobalStyle.tsx';
 import { AppRoutes } from '@src/routes/AppRoutes.tsx';
 import { StrictMode } from 'react';
@@ -16,17 +18,19 @@ createRoot(document.getElementById('root')!).render(
     <BaseGlobalStyle />
     <TiptapGlobalStyle />
     <BrowserRouter>
-      <DesignSystemProvider>
-        <QueryClientProvider>
-          <ToastProvider>
-            <InnerModalProvider>
-              <ModalProvider>
-                <AppRoutes />
-              </ModalProvider>
-            </InnerModalProvider>
-          </ToastProvider>
-        </QueryClientProvider>
-      </DesignSystemProvider>
+      <LocalizationProvider dateAdapter={AdapterDayjs}>
+        <DesignSystemProvider>
+          <QueryClientProvider>
+            <ToastProvider>
+              <InnerModalProvider>
+                <ModalProvider>
+                  <AppRoutes />
+                </ModalProvider>
+              </InnerModalProvider>
+            </ToastProvider>
+          </QueryClientProvider>
+        </DesignSystemProvider>
+      </LocalizationProvider>
     </BrowserRouter>
   </StrictMode>
 );

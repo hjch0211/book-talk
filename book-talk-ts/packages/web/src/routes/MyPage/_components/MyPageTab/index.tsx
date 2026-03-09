@@ -36,8 +36,8 @@ export const MyPageTab = ({
               닉네임 / 비밀번호 변경
             </TabItemText>
           </TabItem>
+          <TabIndicator indicatorLeft={TAB_INDICATOR_LEFT[mainTab]} />
         </TabNav>
-        <TabIndicator indicatorLeft={TAB_INDICATOR_LEFT[mainTab]} />
       </TabNavWrapper>
     </TabSection>
   );
