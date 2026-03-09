@@ -10,6 +10,21 @@ import type React from 'react';
 import { breakPoints } from '../constants/breakPoints.ts';
 import { appColor } from '../constants/color.ts';
 
+declare module '@mui/material/styles' {
+  interface TypographyVariants {
+    labelL: React.CSSProperties;
+  }
+  interface TypographyVariantsOptions {
+    labelL?: React.CSSProperties;
+  }
+}
+
+declare module '@mui/material/Typography' {
+  interface TypographyPropsVariantOverrides {
+    labelL: true;
+  }
+}
+
 const muiTypographyConfig: TypographyVariantsOptions = {
   fontFamily: ['S-Core Dream', 'SpoqaHanSansNeo-Regular', 'sans-serif'].join(','),
   h1: { fontSize: 80, color: appColor.primary },
@@ -17,6 +32,16 @@ const muiTypographyConfig: TypographyVariantsOptions = {
   body1: { fontSize: 16, letterSpacing: '2px' },
   body2: { fontSize: 16, fontWeight: 500 },
   button: { fontSize: 26, letterSpacing: '2px' },
+  labelL: {
+    fontFamily: 'S-Core Dream',
+    fontSize: 16,
+    fontStyle: 'normal',
+    fontWeight: 500,
+    lineHeight: '24px',
+    letterSpacing: '1px',
+    textAlign: 'center',
+    color: '#262626',
+  },
 };
 
 const muiPaletteConfig: PaletteOptions = {
