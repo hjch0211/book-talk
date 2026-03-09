@@ -13,15 +13,18 @@ import { appColor } from '../constants/color.ts';
 declare module '@mui/material/styles' {
   interface TypographyVariants {
     labelL: React.CSSProperties;
+    labelM: React.CSSProperties;
   }
   interface TypographyVariantsOptions {
     labelL?: React.CSSProperties;
+    labelM?: React.CSSProperties;
   }
 }
 
 declare module '@mui/material/Typography' {
   interface TypographyPropsVariantOverrides {
     labelL: true;
+    labelM: true;
   }
 }
 
@@ -40,6 +43,15 @@ const muiTypographyConfig: TypographyVariantsOptions = {
     lineHeight: '24px',
     letterSpacing: '1px',
     textAlign: 'center',
+    color: '#262626',
+  },
+  labelM: {
+    fontFamily: 'S-Core Dream',
+    fontSize: 14,
+    fontStyle: 'normal',
+    fontWeight: 500,
+    lineHeight: '20px',
+    letterSpacing: '0.3px',
     color: '#262626',
   },
 };
