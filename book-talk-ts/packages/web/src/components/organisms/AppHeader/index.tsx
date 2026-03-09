@@ -1,4 +1,4 @@
-import { Logout, ManageAccounts, Person } from '@mui/icons-material';
+import { Logout, Person } from '@mui/icons-material';
 import {
   AppBar,
   Box,
@@ -121,15 +121,19 @@ const ProfileSection = () => {
               }}
             >
               <ListItemIcon>
-                <ManageAccounts fontSize="small" sx={{ color: '#7B7B7B' }} />
+                <Person fontSize="small" sx={{ color: '#7B7B7B' }} />
               </ListItemIcon>
-              <ListItemText>마이페이지</ListItemText>
+              <ListItemText>
+                <Typography variant={'body2'}>마이페이지</Typography>
+              </ListItemText>
             </MenuItem>,
             <MenuItem key="logout" onClick={handleLogout}>
               <ListItemIcon>
                 <Logout fontSize="small" sx={{ color: '#7B7B7B' }} />
               </ListItemIcon>
-              <ListItemText>로그아웃</ListItemText>
+              <ListItemText>
+                <Typography variant={'body2'}>로그아웃 </Typography>
+              </ListItemText>
             </MenuItem>,
           ]
         ) : (
@@ -137,7 +141,9 @@ const ProfileSection = () => {
             <ListItemIcon>
               <Person fontSize="small" sx={{ color: '#7B7B7B' }} />
             </ListItemIcon>
-            <ListItemText>로그인</ListItemText>
+            <ListItemText>
+              <Typography variant={'body2'}>로그인</Typography>
+            </ListItemText>
           </MenuItem>
         )}
       </Menu>

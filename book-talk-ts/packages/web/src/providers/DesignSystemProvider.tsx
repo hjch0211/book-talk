@@ -30,7 +30,7 @@ const muiTypographyConfig: TypographyVariantsOptions = {
   h1: { fontSize: 80, color: appColor.primary },
   h2: { fontSize: 26, color: appColor.primary },
   body1: { fontSize: 16, letterSpacing: '2px' },
-  body2: { fontSize: 16, fontWeight: 500 },
+  body2: { fontSize: 16, fontWeight: 200, lineHeight: '180%', letterSpacing: '0.3px', color: '#434343' },
   button: { fontSize: 26, letterSpacing: '2px' },
   labelL: {
     fontFamily: 'S-Core Dream',
