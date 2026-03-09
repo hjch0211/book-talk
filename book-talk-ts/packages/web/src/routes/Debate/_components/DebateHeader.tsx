@@ -45,7 +45,7 @@ export function DebateHeader({ debate, isHost, endDebate }: Props) {
 
   const handleLeave = () => {
     if (isHost && debate.currentRoundInfo.type !== 'PREPARATION') void endDebate();
-    else navigate('/');
+    else navigate('/home');
   };
 
   const getShareLinkButtonText = (roundType: RoundType) => {

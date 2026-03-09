@@ -79,7 +79,7 @@ export const BookImageBox = styled(Box, {
 
 export const BookInfoLink = styled(Typography)`
     font-family: 'S-Core Dream', sans-serif;
-    font-weight: 200;
+    font-weight: 400;
     font-size: 10px;
     line-height: 150%;
     text-align: center;

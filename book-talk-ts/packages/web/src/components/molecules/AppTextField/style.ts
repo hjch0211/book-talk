@@ -13,7 +13,7 @@ export const StyledTextField = styled(TextField, {
       height: auto;
       min-height: 52px;
     }
-    border-radius: 12px;
+    border-radius: 6px;
     font-weight: 200;
     font-size: 14px;
     letter-spacing: 0.3px;
@@ -21,6 +21,7 @@ export const StyledTextField = styled(TextField, {
 
     fieldset {
       border-color: ${({ success }) => (success ? '#1A00E2' : '#d9d9d9')};
+      transition: border-color 0.2s ease;
     }
 
     &:hover fieldset {

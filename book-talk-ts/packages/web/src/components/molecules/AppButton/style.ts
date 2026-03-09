@@ -31,7 +31,7 @@ export const StyledButton = styled(Button, {
     letter-spacing: 0.3px;
     text-align: center;
     text-transform: none;
-    transition: box-shadow 0.2s ease, transform 0.2s ease, background 0.2s ease;
+    transition: all 0.3s ease;
   }
 
   &&.Mui-disabled {

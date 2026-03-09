@@ -33,7 +33,13 @@ const muiTypographyConfig: TypographyVariantsOptions = {
   h1: { fontSize: 80, color: appColor.primary },
   h2: { fontSize: 26, color: appColor.primary },
   body1: { fontSize: 16, letterSpacing: '2px' },
-  body2: { fontSize: 16, fontWeight: 200, lineHeight: '180%', letterSpacing: '0.3px', color: '#434343' },
+  body2: {
+    fontSize: 16,
+    fontWeight: 200,
+    lineHeight: '180%',
+    letterSpacing: '0.3px',
+    color: '#434343',
+  },
   button: { fontSize: 26, letterSpacing: '2px' },
   labelL: {
     fontFamily: 'S-Core Dream',
@@ -72,6 +78,13 @@ const configMuiComponents: Components = {
       'html, body': { height: '100%', width: '100%', backgroundColor: appColor.backGround },
     },
   },
+  MuiButtonBase: {
+    styleOverrides: {
+      root: {
+        transition: 'all 0.3s ease !important',
+      },
+    },
+  },
 };
 
 /**
@@ -87,6 +100,23 @@ export const DesignSystemProvider = ({ children }: { children: React.ReactNode }
         palette: { ...muiPaletteConfig },
         breakpoints: { ...muiBreakpointsConfig },
         components: { ...configMuiComponents },
+        transitions: {
+          duration: {
+            shortest: 300,
+            shorter: 300,
+            short: 300,
+            standard: 300,
+            complex: 300,
+            enteringScreen: 300,
+            leavingScreen: 300,
+          },
+          easing: {
+            easeInOut: 'ease',
+            easeOut: 'ease',
+            easeIn: 'ease',
+            sharp: 'ease',
+          },
+        },
       })
     )}
   >

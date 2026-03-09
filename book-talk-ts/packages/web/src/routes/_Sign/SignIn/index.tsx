@@ -96,7 +96,7 @@ export function SignInPage() {
             <AppButton type="submit" appVariant="filled" loading={isLoading}>
               로그인
             </AppButton>
-            <AppButton type="button" appVariant="outlined" onClick={() => navigate('/sign-up')}>
+            <AppButton type="button" appVariant="transparent" onClick={() => navigate('/sign-up')}>
               회원가입
             </AppButton>
           </ButtonsSection>

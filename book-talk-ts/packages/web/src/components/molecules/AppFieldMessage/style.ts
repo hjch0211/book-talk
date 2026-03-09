@@ -10,4 +10,5 @@ export const StyledFieldMessage = styled.span<{ $type: AppFieldMessageType }>`
   line-height: 150%;
   letter-spacing: 0.3px;
   color: ${({ $type }) => ($type === 'error' ? '#d32f2f' : '#1A00E2')};
+  transition: color 0.2s ease;
 `;

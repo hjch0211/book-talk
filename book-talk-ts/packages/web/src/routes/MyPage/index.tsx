@@ -1,3 +1,4 @@
+import { BackButton } from '@src/components/molecules/BackButton';
 import AppHeader from '@src/components/organisms/AppHeader';
 import PageContainer from '@src/components/templates/PageContainer';
 import type { FindAllDebateInfo } from '@src/externals/debate/schema';
@@ -6,14 +7,8 @@ import DebateParticipationModal from '@src/routes/Home/_components/DebatePartici
 import { DebateManagementSection } from '@src/routes/MyPage/_components/DebateManagementSection';
 import { MyInfoModificationSection } from '@src/routes/MyPage/_components/MyInfoModificationSection';
 import { MyPageTab } from '@src/routes/MyPage/_components/MyPageTab';
-import {
-  BackNavRow,
-  ContentWrapper,
-  InnerWrapper,
-  PageTitle,
-} from './style';
+import { BackNavRow, ContentWrapper, InnerWrapper, PageTitle } from './style';
 import { useMyPage } from './useMyPage';
-import {BackButton} from "@src/components/molecules/BackButton";
 
 export function MyPage() {
   const { me, mainTab, setMainTab, navigateHome } = useMyPage();
@@ -28,9 +23,7 @@ export function MyPage() {
       <AppHeader />
 
       <BackNavRow>
-        <BackButton onClick={navigateHome}>
-          메인페이지로 가기
-        </BackButton>
+        <BackButton onClick={navigateHome}>메인페이지로 가기</BackButton>
       </BackNavRow>
 
       <ContentWrapper>
