@@ -170,14 +170,16 @@ export function DebatePage() {
     <>
       <MobileUnsupportedModal />
       <SuspenseErrorBoundary
-      key={debateId}
-      onSuspense={<DebateSkeleton title={'토론방에 입장 중...'} content={'잠시만 기다려주세요'} />}
-      onError={
-        <DebateSkeleton title={'오류가 발생했습니다'} content={'페이지를 새로고침 해주세요'} />
-      }
-    >
-      <DebatePageContent debateId={debateId} />
-    </SuspenseErrorBoundary>
+        key={debateId}
+        onSuspense={
+          <DebateSkeleton title={'토론방에 입장 중...'} content={'잠시만 기다려주세요'} />
+        }
+        onError={
+          <DebateSkeleton title={'오류가 발생했습니다'} content={'페이지를 새로고침 해주세요'} />
+        }
+      >
+        <DebatePageContent debateId={debateId} />
+      </SuspenseErrorBoundary>
     </>
   );
 }

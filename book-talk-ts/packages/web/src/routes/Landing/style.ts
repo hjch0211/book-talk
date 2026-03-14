@@ -491,6 +491,7 @@ export const FooterContainer = styled('footer')({
 
 export const FooterBigText = styled('img')({
   width: '100%',
+  maxWidth: '1200px',
 });
 
 export const FooterLinks = styled('div')(({ theme }) => ({

@@ -1,9 +1,9 @@
 import { SuspenseErrorBoundary } from '@src/components';
-import { MobileUnsupportedModal } from '@src/components/organisms/MobileUnsupportedModal';
 import { AppButton } from '@src/components/molecules/AppButton';
 import { SearchInput } from '@src/components/molecules/SearchInput';
 import AppHeader from '@src/components/organisms/AppHeader';
 import { DebateCard } from '@src/components/organisms/DebateCard';
+import { MobileUnsupportedModal } from '@src/components/organisms/MobileUnsupportedModal';
 import PageContainer from '@src/components/templates/PageContainer';
 import { meQueryOption } from '@src/externals/account';
 import { findAllDebatesQueryOptions } from '@src/externals/debate/queryOptions';
