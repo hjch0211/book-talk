@@ -36,7 +36,10 @@ export const MyPageTab = ({
               닉네임 / 비밀번호 변경
             </TabItemText>
           </TabItem>
-          <TabIndicator indicatorLeft={TAB_INDICATOR_LEFT[mainTab]} />
+          <TabIndicator
+            indicatorLeft={TAB_INDICATOR_LEFT[mainTab]}
+            isSecond={mainTab === 'profile-settings'}
+          />
         </TabNav>
       </TabNavWrapper>
     </TabSection>

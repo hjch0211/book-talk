@@ -19,7 +19,7 @@ export const StyledRelativeWrapper = styled(Box, {
   position: 'relative',
   width: '100%',
   background: bgColor || 'transparent',
-  overflowX: 'hidden',
+  overflowX: 'clip',
 }));
 
 export const StyledContainer = styled(Container)(() => ({

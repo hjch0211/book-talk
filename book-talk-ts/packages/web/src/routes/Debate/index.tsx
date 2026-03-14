@@ -1,4 +1,5 @@
 import { AudioActivationBanner, AudioPlayer, SuspenseErrorBoundary } from '@src/components';
+import { MobileUnsupportedModal } from '@src/components/organisms/MobileUnsupportedModal';
 import { meQueryOption } from '@src/externals/account';
 import { type RoundType, useDebate, useModal } from '@src/hooks';
 import type { VoiceConnectionStatus } from '@src/hooks/domain/useDebateRealtimeConnection.tsx';
@@ -166,7 +167,9 @@ export function DebatePage() {
   const { debateId } = useParams<{ debateId: string }>();
 
   return (
-    <SuspenseErrorBoundary
+    <>
+      <MobileUnsupportedModal />
+      <SuspenseErrorBoundary
       key={debateId}
       onSuspense={<DebateSkeleton title={'토론방에 입장 중...'} content={'잠시만 기다려주세요'} />}
       onError={
@@ -175,5 +178,6 @@ export function DebatePage() {
     >
       <DebatePageContent debateId={debateId} />
     </SuspenseErrorBoundary>
+    </>
   );
 }

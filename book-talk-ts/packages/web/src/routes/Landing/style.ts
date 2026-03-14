@@ -1,512 +1,576 @@
-import styled from '@emotion/styled';
+import { styled } from '@mui/material/styles';
 import { Link } from 'react-router-dom';
 
-export const HeroSection = styled.section`
-    position: relative;  
-    width: 100%;
-    height: 760px;
-`;
+export const HeroSection = styled('section')(({ theme }) => ({
+  position: 'relative',
+  width: '100%',
+  height: '760px',
+  [theme.breakpoints.down('md')]: {
+    height: 'auto',
+    paddingBottom: '80px',
+  },
+}));
 
-export const HeroDecorLeft = styled.img`
-    position: absolute;
-    left: -50px;
-    top: 100px;
-    pointer-events: none;
-`;
+export const HeroDecorLeft = styled('img')(({ theme }) => ({
+  position: 'absolute',
+  left: '-50px',
+  top: '100px',
+  pointerEvents: 'none',
+  [theme.breakpoints.down('md')]: {
+    display: 'none',
+  },
+}));
 
-export const HeroDecorRight = styled.img`
-    position: absolute;
-    right: -60px;
-    top: 350px;
-    pointer-events: none;
-`;
+export const HeroDecorRight = styled('img')(({ theme }) => ({
+  position: 'absolute',
+  right: '-60px',
+  top: '350px',
+  pointerEvents: 'none',
+  [theme.breakpoints.down('md')]: {
+    display: 'none',
+  },
+}));
 
-export const HeroInner = styled.div`
-    position: relative;  
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 40px;
-    top: 150px
-`;
+export const HeroInner = styled('div')(({ theme }) => ({
+  position: 'relative',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: '40px',
+  top: '150px',
+  [theme.breakpoints.down('md')]: {
+    top: '0',
+    padding: '80px 24px 0',
+    alignItems: 'center',
+  },
+}));
 
-export const HeroTextRow = styled.div`
-    display: flex;
-    flex-direction: row;
-    justify-content: center;
-    align-items: flex-end;
-    gap: 6px;
-    width: 100%;
-`;
+export const HeroTextRow = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'center',
+  alignItems: 'flex-end',
+  gap: '6px',
+  width: '100%',
+  [theme.breakpoints.down('md')]: {
+    flexDirection: 'column',
+    alignItems: 'center',
+    gap: '32px',
+  },
+}));
 
-export const HeroHeadline = styled.h1`
-    width: 878px;
-    margin: 0;
-    font-family: 'S-Core Dream', sans-serif;
-    font-style: normal;
-    font-weight: 300;
-    font-size: 64px;
-    line-height: 170%;
-    letter-spacing: 0.3px;
-    color: #262626;
-`;
+export const HeroHeadline = styled('h1')(({ theme }) => ({
+  width: '878px',
+  margin: '0',
+  fontFamily: "'S-Core Dream', sans-serif",
+  fontStyle: 'normal',
+  fontWeight: 300,
+  fontSize: '64px',
+  lineHeight: '170%',
+  letterSpacing: '0.3px',
+  color: '#262626',
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+    fontSize: '36px',
+    textAlign: 'center',
+  },
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '28px',
+  },
+}));
 
-export const HeroHeadHighlight = styled.span`
-  color: #8E99FF;
-`;
+export const HeroHeadHighlight = styled('span')({
+  color: '#8E99FF',
+});
 
-export const HeroCTAButton = styled.button`
-    box-sizing: border-box;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 16px 32px;
-    width: fit-content;
-    height: 59px;
-    background: linear-gradient(#FFFFFF, #FFFFFF) padding-box,
-                linear-gradient(183.73deg, #AACDFF 50.78%, #5F84FF 96.94%) border-box;
-    border: 1px solid transparent;
-    box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.25);
-    border-radius: 48px;
-    cursor: pointer;
-    flex: none;
-    transition: box-shadow 0.2s ease, transform 0.2s ease;
+export const HeroCTAButton = styled('button')({
+  boxSizing: 'border-box',
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: '16px 32px',
+  width: 'fit-content',
+  height: '59px',
+  background:
+    'linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(183.73deg, #AACDFF 50.78%, #5F84FF 96.94%) border-box',
+  border: '1px solid transparent',
+  boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)',
+  borderRadius: '48px',
+  cursor: 'pointer',
+  flex: 'none',
+  transition: 'box-shadow 0.2s ease, transform 0.2s ease',
+  '&:hover': {
+    boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.2)',
+    transform: 'translateY(-2px)',
+  },
+});
 
-    &:hover {
-        box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.2);
-        transform: translateY(-2px);
-    }
-`;
-
-export const HeroCTAText = styled.span`
-    font-family: 'S-Core Dream', sans-serif;
-    font-weight: 500;
-    font-size: 18px;
-    line-height: 150%;
-    text-align: center;
-    letter-spacing: 1px;
-    color: #262626;
-`;
+export const HeroCTAText = styled('span')({
+  fontFamily: "'S-Core Dream', sans-serif",
+  fontWeight: 500,
+  fontSize: '18px',
+  lineHeight: '150%',
+  textAlign: 'center',
+  letterSpacing: '1px',
+  color: '#262626',
+});
 
 /* ─── Features ─── */
-export const FeaturesSection = styled.section`
-    width: 1200px;
-    margin: 0 auto 200px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 60px;
-`;
+export const FeaturesSection = styled('section')(({ theme }) => ({
+  width: '1200px',
+  margin: '0 auto 200px',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: '60px',
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+    padding: '0 24px',
+    boxSizing: 'border-box',
+    margin: '0 auto 100px',
+  },
+}));
 
-export const SectionTitle = styled.h2`
-    margin: 0;
-    font-family: 'S-Core Dream', sans-serif;
-    font-weight: 600;
-    font-size: 48px;
-    line-height: 170%;
-    letter-spacing: 0.3px;
-    color: #262626;
-`;
+export const SectionTitle = styled('h2')(({ theme }) => ({
+  margin: '0',
+  fontFamily: "'S-Core Dream', sans-serif",
+  fontWeight: 600,
+  fontSize: '48px',
+  lineHeight: '170%',
+  letterSpacing: '0.3px',
+  color: '#262626',
+  [theme.breakpoints.down('md')]: {
+    fontSize: '32px',
+  },
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '24px',
+  },
+}));
 
-export const FeaturesGrid = styled.div`
-    display: flex;
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
-    width: 100%;
-`;
+export const FeaturesGrid = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'flex-start',
+  gap: '10px',
+  width: '100%',
+  [theme.breakpoints.down('md')]: {
+    flexDirection: 'column',
+    gap: '40px',
+  },
+}));
 
-export const FeatureItem = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 24px;
-    width: 588px;
-`;
+export const FeatureItem = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: '24px',
+  width: '588px',
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+  },
+}));
 
-export const FeatureLabel = styled.div`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 18px;
-    width: 100%;
-`;
+export const FeatureLabel = styled('div')({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: '18px',
+  width: '100%',
+});
 
-export const FeatureBadge = styled.div`
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 41px;
-    height: 41px;
-    background: #FFCDBD;
-    border: 1px solid #262626;
-    border-radius: 28px;
-    font-family: 'S-Core Dream', sans-serif;
-    font-weight: 600;
-    font-size: 24px;
-    line-height: 170%;
-    letter-spacing: 0.3px;
-    color: #262626;
-    flex-shrink: 0;
-`;
+export const FeatureBadge = styled('div')({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  width: '41px',
+  height: '41px',
+  background: '#FFCDBD',
+  border: '1px solid #262626',
+  borderRadius: '28px',
+  fontFamily: "'S-Core Dream', sans-serif",
+  fontWeight: 600,
+  fontSize: '24px',
+  lineHeight: '170%',
+  letterSpacing: '0.3px',
+  color: '#262626',
+  flexShrink: 0,
+});
 
-export const FeatureLabelText = styled.span`
-    font-family: 'S-Core Dream', sans-serif;
-    font-weight: 600;
-    font-size: 24px;
-    line-height: 170%;
-    letter-spacing: 0.3px;
-    color: #262626;
-`;
+export const FeatureLabelText = styled('span')({
+  fontFamily: "'S-Core Dream', sans-serif",
+  fontWeight: 600,
+  fontSize: '24px',
+  lineHeight: '170%',
+  letterSpacing: '0.3px',
+  color: '#262626',
+});
 
-export const FeatureCard = styled.div`
-    position: relative;
-    width: 588px;
-    height: 484px;
-    background: #FFFFFF;
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.08);
-`;
+export const ExampleCard = styled('div')(({ theme }) => ({
+  position: 'relative',
+  width: '588px',
+  height: '484px',
+  borderRadius: '22px',
+  overflow: 'visible',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+    height: '300px',
+  },
+}));
 
-export const FeatureCardGradient = styled.div`
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 75%, rgba(142, 153, 255, 0.3) 100%);
-    z-index: 1;
-`;
+export const ExampleCardImage = styled('img')({
+  width: 'fit-content',
+  height: '100%',
+  objectFit: 'contain',
+  borderRadius: '22px',
+  display: 'block',
+});
 
-export const FeatureCardContent = styled.div`
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
-`;
-
-export const MoreLink = styled(Link)`
-    font-family: 'S-Core Dream', sans-serif;
-    font-weight: 500;
-    font-size: 14px;
-    line-height: 20px;
-    letter-spacing: 0.3px;
-    color: #434343;
-    text-decoration: none;
-    align-self: flex-end;
-    cursor: pointer;
-
-    &:hover {
-        color: #8E99FF;
-        text-decoration: underline;
-    }
-`;
+export const MoreLink = styled(Link)({
+  fontFamily: "'S-Core Dream', sans-serif",
+  fontWeight: 500,
+  fontSize: '14px',
+  lineHeight: '20px',
+  letterSpacing: '0.3px',
+  color: '#434343',
+  textDecoration: 'none',
+  alignSelf: 'flex-end',
+  cursor: 'pointer',
+  '&:hover': {
+    color: '#8E99FF',
+    textDecoration: 'underline',
+  },
+});
 
 /* ─── Process ─── */
-export const ProcessOuter = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 250px;
-    width: 1200px;
-    margin: 0 auto;
-    padding-bottom: 200px;
-`;
+export const ProcessOuter = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: '250px',
+  width: '1200px',
+  margin: '0 auto',
+  paddingBottom: '200px',
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+    padding: '0 24px 100px',
+    boxSizing: 'border-box',
+    gap: '80px',
+  },
+}));
 
-export const ProcessSection = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    padding: 0;
-    gap: 60px;
-    width: 1200px;
-`;
+export const ProcessSection = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  padding: '0',
+  gap: '60px',
+  width: '1200px',
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+  },
+}));
 
-export const ProcessStepsContainer = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 170px;
-    width: 1200px;
-`;
+export const ProcessStepsContainer = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: '170px',
+  width: '1200px',
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+    gap: '80px',
+  },
+}));
 
-export const ProcessStep = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 36px;
-    width: 1200px;
-`;
+export const ProcessStep = styled('div')(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: '36px',
+  width: '1200px',
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+  },
+}));
 
-export const ProcessTabs = styled.div`
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-    align-items: center;
-    align-content: flex-start;
-    row-gap: 0;
-`;
+export const ProcessTabs = styled('div')({
+  display: 'flex',
+  flexDirection: 'row',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  alignContent: 'flex-start',
+  rowGap: '0',
+});
 
-export const ProcessTabConnector = styled.div`
-    width: 18px;
-    height: 0;
-    border: 2px solid #D9D9D9;
-`;
+export const ProcessTabConnector = styled('div')({
+  width: '18px',
+  height: '0',
+  border: '2px solid #D9D9D9',
+});
 
 interface TabProps {
   $active: boolean;
 }
 
-export const ProcessTab = styled.div<TabProps>`
-    box-sizing: border-box;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 4px 18px;
-    gap: 10px;
-    height: 35px;
-    background: ${({ $active }) => ($active ? '#F7F8FF' : '#F5F5F5')};
-    border: ${({ $active }) => ($active ? '1px solid #8E99FF' : 'none')};
-    border-radius: 48px;
-    font-family: 'S-Core Dream', sans-serif;
-    font-weight: 500;
-    font-size: 18px;
-    line-height: 150%;
-    letter-spacing: 1px;
-    color: #262626;
-    flex: none;
-    flex-grow: 0;
-`;
+export const ProcessTab = styled('div')<TabProps>(({ $active }) => ({
+  boxSizing: 'border-box',
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: '4px 18px',
+  gap: '10px',
+  height: '35px',
+  background: $active ? '#F7F8FF' : '#F5F5F5',
+  border: $active ? '1px solid #8E99FF' : 'none',
+  borderRadius: '48px',
+  fontFamily: "'S-Core Dream', sans-serif",
+  fontWeight: 500,
+  fontSize: '18px',
+  lineHeight: '150%',
+  letterSpacing: '1px',
+  color: '#262626',
+  flex: 'none',
+  flexGrow: 0,
+}));
 
 interface ContentProps {
   $gap?: string;
   $justify?: string;
 }
 
-export const ProcessContent = styled.div<ContentProps>`
-    display: flex;
-    flex-direction: row;
-    align-items: flex-start;
-    gap: ${({ $gap }) => $gap ?? '48px'};
-    justify-content: ${({ $justify }) => $justify ?? 'flex-start'};
-    width: 1200px;
-    height: 470px;
-`;
-
-interface ImageCardProps {
-  $prepare?: boolean;
-}
-
-export const ProcessImageCard = styled.div<ImageCardProps>`
-    box-sizing: border-box;
-    position: relative;
-    overflow: hidden;
-    width: 662px;
-    height: 470px;
-    border-radius: 24px;
-    flex-shrink: 0;
-    ${({ $prepare }) =>
-      $prepare
-        ? `
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(142, 153, 255, 0.2) 84.62%), #FFFFFF;
-        padding: 0px 90px 100px 60px;
-        `
-        : ''}
-`;
-
-export const ProcessCardGradient = styled.div`
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(142, 153, 255, 0.1) 84.62%);
-    pointer-events: none;
-    z-index: 1;
-`;
+export const ProcessContent = styled('div')<ContentProps>(({ theme, $gap, $justify }) => ({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'flex-start',
+  gap: $gap ?? '48px',
+  justifyContent: $justify ?? 'flex-start',
+  width: '1200px',
+  height: '470px',
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+    height: 'auto',
+    flexDirection: 'column',
+    gap: '32px',
+  },
+}));
 
 interface PlaceholderProps {
   $prepare?: boolean;
 }
 
-export const ProcessImagePlaceholder = styled.div<PlaceholderProps>`
-    ${({ $prepare }) =>
-      $prepare
-        ? `
-    box-sizing: border-box;
-    width: 542px;
-    height: 460px;
-    border: 1px solid #D9D9D9;
-    border-radius: 17px;
-    background: #F5F5F5;
-    `
-        : `
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #8E99FF;
-    font-family: 'S-Core Dream', sans-serif;
-    font-size: 16px;
-    font-weight: 500;
-    letter-spacing: 0.3px;
-    opacity: 0.6;
-    `}
-`;
+export const ProcessImagePlaceholder = styled('div')<PlaceholderProps>(({ $prepare }) =>
+  $prepare
+    ? {
+        boxSizing: 'border-box',
+        width: '542px',
+        height: '460px',
+        border: '1px solid #D9D9D9',
+        borderRadius: '17px',
+        background: '#F5F5F5',
+      }
+    : {
+        position: 'absolute',
+        inset: '0',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: '#8E99FF',
+        fontFamily: "'S-Core Dream', sans-serif",
+        fontSize: '16px',
+        fontWeight: 500,
+        letterSpacing: '0.3px',
+        opacity: 0.6,
+      },
+);
 
 interface DescriptionProps {
   $width?: string;
 }
 
-export const ProcessDescription = styled.div<DescriptionProps>`
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 48px;
-    height: 100%;
-    flex-shrink: 0;
-    justify-content: start;
-`;
+export const ProcessDescription = styled('div')<DescriptionProps>({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: '48px',
+  height: '100%',
+  flexShrink: 0,
+  justifyContent: 'start',
+});
 
-export const ProcessDescInner = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-`;
+export const ProcessDescInner = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: '10px',
+});
 
-export const ProcessSubTitle = styled.h3`
-    margin: 0;
-    font-family: 'S-Core Dream', sans-serif;
-    font-weight: 600;
-    font-size: 28px;
-    line-height: 150%;
-    letter-spacing: 0.3px;
-    color: #262626;
-`;
+export const ProcessSubTitle = styled('h3')(({ theme }) => ({
+  margin: '0',
+  fontFamily: "'S-Core Dream', sans-serif",
+  fontWeight: 600,
+  fontSize: '28px',
+  lineHeight: '150%',
+  letterSpacing: '0.3px',
+  color: '#262626',
+  [theme.breakpoints.down('md')]: {
+    fontSize: '22px',
+  },
+}));
 
-export const ProcessSubDesc = styled.p`
-    margin: 0;
-    font-family: 'S-Core Dream', sans-serif;
-    font-weight: 500;
-    font-size: 20px;
-    line-height: 170%;
-    letter-spacing: 0.3px;
-    color: #262626;
-`;
+export const ProcessSubDesc = styled('p')(({ theme }) => ({
+  margin: '0',
+  fontFamily: "'S-Core Dream', sans-serif",
+  fontWeight: 500,
+  fontSize: '20px',
+  lineHeight: '170%',
+  letterSpacing: '0.3px',
+  color: '#262626',
+  [theme.breakpoints.down('md')]: {
+    fontSize: '16px',
+  },
+}));
 
-export const ProcessBodyText = styled.p`
-    margin: 0;
-    font-family: 'S-Core Dream', sans-serif;
-    font-weight: 200;
-    font-size: 18px;
-    line-height: 180%;
-    letter-spacing: 0.3px;
-    color: #262626;
-`;
+export const ProcessBodyText = styled('p')(({ theme }) => ({
+  margin: '0',
+  fontFamily: "'S-Core Dream', sans-serif",
+  fontWeight: 200,
+  fontSize: '18px',
+  lineHeight: '180%',
+  letterSpacing: '0.3px',
+  color: '#262626',
+  [theme.breakpoints.down('md')]: {
+    fontSize: '14px',
+  },
+}));
 
-export const ProcessBodySmall = styled.p`
-    margin: 0;
-    font-family: 'S-Core Dream', sans-serif;
-    font-weight: 200;
-    font-size: 16px;
-    line-height: 180%;
-    letter-spacing: 0.3px;
-    color: #262626;
-`;
+export const ProcessBodySmall = styled('p')({
+  margin: '0',
+  fontFamily: "'S-Core Dream', sans-serif",
+  fontWeight: 200,
+  fontSize: '16px',
+  lineHeight: '180%',
+  letterSpacing: '0.3px',
+  color: '#262626',
+});
 
-export const ProcessBulletList = styled.div`
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 10px;
-`;
+export const ProcessBulletList = styled('div')({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: '10px',
+});
 
 /* ─── Footer ─── */
-export const FooterContainer = styled.footer`
-    position: relative;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100vw;  
-    padding: 24px 0;
-    bottom: 0;
-    background: linear-gradient(180deg, #FFFFFF 5%, #8E99FF 100%);
-`;
+export const FooterContainer = styled('footer')(({ theme }) => ({
+  position: 'relative',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  width: '100vw',
+  padding: '24px 0',
+  bottom: '0',
+  background: 'linear-gradient(180deg, #FFFFFF 5%, #8E99FF 100%)',
+  [theme.breakpoints.down('sm')]: {
+    padding: '24px',
+  },
+}));
 
-export const FooterBigText = styled.div`
-    width: 100%;
-    bottom: 100px;
-    text-align: center;
-    font-feature-settings: 'liga' off, 'clig' off;
-    -webkit-text-stroke-width: 2px;
-    -webkit-text-stroke-color: #FFF;
-    font-size: 300px;
-    font-style: normal;
-    font-weight: 900;
-    line-height: 150%;
-    letter-spacing: -17px;
-    color: transparent;
-    white-space: nowrap;
-    user-select: none;
-`;
+export const FooterBigText = styled('div')(({ theme }) => ({
+  width: '100%',
+  bottom: '100px',
+  textAlign: 'center',
+  fontFeatureSettings: "'liga' off, 'clig' off",
+  WebkitTextStrokeWidth: '2px',
+  WebkitTextStrokeColor: '#FFF',
+  fontSize: '300px',
+  fontStyle: 'normal',
+  fontWeight: 900,
+  lineHeight: '150%',
+  letterSpacing: '-17px',
+  color: 'transparent',
+  whiteSpace: 'nowrap',
+  userSelect: 'none',
+  [theme.breakpoints.down('md')]: {
+    fontSize: '150px',
+    letterSpacing: '-8px',
+  },
+  [theme.breakpoints.down('sm')]: {
+    fontSize: '80px',
+    letterSpacing: '-4px',
+  },
+}));
 
-export const FooterLinks = styled.div`
-    display: flex;
-    width: 1440px;
-    flex-direction: row;
-    justify-content: start;
-    gap: 70px;
-    z-index: 10;
-`;
+export const FooterLinks = styled('div')(({ theme }) => ({
+  display: 'flex',
+  width: '1440px',
+  flexDirection: 'row',
+  justifyContent: 'start',
+  gap: '70px',
+  zIndex: 10,
+  [theme.breakpoints.down('xl')]: {
+    width: '100%',
+    padding: '0 24px',
+    boxSizing: 'border-box',
+  },
+  [theme.breakpoints.down('sm')]: {
+    flexDirection: 'column',
+    gap: '8px',
+  },
+}));
 
-export const FooterMenuGroup = styled.div`
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: 12px;
-`;
+export const FooterMenuGroup = styled('div')({
+  display: 'flex',
+  flexDirection: 'row',
+  alignItems: 'center',
+  gap: '12px',
+});
 
-export const FooterLink = styled.a`
-    font-family: 'S-Core Dream', sans-serif;
-    font-weight: 500;
-    font-size: 12px;
-    line-height: 150%;
-    letter-spacing: 0.3px;
-    color: #262626;
-    text-decoration: none;
-    cursor: pointer;
+export const FooterLink = styled('a')({
+  fontFamily: "'S-Core Dream', sans-serif",
+  fontWeight: 500,
+  fontSize: '12px',
+  lineHeight: '150%',
+  letterSpacing: '0.3px',
+  color: '#262626',
+  textDecoration: 'none',
+  cursor: 'pointer',
+  '&:hover': {
+    textDecoration: 'underline',
+  },
+});
 
-    &:hover {
-        text-decoration: underline;
-    }
-`;
+export const FooterNavLink = styled(Link)({
+  fontFamily: "'S-Core Dream', sans-serif",
+  fontWeight: 500,
+  fontSize: '12px',
+  lineHeight: '150%',
+  letterSpacing: '0.3px',
+  color: '#262626',
+  textDecoration: 'none',
+  '&:hover': {
+    textDecoration: 'underline',
+  },
+});
 
-export const FooterNavLink = styled(Link)`
-    font-family: 'S-Core Dream', sans-serif;
-    font-weight: 500;
-    font-size: 12px;
-    line-height: 150%;
-    letter-spacing: 0.3px;
-    color: #262626;
-    text-decoration: none;
+export const FooterSeparator = styled('span')({
+  fontFamily: "'S-Core Dream', sans-serif",
+  fontWeight: 200,
+  fontSize: '12px',
+  lineHeight: '150%',
+  letterSpacing: '0.3px',
+  color: '#262626',
+});
 
-    &:hover {
-        text-decoration: underline;
-    }
-`;
-
-export const FooterSeparator = styled.span`
-    font-family: 'S-Core Dream', sans-serif;
-    font-weight: 200;
-    font-size: 12px;
-    line-height: 150%;
-    letter-spacing: 0.3px;
-    color: #262626;
-`;
-
-export const FooterCopyright = styled.span`
-    font-family: 'S-Core Dream', sans-serif;
-    font-weight: 200;
-    font-size: 12px;
-    line-height: 150%;
-    letter-spacing: 0.3px;
-    color: #555555;
-`;
+export const FooterCopyright = styled('span')({
+  fontFamily: "'S-Core Dream', sans-serif",
+  fontWeight: 200,
+  fontSize: '12px',
+  lineHeight: '150%',
+  letterSpacing: '0.3px',
+  color: '#555555',
+});

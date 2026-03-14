@@ -1,4 +1,5 @@
 import { SuspenseErrorBoundary } from '@src/components';
+import { MobileUnsupportedModal } from '@src/components/organisms/MobileUnsupportedModal';
 import { AppButton } from '@src/components/molecules/AppButton';
 import { SearchInput } from '@src/components/molecules/SearchInput';
 import AppHeader from '@src/components/organisms/AppHeader';
@@ -152,6 +153,7 @@ export function HomePage() {
 
   return (
     <PageContainer bgColor="#FFFFFF" isRelative>
+      <MobileUnsupportedModal />
       <AppHeader />
 
       <ContentWrapper>
