@@ -116,7 +116,7 @@ export function LandingPage() {
                 <ProcessTab $active={false}>2 라운드</ProcessTab>
               </ProcessTabs>
               <ProcessContent>
-                <ExampleCard style={{ width: '662px', height: '470px' }}>
+                <ExampleCard sx={{ width: { xs: '100%', md: '662px' }, height: { xs: '300px', md: '470px' } }}>
                   <ExampleCardImage src={preparationExample} alt="발표 페이지 예시" />
                 </ExampleCard>
                 <ProcessDescription>
@@ -153,7 +153,7 @@ export function LandingPage() {
                     다음 사람에게 발표를 넘깁니다.
                   </ProcessBodyText>
                 </ProcessDescription>
-                <ExampleCard style={{ width: '662px', height: '469px' }}>
+                <ExampleCard sx={{ width: { xs: '100%', md: '662px' }, height: { xs: '300px', md: '469px' } }}>
                   <ExampleCardImage src={round1Example} alt="1라운드 발표자 화면" />
                 </ExampleCard>
               </ProcessContent>
@@ -169,7 +169,7 @@ export function LandingPage() {
                 <ProcessTab $active>2 라운드</ProcessTab>
               </ProcessTabs>
               <ProcessContent>
-                <ExampleCard style={{ width: '661px', height: '470px' }}>
+                <ExampleCard sx={{ width: { xs: '100%', md: '661px' }, height: { xs: '300px', md: '470px' } }}>
                   <ExampleCardImage src={round2Example} alt="2라운드 자유토론 화면" />
                 </ExampleCard>
                 <ProcessDescription>
