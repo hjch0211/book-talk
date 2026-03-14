@@ -161,27 +161,23 @@ export const FeatureLabelText = styled.span`
     color: #262626;
 `;
 
-export const FeatureCard = styled.div`
+export const ExampleCard = styled.div`
     position: relative;
     width: 588px;
     height: 484px;
-    background: #FFFFFF;
-    border-radius: 24px;
-    overflow: hidden;
-    box-shadow: 0px 2px 12px rgba(0, 0, 0, 0.08);
+    border-radius: 22px;
+    overflow: visible;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 `;
 
-export const FeatureCardGradient = styled.div`
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 75%, rgba(142, 153, 255, 0.3) 100%);
-    z-index: 1;
-`;
-
-export const FeatureCardContent = styled.div`
-    position: absolute;
-    inset: 0;
-    overflow: hidden;
+export const ExampleCardImage = styled.img`
+    width: fit-content;
+    height: 100%;
+    object-fit: contain;
+    border-radius: 22px;
+    display: block;
 `;
 
 export const MoreLink = styled(Link)`
@@ -290,35 +286,6 @@ export const ProcessContent = styled.div<ContentProps>`
     justify-content: ${({ $justify }) => $justify ?? 'flex-start'};
     width: 1200px;
     height: 470px;
-`;
-
-interface ImageCardProps {
-  $prepare?: boolean;
-}
-
-export const ProcessImageCard = styled.div<ImageCardProps>`
-    box-sizing: border-box;
-    position: relative;
-    overflow: hidden;
-    width: 662px;
-    height: 470px;
-    border-radius: 24px;
-    flex-shrink: 0;
-    ${({ $prepare }) =>
-      $prepare
-        ? `
-        background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(142, 153, 255, 0.2) 84.62%), #FFFFFF;
-        padding: 0px 90px 100px 60px;
-        `
-        : ''}
-`;
-
-export const ProcessCardGradient = styled.div`
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(255, 255, 255, 0) 0%, rgba(142, 153, 255, 0.1) 84.62%);
-    pointer-events: none;
-    z-index: 1;
 `;
 
 interface PlaceholderProps {
