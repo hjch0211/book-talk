@@ -1,22 +1,28 @@
 import { Box, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-export const TabSection = styled(Box)({
+export const TabSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
   gap: '24px',
   width: 1200,
   background: '#FFFFFF',
-});
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+  },
+}));
 
-export const TabNavWrapper = styled(Box)({
+export const TabNavWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-start',
   gap: '16px',
   width: 1200,
-});
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+  },
+}));
 
 export const TabNav = styled(Box)({
   position: 'relative',
@@ -31,7 +37,7 @@ export const TabNav = styled(Box)({
 
 export const TabItem = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'active',
-})<{ active: boolean }>(({ active: _ }) => ({
+})<{ active: boolean }>(() => ({
   display: 'flex',
   flexDirection: 'row',
   justifyContent: 'center',
@@ -56,8 +62,8 @@ export const TabItemText = styled(Typography, {
 }));
 
 export const TabIndicator = styled(Box, {
-  shouldForwardProp: (prop) => prop !== 'indicatorLeft',
-})<{ indicatorLeft: number }>(({ indicatorLeft }) => ({
+  shouldForwardProp: (prop) => prop !== 'indicatorLeft' && prop !== 'isSecond',
+})<{ indicatorLeft: number; isSecond: boolean }>(({ indicatorLeft, isSecond, theme }) => ({
   position: 'absolute',
   height: 4,
   width: 240,
@@ -66,4 +72,8 @@ export const TabIndicator = styled(Box, {
   left: indicatorLeft,
   borderRadius: 2,
   transition: 'left 0.2s ease',
+  [theme.breakpoints.down('md')]: {
+    width: '50%',
+    left: isSecond ? '50%' : 0,
+  },
 }));

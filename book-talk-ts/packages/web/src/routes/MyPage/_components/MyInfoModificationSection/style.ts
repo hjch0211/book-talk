@@ -1,13 +1,16 @@
-import styled from '@emotion/styled';
 import { Box, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
-export const PasswordSection = styled(Box)({
+export const PasswordSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   gap: '30px',
   width: 1200,
-});
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+  },
+}));
 
 export const ProfileChipGroup = styled(Box)({
   display: 'flex',
@@ -27,15 +30,18 @@ export const SectionTitle = styled(Typography)({
   color: '#000000',
 });
 
-export const FormContainer = styled('form')({
+export const FormContainer = styled('form')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-end',
   gap: '24px',
   width: 384,
-});
+  [theme.breakpoints.down('sm')]: {
+    width: '100%',
+  },
+}));
 
-export const InputField = styled('input')({
+export const InputField = styled('input')(({ theme }) => ({
   boxSizing: 'border-box',
   width: 384,
   height: 49,
@@ -53,7 +59,10 @@ export const InputField = styled('input')({
   '&::placeholder': {
     color: '#B6B6B6',
   },
-});
+  [theme.breakpoints.down('sm')]: {
+    width: '100%',
+  },
+}));
 
 export const ErrorText = styled(Typography)({
   fontFamily: 'S-Core Dream',
@@ -158,7 +167,7 @@ export const DeleteConfirmButton = styled('button')({
   },
 });
 
-export const SubmitButton = styled('button')({
+export const SubmitButton = styled('button')(({ theme }) => ({
   boxSizing: 'border-box',
   display: 'flex',
   flexDirection: 'row',
@@ -185,7 +194,10 @@ export const SubmitButton = styled('button')({
     color: '#B0B0B0',
     cursor: 'not-allowed',
   },
-});
+  [theme.breakpoints.down('sm')]: {
+    width: '100%',
+  },
+}));
 
 export const FieldLabel = styled(Typography)({
   fontFamily: 'S-Core Dream',

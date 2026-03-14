@@ -1,13 +1,16 @@
-import styled from '@emotion/styled';
 import { Box, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
-export const DebateSection = styled(Box)({
+export const DebateSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   gap: '30px',
   width: 1200,
-});
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+  },
+}));
 
 export const SectionTitle = styled(Typography)({
   fontFamily: 'S-Core Dream',
