@@ -30,6 +30,7 @@
     "@tiptap/suggestion": "^3.10.1",
     "dayjs": "^1.11.19",
     "fast-json-patch": "^3.1.1",
+    "framer-motion": "^12.36.0",
     "react": "^19.2.3",
     "react-dom": "^19.2.3",
     "react-hook-form": "^7.71.2",
