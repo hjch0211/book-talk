@@ -1,16 +1,20 @@
 import { Box, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
-export const ContentWrapper = styled(Box)({
+export const ContentWrapper = styled(Box)(({ theme }) => ({
   width: '100%',
   padding: '70px 120px 80px',
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   gap: '70px',
-});
+  [theme.breakpoints.down('md')]: {
+    padding: '40px 24px 60px',
+    gap: '40px',
+  },
+}));
 
-export const SearchRow = styled(Box)({
+export const SearchRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
   justifyContent: 'center',
@@ -19,11 +23,22 @@ export const SearchRow = styled(Box)({
   gap: '234px',
   width: 1187,
   height: 48,
-});
+  [theme.breakpoints.down('md')]: {
+    flexDirection: 'column',
+    padding: '0',
+    gap: '12px',
+    width: '100%',
+    height: 'auto',
+    alignItems: 'center',
+  },
+}));
 
-export const CreateButtonWrapper = styled(Box)({
+export const CreateButtonWrapper = styled(Box)(({ theme }) => ({
   width: 180,
-});
+  [theme.breakpoints.down('md')]: {
+    width: '350px',
+  },
+}));
 
 export const SearchResultLabel = styled(Typography)({
   fontFamily: "'S-Core Dream', sans-serif",
@@ -51,13 +66,16 @@ export const DebateSectionWrapper = styled(Box)({
   gap: '40px',
 });
 
-export const EmptyStateWrapper = styled(Box)({
+export const EmptyStateWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   gap: '30px',
   width: 557,
-});
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+  },
+}));
 
 export const EmptyStateText = styled(Typography)({
   fontFamily: "'S-Core Dream', sans-serif",

@@ -9,17 +9,27 @@ export const DebateListSectionRoot = styled(Box)({
   gap: '80px',
 });
 
-export const CardGrid = styled(Box)({
+export const CardGrid = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   gap: '48px',
   minHeight: '830px',
-});
+  [theme.breakpoints.down('md')]: {
+    gap: '24px',
+    minHeight: 'unset',
+    alignItems: 'center',
+  },
+}));
 
-export const CardRow = styled(Box)({
+export const CardRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   gap: '24px',
-});
+  [theme.breakpoints.down('md')]: {
+    flexWrap: 'wrap',
+    gap: '16px',
+    justifyContent: 'center',
+  },
+}));
 
 export const PaginationWrapper = styled(Box)({
   display: 'flex',
