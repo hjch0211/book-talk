@@ -224,9 +224,10 @@ export const ExampleCard = styled('div')(({ theme }) => ({
 
 export const ExampleCardImage = styled('img')({
   width: 'fit-content',
+  maxWidth: '100%',
   height: '100%',
   objectFit: 'contain',
-  borderRadius: '22px',
+  borderRadius: '10px',
   display: 'block',
 });
 
@@ -298,26 +299,32 @@ export const ProcessStep = styled('div')(({ theme }) => ({
   },
 }));
 
-export const ProcessTabs = styled('div')({
+export const ProcessTabs = styled('div')(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
   flexWrap: 'wrap',
   alignItems: 'center',
   alignContent: 'flex-start',
   rowGap: '0',
-});
+  [theme.breakpoints.down('md')]: {
+    gap: '4px',
+  },
+}));
 
-export const ProcessTabConnector = styled('div')({
+export const ProcessTabConnector = styled('div')(({ theme }) => ({
   width: '18px',
   height: '0',
   border: '2px solid #D9D9D9',
-});
+  [theme.breakpoints.down('md')]: {
+    width: '8px',
+  },
+}));
 
 interface TabProps {
   $active: boolean;
 }
 
-export const ProcessTab = styled('div')<TabProps>(({ $active }) => ({
+export const ProcessTab = styled('div')<TabProps>(({ $active, theme }) => ({
   boxSizing: 'border-box',
   display: 'flex',
   justifyContent: 'center',
@@ -336,6 +343,12 @@ export const ProcessTab = styled('div')<TabProps>(({ $active }) => ({
   color: '#262626',
   flex: 'none',
   flexGrow: 0,
+  [theme.breakpoints.down('md')]: {
+    fontSize: '13px',
+    padding: '4px 12px',
+    height: '30px',
+    letterSpacing: '0.3px',
+  },
 }));
 
 interface ContentProps {
@@ -385,7 +398,7 @@ export const ProcessImagePlaceholder = styled('div')<PlaceholderProps>(({ $prepa
         fontWeight: 500,
         letterSpacing: '0.3px',
         opacity: 0.6,
-      },
+      }
 );
 
 interface DescriptionProps {
@@ -465,8 +478,7 @@ export const ProcessBulletList = styled('div')({
   gap: '10px',
 });
 
-/* ─── Footer ─── */
-export const FooterContainer = styled('footer')(({ theme }) => ({
+export const FooterContainer = styled('footer')({
   position: 'relative',
   display: 'flex',
   flexDirection: 'column',
@@ -475,35 +487,11 @@ export const FooterContainer = styled('footer')(({ theme }) => ({
   padding: '24px 0',
   bottom: '0',
   background: 'linear-gradient(180deg, #FFFFFF 5%, #8E99FF 100%)',
-  [theme.breakpoints.down('sm')]: {
-    padding: '24px',
-  },
-}));
+});
 
-export const FooterBigText = styled('div')(({ theme }) => ({
+export const FooterBigText = styled('img')({
   width: '100%',
-  bottom: '100px',
-  textAlign: 'center',
-  fontFeatureSettings: "'liga' off, 'clig' off",
-  WebkitTextStrokeWidth: '2px',
-  WebkitTextStrokeColor: '#FFF',
-  fontSize: '300px',
-  fontStyle: 'normal',
-  fontWeight: 900,
-  lineHeight: '150%',
-  letterSpacing: '-17px',
-  color: 'transparent',
-  whiteSpace: 'nowrap',
-  userSelect: 'none',
-  [theme.breakpoints.down('md')]: {
-    fontSize: '150px',
-    letterSpacing: '-8px',
-  },
-  [theme.breakpoints.down('sm')]: {
-    fontSize: '80px',
-    letterSpacing: '-4px',
-  },
-}));
+});
 
 export const FooterLinks = styled('div')(({ theme }) => ({
   display: 'flex',

@@ -1,3 +1,4 @@
+import footerText from '@src/assets/landing/footer-text.png';
 import heroDeco1 from '@src/assets/landing/hero-deco-1.svg';
 import heroDeco2 from '@src/assets/landing/hero-deco-2.svg';
 import landingExample1 from '@src/assets/landing/landing-example-1.png';
@@ -116,7 +117,7 @@ export function LandingPage() {
                 <ProcessTab $active={false}>2 라운드</ProcessTab>
               </ProcessTabs>
               <ProcessContent>
-                <ExampleCard sx={{ width: { xs: '100%', md: '662px' }, height: { xs: '300px', md: '470px' } }}>
+                <ExampleCard sx={{ width: { sm: '100%', md: '662px' } }}>
                   <ExampleCardImage src={preparationExample} alt="발표 페이지 예시" />
                 </ExampleCard>
                 <ProcessDescription>
@@ -153,7 +154,7 @@ export function LandingPage() {
                     다음 사람에게 발표를 넘깁니다.
                   </ProcessBodyText>
                 </ProcessDescription>
-                <ExampleCard sx={{ width: { xs: '100%', md: '662px' }, height: { xs: '300px', md: '469px' } }}>
+                <ExampleCard sx={{ width: { sm: '100%', md: '662px' } }}>
                   <ExampleCardImage src={round1Example} alt="1라운드 발표자 화면" />
                 </ExampleCard>
               </ProcessContent>
@@ -169,7 +170,7 @@ export function LandingPage() {
                 <ProcessTab $active>2 라운드</ProcessTab>
               </ProcessTabs>
               <ProcessContent>
-                <ExampleCard sx={{ width: { xs: '100%', md: '661px' }, height: { xs: '300px', md: '470px' } }}>
+                <ExampleCard sx={{ width: { sm: '100%', md: '661px' } }}>
                   <ExampleCardImage src={round2Example} alt="2라운드 자유토론 화면" />
                 </ExampleCard>
                 <ProcessDescription>
@@ -201,7 +202,7 @@ export function LandingPage() {
       </ProcessOuter>
 
       <FooterContainer>
-        <FooterBigText>BOOKTALK</FooterBigText>
+        <FooterBigText src={footerText} alt="푸터 텍스트" />
         <FooterLinks>
           <FooterMenuGroup>
             <FooterNavLink to="/privacy">개인정보처리방침</FooterNavLink>
