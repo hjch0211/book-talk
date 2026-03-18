@@ -14,12 +14,12 @@ enum class WSResponseMessageType {
     S_CHAT_MESSAGE,
     S_SPEAKER_UPDATE,
     S_DEBATE_ROUND_UPDATE,
-    S_AI_CHAT_COMPLETED,
     S_VOICE_JOIN,
     S_VOICE_OFFER,
     S_VOICE_ANSWER,
     S_VOICE_ICE_CANDIDATE,
     S_DEBATE_START_NOTIFIED,
+    S_AI_CHAT_COMPLETED,
 }
 
 data class CreateResponse(

@@ -1,44 +1,94 @@
-import styled from '@emotion/styled';
+import { keyframes } from '@emotion/react';
+import { Box } from '@mui/material';
+import { styled as muiStyled } from '@mui/material/styles';
 
-export const AiChatContainer = styled.div`
+// ---------------------------------------------------------------------------
+// Keyframes
+// ---------------------------------------------------------------------------
+
+const fadeInUp = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
+
+export const AiChatContainer = muiStyled(Box)(({ theme }) => ({
+  position: 'relative',
+  zIndex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: '100%',
+  minHeight: '100vh',
+  padding: '60px 24px 80px',
+  [theme.breakpoints.down('sm')]: {
+    padding: '40px 16px 60px',
+  },
+}));
+
+export const StepContainer = muiStyled(Box)`
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
-  min-height: 100vh;
-  background: #f5f5f5;
-  padding: 40px 20px;
+  height: 100%;
+  animation: ${fadeInUp} 0.45s ease both;
 `;
 
-export const AiChatHeader = styled.h1`
-  font-family: 'S-Core Dream', sans-serif;
-  font-weight: 500;
-  font-size: 24px;
-  color: #262626;
-  margin: 0 0 24px 0;
-`;
+// ---------------------------------------------------------------------------
+// Debate step
+// ---------------------------------------------------------------------------
 
-export const SetupCard = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 24px;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  width: 100%;
-  max-width: 700px;
-  margin-bottom: 24px;
-`;
+export const StepTitle = muiStyled('h2')({
+  fontFamily: "'Gaegu', sans-serif",
+  fontWeight: 500,
+  fontSize: 32,
+  color: '#262626',
+  marginBottom: 32,
+  textAlign: 'center',
+  margin: '0 0 32px',
+});
 
-export const SetupRow = styled.div`
-  display: flex;
-  gap: 12px;
-  align-items: center;
-`;
+export const DebateCarousel = muiStyled(Box)({
+  display: 'flex',
+  overflowX: 'auto',
+  scrollSnapType: 'x mandatory',
+  gap: 4,
+  width: '100%',
+  height: '100%',
+  paddingBottom: 12,
+  marginBottom: 24,
+  scrollbarWidth: 'none',
+  msOverflowStyle: 'none',
+  '&::-webkit-scrollbar': { display: 'none' },
+});
 
-export const StatusText = styled.span<{ $connected?: boolean }>`
-  font-family: 'S-Core Dream', sans-serif;
-  font-size: 14px;
-  color: ${({ $connected }) => ($connected ? '#4CAF50' : '#9E9E9E')};
-`;
+export const DebateCardWrapper = muiStyled(Box)({
+  flex: '0 0 calc(50% - 8px)',
+  scrollSnapAlign: 'start',
+  cursor: 'pointer',
+  width: 'fit-content',
+  transition: 'border-color 0.2s',
+  '@media (max-width: 600px)': {
+    flex: '0 0 calc(82% - 8px)',
+  },
+});
+
+export const LoadingWrapper = muiStyled(Box)({
+  display: 'flex',
+  justifyContent: 'center',
+  alignItems: 'center',
+  width: '100%',
+  minHeight: 200,
+  marginBottom: 24,
+});
+
+export const NavigationRow = muiStyled(Box)({
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  gap: 12,
+  marginTop: 16,
+  width: '100%',
+  maxWidth: 420,
+});

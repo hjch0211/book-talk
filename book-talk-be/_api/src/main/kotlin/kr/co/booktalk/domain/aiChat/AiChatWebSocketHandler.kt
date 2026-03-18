@@ -40,8 +40,8 @@ class AiChatWebSocketHandler(
                     handleHeartbeat(session)
                 }
 
-                WSAiChatRequestMessageType.C_AI_CHAT.name -> {
-                    handleAiChat(session, objectMapper.convertValue(raw, AiChatWsRequest::class.java))
+                WSAiChatRequestMessageType.C_SAVE_CHAT.name -> {
+                    handleSaveChat(session, objectMapper.convertValue(raw, SaveChatWsRequest::class.java))
                 }
             }
         } catch (e: Exception) {
@@ -63,11 +63,12 @@ class AiChatWebSocketHandler(
         }
     }
 
-    private fun handleAiChat(session: WebSocketSession, request: AiChatWsRequest) {
+    private fun handleSaveChat(session: WebSocketSession, request: SaveChatWsRequest) {
         val payload = request.payload
+        val accountId = session.attributes["accountId"] as? String ?: return
 
         try {
-            aiChatService.chat(AiChatRequest(chatId = payload.chatId, message = payload.message))
+            aiChatService.saveChat(SaveChatRequest(chatId = payload.chatId, message = payload.message, role = payload.role, accountId = accountId))
         } catch (e: Exception) {
             logger.error(e) { "AI 채팅 처리 실패: chatId=${payload.chatId}" }
         }

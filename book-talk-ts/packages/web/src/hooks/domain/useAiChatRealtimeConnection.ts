@@ -21,8 +21,8 @@ export const useAiChatRealtimeConnection = () => {
     });
   });
 
-  /** AI 채팅 완료 핸들러 */
-  const onAiChatCompleted = useEffectEvent((chatId: string) => {
+  /** 채팅 저장 완료 핸들러 */
+  const onChatSaved = useEffectEvent((chatId: string) => {
     void queryClient.invalidateQueries({
       queryKey: findOneAiChatQueryOptions(chatId).queryKey,
     });
@@ -41,7 +41,7 @@ export const useAiChatRealtimeConnection = () => {
       onConnectionStatus: (connected: boolean) => {
         setIsConnected(connected);
       },
-      onAiChatCompleted,
+      onChatSaved,
       onUserMessageSaved,
     });
   });
@@ -58,9 +58,9 @@ export const useAiChatRealtimeConnection = () => {
   }, [isConnected]);
 
   /** AI 채팅 메시지 전송 */
-  const sendAiChat = useEffectEvent((chatId: string, message: string) => {
+  const sendAiChat = useEffectEvent((chatId: string, message: string, role: 'user' | 'assistant' = 'user') => {
     if (!wsClientRef.current?.isConnected()) return;
-    wsClientRef.current.sendAiChat(chatId, message);
+    wsClientRef.current.sendAiChat(chatId, message, role);
   });
 
   /** 마운트 시 WebSocket 자동 연결, 언마운트 시 자동 해제 */

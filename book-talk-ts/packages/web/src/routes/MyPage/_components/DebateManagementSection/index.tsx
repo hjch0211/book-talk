@@ -1,6 +1,6 @@
 import { Box, CircularProgress } from '@mui/material';
-import { SuspenseErrorBoundary } from '@src/components';
 import { AppButton } from '@src/components/molecules/AppButton';
+import { SuspenseErrorBoundary } from '@src/components/molecules/SuspenseErrorBoundary';
 import { DebateCard } from '@src/components/organisms/DebateCard';
 import { DebateCardSkeleton } from '@src/components/organisms/DebateCard/skeleton.tsx';
 import { type FindAllDebateInfo, myPageDebatesQueryOptions } from '@src/externals/debate';

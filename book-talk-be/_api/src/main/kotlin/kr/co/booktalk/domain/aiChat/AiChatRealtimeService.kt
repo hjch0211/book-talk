@@ -38,9 +38,9 @@ class AiChatRealtimeService(
         sendToSession(accountId, objectMapper.writeValueAsString(response))
     }
 
-    fun sendAiChatCompleted(chatId: String, accountId: String) {
-        val response = AiChatCompletedResponse(
-            payload = AiChatCompletedResponse.Payload(chatId = chatId)
+    fun sendChatSaved(chatId: String, accountId: String) {
+        val response = ChatSavedResponse(
+            payload = ChatSavedResponse.Payload(chatId = chatId)
         )
         sendToSession(accountId, objectMapper.writeValueAsString(response))
     }

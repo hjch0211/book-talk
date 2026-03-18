@@ -10,7 +10,8 @@ data class CreateAiChatResponse(
 data class FindOneAiChatResponse(
     val chatId: String,
     val debateId: String,
-    val persona: String,
+    val personaId: String,
+    val agentId: String,
     val member: MemberInfo,
     val messages: List<MessageInfo>,
     val createdAt: Instant,
@@ -39,10 +40,10 @@ data class UserMessageSavedResponse(
     )
 }
 
-data class AiChatCompletedResponse(
+data class ChatSavedResponse(
     override val payload: Payload
-) : WebSocketMessage<AiChatCompletedResponse.Payload>() {
-    override val type: String = WSAiChatResponseMessageType.S_AI_CHAT_COMPLETED.name
+) : WebSocketMessage<ChatSavedResponse.Payload>() {
+    override val type: String = WSAiChatResponseMessageType.S_CHAT_SAVED.name
 
     data class Payload(
         val chatId: String
@@ -51,5 +52,5 @@ data class AiChatCompletedResponse(
 
 enum class WSAiChatResponseMessageType {
     S_USER_MESSAGE_SAVED,
-    S_AI_CHAT_COMPLETED,
+    S_CHAT_SAVED,
 }

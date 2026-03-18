@@ -15,7 +15,7 @@ import {
 } from '@mui/material';
 import signedProfileSvg from '@src/assets/header/signed-profile.svg';
 import unsignedProfileSvg from '@src/assets/header/unsigned-profile.svg';
-import { SuspenseErrorBoundary } from '@src/components';
+import { SuspenseErrorBoundary } from '@src/components/molecules/SuspenseErrorBoundary';
 import { meQueryOption } from '@src/externals/account';
 import { signOut } from '@src/externals/auth';
 import { clearTokens } from '@src/externals/client';

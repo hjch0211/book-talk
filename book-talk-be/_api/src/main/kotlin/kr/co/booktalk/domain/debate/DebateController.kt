@@ -10,7 +10,6 @@ class DebateController(
     private val debateService: DebateService,
     private val debateRoundSpeakerService: DebateRoundSpeakerService,
     private val debateChatService: DebateChatService,
-    private val debateRealtimeService: DebateRealtimeService
 ) {
     /** 토론 목록 조회 */
     @GetMapping("/debates")
@@ -88,5 +87,4 @@ class DebateController(
     fun getChats(@PathVariable debateId: String, authAccount: AuthAccount): HttpResult<List<ChatResponse>> {
         return debateChatService.findByDebateId(debateId, authAccount).toResult()
     }
-
 }

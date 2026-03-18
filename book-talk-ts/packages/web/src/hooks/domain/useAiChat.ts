@@ -27,8 +27,8 @@ export const useAiChat = ({ chatId }: Props) => {
   });
 
   /** AI 메시지 전송 */
-  const handleSendMessage = useEffectEvent((message: string) => {
-    connection.sendAiChat(chatId, message);
+  const handleSendMessage = useEffectEvent((message: string, role: 'user' | 'assistant' = 'user') => {
+    connection.sendAiChat(chatId, message, role);
   });
 
   /** 채팅방 삭제 */

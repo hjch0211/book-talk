@@ -22,7 +22,8 @@ class AiChatEntity(
     @JoinColumn(name = "debate_id", nullable = false)
     val debate: DebateEntity,
 
-    val persona: String,
+    @Column(name = "persona_id", nullable = false, length = 50)
+    val personaId: String,
 ) : AuditableUuidEntity()
 
 @Transactional(readOnly = true)

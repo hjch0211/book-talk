@@ -1,69 +1,120 @@
-import { Button, FormControl, InputLabel, MenuItem, Select, TextField } from '@mui/material';
+import { CircularProgress, Typography } from '@mui/material';
+import { CrayonButton } from '@src/components/molecules/CrayonButton';
+import { DebateCardSkeleton } from '@src/components/organisms/DebateCard/skeleton.tsx';
+import { AiPageRoot } from '@src/components/templates/AiPageRoot';
+import { PERSONAS } from '@src/constants/persona.ts';
 import { createAiChat } from '@src/externals/aiChat';
-import { useMutation } from '@tanstack/react-query';
+import { findAllDebatesQueryOptions } from '@src/externals/debate';
+import { useToast } from '@src/hooks';
+import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import PageContainer from '../../components/templates/PageContainer';
-import { AiChatContainer, AiChatHeader, SetupCard, SetupRow } from './style';
+import { DebateCarousel3D } from './_components/DebateCarousel3D';
+import { PersonaCarousel3D } from './_components/PersonaCarousel3D';
+import { WelcomeStep } from './_components/WelcomeStep';
+import {
+  AiChatContainer,
+  DebateCardWrapper,
+  DebateCarousel,
+  LoadingWrapper,
+  NavigationRow,
+  StepContainer,
+  StepTitle,
+} from './style';
 
-const PERSONA_OPTIONS = [{ value: 'a', label: 'A' }];
+type Step = 'welcome' | 'debate' | 'persona';
 
 export function AiChatPage() {
+  const [step, setStep] = useState<Step>('welcome');
   const [debateId, setDebateId] = useState('');
   const [persona, setPersona] = useState('');
-  const navigate = useNavigate();
 
-  /** 채팅방 생성 */
-  const createMutation = useMutation({
+  const navigate = useNavigate();
+  const { toast } = useToast();
+
+  const { data: debatesData, isLoading: isDebatesLoading } = useQuery(
+    findAllDebatesQueryOptions({ page: 0, size: 8 })
+  );
+  const debates = debatesData?.page.content ?? [];
+
+  const { mutate: handleCreateChat, isPending } = useMutation({
     mutationFn: () => createAiChat({ debateId, persona }),
     onSuccess: (data) => {
       navigate(`/ai-chat/${data.chatId}`);
     },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : '채팅방 생성에 실패했습니다.');
+    },
   });
 
-  const handleCreateChat = () => {
-    if (!debateId || !persona) return;
-    createMutation.mutate();
-  };
-
   return (
-    <PageContainer>
-      <AiChatContainer>
-        <AiChatHeader>AI Chat</AiChatHeader>
+    <AiPageRoot>
+      {step === 'welcome' && (
+        <AiChatContainer>
+          <StepContainer>
+            <WelcomeStep onStart={() => setStep('debate')} />
+          </StepContainer>
+        </AiChatContainer>
+      )}
 
-        <SetupCard>
-          <SetupRow>
-            <TextField
-              size="small"
-              label="Debate ID"
-              value={debateId}
-              onChange={(e) => setDebateId(e.target.value)}
-              sx={{ flex: 1, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-            />
-            <FormControl
-              size="small"
-              sx={{ minWidth: 160, '& .MuiOutlinedInput-root': { borderRadius: '8px' } }}
-            >
-              <InputLabel>Persona</InputLabel>
-              <Select value={persona} label="Persona" onChange={(e) => setPersona(e.target.value)}>
-                {PERSONA_OPTIONS.map((option) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
+      {step === 'debate' && (
+        <AiChatContainer>
+          <StepContainer>
+            <StepTitle>토론 선택하기</StepTitle>
+            {isDebatesLoading ? (
+              <DebateCarousel>
+                {[0, 1, 2, 3].map((i) => (
+                  <DebateCardWrapper key={i} sx={{ pointerEvents: 'none' }}>
+                    <DebateCardSkeleton />
+                  </DebateCardWrapper>
                 ))}
-              </Select>
-            </FormControl>
-            <Button
-              variant="outlined"
-              onClick={handleCreateChat}
-              disabled={createMutation.isPending || !debateId || !persona}
-              sx={{ borderRadius: '8px', textTransform: 'none' }}
-            >
-              {createMutation.isPending ? '생성중...' : '채팅방 생성'}
-            </Button>
-          </SetupRow>
-        </SetupCard>
-      </AiChatContainer>
-    </PageContainer>
+              </DebateCarousel>
+            ) : debates.length === 0 ? (
+              <LoadingWrapper>
+                <Typography sx={{ color: '#999', fontFamily: "'S-Core Dream', sans-serif" }}>
+                  참여 가능한 토론이 없습니다.
+                </Typography>
+              </LoadingWrapper>
+            ) : (
+              <DebateCarousel3D
+                key={debates.map((d) => d.id).join(',')}
+                debates={debates}
+                selectedId={debateId}
+                onSelect={setDebateId}
+              />
+            )}
+            <NavigationRow>
+              <CrayonButton $variant="secondary" onClick={() => setStep('welcome')}>
+                ← 이전
+              </CrayonButton>
+              <CrayonButton disabled={!debateId} onClick={() => setStep('persona')}>
+                다음 →
+              </CrayonButton>
+            </NavigationRow>
+          </StepContainer>
+        </AiChatContainer>
+      )}
+
+      {step === 'persona' && (
+        <AiChatContainer>
+          <StepContainer>
+            <StepTitle>페르소나 선택하기</StepTitle>
+            <PersonaCarousel3D personas={PERSONAS} selectedValue={persona} onSelect={setPersona} />
+            <NavigationRow>
+              <CrayonButton $variant="secondary" onClick={() => setStep('debate')}>
+                ← 이전
+              </CrayonButton>
+              <CrayonButton disabled={!persona || isPending} onClick={() => handleCreateChat()}>
+                {isPending ? (
+                  <CircularProgress size={16} sx={{ color: '#8b7cf8' }} />
+                ) : (
+                  '채팅방 생성 →'
+                )}
+              </CrayonButton>
+            </NavigationRow>
+          </StepContainer>
+        </AiChatContainer>
+      )}
+    </AiPageRoot>
   );
 }

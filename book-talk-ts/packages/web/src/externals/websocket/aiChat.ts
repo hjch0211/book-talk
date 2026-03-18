@@ -1,5 +1,5 @@
 import {
-  AiChatCompletedPayloadSchema,
+  ChatSavedPayloadSchema,
   UserMessageSavedPayloadSchema,
   WSResponseMessageType,
 } from './schema';
@@ -35,12 +35,12 @@ export class AiChatWebSocketClient {
     return this.ws?.readyState === WebSocket.OPEN;
   }
 
-  sendAiChat(chatId: string, message: string): void {
+  sendAiChat(chatId: string, message: string, role: 'user' | 'assistant' = 'user'): void {
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(
         JSON.stringify({
           type: 'C_AI_CHAT',
-          payload: { chatId, message },
+          payload: { chatId, message, role },
         })
       );
     }
@@ -85,10 +85,10 @@ export class AiChatWebSocketClient {
     switch (message.type) {
       case WSResponseMessageType.S_HEARTBEAT_ACK:
         break;
-      case WSResponseMessageType.S_AI_CHAT_COMPLETED: {
-        const parsed = AiChatCompletedPayloadSchema.safeParse(message.payload);
-        if (parsed.success && this.handlers.onAiChatCompleted) {
-          this.handlers.onAiChatCompleted(parsed.data.chatId);
+      case WSResponseMessageType.S_CHAT_SAVED: {
+        const parsed = ChatSavedPayloadSchema.safeParse(message.payload);
+        if (parsed.success && this.handlers.onChatSaved) {
+          this.handlers.onChatSaved(parsed.data.chatId);
         }
         break;
       }
@@ -117,6 +117,6 @@ export class AiChatWebSocketClient {
 
 export interface AiChatWebSocketHandlers {
   onConnectionStatus?: (connected: boolean) => void;
-  onAiChatCompleted?: (chatId: string) => void;
+  onChatSaved?: (chatId: string) => void;
   onUserMessageSaved?: (chatId: string) => void;
 }

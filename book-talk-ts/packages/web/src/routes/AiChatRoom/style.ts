@@ -6,6 +6,11 @@ const dotPulse = keyframes`
   40% { opacity: 1; }
 `;
 
+const fadeInUp = keyframes`
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
+
 export const AiChatRoomContainer = styled.div`
   width: 100%;
   max-width: 1440px;
@@ -13,6 +18,9 @@ export const AiChatRoomContainer = styled.div`
   margin: 0 auto;
   display: flex;
   flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  animation: ${fadeInUp} 0.45s ease both;
 `;
 
 export const Header = styled.div`
@@ -21,8 +29,8 @@ export const Header = styled.div`
   align-items: center;
   justify-content: space-between;
   max-width: 1440px;
-  padding: 80px 120px 24px 120px;
-  background: linear-gradient(360deg, rgba(255, 255, 255, 0) 0%, #ffffff 9.13%);
+  width: 100%;
+  padding: 60px 60px 24px 60px;
   z-index: 10;
 `;
 
@@ -39,7 +47,7 @@ export const HeaderTitle = styled.h1`
   font-size: 24px;
   line-height: 125%;
   letter-spacing: 0.3px;
-  color: #262626;
+  color: #1a2a4a;
 `;
 
 export const DeleteButton = styled.button`
@@ -62,7 +70,7 @@ export const DeleteButton = styled.button`
   transition: background-color 0.2s;
 
   &:hover {
-    background-color: rgba(0, 0, 0, 0.04);
+    background-color: rgba(107, 140, 222, 0.08);
   }
 `;
 
@@ -72,9 +80,15 @@ export const ChatArea = styled.div`
   margin: 0 120px;
   flex: 1;
   max-width: 1440px;
+  width: 100%;
   min-height: 0;
-  background: #ffffff;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(200, 210, 240, 0.4);
+  box-shadow:
+    0 8px 32px rgba(80, 100, 160, 0.08),
+    0 2px 8px rgba(107, 140, 222, 0.1);
   border-radius: 24px;
   overflow: hidden;
 `;
@@ -102,7 +116,7 @@ export const MessageRow = styled.div<{ $isUser: boolean }>`
   gap: 12px;
   width: 100%;
   padding: 4px 0;
-  filter: drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.1));
+  filter: drop-shadow(0px 4px 4px rgba(80, 100, 160, 0.08));
 `;
 
 export const AvatarColumn = styled.div`
@@ -117,8 +131,8 @@ export const AvatarCircle = styled.div<{ $isUser: boolean }>`
   width: 36px;
   height: 36px;
   border-radius: 50%;
-  background: ${({ $isUser }) => ($isUser ? '#EADDFF' : '#E0F2FE')};
-  color: ${({ $isUser }) => ($isUser ? '#4F378A' : '#0369A1')};
+  background: ${({ $isUser }) => ($isUser ? 'rgba(200, 210, 240, 0.5)' : 'rgba(107, 140, 222, 0.15)')};
+  color: ${({ $isUser }) => ($isUser ? '#4a6090' : '#2a4a8a')};
   display: flex;
   align-items: center;
   justify-content: center;
@@ -145,8 +159,8 @@ export const MessageBubble = styled.div`
   letter-spacing: 0.3px;
   white-space: pre-wrap;
   word-break: break-word;
-  background: #f5f5f5;
-  color: #262626;
+  background: rgba(238, 244, 255, 0.85);
+  color: #1a2a4a;
 `;
 
 export const MessageTime = styled.span`
@@ -163,11 +177,11 @@ export const LoadingDots = styled.div`
   align-self: flex-start;
   padding: 16px 24px;
   border-radius: 24px 24px 24px 2px;
-  background: #f5f5f5;
+  background: rgba(238, 244, 255, 0.85);
   font-family: 'S-Core Dream', sans-serif;
   font-weight: 600;
   font-size: 16px;
-  color: #262626;
+  color: #1a2a4a;
   display: flex;
   gap: 4px;
 
@@ -186,12 +200,13 @@ export const InputArea = styled.div`
   align-items: center;
   gap: 12px;
   padding: 20px 60px;
-  background: linear-gradient(360deg, #ffffff 89.9%, rgba(255, 255, 255, 0) 100%);
+  background: linear-gradient(360deg, rgba(255, 255, 255, 0.95) 89.9%, rgba(255, 255, 255, 0) 100%);
 `;
 
 export const InputBox = styled.div`
   flex: 1;
-  background-color: #e9e9e9;
+  background: rgba(238, 244, 255, 0.6);
+  border: 1px solid rgba(200, 210, 240, 0.5);
   border-radius: 16px;
   padding: 13px 23px;
   min-height: 45px;
@@ -210,12 +225,12 @@ export const InputBox = styled.div`
     font-size: 16px;
     line-height: 180%;
     letter-spacing: 0.3px;
-    color: #262626;
+    color: #1a2a4a;
     max-height: 90px;
     overflow-y: auto;
 
     &::placeholder {
-      color: #9d9d9d;
+      color: #9daac4;
     }
 
     &::-webkit-scrollbar {
@@ -237,7 +252,10 @@ export const SendButton = styled.button<{ $active: boolean }>`
   border-radius: 16px;
   cursor: ${({ $active }) => ($active ? 'pointer' : 'not-allowed')};
   background: ${({ $active }) =>
-    $active ? 'linear-gradient(110deg, #1A00E2 28.5%, #FF7544 86.82%)' : '#c4c4c4'};
+    $active
+      ? 'linear-gradient(110deg, #1A00E2 28.5%, #FF7544 86.82%)'
+      : 'rgba(200, 210, 240, 0.5)'};
+  font-family: 'Gaegu', cursive;
   transition: opacity 0.2s;
 
   & svg {
@@ -257,7 +275,7 @@ export const EmptyState = styled.div`
   align-items: center;
   justify-content: center;
   gap: 12px;
-  color: #9d9d9d;
+  color: #9daac4;
   font-family: 'S-Core Dream', sans-serif;
   font-weight: 200;
   font-size: 18px;

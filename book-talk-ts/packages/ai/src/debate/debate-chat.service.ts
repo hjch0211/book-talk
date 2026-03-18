@@ -26,11 +26,21 @@ export class DebateChatService {
 
   // TODO: stream 응답, 토큰 초과 시, 메시지 요약, retry 전략
   async chat(request: ChatRequest): Promise<void> {
-    const { message, chatId } = request;
+    const { message, chatId, role } = request;
 
     const chat = await this.chatRepository.findOneBy({ id: chatId });
     if (!chat) {
       throw new BadRequestException(`Chat not found: ${chatId}`);
+    }
+
+    if (role === 'assistant') {
+      await this.messageRepository.save({
+        chat: { id: chatId },
+        role: 'assistant',
+        content: message,
+        status: 'COMPLETED',
+      });
+      return;
     }
 
     const messages = await this.messageRepository.find({

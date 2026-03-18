@@ -7,23 +7,26 @@ data class CreateAiChatRequest(
     val persona: String,
 )
 
-data class AiChatRequest(
+data class SaveChatRequest(
     val chatId: String,
     val message: String,
+    val role: String = "user",
+    val accountId: String,
 )
 
-data class AiChatWsRequest(
+data class SaveChatWsRequest(
     override val payload: Payload
-) : WebSocketMessage<AiChatWsRequest.Payload>() {
-    override val type: String = WSAiChatRequestMessageType.C_AI_CHAT.name
+) : WebSocketMessage<SaveChatWsRequest.Payload>() {
+    override val type: String = WSAiChatRequestMessageType.C_SAVE_CHAT.name
 
     data class Payload(
         val chatId: String,
         val message: String,
+        val role: String = "user",
     )
 }
 
 enum class WSAiChatRequestMessageType {
     C_HEARTBEAT,
-    C_AI_CHAT,
+    C_SAVE_CHAT,
 }

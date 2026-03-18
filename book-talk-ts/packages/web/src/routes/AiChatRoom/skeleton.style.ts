@@ -5,7 +5,7 @@ export const SkeletonPageContainer = styled.div`
   position: relative;
   width: 100%;
   height: 100vh;
-  background: #ffffff;
+  background: radial-gradient(ellipse at 50% 0%, rgba(238, 244, 255, 0.85) 0%, rgba(248, 249, 252, 0.75) 60%, rgba(255, 255, 255, 0.65) 100%);
   display: flex;
   flex-direction: column;
 `;
@@ -48,8 +48,11 @@ export const SkeletonChatArea = styled.div`
   margin: 0 120px;
   flex: 1;
   min-height: 0;
-  background: #ffffff;
-  box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(200, 210, 240, 0.4);
+  box-shadow:
+    0 8px 32px rgba(80, 100, 160, 0.08),
+    0 2px 8px rgba(107, 140, 222, 0.1);
   border-radius: 24px;
   overflow: hidden;
 `;
@@ -63,7 +66,9 @@ export const SkeletonMessageList = styled.div`
   gap: 20px;
 `;
 
-export const SkeletonMessageBubble = styled(Skeleton)<{ $isUser: boolean }>`
+export const SkeletonMessageBubble = styled(Skeleton, {
+  shouldForwardProp: (prop) => prop !== '$isUser',
+})<{ $isUser: boolean }>`
   border-radius: ${({ $isUser }) => ($isUser ? '24px 24px 2px 24px' : '24px 24px 24px 2px')};
   align-self: ${({ $isUser }) => ($isUser ? 'flex-end' : 'flex-start')};
 `;

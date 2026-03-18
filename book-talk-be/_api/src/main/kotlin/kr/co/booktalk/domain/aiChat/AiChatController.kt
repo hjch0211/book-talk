@@ -33,10 +33,4 @@ class AiChatController(
     fun callbackUserMessageSaved(@PathVariable chatId: String) {
         aiChatService.onUserMessageSaved(chatId)
     }
-
-    /** AI 서버 - AI 채팅 완성 callback */
-    @PostMapping("/ai/chats/{chatId}/completion")
-    fun callbackAiChat(@PathVariable chatId: String) {
-        aiChatService.onChatCompleted(chatId)
-    }
 }
