@@ -221,6 +221,10 @@ export class DebateWebSocketClient {
       case WSResponseMessageType.S_DEBATE_ROUND_UPDATE:
         if (this.handlers.onDebateRoundUpdate) {
           this.handlers.onDebateRoundUpdate(message);
+          if (message.payload?.round.endedAt != null) {
+            this.handlers.onDebateClosed?.();
+            break;
+          }
 
           if (this.handlers.onSpeakerUpdate && message.payload?.currentSpeaker) {
             const speakerUpdate: SpeakerUpdateResponse = {
@@ -297,4 +301,5 @@ export interface DebateWebSocketHandlers {
   onChatMessage?: (chatId: number) => void;
   onDebateStartNotified?: () => void;
   onAiChatCompleted?: (chatId: string) => void;
+  onDebateClosed?: () => void;
 }

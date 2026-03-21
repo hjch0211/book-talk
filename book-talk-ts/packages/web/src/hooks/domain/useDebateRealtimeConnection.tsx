@@ -18,6 +18,7 @@ import { useModal, useToast, useWebRTC } from '@src/hooks';
 import AiSummarizationModal from '@src/routes/Debate/_components/modal/AiSummarizationModal.tsx';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export interface OnlineMember extends MemberInfo {
   isMe: boolean;
@@ -52,6 +53,7 @@ interface Props {
 export const useDebateRealtimeConnection = (props: Props) => {
   const { debateId, debate, onRoundStartBackdrop } = props;
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
 
   // WebSocket 상태
   const [onlineMembers, setOnlineMembers] = useState<OnlineMember[]>([]);
@@ -279,6 +281,12 @@ export const useDebateRealtimeConnection = (props: Props) => {
     }
   });
 
+  /** 토론 종료 */
+  const onDebateClosed = useEffectEvent(() => {
+    toast.info('토론이 종료되었습니다.');
+    navigate('/home');
+  });
+
   /** AI 채팅 완성 */
   const onAiChatCompleted = useEffectEvent((chatId: string) => {
     void queryClient.invalidateQueries({
@@ -327,6 +335,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
       },
       onSpeakerUpdate,
       onDebateRoundUpdate,
+      onDebateClosed,
       onVoiceSignaling: handleVoiceSignaling,
       onChatMessage,
       onDebateStartNotified,
