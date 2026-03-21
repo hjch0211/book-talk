@@ -1,13 +1,13 @@
 import DeleteIcon from '@mui/icons-material/Delete';
-import SendIcon from '@mui/icons-material/Send';
 import { AiPageRoot } from '@src/components/templates/AiPageRoot';
 import { meQueryOption } from '@src/externals/account';
 import { AiChatMessageStatus, findOneAiChatQueryOptions } from '@src/externals/aiChat';
 import { findOneDebateQueryOptions } from '@src/externals/debate';
 import { useAiChat } from '@src/hooks';
+import { ChatInput } from '@src/routes/Debate/_components/chat/ChatInput';
+import { ChatMessageList } from '@src/routes/Debate/_components/chat/ChatMessageList';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import type React from 'react';
-import { Suspense, useEffect, useEffectEvent, useRef, useState } from 'react';
+import { Suspense, useEffect, useEffectEvent, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { VoiceAgent } from './_components/VoiceAgent';
 import { AiChatRoomSkeleton } from './AiChatRoomSkeleton';
@@ -16,20 +16,15 @@ import {
   AvatarCircle,
   AvatarColumn,
   ChatArea,
+  ChatInputWrapper,
   DeleteButton,
   EmptyState,
   Header,
   HeaderLeft,
   HeaderTitle,
-  InputArea,
-  InputBox,
   LoadingDots,
-  MessageBubble,
-  MessageGroup,
   MessageList,
   MessageRow,
-  MessageTime,
-  SendButton,
 } from './style';
 
 export function AiChatRoomPage() {
@@ -45,12 +40,8 @@ export function AiChatRoomPage() {
 }
 
 function AiChatRoomContent({ chatId }: { chatId: string }) {
-  const [input, setInput] = useState('');
-  const messageEndRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
-
   const { isConnected, handleSendMessage, handleDeleteChat } = useAiChat({ chatId });
-  const { data: chatRoom } = useSuspenseQuery(findOneAiChatQueryOptions(chatId));
+  const { data: chatRoom, isFetching } = useSuspenseQuery(findOneAiChatQueryOptions(chatId));
   const { data: debate } = useSuspenseQuery(findOneDebateQueryOptions(chatRoom.debateId));
   const { data: me } = useSuspenseQuery(meQueryOption);
   const navigate = useNavigate();
@@ -64,12 +55,6 @@ function AiChatRoomContent({ chatId }: { chatId: string }) {
   );
 
   useEffect(() => {
-    if (chatRoom.messages.length > 0) {
-      messageEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-    }
-  });
-
-  useEffect(() => {
     setIsWaiting(chatRoom.messages.at(-1)?.status === AiChatMessageStatus.PENDING);
   }, [chatRoom.messages]);
 
@@ -77,31 +62,16 @@ function AiChatRoomContent({ chatId }: { chatId: string }) {
     if (!me?.id) handleNavigateToSignIn();
   }, [me]);
 
-  const handleSend = () => {
-    const trimmed = input.trim();
-    if (!trimmed || isWaiting) return;
-    handleSendMessage(trimmed);
-    setInput('');
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto';
-    }
-  };
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && !e.shiftKey && !e.nativeEvent.isComposing) {
-      e.preventDefault();
-      handleSend();
-    }
-  };
-
-  const handleInput = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInput(e.target.value);
-    const textarea = e.target;
-    textarea.style.height = 'auto';
-    textarea.style.height = `${textarea.scrollHeight}px`;
-  };
-
-  const isActive = input.trim().length > 0 && !isWaiting;
+  const chats = chatRoom.messages
+    .filter((msg) => msg.status !== AiChatMessageStatus.PENDING)
+    .map((msg, i) => ({
+      id: i,
+      debateId: chatRoom.debateId,
+      accountId: msg.role === 'user' ? (me?.id ?? '') : 'ai',
+      accountName: msg.role === 'user' ? chatRoom.member.accountName : 'AI',
+      content: msg.content,
+      createdAt: msg.createdAt,
+    }));
 
   if (!isConnected) return <AiChatRoomSkeleton />;
 
@@ -117,72 +87,44 @@ function AiChatRoomContent({ chatId }: { chatId: string }) {
       </Header>
 
       <ChatArea>
-        <VoiceAgent chatId={chatId} debateId={chatRoom.debateId} myId={me?.id || ''} agentId={chatRoom.agentId} />
+        <VoiceAgent
+          chatId={chatId}
+          debateId={chatRoom.debateId}
+          myId={me?.id || ''}
+          agentId={chatRoom.agentId}
+        />
         <MessageList>
-          {chatRoom.messages.length === 0 && !isWaiting && (
+          {chats.length === 0 && !isWaiting && (
             <EmptyState>메시지를 보내 대화를 시작하세요</EmptyState>
           )}
-          {chatRoom.messages.map((msg) => {
-            const isUser = msg.role === 'user';
-
-            if (msg.status === AiChatMessageStatus.PENDING) {
-              return (
-                <MessageRow key={msg.id} $isUser={false}>
-                  <AvatarColumn>
-                    <AvatarCircle $isUser={false}>AI</AvatarCircle>
-                  </AvatarColumn>
-                  <LoadingDots>
-                    <span>.</span>
-                    <span>.</span>
-                    <span>.</span>
-                  </LoadingDots>
-                </MessageRow>
-              );
-            }
-
-            return (
-              <MessageRow key={msg.id} $isUser={isUser}>
-                {!isUser && (
-                  <AvatarColumn>
-                    <AvatarCircle $isUser={false}>AI</AvatarCircle>
-                  </AvatarColumn>
-                )}
-                <MessageGroup $isUser={isUser}>
-                  <MessageBubble>{msg.content}</MessageBubble>
-                  <MessageTime>
-                    {new Date(msg.createdAt).toLocaleTimeString('ko-KR', {
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </MessageTime>
-                </MessageGroup>
-                {isUser && (
-                  <AvatarColumn>
-                    <AvatarCircle $isUser={true}>{chatRoom.member.accountName[0]}</AvatarCircle>
-                  </AvatarColumn>
-                )}
-              </MessageRow>
-            );
-          })}
-          <div ref={messageEndRef} />
+          <ChatMessageList
+            chats={chats}
+            isFetching={isFetching}
+            myAccountId={me?.id ?? ''}
+            members={[]}
+            presentations={[]}
+          />
+          {isWaiting && (
+            <MessageRow $isUser={false}>
+              <AvatarColumn>
+                <AvatarCircle $isUser={false}>AI</AvatarCircle>
+              </AvatarColumn>
+              <LoadingDots>
+                <span>.</span>
+                <span>.</span>
+                <span>.</span>
+              </LoadingDots>
+            </MessageRow>
+          )}
         </MessageList>
-
-        <InputArea>
-          <InputBox>
-            <textarea
-              ref={textareaRef}
-              placeholder="메시지를 입력하세요..."
-              value={input}
-              onChange={handleInput}
-              onKeyDown={handleKeyDown}
-              disabled={isWaiting}
-              rows={1}
-            />
-          </InputBox>
-          <SendButton $active={isActive} onClick={handleSend} disabled={!isActive}>
-            <SendIcon />
-          </SendButton>
-        </InputArea>
+        <ChatInputWrapper>
+          <ChatInput
+            isSending={isWaiting}
+            onSend={handleSendMessage}
+            members={[]}
+            presentations={[]}
+          />
+        </ChatInputWrapper>
       </ChatArea>
     </AiChatRoomContainer>
   );

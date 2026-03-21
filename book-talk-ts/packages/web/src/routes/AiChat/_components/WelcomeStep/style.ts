@@ -16,7 +16,6 @@ const fadeUp = keyframes`
   to   { opacity: 1; transform: translateY(0); }
 `;
 
-
 export const HeroArea = styled.div`
   position: relative;
   z-index: 1;
@@ -44,4 +43,3 @@ export const WelcomeSubtitle = styled.p`
   line-height: 1.7;
   z-index: 1;
 `;
-

@@ -35,11 +35,11 @@ export class AiChatWebSocketClient {
     return this.ws?.readyState === WebSocket.OPEN;
   }
 
-  sendAiChat(chatId: string, message: string, role: 'user' | 'assistant' = 'user'): void {
+  saveChat(chatId: string, message: string, role: 'user' | 'assistant' = 'user'): void {
     if (this.ws?.readyState === WebSocket.OPEN) {
       this.ws.send(
         JSON.stringify({
-          type: 'C_AI_CHAT',
+          type: 'C_SAVE_CHAT',
           payload: { chatId, message, role },
         })
       );

@@ -311,7 +311,6 @@ class DebateWebSocketHandler(
         }
 
         try {
-            logger.info { "음성 채팅 참여: debateId=${payload.debateId}, accountId=${payload.accountId}" }
             debateRealtimeService.broadcastVoiceJoin(payload.debateId, payload.accountId)
         } catch (e: Exception) {
             logger.error(e) { "음성 참여 처리 실패: debateId=${payload.debateId}, accountId=${payload.accountId}" }

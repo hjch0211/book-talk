@@ -193,16 +193,16 @@ export const CreateChatResponseSchema = z.object({
   createdAt: z.string(),
 });
 
-export const ChatResponseSchema = z.array(
-  z.object({
-    id: z.number(),
-    debateId: z.string(),
-    accountId: z.string(),
-    accountName: z.string(),
-    content: z.string(),
-    createdAt: z.string(),
-  })
-);
+export const ChatItemSchema = z.object({
+  id: z.number(),
+  debateId: z.string(),
+  accountId: z.string(),
+  accountName: z.string(),
+  content: z.string(),
+  createdAt: z.string(),
+});
+
+export const ChatResponseSchema = z.array(ChatItemSchema);
 
 export const FindAllDebateBookInfoSchema = z.object({
   title: z.string(),
@@ -259,4 +259,5 @@ export type CreateRoundSpeakerRequest = z.infer<typeof CreateRoundSpeakerRequest
 export type PatchRoundSpeakerRequest = z.infer<typeof PatchRoundSpeakerRequestSchema>;
 export type CreateChatRequest = z.infer<typeof CreateChatRequestSchema>;
 export type CreateChatResponse = z.infer<typeof CreateChatResponseSchema>;
+export type ChatItem = z.infer<typeof ChatItemSchema>;
 export type ChatResponse = z.infer<typeof ChatResponseSchema>;

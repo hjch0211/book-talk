@@ -63,14 +63,13 @@ export function Carousel3D<T extends Carousel3DItem>({
           };
 
           return (
-            <CardSlot
-              key={item.id}
-              $angle={angle}
-              $radius={radius}
-              $w={cardWidth}
-              $h={cardHeight}
-            >
-              <FloatWrapper $delay={floatDelay} role="button" tabIndex={0} onKeyDown={handleKeyDown}>
+            <CardSlot key={item.id} $angle={angle} $radius={radius} $w={cardWidth} $h={cardHeight}>
+              <FloatWrapper
+                $delay={floatDelay}
+                role="button"
+                tabIndex={0}
+                onKeyDown={handleKeyDown}
+              >
                 {renderCard(item, isSelected, selectCard)}
               </FloatWrapper>
             </CardSlot>

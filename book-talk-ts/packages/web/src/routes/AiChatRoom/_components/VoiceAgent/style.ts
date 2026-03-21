@@ -16,18 +16,12 @@ const idlePulse = keyframes`
   50%       { transform: scale(1.02); }
 `;
 
-const fadeIn = keyframes`
-  from { opacity: 0; transform: translateY(-8px); }
-  to   { opacity: 1; transform: translateY(0); }
-`;
-
 export const AgentWrapper = styled.div`
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 12px;
   padding: 28px 0 20px;
-  animation: ${fadeIn} 0.4s ease both;
 `;
 
 export const OrbButton = styled.button<{ $mode: 'idle' | 'speaking' | 'listening' | 'connecting' }>`
@@ -38,12 +32,14 @@ export const OrbButton = styled.button<{ $mode: 'idle' | 'speaking' | 'listening
   cursor: pointer;
   position: relative;
   background: ${({ $mode }) => {
-    if ($mode === 'speaking') return `
+    if ($mode === 'speaking')
+      return `
       radial-gradient(circle at 30% 22%, rgba(255,255,255,0.6) 0%, transparent 20%),
       radial-gradient(ellipse at 50% 50%, rgba(120,200,255,0.2) 40%, rgba(107,140,222,0.5) 70%, rgba(80,100,200,0.8) 100%),
       radial-gradient(circle at 50% 50%, #1a3a8a 0%, #3060d0 50%, #6090f0 100%)
     `;
-    if ($mode === 'listening') return `
+    if ($mode === 'listening')
+      return `
       radial-gradient(circle at 30% 22%, rgba(255,255,255,0.5) 0%, transparent 20%),
       radial-gradient(ellipse at 50% 50%, rgba(120,255,160,0.2) 40%, rgba(80,200,120,0.5) 70%, rgba(40,160,80,0.8) 100%),
       radial-gradient(circle at 50% 50%, #0a3020 0%, #1a7040 50%, #40c060 100%)

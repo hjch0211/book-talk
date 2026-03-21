@@ -24,7 +24,7 @@ export const useDebateChat = (props: Props) => {
   const queryClient = useQueryClient();
 
   // FREE 라운드이고 멤버일 때만 채팅 데이터 로드
-  const { data: chats = [] } = useQuery(
+  const { data: chats = [], isFetching } = useQuery(
     getChatsQueryOptions(debateId, isFreeRound, hasMyMemberInfo)
   );
   const createChatMutation = useMutation({
@@ -50,5 +50,6 @@ export const useDebateChat = (props: Props) => {
     chats: isFreeRound && hasMyMemberInfo ? chats : [],
     sendChat,
     isSending: createChatMutation.isPending,
+    isFetching,
   };
 };

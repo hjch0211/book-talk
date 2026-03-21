@@ -26,10 +26,12 @@ export const useAiChat = ({ chatId }: Props) => {
     },
   });
 
-  /** AI 메시지 전송 */
-  const handleSendMessage = useEffectEvent((message: string, role: 'user' | 'assistant' = 'user') => {
-    connection.sendAiChat(chatId, message, role);
-  });
+  /** 채팅 메시지 저장 */
+  const handleSendMessage = useEffectEvent(
+    (message: string, role: 'user' | 'assistant' = 'user') => {
+      connection.saveChat(chatId, message, role);
+    }
+  );
 
   /** 채팅방 삭제 */
   const handleDeleteChat = useEffectEvent(() => {
@@ -39,7 +41,7 @@ export const useAiChat = ({ chatId }: Props) => {
   return {
     /** AI 채팅 웹소켓 연결 상태 */
     isConnected: connection.isConnected,
-    /** AI 메시지 전송 */
+    /** 채팅 메시지 저장 */
     handleSendMessage,
     /** 채팅방 삭제 */
     handleDeleteChat,

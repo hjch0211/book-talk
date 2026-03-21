@@ -1,13 +1,6 @@
 import { Carousel3D } from '@src/components/templates/Carousel3D';
 import type { FindAllDebateInfo } from '@src/externals/debate';
-import {
-  Card,
-  CardBody,
-  CardBookImage,
-  CardDescription,
-  CardImageArea,
-  CardTopic,
-} from './style';
+import { Card, CardBody, CardBookImage, CardDescription, CardImageArea, CardTopic } from './style';
 
 interface Props {
   debates: FindAllDebateInfo[];

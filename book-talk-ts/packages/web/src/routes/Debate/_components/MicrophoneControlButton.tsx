@@ -1,6 +1,6 @@
+import { AppButton } from '@src/components/molecules/AppButton';
 import micOffSvg from '../../../assets/mic-off.svg';
 import micOnSvg from '../../../assets/mic-on.svg';
-import { ActionButton } from '../style.ts';
 
 type Props = {
   isActive: boolean;
@@ -25,14 +25,19 @@ export const MicrophoneControlButton = ({ isActive, isMuted, onToggleMute }: Pro
   };
 
   return (
-    <ActionButton
+    <AppButton
+      appVariant="rounded"
+      fullWidth={false}
       onClick={onToggleMute}
       title={getTitle()}
-      borderColor={'#FF8E66'}
-      backgroundColor={'#FFFFFF'}
       disabled={!isActive}
+      sx={{
+        background:
+          'linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(183.73deg, #FF8E66 50.78%, #FF5500 96.94%) border-box',
+      }}
+      style={{ width: '100%' }}
     >
       {getMicIcon()}
-    </ActionButton>
+    </AppButton>
   );
 };

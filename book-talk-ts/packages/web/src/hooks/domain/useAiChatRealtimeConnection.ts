@@ -57,11 +57,13 @@ export const useAiChatRealtimeConnection = () => {
     return () => clearInterval(intervalId);
   }, [isConnected]);
 
-  /** AI 채팅 메시지 전송 */
-  const sendAiChat = useEffectEvent((chatId: string, message: string, role: 'user' | 'assistant' = 'user') => {
-    if (!wsClientRef.current?.isConnected()) return;
-    wsClientRef.current.sendAiChat(chatId, message, role);
-  });
+  /** 채팅 메시지 저장 */
+  const saveChat = useEffectEvent(
+    (chatId: string, message: string, role: 'user' | 'assistant' = 'user') => {
+      if (!wsClientRef.current?.isConnected()) return;
+      wsClientRef.current.saveChat(chatId, message, role);
+    }
+  );
 
   /** 마운트 시 WebSocket 자동 연결, 언마운트 시 자동 해제 */
   useEffect(() => {
@@ -76,7 +78,7 @@ export const useAiChatRealtimeConnection = () => {
   return {
     /** WebSocket 연결 상태 */
     isConnected,
-    /** AI 채팅 메시지 전송 */
-    sendAiChat,
+    /** 채팅 메시지 저장 */
+    saveChat,
   };
 };

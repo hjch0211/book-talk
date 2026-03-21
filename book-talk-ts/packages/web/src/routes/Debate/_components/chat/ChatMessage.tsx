@@ -1,5 +1,6 @@
-import { Avatar, Box, Stack, Typography } from '@mui/material';
-import type { ChatResponse } from '@src/externals/debate';
+import { Box, Stack, Typography } from '@mui/material';
+import MessageSenderIcon from '@src/assets/message-sender.svg';
+import type { ChatItem } from '@src/externals/debate';
 import Heading from '@tiptap/extension-heading';
 import Youtube from '@tiptap/extension-youtube';
 import { EditorContent, useEditor } from '@tiptap/react';
@@ -11,7 +12,7 @@ import { createMentionExtension } from '../editor/MentionExtension.tsx';
 import { PresentationViewModal } from '../modal/PresentationViewModal.tsx';
 
 interface ChatMessageProps {
-  chat: ChatResponse;
+  chat: ChatItem;
   isMyMessage: boolean;
   members: Array<{ id: string; name: string }>;
   presentations: Array<{ id: string; accountId: string }>;
@@ -96,28 +97,18 @@ export function ChatMessage({ chat, isMyMessage, members, presentations }: ChatM
       justifyContent={isMyMessage ? 'flex-end' : 'flex-start'}
       sx={{
         width: '100%',
-        px: 1.5,
-        py: 2.25,
         filter: 'drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.1))',
       }}
     >
       {/* 왼쪽 메시지: 프로필 먼저 */}
       {!isMyMessage && (
         <Stack alignItems="center" spacing={0.375} sx={{ minWidth: '60px' }}>
-          <Avatar
-            sx={{
-              width: 36,
-              height: 36,
-              bgcolor: '#EADDFF',
-              color: '#4F378A',
-              fontSize: '14px',
-            }}
-          >
-            {chat.accountName[0]}
-          </Avatar>
+          <img src={MessageSenderIcon} alt="" width={24} height={24} />
           <Typography
             variant="caption"
             sx={{
+              fontFamily: 'S-Core Dream',
+              fontWeight: 200,
               fontSize: '12px',
               lineHeight: '150%',
               letterSpacing: '0.3px',
@@ -140,7 +131,7 @@ export function ChatMessage({ chat, isMyMessage, members, presentations }: ChatM
           maxWidth: '700px',
           p: '30px',
           bgcolor: '#FFFFFF',
-          boxShadow: '0px 1px 6.8px rgba(0, 0, 0, 0.1)',
+          boxShadow: '0 1px 6.8px 0 rgba(0, 0, 0, 0.10)',
           borderRadius: '24px',
           ...(isMyMessage && { alignSelf: 'flex-end' }),
           '& .chat-message-editor': {
@@ -173,20 +164,12 @@ export function ChatMessage({ chat, isMyMessage, members, presentations }: ChatM
       {/* 오른쪽 메시지: 프로필 나중에 */}
       {isMyMessage && (
         <Stack alignItems="center" spacing={0.375} sx={{ minWidth: '60px' }}>
-          <Avatar
-            sx={{
-              width: 36,
-              height: 36,
-              bgcolor: '#EADDFF',
-              color: '#4F378A',
-              fontSize: '14px',
-            }}
-          >
-            {chat.accountName[0]}
-          </Avatar>
+          <img src={MessageSenderIcon} alt="" width={24} height={24} />
           <Typography
             variant="caption"
             sx={{
+              fontFamily: 'S-Core Dream',
+              fontWeight: 200,
               fontSize: '12px',
               lineHeight: '150%',
               letterSpacing: '0.3px',

@@ -145,8 +145,9 @@ export const PresentationArea = styled.div<{ $isChatMode?: boolean }>`
     width: 970px;
     min-height: 224px;
     max-height: calc(100vh - 200px - 180px); /* 100vh - top(200px) - chatInput영역(180px) */
-    background: #FFFFFF;
-    box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.1);
+    border: #E8EBFF;
+    background: #FFF;
+    box-shadow: 0 3px 5px 0 #E8EBFF;
     border-radius: 24px;
     overflow-y: auto;
     position: relative;
@@ -159,7 +160,7 @@ export const PresentationArea = styled.div<{ $isChatMode?: boolean }>`
         line-height: 1.6;
         color: #262626;
 
-        p.is-editor-empty:first-child::before {
+        p.is-editor-empty:first-of-type::before {
             content: attr(data-placeholder);
             float: left;
             color: #9D9D9D;
@@ -289,20 +290,24 @@ export const PresentationArea = styled.div<{ $isChatMode?: boolean }>`
     }
 `;
 
-export const ChatInputContainer = styled(Box)`
+export const ChatInputWrapper = styled(Box)`
     position: absolute;
     width: 970px;
     left: 120px;
+    bottom: 0;
+`;
+
+export const ChatInputContainer = styled(Box)`
+    position: relative;
+    width: 970px;
     min-height: 138px;
     max-height: 400px;
-    bottom: 0;
     display: flex;
     flex-direction: row;
     justify-content: center;
     align-items: center;
     gap: 10px;
     padding: 22px 0;
-    background: linear-gradient(360deg, #FFFFFF 89.9%, rgba(255, 255, 255, 0) 100%);
 `;
 
 export const ChatInputBox = styled(Box)`
@@ -316,11 +321,6 @@ export const ChatInputBox = styled(Box)`
     align-items: center;
     outline: none;
 
-    &:focus,
-    &:focus-within {
-        outline: none;
-    }
-
     .chat-input-editor {
         font-family: 'S-Core Dream', sans-serif;
         font-size: 18px;
@@ -330,6 +330,7 @@ export const ChatInputBox = styled(Box)`
         max-height: 274px;
         overflow-y: auto;
         color: #262626;
+        outline: none;
 
         &::-webkit-scrollbar {
             display: none;
