@@ -1,43 +1,34 @@
-import SpeakerNotesOffIcon from '@mui/icons-material/SpeakerNotesOff';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import notFoundImage from '@src/assets/error/not-found.png';
 import { useNavigate } from 'react-router-dom';
-import PageContainer from '../../../components/templates/PageContainer';
 import {
-  BackButton,
-  BackButtonBase,
-  BackButtonText,
-  ContentWrapper,
-  ErrorContentWrapper,
+  ButtonText,
+  Contents,
+  ContentsFrame,
+  ErrorGraphic,
+  ErrorImage,
   ErrorMessage,
-  ErrorTitle,
-  LogoContainer,
+  MainButton,
   NotFoundContainer,
-} from './style';
+} from '../style';
 
 export const NotFound = () => {
   const navigate = useNavigate();
 
-  const handleGoHome = () => {
-    navigate('/');
-  };
-
   return (
-    <PageContainer bgColor="linear-gradient(180deg, #FFFFFF 39.9%, #FBEAE7 100%)">
-      <NotFoundContainer>
-        <ContentWrapper>
-          <ErrorTitle>404 ERROR</ErrorTitle>
-          <ErrorContentWrapper>
-            <LogoContainer>
-              <SpeakerNotesOffIcon sx={{ width: 135, height: 124, color: '#8E99FF' }} />
-            </LogoContainer>
-            <ErrorMessage>요청하신 페이지를 찾을 수 없습니다.</ErrorMessage>
-          </ErrorContentWrapper>
-        </ContentWrapper>
-        <BackButton onClick={handleGoHome}>
-          <BackButtonBase>
-            <BackButtonText>메인페이지로 이동</BackButtonText>
-          </BackButtonBase>
-        </BackButton>
-      </NotFoundContainer>
-    </PageContainer>
+    <NotFoundContainer>
+      <ContentsFrame>
+        <Contents>
+          <ErrorMessage>찾으시던 페이지가 이동되었거나<br/>존재하지 않는 주소예요</ErrorMessage>
+          <MainButton onClick={() => navigate('/home')}>
+            <ButtonText>{"북톡 홈으로 가기"}</ButtonText>
+            <ArrowForwardIcon sx={{ width: 24, height: 24, color: '#434343' }} />
+          </MainButton>
+        </Contents>
+      </ContentsFrame>
+      <ErrorGraphic>
+        <ErrorImage src={notFoundImage} alt="404 Error" />
+      </ErrorGraphic>
+    </NotFoundContainer>
   );
 };
