@@ -33,4 +33,10 @@ class AiChatController(
     fun callbackUserMessageSaved(@PathVariable chatId: String) {
         aiChatService.onUserMessageSaved(chatId)
     }
+
+    /** Agent용 - 채팅 저장 */
+    @PostMapping("/ai/chats/agent/message")
+    fun saveAgentMessage(@RequestBody request: SaveChatRequest) {
+        aiChatService.saveChat(request)
+    }
 }
