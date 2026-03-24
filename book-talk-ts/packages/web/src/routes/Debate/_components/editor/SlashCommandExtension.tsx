@@ -80,7 +80,7 @@ export const createSlashCommandExtension = (addImage: () => void, addYoutube: ()
     suggestion: {
       items: ({ query }: { query: string }) => {
         return items
-          .filter((item) => item.title.toLowerCase().startsWith(query.toLowerCase()))
+          .filter((item) => item.title.slice(1).toLowerCase().startsWith(query.toLowerCase()))
           .slice(0, 10);
       },
 

@@ -4,7 +4,8 @@ import { useEffect, useRef } from 'react';
 import { ChatMessage } from './ChatMessage.tsx';
 
 interface ChatMessageListProps {
-  chats: ChatResponse[];
+  chats: ChatResponse;
+  isFetching: boolean;
   myAccountId: string;
   members: Array<{ id: string; name: string }>;
   presentations: Array<{ id: string; accountId: string }>;
@@ -17,16 +18,26 @@ interface ChatMessageListProps {
  */
 export function ChatMessageList({
   chats,
+  isFetching,
   myAccountId,
   members,
   presentations,
 }: ChatMessageListProps) {
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // 새 채팅 시 스크롤 하단 이동
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [chats]);
+    if (isFetching || chats.length === 0) return;
+
+    let container: HTMLElement | null = chatEndRef.current?.parentElement ?? null;
+    while (container) {
+      const { overflowY } = window.getComputedStyle(container);
+      if (overflowY === 'auto' || overflowY === 'scroll') {
+        container.scrollTo({ top: container.scrollHeight, behavior: 'smooth' });
+        return;
+      }
+      container = container.parentElement;
+    }
+  }, [chats, isFetching]);
 
   return (
     <Box

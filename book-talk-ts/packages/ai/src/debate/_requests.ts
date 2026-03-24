@@ -10,6 +10,8 @@ export const ChatRequestSchema = z.object({
   message: z.string(),
   /** 채팅방 ID */
   chatId: z.string(),
+  /** 역할 */
+  role: z.enum(['user', 'assistant']),
 });
 
 export type SummarizeRequest = z.infer<typeof SummarizeRequestSchema>;

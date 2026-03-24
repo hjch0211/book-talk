@@ -1,21 +1,17 @@
-import AttachFileIcon from '@mui/icons-material/AttachFile';
+import styled from '@emotion/styled';
 import SendIcon from '@mui/icons-material/Send';
-import {
-  Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  IconButton,
-  TextField,
-} from '@mui/material';
+import { IconButton } from '@mui/material';
+import FileUploadIcon from '@src/assets/file-upload.svg';
+import { AppButton } from '@src/components/molecules/AppButton';
+import { AppTextField } from '@src/components/molecules/AppTextField';
+import Modal from '@src/components/organisms/Modal';
 import type { JSONContent } from '@tiptap/core';
 import Heading from '@tiptap/extension-heading';
 import Placeholder from '@tiptap/extension-placeholder';
 import Youtube from '@tiptap/extension-youtube';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { ChatInputBox, ChatInputContainer } from '../../style.ts';
 import { createEnterToSendExtension } from '../editor/EnterToSendExtension.ts';
 import { ImageWithPaste } from '../editor/ImageExtension.ts';
@@ -23,6 +19,19 @@ import { LinkPreview } from '../editor/LinkPreviewExtension.tsx';
 import { createMentionExtension } from '../editor/MentionExtension.tsx';
 import { createSlashCommandExtension } from '../editor/SlashCommandExtension.tsx';
 import { PresentationViewModal } from '../modal/PresentationViewModal.tsx';
+
+const ModalContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  padding: 36px 48px 24px 48px;
+  gap: 24px;
+`;
+
+const ModalButtonRow = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+`;
 
 interface ChatInputProps {
   isSending: boolean;
@@ -77,27 +86,24 @@ export function ChatInput({ isSending, onSend, members, presentations }: ChatInp
   }, [isSending, onSend]);
 
   // 에디터 콜백들
-  const addImage = useCallback(() => {
+  const addImage = useEffectEvent(() => {
     setShowImageDialog(true);
-  }, []);
+  });
 
-  const addYoutube = useCallback(() => {
+  const addYoutube = useEffectEvent(() => {
     setShowYoutubeDialog(true);
-  }, []);
+  });
 
   // 멘션 클릭 핸들러
-  const handleMentionClick = useCallback(
-    (accountId: string) => {
-      const member = members.find((m) => m.id === accountId);
-      if (member) {
-        setViewPresentationMember({
-          memberId: member.id,
-          memberName: member.name,
-        });
-      }
-    },
-    [members]
-  );
+  const handleMentionClick = useEffectEvent((accountId: string) => {
+    const member = members.find((m) => m.id === accountId);
+    if (member) {
+      setViewPresentationMember({
+        memberId: member.id,
+        memberName: member.name,
+      });
+    }
+  });
 
   const editor = useEditor({
     extensions: [
@@ -146,7 +152,7 @@ export function ChatInput({ isSending, onSend, members, presentations }: ChatInp
     }
   }, [editor, isSending]);
 
-  const handleSend = useCallback(() => {
+  const handleSend = useEffectEvent(() => {
     if (!editor || isSending) return;
 
     const json = editor.getJSON();
@@ -160,17 +166,17 @@ export function ChatInput({ isSending, onSend, members, presentations }: ChatInp
     setTimeout(() => {
       editor.commands.focus();
     }, 100);
-  }, [editor, isSending, onSend]);
+  });
 
-  const handleImageAdd = useCallback(() => {
+  const handleImageAdd = useEffectEvent(() => {
     if (imageUrl && editor) {
       editor.chain().focus().setImage({ src: imageUrl }).run();
     }
     setImageUrl('');
     setShowImageDialog(false);
-  }, [editor, imageUrl]);
+  });
 
-  const handleYoutubeAdd = useCallback(() => {
+  const handleYoutubeAdd = useEffectEvent(() => {
     if (youtubeUrl && editor) {
       editor.commands.setYoutubeVideo({
         src: youtubeUrl,
@@ -180,7 +186,7 @@ export function ChatInput({ isSending, onSend, members, presentations }: ChatInp
     }
     setYoutubeUrl('');
     setShowYoutubeDialog(false);
-  }, [editor, youtubeUrl]);
+  });
 
   return (
     <>
@@ -201,7 +207,7 @@ export function ChatInput({ isSending, onSend, members, presentations }: ChatInp
             },
           }}
         >
-          <AttachFileIcon sx={{ color: '#7B7B7B' }} />
+          <img src={FileUploadIcon} alt="파일 업로드" />
         </IconButton>
 
         <ChatInputBox>
@@ -214,67 +220,60 @@ export function ChatInput({ isSending, onSend, members, presentations }: ChatInp
           sx={{
             width: '72px',
             height: '45px',
-            bgcolor: hasSendableContent(editor?.getJSON()) ? '#6366F1' : '#C4C4C4',
+            bgcolor: hasSendableContent(editor?.getJSON()) ? '#E8EBFF' : '#C4C4C4',
             borderRadius: '24px',
             '&:hover': {
-              bgcolor: hasSendableContent(editor?.getJSON()) ? '#4F46E5' : '#C4C4C4',
+              bgcolor: hasSendableContent(editor?.getJSON()) ? '#D8DBFF' : '#C4C4C4',
             },
             '&:disabled': {
               bgcolor: '#C4C4C4',
             },
           }}
         >
-          <SendIcon sx={{ color: hasSendableContent(editor?.getJSON()) ? '#FFFFFF' : '#9D9D9D' }} />
+          <SendIcon sx={{ color: hasSendableContent(editor?.getJSON()) ? '#434343' : '#9D9D9D' }} />
         </IconButton>
       </ChatInputContainer>
 
-      {/* 이미지 추가 다이얼로그 */}
-      <Dialog open={showImageDialog} onClose={() => setShowImageDialog(false)}>
-        <DialogTitle>이미지 추가</DialogTitle>
-        <DialogContent>
-          <TextField
+      {/* 이미지 추가 모달 */}
+      <Modal open={showImageDialog} onClose={() => setShowImageDialog(false)} inner width={400}>
+        <ModalContent>
+          <AppTextField
             autoFocus
-            margin="dense"
             label="이미지 URL"
             type="url"
-            fullWidth
-            variant="outlined"
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
-            placeholder="https://example.com/image.jpg"
+            placeholder="이미지 링크를 복사해주세요"
           />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowImageDialog(false)}>취소</Button>
-          <Button onClick={handleImageAdd} variant="contained">
-            추가
-          </Button>
-        </DialogActions>
-      </Dialog>
+          <ModalButtonRow>
+            <AppButton appVariant="outlined" onClick={() => setShowImageDialog(false)}>
+              취소
+            </AppButton>
+            <AppButton onClick={handleImageAdd}>추가</AppButton>
+          </ModalButtonRow>
+        </ModalContent>
+      </Modal>
 
-      {/* YouTube 추가 다이얼로그 */}
-      <Dialog open={showYoutubeDialog} onClose={() => setShowYoutubeDialog(false)}>
-        <DialogTitle>YouTube 추가</DialogTitle>
-        <DialogContent>
-          <TextField
+      {/* YouTube 추가 모달 */}
+      <Modal open={showYoutubeDialog} onClose={() => setShowYoutubeDialog(false)} inner width={400}>
+        <ModalContent>
+          <AppTextField
             autoFocus
-            margin="dense"
             label="YouTube URL"
             type="url"
             fullWidth
-            variant="outlined"
             value={youtubeUrl}
             onChange={(e) => setYoutubeUrl(e.target.value)}
-            placeholder="https://www.youtube.com/watch?v=..."
+            placeholder="유튜브 링크를 입력해주세요"
           />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setShowYoutubeDialog(false)}>취소</Button>
-          <Button onClick={handleYoutubeAdd} variant="contained">
-            추가
-          </Button>
-        </DialogActions>
-      </Dialog>
+          <ModalButtonRow>
+            <AppButton appVariant="outlined" onClick={() => setShowYoutubeDialog(false)}>
+              취소
+            </AppButton>
+            <AppButton onClick={handleYoutubeAdd}>추가</AppButton>
+          </ModalButtonRow>
+        </ModalContent>
+      </Modal>
 
       {/* 멘션 클릭 시 발표 페이지 모달 */}
       {viewPresentationMember && (

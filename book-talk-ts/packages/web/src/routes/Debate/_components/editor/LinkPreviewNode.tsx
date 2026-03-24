@@ -72,7 +72,7 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
       <NodeViewWrapper>
         <Card
           sx={{
-            maxWidth: 720,
+            maxWidth: 640,
             margin: '16px 0',
             display: 'flex',
             alignItems: 'center',
@@ -92,7 +92,7 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
       <NodeViewWrapper>
         <Card
           sx={{
-            maxWidth: 720,
+            maxWidth: 640,
             margin: '16px 0',
             border: '1px solid #f44336',
             backgroundColor: '#ffebee',
@@ -130,7 +130,7 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
       <NodeViewWrapper>
         <Card
           sx={{
-            maxWidth: 720,
+            maxWidth: 640,
             margin: '16px 0',
             border: '1px solid #e0e0e0',
           }}
@@ -166,7 +166,7 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
           alignItems: 'center',
           padding: '0px 0px 0px 32px',
           gap: '20px',
-          width: '720px',
+          width: '640px',
           height: '120px',
           background: '#FFFFFF',
           border: '1px solid #E8EBFF',
@@ -187,7 +187,7 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
             flexDirection: 'column',
             alignItems: 'flex-start',
             padding: '0px',
-            width: '520px',
+            width: '420px',
             flex: 'none',
             order: 0,
             flexGrow: 0,

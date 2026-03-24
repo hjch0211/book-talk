@@ -54,6 +54,8 @@ export interface RoundInfo {
 export interface DebateClient {
   /** 토론방 단건 조회 */
   findOne(debateId: string): Promise<DebateInfo>;
+  /** 유저 메시지 저장 완료 콜백 */
+  notifyUserMessageSaved(chatId: string): Promise<void>;
   /** 토론방 AI 채팅 완성 콜백 */
   notifyChatCompleted(chatId: string): Promise<void>;
 }
@@ -79,6 +81,15 @@ export class BooktalkDebateClient implements DebateClient {
     }
   }
 
+  async notifyUserMessageSaved(chatId: string): Promise<void> {
+    try {
+      await axios.post(`${this.config.baseUrl}/ai/chats/${chatId}/user-message-saved`);
+    } catch (error) {
+      Logger.error(`유저 메시지 저장 콜백 실패: ${error}`);
+      throw error;
+    }
+  }
+
   async notifyChatCompleted(chatId: string): Promise<void> {
     try {
       await axios.post(`${this.config.baseUrl}/debates/ai/chats/${chatId}/completion`);
@@ -91,6 +102,8 @@ export class BooktalkDebateClient implements DebateClient {
 
 /** NoOp Debate Client */
 export class NoOpDebateClient implements DebateClient {
+  async notifyUserMessageSaved(_chatId: string): Promise<void> {}
+
   async notifyChatCompleted(_chatId: string): Promise<void> {}
 
   async findOne(_debateId: string): Promise<DebateInfo> {

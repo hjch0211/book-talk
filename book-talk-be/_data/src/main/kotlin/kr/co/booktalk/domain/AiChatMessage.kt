@@ -25,11 +25,21 @@ class AiChatMessageEntity(
     val role: String,
 
     val content: String,
+
+    @Enumerated(EnumType.STRING)
+    val status: AiChatMessageStatus = AiChatMessageStatus.COMPLETED,
 ) : AuditableUuidEntity()
+
+enum class AiChatMessageStatus {
+    PENDING, COMPLETED, FAILED
+}
 
 @Transactional(readOnly = true)
 @Repository
 interface AiChatMessageRepository : JpaRepository<AiChatMessageEntity, UUID> {
+    fun findByChatIdOrderByCreatedAtAsc(chatId: UUID): List<AiChatMessageEntity>
+    fun deleteAllByChat(chat: AiChatEntity)
+
     @Modifying
     @Transactional
     @Query("UPDATE AiChatMessageEntity m SET m.archivedAt = :now WHERE m.chat IN (SELECT c FROM AiChatEntity c WHERE c.debate = :debate) AND m.archivedAt IS NULL")

@@ -57,6 +57,27 @@ abstract class AuditableUuidEntity : AuditableEntity, Persistable<UUID> {
     override fun isNew(): Boolean = id == null
 }
 
+@MappedSuperclass
+abstract class AuditableStringIdEntity(id: String) : AuditableEntity, Persistable<String> {
+    @Id
+    @Column(name = "id")
+    private val id: String = id
+
+    @CreatedDate
+    @Column(name = "created_at")
+    override lateinit var createdAt: Instant
+
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    override lateinit var updatedAt: Instant
+
+    @Column(name = "archived_at")
+    override var archivedAt: Instant? = null
+
+    override fun getId(): String = id
+    override fun isNew(): Boolean = !::createdAt.isInitialized
+}
+
 fun String.toUUID(): UUID {
     return UUID.fromString(this)
 }

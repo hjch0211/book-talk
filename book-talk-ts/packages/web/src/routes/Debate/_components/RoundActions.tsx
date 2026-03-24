@@ -1,9 +1,9 @@
 import { Stack, Tooltip } from '@mui/material';
+import { AppButton } from '@src/components/molecules/AppButton';
 import type { RoundType } from '@src/hooks';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import raiseHandSvg from '../../../assets/raise-hand.svg';
-import { ActionButton } from '../style.ts';
 import { MicrophoneControlButton } from './MicrophoneControlButton.tsx';
 
 const KST_OFFSET = 9 * 60 * 60 * 1000;
@@ -77,21 +77,33 @@ export function RoundActions({
   const isStarted = now >= new Date(startAt);
 
   return (
-    <Stack spacing={2}>
+    <Stack spacing={2} sx={{ position: 'absolute', right: '85px', top: '742px', width: '200px' }}>
       {roundType === 'PREPARATION' && myRole === 'HOST' && (
         <Tooltip
           title={!isStarted && startAt ? `${formatTime(startAt)}부터 시작 가능합니다` : ''}
           arrow
         >
-          <ActionButton disabled={!isStarted} onClick={onStartDebate} sx={{ display: 'flex' }}>
-            토론 시작하기
-          </ActionButton>
+          <span>
+            <AppButton
+              appVariant="rounded"
+              style={{ width: '100%' }}
+              disabled={!isStarted}
+              onClick={onStartDebate}
+            >
+              토론 시작하기
+            </AppButton>
+          </span>
         </Tooltip>
       )}
       {roundType === 'PRESENTATION' && (
-        <ActionButton disabled={!isCurrentSpeaker} onClick={onEndPresentation}>
+        <AppButton
+          appVariant="rounded"
+          style={{ width: '100%' }}
+          disabled={!isCurrentSpeaker}
+          onClick={onEndPresentation}
+        >
           발표 끝내기
-        </ActionButton>
+        </AppButton>
       )}
       {roundType !== 'PREPARATION' && (
         <MicrophoneControlButton
@@ -101,23 +113,19 @@ export function RoundActions({
         />
       )}
       {roundType === 'FREE' && (
-        <ActionButton
+        <AppButton
+          appVariant="rounded"
+          style={{ width: '100%' }}
           onClick={onToggleHand}
-          style={{
-            backgroundColor: isMyHandRaised ? '#1976d2' : undefined,
-            color: isMyHandRaised ? 'black' : undefined,
-          }}
+          sx={isMyHandRaised ? { backgroundColor: '#1976d2', color: 'black' } : undefined}
         >
           <img
             src={raiseHandSvg}
             alt={isMyHandRaised ? '손내리기' : '손들기'}
             width={16.5}
             height={24}
-            style={{
-              filter: isMyHandRaised ? 'black' : undefined,
-            }}
           />
-        </ActionButton>
+        </AppButton>
       )}
     </Stack>
   );

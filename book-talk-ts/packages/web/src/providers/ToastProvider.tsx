@@ -1,4 +1,4 @@
-import { Toast } from '@src/components';
+import { Toast } from '@src/components/organisms/Toast';
 import { createContext, type ReactNode, useCallback, useMemo, useState } from 'react';
 
 interface ToastMethods {

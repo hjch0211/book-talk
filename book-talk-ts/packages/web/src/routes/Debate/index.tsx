@@ -1,4 +1,6 @@
-import { AudioActivationBanner, AudioPlayer, SuspenseErrorBoundary } from '@src/components';
+import { AudioPlayer } from '@src/components/molecules/AudioPlayer';
+import { SuspenseErrorBoundary } from '@src/components/molecules/SuspenseErrorBoundary';
+import { AudioActivationBanner } from '@src/components/organisms/AudioActivationBanner';
 import { MobileUnsupportedModal } from '@src/components/organisms/MobileUnsupportedModal';
 import { meQueryOption } from '@src/externals/account';
 import { type RoundType, useDebate, useModal } from '@src/hooks';

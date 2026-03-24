@@ -24,6 +24,7 @@ data class SummarizeRequest(
 data class AiChatClientRequest(
     val chatId: String,
     val message: String,
+    val role: String = "user",
 )
 
 /** book-talk-ai */
@@ -55,7 +56,7 @@ class AiServerClient(
         withContext(Dispatchers.IO) {
             httpClient.post(url) {
                 contentType(ContentType.Application.Json)
-                setBody(mapOf("chatId" to request.chatId, "message" to request.message))
+                setBody(mapOf("chatId" to request.chatId, "message" to request.message, "role" to request.role))
             }
         }.also {
             if (!it.status.isSuccess()) {

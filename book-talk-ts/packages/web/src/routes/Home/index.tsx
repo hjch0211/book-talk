@@ -1,6 +1,6 @@
-import { SuspenseErrorBoundary } from '@src/components';
 import { AppButton } from '@src/components/molecules/AppButton';
 import { SearchInput } from '@src/components/molecules/SearchInput';
+import { SuspenseErrorBoundary } from '@src/components/molecules/SuspenseErrorBoundary';
 import AppHeader from '@src/components/organisms/AppHeader';
 import { DebateCard } from '@src/components/organisms/DebateCard';
 import { MobileUnsupportedModal } from '@src/components/organisms/MobileUnsupportedModal';

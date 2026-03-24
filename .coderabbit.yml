@@ -30,7 +30,12 @@ reviews:
         - 문서화나 주석이 필요한 부분은 있나요?
         - 기술적 부채로 이어질 수 있는 임시 코드나 하드코딩은 없는지 확인해주세요!
 
-        또한 코틀린 관용구, null 처리, 불변성(val 사용), 확장 함수 활용 등 코틀린답게 작성되었는지도 함께 검토해주세요."
+        또한 코틀린 관용구, null 처리, 불변성(val 사용), 확장 함수 활용 등 코틀린답게 작성되었는지도 함께 검토해주세요.
+
+        ⚠️ 에러 핸들링 원칙:
+        - 에러 핸들링은 최대한 끝단(Controller, WebSocketHandler, GlobalExceptionHandler 등)에서 처리해야 합니다.
+        - Service나 도메인 로직 내부에서 try-catch를 남용하지 않도록 확인해주세요. 예외는 상위 레이어로 전파하여 비즈니스 로직의 복잡도를 낮게 유지해야 합니다.
+        - 반복되는 에러 처리 패턴은 공통 핸들러(GlobalExceptionHandler 등)나 인터셉터로 위임하고 있나요?"
 
     # Data 모듈 - Entity & Repository
     - path: "book-talk-be/_data/src/main/kotlin/kr/co/booktalk/domain/**/*.kt"
@@ -59,7 +64,8 @@ reviews:
         - 예외 처리가 일관되게 처리되고 있나요?
         - 의존성 주입이 생성자 기반으로 이뤄지고 있나요?
         - 다른 서비스와의 협력이 명확한가요?
-        - 도메인 로직과 인프라 로직이 적절히 분리되어 있나요?"
+        - 도메인 로직과 인프라 로직이 적절히 분리되어 있나요?
+        - Service 내부에서 try-catch를 남용하지 않나요? 예외는 Controller나 GlobalExceptionHandler 등 끝단으로 전파하여 비즈니스 로직의 복잡도를 최소화해야 합니다."
 
     # API 모듈 - Controller
     - path: "book-talk-be/_api/src/main/kotlin/kr/co/booktalk/domain/**/*Controller.kt"

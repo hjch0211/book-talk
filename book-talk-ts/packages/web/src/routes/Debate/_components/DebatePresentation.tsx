@@ -13,7 +13,7 @@ import Youtube from '@tiptap/extension-youtube';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useCallback, useEffect, useState } from 'react';
-import { MainContent, PresentationArea } from '../style.ts';
+import { ChatInputWrapper, MainContent, PresentationArea } from '../style.ts';
 import { ChatInput } from './chat/ChatInput.tsx';
 import { ChatMessageList } from './chat/ChatMessageList.tsx';
 import { ImageWithPaste } from './editor/ImageExtension.ts';
@@ -30,6 +30,7 @@ interface Props {
     chats: any[];
     sendChat: (content: string) => void;
     isSending: boolean;
+    isFetching: boolean;
   };
   members: Array<{ id: string; name: string }>;
   presentations: Array<{ id: string; accountId: string }>;
@@ -163,7 +164,7 @@ export function DebatePresentation({
   }, [editor, currentRoundInfo.isEditable, currentRoundInfo.currentSpeaker]);
 
   // 채팅 기능 - props에서 받음
-  const { chats, sendChat, isSending } = chat;
+  const { chats, sendChat, isSending, isFetching } = chat;
 
   // FREE 라운드 && 발표자 존재 → 채팅 모드
   const isChatMode =
@@ -180,18 +181,21 @@ export function DebatePresentation({
           <PresentationArea $isChatMode={true}>
             <ChatMessageList
               chats={chats}
+              isFetching={isFetching}
               myAccountId={myAccountId!}
               members={members}
               presentations={presentations}
             />
           </PresentationArea>
         </MainContent>
-        <ChatInput
-          isSending={isSending}
-          onSend={sendChat}
-          members={members}
-          presentations={presentations}
-        />
+        <ChatInputWrapper>
+          <ChatInput
+            isSending={isSending}
+            onSend={sendChat}
+            members={members}
+            presentations={presentations}
+          />
+        </ChatInputWrapper>
       </>
     );
   }
