@@ -1,43 +1,34 @@
-import SpeakerNotesOffIcon from '@mui/icons-material/SpeakerNotesOff';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
+import unexpectedError from '@src/assets/error/unexpected-error.png';
 import { useNavigate } from 'react-router-dom';
-import PageContainer from '../../../components/templates/PageContainer';
 import {
-  BackButton,
-  BackButtonBase,
-  BackButtonText,
-  ContentWrapper,
-  DebateFullContainer,
-  FullRoomMessage,
-  FullRoomTitle,
-  IconContainer,
-  TextWrapper,
-} from './style';
+  ButtonText,
+  Contents,
+  ContentsFrame,
+  ErrorGraphic,
+  ErrorImage,
+  ErrorMessage,
+  MainButton,
+  NotFoundContainer,
+} from '../style';
 
 export const DebateFull = () => {
   const navigate = useNavigate();
 
-  const handleGoHome = () => {
-    navigate('/');
-  };
-
   return (
-    <PageContainer bgColor="linear-gradient(180deg, #FFFFFF 39.9%, #FBEAE7 100%)">
-      <DebateFullContainer>
-        <ContentWrapper>
-          <TextWrapper>
-            <FullRoomTitle>현재 방이 가득 차서 입장이 불가합니다.</FullRoomTitle>
-            <FullRoomMessage>메인페이지로 돌아가 새로운 토론방을 생성해보세요!</FullRoomMessage>
-          </TextWrapper>
-          <IconContainer>
-            <SpeakerNotesOffIcon sx={{ width: 135, height: 124, color: '#8E99FF' }} />
-          </IconContainer>
-        </ContentWrapper>
-        <BackButton onClick={handleGoHome}>
-          <BackButtonBase>
-            <BackButtonText>메인페이지로 이동</BackButtonText>
-          </BackButtonBase>
-        </BackButton>
-      </DebateFullContainer>
-    </PageContainer>
+      <NotFoundContainer>
+        <ContentsFrame>
+          <Contents>
+            <ErrorMessage>예상치 못한 오류가 발생했으니<br/>잠시 후 다시 시도해주세요</ErrorMessage>
+            <MainButton onClick={() => navigate('/home')}>
+              <ButtonText>{"북톡 홈으로 가기"}</ButtonText>
+              <ArrowForwardIcon sx={{ width: 24, height: 24, color: '#434343' }} />
+            </MainButton>
+          </Contents>
+        </ContentsFrame>
+        <ErrorGraphic>
+          <ErrorImage src={unexpectedError} alt="Unexpected error" />
+        </ErrorGraphic>
+      </NotFoundContainer>
   );
 };
