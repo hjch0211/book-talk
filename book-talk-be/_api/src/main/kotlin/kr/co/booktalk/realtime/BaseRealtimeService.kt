@@ -23,7 +23,7 @@ abstract class BaseRealtimeService(
         if (session != null) {
             sendTextMessage(session, messageJson)
         } else {
-            logger.warn { "세션을 찾을 수 없음: accountId=$accountId, messageJson=$messageJson" }
+            logger.warn { "세션을 찾을 수 없음: accountId=$accountId" }
         }
     }
 

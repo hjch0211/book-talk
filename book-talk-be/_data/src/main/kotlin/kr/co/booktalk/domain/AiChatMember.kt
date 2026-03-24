@@ -25,6 +25,6 @@ class AiChatMemberEntity(
 @Transactional(readOnly = true)
 @Repository
 interface AiChatMemberRepository : JpaRepository<AiChatMemberEntity, Long> {
-    fun findByChatId(chatId: UUID): AiChatMemberEntity?
+    fun findByChatId(chatId: UUID): List<AiChatMemberEntity>
     fun deleteAllByChat(chat: AiChatEntity)
 }

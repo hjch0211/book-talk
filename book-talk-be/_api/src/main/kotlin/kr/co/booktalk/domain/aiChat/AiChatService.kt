@@ -43,9 +43,11 @@ class AiChatService(
     fun findOne(chatId: String, authAccount: AuthAccount): FindOneAiChatResponse {
         val chat = aiChatRepository.findByIdOrNull(chatId.toUUID())
             ?: httpBadRequest("채팅방을 찾을 수 없습니다.")
-        val member = aiChatMemberRepository.findByChatId(chat.id!!)
-            ?: httpBadRequest("채팅방 멤버를 찾을 수 없습니다.")
-        if (member.account.id.toString() != authAccount.id) httpBadRequest("채팅방에 접근 권한이 없습니다.")
+        val members = aiChatMemberRepository.findByChatId(chat.id!!)
+        if (members.isEmpty()) httpBadRequest("채팅방 멤버를 찾을 수 없습니다.")
+
+        val host = members.first()
+        if (host.account.id.toString() != authAccount.id) httpBadRequest("채팅방에 접근 권한이 없습니다.")
         val persona = aiChatPersonaRepository.findByIdOrNull(chat.personaId)
             ?: httpBadRequest("페르소나를 찾을 수 없습니다.")
         val messages = aiChatMessageRepository.findByChatIdOrderByCreatedAtAsc(chat.id!!)
@@ -56,8 +58,8 @@ class AiChatService(
             personaId = chat.personaId,
             agentId = persona.agentId,
             member = FindOneAiChatResponse.MemberInfo(
-                accountId = member.account.id.toString(),
-                accountName = member.account.name,
+                accountId = host.account.id.toString(),
+                accountName = host.account.name,
             ),
             messages = messages.map {
                 FindOneAiChatResponse.MessageInfo(
@@ -73,9 +75,11 @@ class AiChatService(
     }
 
     fun onUserMessageSaved(chatId: String) {
-        val member = aiChatMemberRepository.findByChatId(chatId.toUUID())
-            ?: httpBadRequest("채팅방 멤버를 찾을 수 없습니다.")
-        aiChatRealtimeService.sendUserMessageSaved(chatId, member.account.id.toString())
+        val members = aiChatMemberRepository.findByChatId(chatId.toUUID())
+        if (members.isEmpty()) httpBadRequest("채팅방 멤버를 찾을 수 없습니다.")
+
+        val host = members.first()
+        aiChatRealtimeService.sendUserMessageSaved(chatId, host.account.id.toString())
     }
 
     fun remove(chatId: String) {

@@ -1,4 +1,4 @@
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 export const CreateAiChatRequestSchema = z.object({
   debateId: z.string().min(1, '토론 ID를 입력해주세요'),

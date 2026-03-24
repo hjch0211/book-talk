@@ -1,4 +1,4 @@
-import { z } from 'zod/v4';
+import { z } from 'zod';
 
 export const CreateDebateRequestSchema = z.object({
   bookTitle: z.string().min(1, { message: '책 제목을 입력해주세요' }),

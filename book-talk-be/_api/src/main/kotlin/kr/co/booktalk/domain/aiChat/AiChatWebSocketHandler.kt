@@ -45,7 +45,7 @@ class AiChatWebSocketHandler(
                 }
             }
         } catch (e: Exception) {
-            logger.error(e) { "AI 채팅 메시지 처리 실패: ${message.payload}" }
+            logger.error(e) { "AI 채팅 메시지 처리 실패" }
         }
     }
 
