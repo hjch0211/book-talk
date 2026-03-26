@@ -37,7 +37,7 @@ export function VoiceAgent({ chatId, debateId, myId, agentId }: Props) {
       await conversation.startSession({
         agentId,
         connectionType: 'websocket',
-        dynamicVariables: { chatId, debateId },
+        dynamicVariables: { chatId, debateId, accountId: myId },
         userId: myId,
       });
     }
