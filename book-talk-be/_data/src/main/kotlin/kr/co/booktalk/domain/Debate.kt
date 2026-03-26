@@ -59,6 +59,19 @@ interface DebateRepository : JpaRepository<DebateEntity, UUID> {
 
     fun findAllByHost(host: AccountEntity): List<DebateEntity>
     fun findAllByCreatedAtBeforeAndClosedAtIsNull(createdAt: Instant): List<DebateEntity>
+
+    @Query("""
+        SELECT d FROM DebateEntity d
+        JOIN FETCH d.host
+        WHERE d.closedAt IS NULL
+        AND d.createdAt < :before
+        AND NOT EXISTS (
+            SELECT dm FROM DebateMemberEntity dm
+            WHERE dm.debate = d
+            AND dm.role = kr.co.booktalk.domain.DebateMemberRole.MEMBER
+        )
+    """)
+    fun findAllCreatedBeforeWithNoNonHostMembers(@Param("before") before: Instant): List<DebateEntity>
     fun findAllByStartAtBeforeAndClosedAtIsNull(startAt: Instant): List<DebateEntity>
 
     @Query("""
