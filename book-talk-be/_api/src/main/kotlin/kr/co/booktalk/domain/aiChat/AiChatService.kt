@@ -40,14 +40,13 @@ class AiChatService(
     }
 
     @Transactional(readOnly = true)
-    fun findOne(chatId: String, authAccount: AuthAccount): FindOneAiChatResponse {
+    fun findOne(chatId: String): FindOneAiChatResponse {
         val chat = aiChatRepository.findByIdOrNull(chatId.toUUID())
             ?: httpBadRequest("채팅방을 찾을 수 없습니다.")
         val members = aiChatMemberRepository.findByChatId(chat.id!!)
         if (members.isEmpty()) httpBadRequest("채팅방 멤버를 찾을 수 없습니다.")
 
         val host = members.first()
-        if (host.account.id.toString() != authAccount.id) httpBadRequest("채팅방에 접근 권한이 없습니다.")
         val persona = aiChatPersonaRepository.findByIdOrNull(chat.personaId)
             ?: httpBadRequest("페르소나를 찾을 수 없습니다.")
         val messages = aiChatMessageRepository.findByChatIdOrderByCreatedAtAsc(chat.id!!)

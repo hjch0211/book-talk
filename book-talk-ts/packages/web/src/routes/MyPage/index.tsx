@@ -1,6 +1,5 @@
 import { BackButton } from '@src/components/molecules/BackButton';
 import AppHeader from '@src/components/organisms/AppHeader';
-import { MobileUnsupportedModal } from '@src/components/organisms/MobileUnsupportedModal';
 import PageContainer from '@src/components/templates/PageContainer';
 import type { FindAllDebateInfo } from '@src/externals/debate/schema';
 import { useModal } from '@src/hooks';
@@ -22,7 +21,6 @@ export function MyPage() {
   return (
     <PageContainer bgColor="#FFFFFF" isRelative>
       <AppHeader />
-      <MobileUnsupportedModal />
 
       <BackNavRow>
         <BackButton onClick={navigateHome}>메인페이지로 가기</BackButton>

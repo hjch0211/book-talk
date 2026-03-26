@@ -21,7 +21,6 @@ export function useDebateParticipation(
 
   const handleAuthGuard = () => {
     if (!myId) {
-      toast.warning('로그인이 필요합니다.');
       onClose();
       navigate('/sign-in', {
         state: { redirect: window.location.pathname + window.location.search },

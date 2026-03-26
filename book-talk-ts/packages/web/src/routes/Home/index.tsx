@@ -3,7 +3,6 @@ import { SearchInput } from '@src/components/molecules/SearchInput';
 import { SuspenseErrorBoundary } from '@src/components/molecules/SuspenseErrorBoundary';
 import AppHeader from '@src/components/organisms/AppHeader';
 import { DebateCard } from '@src/components/organisms/DebateCard';
-import { MobileUnsupportedModal } from '@src/components/organisms/MobileUnsupportedModal';
 import PageContainer from '@src/components/templates/PageContainer';
 import { meQueryOption } from '@src/externals/account';
 import { findAllDebatesQueryOptions } from '@src/externals/debate/queryOptions';
@@ -153,7 +152,6 @@ export function HomePage() {
 
   return (
     <PageContainer bgColor="#FFFFFF" isRelative>
-      <MobileUnsupportedModal />
       <AppHeader />
 
       <ContentWrapper>
