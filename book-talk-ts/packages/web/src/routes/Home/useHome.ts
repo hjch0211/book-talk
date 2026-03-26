@@ -1,7 +1,7 @@
 import { meQueryOption } from '@src/externals/account';
 import { findOneDebate } from '@src/externals/debate';
 import type { FindAllDebateInfo } from '@src/externals/debate/schema';
-import { useModal, useToast } from '@src/hooks';
+import { useModal } from '@src/hooks';
 import { useQuery } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -12,7 +12,6 @@ export function useHome() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const { openModal } = useModal();
-  const { toast } = useToast();
   const { data: me } = useQuery(meQueryOption);
 
   const queryKeyword = searchParams.get('keyword') ?? '';
@@ -50,7 +49,6 @@ export function useHome() {
 
   const handleCreateDebate = () => {
     if (!me) {
-      toast.warning('로그인이 필요합니다.');
       navigate('/sign-in', {
         state: { redirect: window.location.pathname + window.location.search },
       });

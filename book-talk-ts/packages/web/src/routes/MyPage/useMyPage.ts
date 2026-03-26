@@ -13,7 +13,6 @@ export function useMyPage() {
   const { toast } = useToast();
 
   const redirectSignInPage = useEffectEvent(() => {
-    toast.warning('로그인이 필요합니다.');
     navigate('/sign-in', {
       state: { redirect: window.location.pathname + window.location.search },
     });
