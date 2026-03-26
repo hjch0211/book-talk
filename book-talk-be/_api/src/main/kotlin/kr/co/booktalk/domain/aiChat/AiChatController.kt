@@ -18,8 +18,8 @@ class AiChatController(
 
     /** AI 채팅방 조회 */
     @GetMapping("/ai/chats/{chatId}")
-    fun findOneAiChat(@PathVariable chatId: String, authAccount: AuthAccount): HttpResult<FindOneAiChatResponse> {
-        return aiChatService.findOne(chatId, authAccount).toResult()
+    fun findOneAiChat(@PathVariable chatId: String): HttpResult<FindOneAiChatResponse> {
+        return aiChatService.findOne(chatId).toResult()
     }
 
     /** AI 채팅방 삭제 */
