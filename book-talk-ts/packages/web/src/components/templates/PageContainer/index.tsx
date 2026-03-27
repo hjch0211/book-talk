@@ -1,21 +1,20 @@
+import type { SxProps, Theme } from '@mui/material';
 import type { ReactNode } from 'react';
-import { StyledContainer, StyledFixedWrapper, StyledRelativeWrapper } from './style.ts';
+import { StyledContainer, StyledWrapper } from './style.ts';
 
 interface Props {
   children: ReactNode;
   bgColor?: string;
-  isRelative?: boolean;
+  sx?: SxProps<Theme>;
 }
 
-const PageContainer = ({ children, bgColor, isRelative }: Props) => {
-  const Wrapper = isRelative ? StyledRelativeWrapper : StyledFixedWrapper;
-
+const PageContainer = ({ children, bgColor, sx }: Props) => {
   return (
-    <Wrapper bgColor={bgColor}>
+    <StyledWrapper bgColor={bgColor} sx={sx}>
       <StyledContainer maxWidth={false} disableGutters>
         {children}
       </StyledContainer>
-    </Wrapper>
+    </StyledWrapper>
   );
 };
 

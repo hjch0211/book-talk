@@ -151,7 +151,7 @@ export function HomePage() {
   } = useHome();
 
   return (
-    <PageContainer bgColor="#FFFFFF" isRelative>
+    <PageContainer bgColor="#FFFFFF">
       <AppHeader />
 
       <ContentWrapper>

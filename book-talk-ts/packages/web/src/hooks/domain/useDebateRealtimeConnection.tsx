@@ -283,7 +283,6 @@ export const useDebateRealtimeConnection = (props: Props) => {
 
   /** 토론 종료 */
   const onDebateClosed = useEffectEvent(() => {
-    toast.info('토론이 종료되었습니다.');
     navigate('/home');
   });
 
@@ -329,6 +328,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
       },
       onJoinSuccess: () => {
         setIsDebateJoined(true);
+        void joinVoiceChat();
       },
       onHandRaiseUpdate: (hands: RaisedHandInfo[]) => {
         setRaisedHands(hands);

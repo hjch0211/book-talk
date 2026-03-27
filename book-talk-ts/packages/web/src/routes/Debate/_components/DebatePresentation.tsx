@@ -13,7 +13,7 @@ import Youtube from '@tiptap/extension-youtube';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useCallback, useEffect, useState } from 'react';
-import { ChatInputWrapper, MainContent, PresentationArea } from '../style.ts';
+import { ChatInputWrapper, MainContent, PresentationArea, PresentationSection } from '../style.ts';
 import { ChatInput } from './chat/ChatInput.tsx';
 import { ChatMessageList } from './chat/ChatMessageList.tsx';
 import { ImageWithPaste } from './editor/ImageExtension.ts';
@@ -176,18 +176,16 @@ export function DebatePresentation({
 
   if (isChatMode) {
     return (
-      <>
-        <MainContent>
-          <PresentationArea $isChatMode={true}>
-            <ChatMessageList
-              chats={chats}
-              isFetching={isFetching}
-              myAccountId={myAccountId!}
-              members={members}
-              presentations={presentations}
-            />
-          </PresentationArea>
-        </MainContent>
+      <MainContent>
+        <PresentationArea $isChatMode={true} $roundType={currentRoundInfo.type}>
+          <ChatMessageList
+            chats={chats}
+            isFetching={isFetching}
+            myAccountId={myAccountId!}
+            members={members}
+            presentations={presentations}
+          />
+        </PresentationArea>
         <ChatInputWrapper>
           <ChatInput
             isSending={isSending}
@@ -196,7 +194,7 @@ export function DebatePresentation({
             presentations={presentations}
           />
         </ChatInputWrapper>
-      </>
+      </MainContent>
     );
   }
 
@@ -204,7 +202,7 @@ export function DebatePresentation({
   if (!currentRoundInfo.isEditable && !currentRoundInfo.currentSpeaker) {
     return (
       <MainContent>
-        <PresentationArea $isChatMode={false}>
+        <PresentationArea $isChatMode={false} $roundType={currentRoundInfo.type}>
           <div>{`발표페이지가 없습니다.`}</div>
         </PresentationArea>
       </MainContent>
@@ -215,7 +213,7 @@ export function DebatePresentation({
   if (!currentRoundInfo.currentPresentationId) {
     return (
       <MainContent>
-        <PresentationArea $isChatMode={false}>
+        <PresentationArea $isChatMode={false} $roundType={currentRoundInfo.type}>
           <div>발표 페이지를 로딩 중...</div>
         </PresentationArea>
       </MainContent>
@@ -224,62 +222,68 @@ export function DebatePresentation({
 
   return (
     <MainContent>
-      <LastModified
-        lastSavedAt={lastSavedAt}
-        isEditable={currentRoundInfo.isEditable}
-        isSaving={isSaving}
-      />
-      <PresentationArea $isChatMode={false} onClick={handlePresentationAreaClick}>
-        <EditorContent editor={editor} />
+      <PresentationSection>
+        <LastModified
+          lastSavedAt={lastSavedAt}
+          isEditable={currentRoundInfo.isEditable}
+          isSaving={isSaving}
+        />
+        <PresentationArea
+          $isChatMode={false}
+          $roundType={currentRoundInfo.type}
+          onClick={handlePresentationAreaClick}
+        >
+          <EditorContent editor={editor} />
 
-        {/* 이미지 추가 다이얼로그 */}
-        <Dialog open={showImageDialog} onClose={() => setShowImageDialog(false)}>
-          <DialogTitle>이미지 추가</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="이미지 URL"
-              type="url"
-              fullWidth
-              variant="outlined"
-              value={imageUrl}
-              onChange={(e) => setImageUrl(e.target.value)}
-              placeholder="https://example.com/image.jpg"
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setShowImageDialog(false)}>취소</Button>
-            <Button onClick={handleImageAdd} variant="contained">
-              추가
-            </Button>
-          </DialogActions>
-        </Dialog>
+          {/* 이미지 추가 다이얼로그 */}
+          <Dialog open={showImageDialog} onClose={() => setShowImageDialog(false)}>
+            <DialogTitle>이미지 추가</DialogTitle>
+            <DialogContent>
+              <TextField
+                autoFocus
+                margin="dense"
+                label="이미지 URL"
+                type="url"
+                fullWidth
+                variant="outlined"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                placeholder="https://example.com/image.jpg"
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setShowImageDialog(false)}>취소</Button>
+              <Button onClick={handleImageAdd} variant="contained">
+                추가
+              </Button>
+            </DialogActions>
+          </Dialog>
 
-        {/* YouTube 추가 다이얼로그 */}
-        <Dialog open={showYoutubeDialog} onClose={() => setShowYoutubeDialog(false)}>
-          <DialogTitle>YouTube 추가</DialogTitle>
-          <DialogContent>
-            <TextField
-              autoFocus
-              margin="dense"
-              label="YouTube URL"
-              type="url"
-              fullWidth
-              variant="outlined"
-              value={youtubeUrl}
-              onChange={(e) => setYoutubeUrl(e.target.value)}
-              placeholder="https://www.youtube.com/watch?v=..."
-            />
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={() => setShowYoutubeDialog(false)}>취소</Button>
-            <Button onClick={handleYoutubeAdd} variant="contained">
-              추가
-            </Button>
-          </DialogActions>
-        </Dialog>
-      </PresentationArea>
+          {/* YouTube 추가 다이얼로그 */}
+          <Dialog open={showYoutubeDialog} onClose={() => setShowYoutubeDialog(false)}>
+            <DialogTitle>YouTube 추가</DialogTitle>
+            <DialogContent>
+              <TextField
+                autoFocus
+                margin="dense"
+                label="YouTube URL"
+                type="url"
+                fullWidth
+                variant="outlined"
+                value={youtubeUrl}
+                onChange={(e) => setYoutubeUrl(e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=..."
+              />
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={() => setShowYoutubeDialog(false)}>취소</Button>
+              <Button onClick={handleYoutubeAdd} variant="contained">
+                추가
+              </Button>
+            </DialogActions>
+          </Dialog>
+        </PresentationArea>
+      </PresentationSection>
     </MainContent>
   );
 }

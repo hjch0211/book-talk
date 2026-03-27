@@ -15,7 +15,7 @@ import { DebateSkeleton } from './_components/DebateSkeleton';
 import StartDebateModal from './_components/modal/StartDebateModal.tsx';
 import { RoundActions } from './_components/RoundActions';
 import { RoundStartBackdrop } from './_components/RoundStartBackdrop';
-import { DebateContainer } from './style.ts';
+import { ContentRow, DebateContainer, MemberColumn } from './style.ts';
 
 interface Props {
   debateId: string | undefined;
@@ -95,46 +95,52 @@ function DebatePageContent({ debateId }: Props) {
   }
 
   return (
-    <PageContainer>
+    <PageContainer sx={{ height: '100vh' }}>
       <DebateContainer>
         <DebateHeader
           debate={debate}
           isHost={myMemberInfo?.role === 'HOST'}
           endDebate={handleEndDebate}
         />
-        <DebatePresentation
-          currentRoundInfo={currentRoundInfo}
-          debateId={debateId}
-          myAccountId={myMemberInfo?.id}
-          onChatMessage={connection.sendChatMessage}
-          chat={chat}
-          members={debate.members}
-          presentations={debate.presentations}
-        />
-        <DebateMemberList
-          currentSpeaker={currentRoundInfo.currentSpeaker}
-          nextSpeaker={currentRoundInfo.nextSpeaker}
-          members={connection.onlineMembers}
-          realTimeRemainingSeconds={round.realTimeRemainingSeconds}
-          raisedHands={connection.raisedHands}
-          currentRoundType={currentRoundInfo.type}
-          myAccountId={myMemberInfo?.id}
-          onPassSpeaker={round.passSpeaker}
-          presentations={debate.presentations}
-        />
-        <RoundActions
-          roundType={currentRoundInfo.type as RoundType}
-          myRole={myMemberInfo?.role || ''}
-          isCurrentSpeaker={debate.currentRoundInfo.currentSpeaker?.accountId === myMemberInfo?.id}
-          onStartDebate={handleOpenStartModal}
-          startAt={debate.startAt}
-          onEndPresentation={round.endPresentation}
-          onToggleHand={connection.toggleHand}
-          isMyHandRaised={myMemberInfo?.id ? connection.isHandRaised(myMemberInfo.id) : false}
-          isVoiceChatJoined={connection.voiceConnectionStatus === 'COMPLETED'}
-          isVoiceMuted={voiceChatUI.isMuted}
-          onToggleMute={voiceChatUI.toggleMute}
-        />
+        <ContentRow>
+          <DebatePresentation
+            currentRoundInfo={currentRoundInfo}
+            debateId={debateId}
+            myAccountId={myMemberInfo?.id}
+            onChatMessage={connection.sendChatMessage}
+            chat={chat}
+            members={debate.members}
+            presentations={debate.presentations}
+          />
+          <MemberColumn>
+            <DebateMemberList
+              currentSpeaker={currentRoundInfo.currentSpeaker}
+              nextSpeaker={currentRoundInfo.nextSpeaker}
+              members={connection.onlineMembers}
+              realTimeRemainingSeconds={round.realTimeRemainingSeconds}
+              raisedHands={connection.raisedHands}
+              currentRoundType={currentRoundInfo.type}
+              myAccountId={myMemberInfo?.id}
+              onPassSpeaker={round.passSpeaker}
+              presentations={debate.presentations}
+            />
+            <RoundActions
+              roundType={currentRoundInfo.type as RoundType}
+              myRole={myMemberInfo?.role || ''}
+              isCurrentSpeaker={
+                debate.currentRoundInfo.currentSpeaker?.accountId === myMemberInfo?.id
+              }
+              onStartDebate={handleOpenStartModal}
+              startAt={debate.startAt}
+              onEndPresentation={round.endPresentation}
+              onToggleHand={connection.toggleHand}
+              isMyHandRaised={myMemberInfo?.id ? connection.isHandRaised(myMemberInfo.id) : false}
+              isVoiceChatJoined={connection.voiceConnectionStatus === 'COMPLETED'}
+              isVoiceMuted={voiceChatUI.isMuted}
+              onToggleMute={voiceChatUI.toggleMute}
+            />
+          </MemberColumn>
+        </ContentRow>
 
         <RoundStartBackdrop
           show={roundStartBackdrop.show}
@@ -142,24 +148,19 @@ function DebatePageContent({ debateId }: Props) {
           onClose={roundStartBackdrop.close}
         />
 
-        {/* 음성 채팅 (PREPARATION 라운드 제외) */}
-        {currentRoundInfo.type !== 'PREPARATION' && (
-          <>
-            {/* 각 원격 스트림을 개별 audio element로 재생 (브라우저가 자동 믹싱) */}
-            {connection.remoteStreams.map((rs) => (
-              <AudioPlayer
-                key={rs.peerId}
-                stream={rs.stream}
-                isAudioActive={voiceChatUI.isAudioActive}
-                onAutoplayBlocked={voiceChatUI.onAutoplayBlocked}
-              />
-            ))}
-            <AudioActivationBanner
-              open={!voiceChatUI.isAudioActive && connection.remoteStreams.length > 0}
-              onActivate={voiceChatUI.activateAudio}
-            />
-          </>
-        )}
+        {/* 음성 채팅 */}
+        {connection.remoteStreams.map((rs) => (
+          <AudioPlayer
+            key={rs.peerId}
+            stream={rs.stream}
+            isAudioActive={voiceChatUI.isAudioActive}
+            onAutoplayBlocked={voiceChatUI.onAutoplayBlocked}
+          />
+        ))}
+        <AudioActivationBanner
+          open={!voiceChatUI.isAudioActive && connection.remoteStreams.length > 0}
+          onActivate={voiceChatUI.activateAudio}
+        />
       </DebateContainer>
     </PageContainer>
   );

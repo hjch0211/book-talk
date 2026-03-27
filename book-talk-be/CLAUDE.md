@@ -116,11 +116,67 @@ DesignSystemProvider (MUI 테마)
                  └─ AppRoutes
 ```
 
-**externals**: 백엔드 API 호출 레이어. `apiClient` (인증 불필요) / `authApiClient` (인증 필요) 두 Axios 인스턴스 사용. 401 응답 시 자동 토큰 갱신, 실패 시 `/sign-in` 리다이렉트. 모든 응답은 `ApiResult<T>` 래퍼.
+**externals**: 백엔드 API 호출 레이어. `apiClient` (인증 불필요) / `authApiClient` (인증 필요) 두 Axios 인스턴스 사용. 401 응답 시 자동 토큰 갱신, 실패 시 `/sign-in` 리다이렉트. 모든 응답은 `ApiResult<T>` 래퍼. 토큰은 `localStorage`에 저장 (`accessToken`, `refreshToken`).
+
+각 externals 도메인은 `api.ts` / `schema.ts` / `queryOptions.ts` / `index.ts` 로 구성. TanStack Query queryKey 컨벤션: `['debates', debateId]`, `['debates', 'all', params]` 등 계층형 배열.
 
 **컴포넌트 계층**: `atoms` → `molecules` → `organisms` → `templates` → `routes` (페이지)
 
 **라우트**: `/ (Landing)`, `/home`, `/sign-in`, `/sign-up`, `/forgot-password`, `/my-page`, `/debate/:debateId`
+
+### hooks 구조
+
+```
+hooks/
+  infra/   → 범용 훅 (useModal, useToast, useWebRTC, useInnerModal 등)
+  domain/  → 도메인 훅 (useDebate, useDebateRound, useDebateRealtimeConnection 등)
+```
+
+`useDebate`는 토론 페이지의 최상위 훅으로 아래를 조합:
+- `useDebateRound` — 라운드/발언자 관리
+- `useDebateRealtimeConnection` — WebSocket + WebRTC 연결
+- `useDebateVoiceChat` — 음소거/오디오 활성화 UI
+- `useDebateChat` — FREE 라운드 채팅
+- `useDebateRoundStartBackdrop` — 라운드 시작 백드롭 UI
+
+### Debate 페이지 아키텍처
+
+**라운드 타입**: `PREPARATION` (준비, 발표자료 편집) → `PRESENTATION` (발표 순서대로) → `FREE` (자유토론+채팅)
+
+서버의 `currentRound === null`은 프론트에서 `PREPARATION`으로 변환됨 (`queryOptions.ts`의 `transformToCurrentRoundInfo`).
+
+**실시간 연결 흐름**:
+1. WebSocket 연결(`/ws`) → `onJoinSuccess` → `joinVoiceChat()` 즉시 호출 (PREPARATION부터 음성 연결 시작)
+2. WebRTC P2P 음성: `S_VOICE_JOIN` 수신 시 offer/answer 교환
+3. TURN 서버: Cloudflare (`cloudflareApiClient`)
+
+**`_components/` 구조**:
+- `DebateHeader` — 네비게이션 바
+- `DebatePresentation` — TipTap 에디터 + 채팅 영역 (라운드에 따라 전환)
+- `DebateMemberList` — 참여자 목록 (손들기, 발표 상태)
+- `RoundActions` — 라운드별 액션 버튼 (토론 시작/발표 끝내기/마이크/손들기)
+- `editor/` — TipTap 커스텀 익스텐션 (이미지, YouTube, 링크 미리보기, 멘션, 슬래시 커맨드)
+- `modal/` — StartDebateModal, SurveyModal, AiSummarizationModal, PresentationViewModal
+
+### 스타일링 시스템
+
+두 가지 styled 방식이 혼용됨:
+- `@emotion/styled` — `routes/Debate/style.ts` 등 페이지 레벨 스타일
+- `@mui/material/styles`의 `styled` — 재사용 컴포넌트 (`AppButton`, `DebateCard` 등)
+
+**중요**: `@emotion/babel-plugin`이 설치되어 있지 않아 **Emotion 컴포넌트 셀렉터(`${ComponentName}`)가 작동하지 않음**. 부모-자식 간 상태 전달은 CSS 커스텀 프로퍼티(`var(--xxx)`)를 사용:
+
+```ts
+// CardRoot hover 시 CardBody 배경 변경
+export const CardRoot = styled(Box)({
+  '&:hover': { '--card-body-bg': '#E8EBFF' },
+});
+export const CardBody = styled(Box)({
+  backgroundColor: 'var(--card-body-bg, transparent)',
+});
+```
+
+**전체화면 레이아웃 (Debate 페이지)**: `PageContainer sx={{ height: '100vh' }}`에서 시작. flex 체인 전체에 높이가 전달되어야 하며, flex 아이템 기본값인 `min-height: auto`가 자식 콘텐츠 크기로 부모를 밀어낼 수 있음 → 스크롤이 필요 없는 flex 아이템에는 `min-height: 0` 명시.
 
 ### Modal 패턴
 
@@ -130,6 +186,12 @@ DesignSystemProvider (MUI 테마)
 
 - `inner` 모달은 `z-index: 1400` (일반 모달 1300보다 높음), `hideBackdrop`, 닫기 버튼 위치 조정(top/right 축소).
 
+### PageContainer
+
+`src/components/templates/PageContainer` — 모든 페이지를 감싸는 래퍼. `bgColor`와 `sx` prop 지원. 내부적으로 `StyledWrapper`(min-height: 100vh) + `StyledContainer`(max-width: 1440px, flex-column, height: 100%) 구조.
+
+Debate 페이지처럼 스크롤 없는 전체화면이 필요하면 `sx={{ height: '100vh' }}`를 전달.
+
 ### 코드 컨벤션
 
 - **import type**: 타입만 import 시 `import type` 사용 (Biome 강제)
@@ -137,3 +199,5 @@ DesignSystemProvider (MUI 테마)
 - 따옴표: JS/TS는 single quote, JSX attribute는 double quote
 - 세미콜론 필수, trailing comma (ES5), arrow function 항상 괄호
 - `noNonNullAssertion` 규칙 off (non-null assertion `!` 허용)
+- `useExhaustiveDependencies` — warn (의존성 배열 누락 경고)
+- `noExplicitAny` — warn

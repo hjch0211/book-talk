@@ -1,5 +1,5 @@
 import { Search } from '@mui/icons-material';
-import { MenuItem } from '@mui/material';
+import { MenuItem, Typography } from '@mui/material';
 import { AppButton } from '@src/components/molecules/AppButton';
 import { AppFieldMessage } from '@src/components/molecules/AppFieldMessage';
 import { AppTextField } from '@src/components/molecules/AppTextField';
@@ -21,7 +21,6 @@ import {
   FormContainer,
   InputBox,
   ModalContainer,
-  ModalTitle,
   NoResultText,
   ParticipantSelect,
   RequiredMark,
@@ -63,14 +62,16 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
   return (
     <Modal open={open} onClose={onClose}>
       <ModalContainer>
-        <ModalTitle>토론방 만들기</ModalTitle>
+        <Typography variant="labelL" color="#545454" textAlign="center" alignSelf="stretch">
+          토론방 만들기
+        </Typography>
 
         <FormContainer>
           <FieldSection>
             <FieldLabelRow>
               <FieldLabelInner>
-                <FieldLabel>책 제목</FieldLabel>
-                <RequiredMark>*</RequiredMark>
+                <FieldLabel variant="captionM">책 제목</FieldLabel>
+                <RequiredMark variant="captionM">*</RequiredMark>
               </FieldLabelInner>
             </FieldLabelRow>
 
@@ -89,7 +90,7 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
                 <SearchDropdown ref={dropdownRef}>
                   <SearchResultList>
                     {isSearchLoading ? (
-                      <NoResultText>검색 중...</NoResultText>
+                      <NoResultText variant="captionM">검색 중...</NoResultText>
                     ) : searchResults.length > 0 ? (
                       <>
                         {searchResults.map((book, index) => (
@@ -105,18 +106,18 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
                               }}
                             />
                             <BookInfo>
-                              <BookTitle>{book.title}</BookTitle>
-                              <BookAuthor>
+                              <BookTitle variant="labelS">{book.title}</BookTitle>
+                              <BookAuthor variant="captionS">
                                 {book.author} · {book.publisher}
                               </BookAuthor>
                             </BookInfo>
                           </SearchResultItem>
                         ))}
-                        {isFetchingNextBooks && <NoResultText>불러오는 중...</NoResultText>}
+                        {isFetchingNextBooks && <NoResultText variant="captionM">불러오는 중...</NoResultText>}
                         <div ref={sentinelRef} style={{ height: 1 }} />
                       </>
                     ) : debouncedSearchQuery ? (
-                      <NoResultText>검색 결과가 없습니다</NoResultText>
+                      <NoResultText variant="captionM">검색 결과가 없습니다</NoResultText>
                     ) : null}
                   </SearchResultList>
                 </SearchDropdown>
@@ -131,10 +132,10 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
           <FieldSection>
             <FieldLabelRow>
               <FieldLabelInner>
-                <FieldLabel>토론주제</FieldLabel>
-                <RequiredMark>*</RequiredMark>
+                <FieldLabel variant="captionM">토론주제</FieldLabel>
+                <RequiredMark variant="captionM">*</RequiredMark>
               </FieldLabelInner>
-              <FieldHint>(최대 60자)</FieldHint>
+              <FieldHint variant="captionS">(최대 60자)</FieldHint>
             </FieldLabelRow>
 
             <Controller
@@ -155,8 +156,8 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
 
           <FieldSection>
             <FieldLabelRow>
-              <FieldLabel>토론설명</FieldLabel>
-              <FieldHint>(최대 300자)</FieldHint>
+              <FieldLabel variant="captionM">토론설명</FieldLabel>
+              <FieldHint variant="captionS">(최대 300자)</FieldHint>
             </FieldLabelRow>
 
             <Controller
@@ -182,8 +183,8 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
           <FieldSection>
             <FieldLabelRow>
               <FieldLabelInner>
-                <FieldLabel>참여자 수</FieldLabel>
-                <RequiredMark>*</RequiredMark>
+                <FieldLabel variant="captionM">참여자 수</FieldLabel>
+                <RequiredMark variant="captionM">*</RequiredMark>
               </FieldLabelInner>
             </FieldLabelRow>
 
@@ -205,8 +206,8 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
           <FieldSection>
             <FieldLabelRow>
               <FieldLabelInner>
-                <FieldLabel>토론일정</FieldLabel>
-                <RequiredMark>*</RequiredMark>
+                <FieldLabel variant="captionM">토론일정</FieldLabel>
+                <RequiredMark variant="captionM">*</RequiredMark>
               </FieldLabelInner>
             </FieldLabelRow>
 
@@ -256,7 +257,9 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
           loading={isPending}
           sx={{ width: 250, height: 60 }}
         >
-          토론방 생성
+          <Typography variant="labelM" color="inherit">
+            토론방 생성
+          </Typography>
         </AppButton>
       </ModalContainer>
     </Modal>

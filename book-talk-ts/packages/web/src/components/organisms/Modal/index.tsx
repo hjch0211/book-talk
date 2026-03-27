@@ -10,6 +10,7 @@ interface ModalProps {
   children: ReactNode;
   showCloseButton?: boolean;
   inner?: boolean;
+  hideBackdrop?: boolean;
 }
 
 const Modal = ({
@@ -20,9 +21,10 @@ const Modal = ({
   children,
   showCloseButton = true,
   inner = false,
+  hideBackdrop,
 }: ModalProps) => {
   return (
-    <StyledModal open={open} onClose={onClose} hideBackdrop={inner} inner={inner}>
+    <StyledModal open={open} onClose={onClose} hideBackdrop={hideBackdrop ?? inner} inner={inner}>
       <ModalBox width={width} height={height}>
         {showCloseButton && (
           <CloseButton inner={inner} onClick={onClose}>

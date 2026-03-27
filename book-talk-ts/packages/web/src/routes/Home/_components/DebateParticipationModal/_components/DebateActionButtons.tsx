@@ -1,3 +1,4 @@
+import { Typography } from '@mui/material';
 import { AppButton } from '@src/components/molecules/AppButton';
 import {
   ButtonRow,
@@ -43,9 +44,9 @@ export function DebateActionButtons({
           style={{ width: 250 }}
           disableRipple
         >
-          참여신청 마감
+          <Typography variant="labelM" color="inherit">참여신청 마감</Typography>
         </AppButton>
-        <Caption>{CAPTIONS.FULL}</Caption>
+        <Caption variant="captionS">{CAPTIONS.FULL}</Caption>
       </ButtonSection>
     );
   }
@@ -59,13 +60,13 @@ export function DebateActionButtons({
           onClick={onCancel}
           loading={isCancelPending}
         >
-          참여신청 취소하기
+          <Typography variant="labelM" color="inherit">참여신청 취소하기</Typography>
         </AppButton>
         <ButtonSection>
           <AppButton appVariant="filled" style={{ width: 250, height: 60 }} onClick={onEnter}>
-            토론방 입장하기
+            <Typography variant="labelM" color="inherit">토론방 입장하기</Typography>
           </AppButton>
-          <Caption>{CAPTIONS.MEMBER}</Caption>
+          <Caption variant="captionS">{CAPTIONS.MEMBER}</Caption>
         </ButtonSection>
       </ButtonRow>
     );
@@ -75,13 +76,13 @@ export function DebateActionButtons({
     return (
       <ButtonRow>
         <AppButton appVariant="transparent" style={{ width: 162, height: 60 }} onClick={onEdit}>
-          토론정보 수정하기
+          <Typography variant="labelM" color="inherit">토론정보 수정하기</Typography>
         </AppButton>
         <ButtonSection>
           <AppButton appVariant="filled" style={{ width: 250, height: 60 }} onClick={onEnter}>
-            토론방 입장하기
+            <Typography variant="labelM" color="inherit">토론방 입장하기</Typography>
           </AppButton>
-          <Caption>{CAPTIONS.HOST}</Caption>
+          <Caption variant="captionS">{CAPTIONS.HOST}</Caption>
         </ButtonSection>
       </ButtonRow>
     );
@@ -94,7 +95,7 @@ export function DebateActionButtons({
       loading={isJoinPending}
       style={{ width: 250, height: 60 }}
     >
-      참여 신청하기
+      <Typography variant="labelM" color="inherit">참여 신청하기</Typography>
     </AppButton>
   );
 }

@@ -15,6 +15,7 @@ interface BackdropTextProps {
 
 const Title: React.FC<BackdropTextProps> = ({ children }) => (
   <Typography
+    variant="inherit"
     sx={{
       fontFamily: 'S-Core Dream',
       fontWeight: 600,
@@ -22,8 +23,7 @@ const Title: React.FC<BackdropTextProps> = ({ children }) => (
       lineHeight: '153px',
       textAlign: 'center',
       color: '#FFFFFF',
-      height: '153px',
-      width: '110%',
+      width: '100%',
     }}
   >
     {children}
@@ -34,12 +34,12 @@ const Subtitle: React.FC<BackdropTextProps> = ({ children }) => (
   <Typography
     sx={{
       fontFamily: 'S-Core Dream',
-      fontWeight: 200,
+      fontWeight: 500,
       fontSize: '24px',
-      lineHeight: '32px',
+      lineHeight: '125%',
       textAlign: 'center',
+      letterSpacing: '0.3px',
       color: '#FFFFFF',
-      marginBottom: '24px',
     }}
   >
     {children}
@@ -50,14 +50,12 @@ const Description: React.FC<BackdropTextProps> = ({ children }) => (
   <Typography
     sx={{
       fontFamily: 'S-Core Dream',
-      fontWeight: 200,
-      fontSize: '18px',
-      lineHeight: '32px',
+      fontWeight: 500,
+      fontSize: '24px',
+      lineHeight: '125%',
       textAlign: 'center',
-      letterSpacing: '0.01em',
+      letterSpacing: '0.3px',
       color: '#FFFFFF',
-      width: '573px',
-      height: '21px',
     }}
   >
     {children}
@@ -117,7 +115,7 @@ export function RoundStartBackdrop({ show, roundType, onClose }: RoundStartBackd
           flexDirection: 'column',
           alignItems: 'center',
           gap: '30px',
-          width: '732px',
+          width: 'fit-content',
           height: '332px',
 
           opacity: show ? 1 : 0,

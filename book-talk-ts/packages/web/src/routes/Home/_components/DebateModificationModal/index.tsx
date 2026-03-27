@@ -1,5 +1,5 @@
 import { AccessTime, CalendarMonth, DeleteOutline } from '@mui/icons-material';
-import { InputAdornment, MenuItem } from '@mui/material';
+import { InputAdornment, MenuItem, Typography } from '@mui/material';
 import { AppButton } from '@src/components/molecules/AppButton';
 import { AppFieldMessage } from '@src/components/molecules/AppFieldMessage';
 import { AppTextField } from '@src/components/molecules/AppTextField';
@@ -51,27 +51,27 @@ const DebateModificationModal = ({ open, onClose, debate }: Props) => {
   return (
     <Modal open={open} onClose={onClose}>
       <ModalContainer>
-        <ModalTitle>토론방 정보</ModalTitle>
+        <ModalTitle variant="labelL">토론방 정보</ModalTitle>
 
         <FormContainer>
           <FieldSection>
             <FieldLabelRow>
               <FieldLabelInner>
-                <FieldLabel>책 제목</FieldLabel>
+                <FieldLabel variant="captionM">책 제목</FieldLabel>
               </FieldLabelInner>
             </FieldLabelRow>
             <BookReadOnlyBox>
-              <BookReadOnlyText>{debate.bookInfo.title}</BookReadOnlyText>
+              <BookReadOnlyText variant="captionM">{debate.bookInfo.title}</BookReadOnlyText>
             </BookReadOnlyBox>
           </FieldSection>
 
           <FieldSection>
             <FieldLabelRow>
               <FieldLabelInner>
-                <FieldLabel>토론주제</FieldLabel>
-                <RequiredMark>*</RequiredMark>
+                <FieldLabel variant="captionM">토론주제</FieldLabel>
+                <RequiredMark variant="captionM">*</RequiredMark>
               </FieldLabelInner>
-              <FieldHint>(최대 60자)</FieldHint>
+              <FieldHint variant="captionS">(최대 60자)</FieldHint>
             </FieldLabelRow>
 
             <Controller
@@ -92,8 +92,8 @@ const DebateModificationModal = ({ open, onClose, debate }: Props) => {
 
           <FieldSection>
             <FieldLabelRow>
-              <FieldLabel>토론설명</FieldLabel>
-              <FieldHint>(최대 300자)</FieldHint>
+              <FieldLabel variant="captionM">토론설명</FieldLabel>
+              <FieldHint variant="captionS">(최대 300자)</FieldHint>
             </FieldLabelRow>
 
             <Controller
@@ -119,8 +119,8 @@ const DebateModificationModal = ({ open, onClose, debate }: Props) => {
           <FieldSection>
             <FieldLabelRow>
               <FieldLabelInner>
-                <FieldLabel>참여자 수</FieldLabel>
-                <RequiredMark>*</RequiredMark>
+                <FieldLabel variant="captionM">참여자 수</FieldLabel>
+                <RequiredMark variant="captionM">*</RequiredMark>
               </FieldLabelInner>
             </FieldLabelRow>
 
@@ -142,8 +142,8 @@ const DebateModificationModal = ({ open, onClose, debate }: Props) => {
           <FieldSection>
             <FieldLabelRow>
               <FieldLabelInner>
-                <FieldLabel>토론일정</FieldLabel>
-                <RequiredMark>*</RequiredMark>
+                <FieldLabel variant="captionM">토론일정</FieldLabel>
+                <RequiredMark variant="captionM">*</RequiredMark>
               </FieldLabelInner>
             </FieldLabelRow>
 
@@ -203,7 +203,7 @@ const DebateModificationModal = ({ open, onClose, debate }: Props) => {
             sx={{ width: 200, height: 60, borderRadius: '10px', gap: '8px' }}
           >
             <DeleteOutline sx={{ fontSize: 24, color: '#7B7B7B' }} />
-            토론방 삭제하기
+            <Typography variant="labelM" color="inherit">토론방 삭제하기</Typography>
           </AppButton>
           <AppButton
             appVariant="filled"
@@ -212,7 +212,7 @@ const DebateModificationModal = ({ open, onClose, debate }: Props) => {
             loading={isPending}
             sx={{ width: 250, height: 60 }}
           >
-            저장하기
+            <Typography variant="labelM" color="inherit">저장하기</Typography>
           </AppButton>
         </ButtonRow>
       </ModalContainer>

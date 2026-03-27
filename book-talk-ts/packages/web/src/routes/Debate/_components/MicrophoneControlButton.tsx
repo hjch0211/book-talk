@@ -27,15 +27,17 @@ export const MicrophoneControlButton = ({ isActive, isMuted, onToggleMute }: Pro
   return (
     <AppButton
       appVariant="rounded"
-      fullWidth={false}
+      fullWidth
       onClick={onToggleMute}
       title={getTitle()}
       disabled={!isActive}
       sx={{
-        background:
-          'linear-gradient(#FFFFFF, #FFFFFF) padding-box, linear-gradient(183.73deg, #FF8E66 50.78%, #FF5500 96.94%) border-box',
+        height: '60px',
+        borderRadius: '50px',
+        background: '#FFFFFF',
+        border: '1px solid #8E99FF',
+        boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)',
       }}
-      style={{ width: '100%' }}
     >
       {getMicIcon()}
     </AppButton>

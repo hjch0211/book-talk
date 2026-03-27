@@ -1,12 +1,9 @@
+import { Typography } from '@mui/material';
 import type { FindAllDebateInfo } from '@src/externals/debate/schema';
 import type { ReactNode } from 'react';
 import {
   CardBody,
-  CardClubTitle,
   CardCountGroup,
-  CardCurrentCount,
-  CardDate,
-  CardDescription,
   CardDivider,
   CardImage,
   CardImageWrapper,
@@ -16,7 +13,6 @@ import {
   CardPersonIcon,
   CardRoot,
   CardTitleSection,
-  CardTopic,
 } from './style.ts';
 
 function formatKoreanDate(isoString: string): string {
@@ -44,20 +40,46 @@ export function DebateCard({ data, children }: DebateCardProps) {
 
       <CardBody>
         <CardTitleSection>
-          <CardClubTitle>{data.bookInfo.title}</CardClubTitle>
+          <Typography variant="labelS" color="#000000" noWrap sx={{ flexShrink: 0 }}>
+            {data.bookInfo.title}
+          </Typography>
           <CardDivider />
         </CardTitleSection>
-        <CardTopic>{data.topic}</CardTopic>
-        <CardDescription>{data.description}</CardDescription>
+
+        <Typography variant="labelM" color="#000000" noWrap sx={{ flexShrink: 0 }}>
+          {data.topic}
+        </Typography>
+
+        <Typography
+          variant="captionS"
+          color="#000000"
+          sx={{
+            overflow: 'hidden',
+            display: '-webkit-box',
+            WebkitLineClamp: 3,
+            WebkitBoxOrient: 'vertical',
+          }}
+        >
+          {data.description}
+        </Typography>
+
         <CardPeopleRow>
           <CardCountGroup>
             <CardPersonIcon />
-            <CardCurrentCount>{data.members.length}</CardCurrentCount>
+            <Typography variant="labelL" color="#262626" textAlign="center">
+              {data.members.length}
+            </Typography>
             <CardMaxCountWrapper>
-              <CardMaxCount>/{data.maxMemberCount}</CardMaxCount>
+              <CardMaxCount>
+                <Typography variant="captionS" color="#262626" textAlign="center">
+                  /{data.maxMemberCount}
+                </Typography>
+              </CardMaxCount>
             </CardMaxCountWrapper>
           </CardCountGroup>
-          <CardDate>{scheduledAt}</CardDate>
+          <Typography variant="captionS" color="#262626">
+            {scheduledAt}
+          </Typography>
         </CardPeopleRow>
 
         {children}

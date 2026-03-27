@@ -57,7 +57,7 @@ const DebateParticipationModal = ({ open, onClose, debate, myId }: Props) => {
       <ModalContainer>
         <InnerWrapper>
           <ContentArea>
-            <ModalTitle>토론 소개</ModalTitle>
+            <ModalTitle variant="labelL">토론 소개</ModalTitle>
 
             <ContentRow>
               <BookProfile
@@ -66,14 +66,14 @@ const DebateParticipationModal = ({ open, onClose, debate, myId }: Props) => {
                 }
               >
                 <BookImageBox imageUrl={debate.bookInfo.imageUrl} />
-                <BookInfoLink>책 정보보기</BookInfoLink>
+                <BookInfoLink variant="captionS">책 정보보기</BookInfoLink>
               </BookProfile>
 
               <InfoColumn>
                 <TextSection>
-                  <DebateTopic>{debate.topic}</DebateTopic>
+                  <DebateTopic variant="labelL">{debate.topic}</DebateTopic>
                   {debate.description && (
-                    <DebateDescription>{debate.description}</DebateDescription>
+                    <DebateDescription variant="body2">{debate.description}</DebateDescription>
                   )}
                 </TextSection>
 
@@ -81,16 +81,16 @@ const DebateParticipationModal = ({ open, onClose, debate, myId }: Props) => {
 
                 <MetaSection>
                   <MetaRow>
-                    <MetaLabel>토론일정:</MetaLabel>
+                    <MetaLabel variant="labelL">토론일정:</MetaLabel>
                     <DateTimeGroup>
-                      <MetaValue>{formatDate(debate.startAt)}</MetaValue>
-                      <MetaValue>|</MetaValue>
-                      <MetaValue>{formatTime(debate.startAt)}</MetaValue>
+                      <MetaValue variant="body2">{formatDate(debate.startAt)}</MetaValue>
+                      <MetaValue variant="body2">|</MetaValue>
+                      <MetaValue variant="body2">{formatTime(debate.startAt)}</MetaValue>
                     </DateTimeGroup>
                   </MetaRow>
                   <MetaRow>
-                    <MetaLabel>모집 인원수:</MetaLabel>
-                    <MetaValue>
+                    <MetaLabel variant="labelL">모집 인원수:</MetaLabel>
+                    <MetaValue variant="body2">
                       {debate.members.length}/{debate.maxMemberCount} 명
                     </MetaValue>
                   </MetaRow>

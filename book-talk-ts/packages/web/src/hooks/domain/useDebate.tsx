@@ -51,7 +51,6 @@ export const useDebate = ({ debateId }: Props) => {
     mutationFn: createSurvey,
     onSuccess: () => {
       closeModal();
-      navigateToExpiredPage();
     },
     onError: (error) => {
       toast.error(error instanceof Error ? error.message : '설문조사 제출에 실패했습니다.');

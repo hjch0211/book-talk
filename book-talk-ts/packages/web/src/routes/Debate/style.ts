@@ -1,37 +1,44 @@
 import styled from '@emotion/styled';
 import { Box, Button, ListItem } from '@mui/material';
+import type { RoundType } from '@src/externals/debate';
 
 export const DebateContainer = styled.div`
-    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0px;
+    gap: 48px;
     width: 100%;
-    height: 100vh;
     background: #FFFFFF;
+    height: 100%;
 `;
 
 export const NavigationBar = styled.div`
+    box-sizing: border-box;
     display: flex;
     flex-direction: column;
     justify-content: flex-end;
-    align-items: flex-start;
-    padding: 80px 127px 40px 120px;
+    align-items: center;
+    padding: 0px 100px;
     gap: 10px;
-    position: absolute;
     width: 100%;
-    height: 180px;
-    left: 0;
-    top: 0;
+    height: 90px;
     background: linear-gradient(360deg, rgba(255, 255, 255, 0) 0%, #FFFFFF 9.13%);
+    border-bottom: 1px solid #E8EBFF;
     z-index: 10;
+    flex: none;
+    align-self: stretch;
+    flex-grow: 0;
 `;
 
 export const NavContent = styled.div`
     display: flex;
     flex-direction: row;
+    justify-content: space-between;
     align-items: center;
     padding: 0;
-    gap: 80px;
-    width: 1193px;
-    height: 60px;
+    width: 1240px;
+    height: 58px;
     flex: none;
     order: 0;
     align-self: stretch;
@@ -39,33 +46,51 @@ export const NavContent = styled.div`
 `;
 
 export const DebateTitle = styled.h1`
-    width: 918px;
-    height: 60px;
+    width: 975px;
+    height: 54px;
     margin: 0;
     font-family: 'S-Core Dream', sans-serif;
+    font-style: normal;
     font-weight: 500;
-    font-size: 24px;
-    line-height: 125%;
-    letter-spacing: 0.3px;
+    font-size: 18px;
+    line-height: 150%;
+    letter-spacing: 1px;
     color: #262626;
     flex: none;
     order: 0;
     flex-grow: 0;
     display: flex;
     align-items: center;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
 `;
 
 export const NavButtonGroup = styled.div`
     display: flex;
     flex-direction: row;
-    justify-content: center;
     align-items: center;
     padding: 0;
-    gap: 12px;
-    width: 195px;
+    gap: 30px;
+    width: 200px;
     height: 40px;
     flex: none;
     order: 1;
+    flex-grow: 0;
+`;
+
+export const NavButtonsSubGroup = styled.div`
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+    gap: 18px;
+    width: 98px;
+    height: 40px;
+    flex: none;
+    order: 2;
     flex-grow: 0;
 `;
 
@@ -92,15 +117,11 @@ export const NavButton = styled(Button)`
     border: none;
     box-shadow: none;
 
-    & .MuiButton-startIcon {
-        margin-right: 8px;
-        margin-left: 0;
+    && .MuiButton-startIcon {
+        margin: 0;
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 18px;
-        height: 24px;
-        min-height: 24px;
 
         & svg {
             width: 18px;
@@ -127,33 +148,63 @@ export const NavButton = styled(Button)`
     }
 `;
 
+export const ContentRow = styled.div`
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+`;
+
 export const MainContent = styled.div`
     display: flex;
     flex-direction: column;
-    position: absolute;
-    width: 970px;
-    left: 120px;
-    top: 200px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 32px;
+    gap: 10px;
+    flex: 1;
+    min-height: 0;
 `;
 
-export const PresentationArea = styled.div<{ $isChatMode?: boolean }>`
+export const PresentationSection = styled.div`
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    height: 100%;
+    align-items: end;
+`;
+
+export const MemberColumn = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0px;
+    gap: 60px;
+    width: 320px;
+    height: 720px;
+    flex-shrink: 0;
+`;
+
+export const PresentationArea = styled.div<{ $isChatMode?: boolean; $roundType?: RoundType }>`
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: ${(props) => (props.$isChatMode ? '20px' : '60px 90px 100px 60px')};
+    padding: ${(props) => (props.$isChatMode ? '20px' : '60px')};
     gap: 10px;
-    width: 970px;
+    width: 100%;
     min-height: 224px;
-    max-height: calc(100vh - 200px - 180px); /* 100vh - top(200px) - chatInput영역(180px) */
-    border: #E8EBFF;
+    height: 100%;
+    border: 1px solid #E8EBFF;
     background: #FFF;
-    box-shadow: 0 3px 5px 0 #E8EBFF;
+    box-shadow: 0px 3px 5px #E8EBFF;
     border-radius: 24px;
     overflow-y: auto;
-    position: relative;
+    overflow-x: hidden;
 
     .presentation-editor {
-        width: 800px;
+        width: 650px;
         outline: none;
         font-family: 'S-Core Dream', sans-serif;
         font-size: 16px;
@@ -291,14 +342,13 @@ export const PresentationArea = styled.div<{ $isChatMode?: boolean }>`
 `;
 
 export const ChatInputWrapper = styled(Box)`
-    position: absolute;
-    width: 970px;
-    left: 120px;
-    bottom: 0;
+    width: 770px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 `;
 
 export const ChatInputContainer = styled(Box)`
-    position: relative;
     width: 970px;
     min-height: 138px;
     max-height: 400px;
@@ -383,7 +433,7 @@ export const ChatInputBox = styled(Box)`
 
 export const SavedTimeIndicator = styled.div`
     position: relative;
-    bottom: 8px;
+    bottom: 4px;
     display: flex;
     justify-content: flex-end;
     font-family: 'S-Core Dream', sans-serif;
@@ -400,19 +450,21 @@ export const MemberListContainer = styled(Box)`
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    padding: 2px 0 0 15px;
+    padding: 0px;
+    gap: 18px;
     isolation: isolate;
-    position: absolute;
-    width: 280px;
-    height: 472px;
-    left: 1117px;
-    top: 200px;
+    width: 320px;
+    height: 488px;
     background: #FFFFFF;
-    border-radius: 24px;
+    border-width: 0px 0px 1px 1px;
+    border-style: solid;
+    border-color: #E8EBFF;
+    border-radius: 24px 0px 0px 24px;
+    position: relative;
 `;
 
 export const MemberListHeader = styled.div`
-    width: 265px;
+    width: 320px;
     height: 40px;
     background: #FFFFFF;
     border-radius: 24px;
@@ -430,8 +482,8 @@ export const MemberListHeader = styled.div`
 export const MemberListHeaderText = styled.div`
     position: absolute;
     height: 20px;
-    left: 6px;
-    top: calc(50% - 20px / 2);
+    left: 24px;
+    top: calc(50% - 10px);
     font-family: 'S-Core Dream', sans-serif;
     font-weight: 200;
     font-size: 14px;
@@ -445,9 +497,9 @@ export const MemberList = styled.div`
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    padding: 0;
+    padding: 0px 0px 0px 8px;
     gap: 24px;
-    width: 265px;
+    width: 286px;
     height: 430px;
     overflow-y: scroll;
     flex: none;
@@ -465,26 +517,23 @@ export const MemberList = styled.div`
 
 export const MemberListGradient = styled.div`
     position: absolute;
-    width: 280px;
-    height: 40px;
+    bottom: 0;
     left: 0;
-    top: 432px;
-    background: linear-gradient(180deg, rgba(247, 248, 255, 0) 55%, #F7F8FF 100%);
-    border-radius: 0 0 24px 24px;
+    width: 320px;
+    height: 40px;
+    background: linear-gradient(180deg, rgba(247, 248, 255, 0) 0%, #F7F8FF 100%);
+    border-radius: 0px 0px 0px 24px;
     pointer-events: none;
-    flex: none;
-    order: 2;
-    flex-grow: 0;
     z-index: 2;
 `;
 
 export const MemberItem = styled(ListItem)`
     display: flex;
     flex-direction: row;
-    align-items: center;
+    align-items: flex-start;
     padding: 0;
-    gap: 13px;
-    width: 265px;
+    gap: 0;
+    width: 278px;
     height: 76px;
     flex: none;
     align-self: stretch;
@@ -500,18 +549,16 @@ export const MemberItem = styled(ListItem)`
 `;
 
 export const MemberOrder = styled.div`
-    width: 21px;
-    height: 100%;
+    position: absolute;
+    width: 7px;
+    height: 13px;
+    left: 8.5px;
+    top: 37px;
     font-family: 'S-Core Dream', sans-serif;
     font-weight: 300;
     font-size: 11px;
     line-height: 13px;
     color: #434343;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-content: center;
-    text-align: center;
 `;
 
 export const MemberProfile = styled.div<{ $isCurrentSpeaker?: boolean }>`
@@ -520,11 +567,11 @@ export const MemberProfile = styled.div<{ $isCurrentSpeaker?: boolean }>`
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
-    padding: 16px 42px 16px 24px;
+    padding: 16px 24px;
     gap: 10px;
     isolation: isolate;
-    width: 230px;
-    height: 72px;
+    width: 254px;
+    height: 76px;
     background: ${(props) => (props.$isCurrentSpeaker ? '#F5F5F5' : '#FFFFFF')};
     border-radius: 2px 50px 50px 2px;
     flex: none;
@@ -545,7 +592,7 @@ export const MemberProfileBox = styled.div`
     align-items: center;
     padding: 0;
     gap: 14px;
-    width: 100%;
+    width: 218px;
     height: 40px;
     flex: none;
     order: 0;
@@ -629,7 +676,7 @@ export const MemberMenuButton = styled.div`
     justify-content: center;
     width: 24px;
     height: 24px;
-    left: 200px;
+    left: 222px;
     top: calc(50% - 24px / 2);
     cursor: pointer;
     color: #7B7B7B;
@@ -654,12 +701,15 @@ export const SpeakerTimer = styled.div`
 
 export const MemberOrderContainer = styled(Box)`
     position: relative;
+    width: 24px;
+    height: 50px;
+    flex-shrink: 0;
 `;
 
 export const RaisedHandIcon = styled(Box)`
     position: absolute;
-    top: -30px;
-    left: 2px;
+    top: 0;
+    left: 0;
     transition: opacity 0.3s ease-in-out;
     pointer-events: none;
 `;

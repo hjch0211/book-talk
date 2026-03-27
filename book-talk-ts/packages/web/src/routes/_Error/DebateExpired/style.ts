@@ -5,6 +5,8 @@ export const DebateExpiredContainer = styled.div`
     flex-direction: column;
     align-items: center;
     justify-content: center;
+    min-height: 100vh;
+    gap: 125px;
 `;
 
 export const ContentWrapper = styled.div`
@@ -13,10 +15,7 @@ export const ContentWrapper = styled.div`
     align-items: center;
     padding: 0;
     gap: 80px;
-    position: absolute;
     width: 624px;
-    height: 287px;
-    top: 256px;
 `;
 
 export const TextWrapper = styled.div`
@@ -81,10 +80,8 @@ export const BackButton = styled.button`
     justify-content: center;
     align-items: center;
     padding: 16px 32px;
-    position: absolute;
     width: 250px;
     height: 66px;
-    top: 668px;
     margin: 0;
     background: #D8DBFF;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.25);

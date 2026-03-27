@@ -43,7 +43,7 @@ const Ordered = ({ items }: { items: string[] }) => (
 
 export function TermsOfUsePage() {
   return (
-    <PageContainer isRelative>
+    <PageContainer>
       <AppHeader />
       <PolicyWrapper>
         <PolicyTitle>Booktalk 서비스 이용약관</PolicyTitle>

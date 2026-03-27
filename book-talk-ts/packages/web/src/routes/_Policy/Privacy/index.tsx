@@ -32,7 +32,7 @@ const Bullets = ({ items }: { items: string[] }) => (
 
 export function PrivacyPage() {
   return (
-    <PageContainer isRelative>
+    <PageContainer>
       <AppHeader />
       <PolicyWrapper>
         <PolicyTitle>Booktalk 개인정보 처리방침</PolicyTitle>

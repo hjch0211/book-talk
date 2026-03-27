@@ -12,54 +12,91 @@ import { appColor } from '../constants/color.ts';
 
 declare module '@mui/material/styles' {
   interface TypographyVariants {
+    headlineL: React.CSSProperties;
+    headlineM: React.CSSProperties;
+    headlineS: React.CSSProperties;
+    title1: React.CSSProperties;
+    title2: React.CSSProperties;
+    title3: React.CSSProperties;
     labelL: React.CSSProperties;
     labelM: React.CSSProperties;
+    labelS: React.CSSProperties;
+    captionS: React.CSSProperties;
+    captionM: React.CSSProperties;
+    captionL: React.CSSProperties;
   }
   interface TypographyVariantsOptions {
+    headlineL?: React.CSSProperties;
+    headlineM?: React.CSSProperties;
+    headlineS?: React.CSSProperties;
+    title1?: React.CSSProperties;
+    title2?: React.CSSProperties;
+    title3?: React.CSSProperties;
     labelL?: React.CSSProperties;
     labelM?: React.CSSProperties;
+    labelS?: React.CSSProperties;
+    captionS?: React.CSSProperties;
+    captionM?: React.CSSProperties;
+    captionL?: React.CSSProperties;
   }
 }
 
 declare module '@mui/material/Typography' {
   interface TypographyPropsVariantOverrides {
+    headlineL: true;
+    headlineM: true;
+    headlineS: true;
+    title1: true;
+    title2: true;
+    title3: true;
     labelL: true;
     labelM: true;
+    labelS: true;
+    captionS: true;
+    captionM: true;
+    captionL: true;
   }
 }
 
 const muiTypographyConfig: TypographyVariantsOptions = {
   fontFamily: ['S-Core Dream', 'SpoqaHanSansNeo-Regular', 'sans-serif'].join(','),
+
+  /** 36 / 180% */
+  headlineL: { fontSize: 36, lineHeight: 1.8, fontWeight: 600, letterSpacing: '0.3px' },
+  /** 32 / 125% */
+  headlineM: { fontSize: 32, lineHeight: 1.25, fontWeight: 600, letterSpacing: '0.3px' },
+  /** 28 / 150% */
+  headlineS: { fontSize: 28, lineHeight: 1.5, fontWeight: 600, letterSpacing: '0.3px' },
+
+  /** 24 / 125% */
+  title1: { fontSize: 24, lineHeight: 1.25, fontWeight: 500, letterSpacing: '0.3px' },
+  /** 20 / 170% */
+  title2: { fontSize: 20, lineHeight: 1.7, fontWeight: 500, letterSpacing: '0.3px' },
+  /** 18 / 150% */
+  title3: { fontSize: 18, lineHeight: 1.5, fontWeight: 500, letterSpacing: '1px' },
+
+  /** 16 / 24px → 1.5 */
+  labelL: { fontSize: 16, lineHeight: 1.5, fontWeight: 500, letterSpacing: '1px' },
+  /** 14 / 20px → ~1.43 */
+  labelM: { fontSize: 14, lineHeight: 1.43, fontWeight: 500, letterSpacing: '0.3px' },
+  /** 12 / 20px → ~1.67 */
+  labelS: { fontSize: 12, lineHeight: 1.67, fontWeight: 500, letterSpacing: '1px' },
+
+  /** 18 / 180% */
+  body1: { fontSize: 18, lineHeight: 1.8, fontWeight: 200, letterSpacing: '0.3px' },
+  /** 16 / 180% */
+  body2: { fontSize: 16, lineHeight: 1.8, fontWeight: 200, letterSpacing: '0.3px' },
+
+  /** 12 / 150% */
+  captionS: { fontSize: 12, lineHeight: 1.5, fontWeight: 200, letterSpacing: '0.3px' },
+  /** 14 / 20px → ~1.43 */
+  captionM: { fontSize: 14, lineHeight: 1.43, fontWeight: 200, letterSpacing: '0.3px' },
+  /** 16 / 24px → 1.5 */
+  captionL: { fontSize: 16, lineHeight: 1.5, fontWeight: 200, letterSpacing: '0.3px' },
+
   h1: { fontSize: 80, color: appColor.primary },
   h2: { fontSize: 26, color: appColor.primary },
-  body1: { fontSize: 16, letterSpacing: '2px' },
-  body2: {
-    fontSize: 16,
-    fontWeight: 200,
-    lineHeight: '180%',
-    letterSpacing: '0.3px',
-    color: '#434343',
-  },
-  button: { fontSize: 26, letterSpacing: '2px' },
-  labelL: {
-    fontFamily: 'S-Core Dream',
-    fontSize: 16,
-    fontStyle: 'normal',
-    fontWeight: 500,
-    lineHeight: '24px',
-    letterSpacing: '1px',
-    textAlign: 'center',
-    color: '#262626',
-  },
-  labelM: {
-    fontFamily: 'S-Core Dream',
-    fontSize: 14,
-    fontStyle: 'normal',
-    fontWeight: 500,
-    lineHeight: '20px',
-    letterSpacing: '0.3px',
-    color: '#262626',
-  },
+  button: { fontSize: 14, letterSpacing: '0.3px', textTransform: 'none' },
 };
 
 const muiPaletteConfig: PaletteOptions = {

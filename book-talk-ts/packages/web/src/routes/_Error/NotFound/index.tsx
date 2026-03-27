@@ -19,9 +19,13 @@ export const NotFound = () => {
     <NotFoundContainer>
       <ContentsFrame>
         <Contents>
-          <ErrorMessage>찾으시던 페이지가 이동되었거나<br/>존재하지 않는 주소예요</ErrorMessage>
+          <ErrorMessage>
+            찾으시던 페이지가 이동되었거나
+            <br />
+            존재하지 않는 주소예요
+          </ErrorMessage>
           <MainButton onClick={() => navigate('/home')}>
-            <ButtonText>{"북톡 홈으로 가기"}</ButtonText>
+            <ButtonText>{'북톡 홈으로 가기'}</ButtonText>
             <ArrowForwardIcon sx={{ width: 24, height: 24, color: '#434343' }} />
           </MainButton>
         </Contents>

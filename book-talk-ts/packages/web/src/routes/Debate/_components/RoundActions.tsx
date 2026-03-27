@@ -1,4 +1,4 @@
-import { Stack, Tooltip } from '@mui/material';
+import { Box, Stack, Tooltip, Typography } from '@mui/material';
 import { AppButton } from '@src/components/molecules/AppButton';
 import type { RoundType } from '@src/hooks';
 import { useQueryClient } from '@tanstack/react-query';
@@ -58,7 +58,7 @@ export function RoundActions({
   const [now, setNow] = useState(() => new Date());
   const invalidatedRef = useRef(false);
 
-  const handleInvalidateQuries = useEffectEvent(() => {
+  const handleInvalidateQueries = useEffectEvent(() => {
     void queryClient.invalidateQueries();
   });
 
@@ -68,7 +68,7 @@ export function RoundActions({
       setNow(current);
       if (!invalidatedRef.current && current >= new Date(startAt)) {
         invalidatedRef.current = true;
-        handleInvalidateQuries();
+        handleInvalidateQueries();
       }
     }, 1000);
     return () => clearInterval(interval);
@@ -77,47 +77,57 @@ export function RoundActions({
   const isStarted = now >= new Date(startAt);
 
   return (
-    <Stack spacing={2} sx={{ position: 'absolute', right: '85px', top: '742px', width: '200px' }}>
-      {roundType === 'PREPARATION' && myRole === 'HOST' && (
-        <Tooltip
-          title={!isStarted && startAt ? `${formatTime(startAt)}부터 시작 가능합니다` : ''}
-          arrow
-        >
-          <span>
-            <AppButton
-              appVariant="rounded"
-              style={{ width: '100%' }}
-              disabled={!isStarted}
-              onClick={onStartDebate}
-            >
-              토론 시작하기
-            </AppButton>
-          </span>
-        </Tooltip>
-      )}
-      {roundType === 'PRESENTATION' && (
-        <AppButton
-          appVariant="rounded"
-          style={{ width: '100%' }}
-          disabled={!isCurrentSpeaker}
-          onClick={onEndPresentation}
-        >
-          발표 끝내기
-        </AppButton>
-      )}
-      {roundType !== 'PREPARATION' && (
+    <Box
+      sx={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'center',
+        alignItems: 'stretch',
+        gap: '48px',
+        width: '200px',
+      }}
+    >
+      {/* 상단 액션 버튼 그룹 */}
+      <Stack spacing="12px">
+        {roundType === 'PREPARATION' && myRole === 'HOST' && (
+          <Tooltip
+            title={!isStarted && startAt ? `${formatTime(startAt)}부터 시작 가능합니다` : ''}
+            arrow
+          >
+            <span>
+              <AppButton appVariant="styled-outlined" disabled={!isStarted} onClick={onStartDebate}>
+                <Typography variant="title3" color="inherit">
+                  토론시작
+                </Typography>
+              </AppButton>
+            </span>
+          </Tooltip>
+        )}
+        {roundType !== 'FREE' && (
+          <AppButton
+            fullWidth
+            appVariant="rounded"
+            disabled={!isCurrentSpeaker}
+            onClick={onEndPresentation}
+          >
+            <Typography variant="title3" color="inherit">
+              발표 끝내기
+            </Typography>
+          </AppButton>
+        )}
+      </Stack>
+      <Box sx={{ display: 'flex', flexDirection: 'row', gap: '8px', width: '200px' }}>
         <MicrophoneControlButton
           isActive={isVoiceChatJoined}
           isMuted={isVoiceMuted}
           onToggleMute={onToggleMute}
         />
-      )}
-      {roundType === 'FREE' && (
         <AppButton
           appVariant="rounded"
-          style={{ width: '100%' }}
+          sx={{
+            ...(isMyHandRaised && { background: '#E8EBFF', borderColor: '#5F84FF' }),
+          }}
           onClick={onToggleHand}
-          sx={isMyHandRaised ? { backgroundColor: '#1976d2', color: 'black' } : undefined}
         >
           <img
             src={raiseHandSvg}
@@ -126,7 +136,8 @@ export function RoundActions({
             height={24}
           />
         </AppButton>
-      )}
-    </Stack>
+      </Box>
+      ;
+    </Box>
   );
 }

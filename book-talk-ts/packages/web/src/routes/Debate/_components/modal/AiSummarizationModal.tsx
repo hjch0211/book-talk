@@ -21,7 +21,7 @@ function AiSummarizationModal({
   const isLoading = !bookTitle || !topic || !bookImageUrl || !summarization;
 
   return (
-    <MuiModal open={open} onClose={onClose}>
+    <MuiModal open={open} onClose={onClose} sx={{ zIndex: 999 }}>
       <Box
         sx={{
           position: 'absolute',
