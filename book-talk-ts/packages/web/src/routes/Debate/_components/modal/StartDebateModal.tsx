@@ -63,7 +63,9 @@ function StartDebateModal({ onConfirm, isLoading = false, onClose, open }: Props
               fullWidth={false}
               sx={{ width: '180px' }}
             >
-              <Typography variant="labelM" color="inherit">아니오</Typography>
+              <Typography variant="labelM" color="inherit">
+                아니오
+              </Typography>
             </AppButton>
 
             <AppButton
@@ -81,7 +83,9 @@ function StartDebateModal({ onConfirm, isLoading = false, onClose, open }: Props
                 },
               }}
             >
-              <Typography variant="labelM" color="inherit">{isLoading ? '시작 중...' : '예'}</Typography>
+              <Typography variant="labelM" color="inherit">
+                {isLoading ? '시작 중...' : '예'}
+              </Typography>
             </AppButton>
           </Box>
         </Box>

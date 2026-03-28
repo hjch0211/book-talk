@@ -35,7 +35,9 @@ interface OtherDebatesSectionProps {
 
 function OtherDebatesSection({ excludeIds, myId, onButtonClick }: OtherDebatesSectionProps) {
   const { data } = useSuspenseQuery(findAllDebatesQueryOptions({ page: 0, size: 8 }));
-  const others = data.page.content.filter((d) => !excludeIds.has(d.id)).slice(0, 4);
+  const others = data.page.content
+    .filter((d) => !excludeIds.has(d.id) && !d.closedAt && !d.members.some((m) => m.id === myId))
+    .slice(0, 4);
 
   if (others.length === 0) return null;
 
@@ -46,10 +48,13 @@ function OtherDebatesSection({ excludeIds, myId, onButtonClick }: OtherDebatesSe
         {others.map((debate) => {
           const isEntered = !!debate.members.find((m) => m.id === myId);
           return (
-            <DebateCard key={debate.id} data={debate}>
+            <DebateCard key={debate.id} data={debate} onClick={() => onButtonClick(debate)}>
               <AppButton
                 appVariant={isEntered ? 'debate-enter' : 'debate-join'}
-                onClick={() => onButtonClick(debate)}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onButtonClick(debate);
+                }}
               >
                 {isEntered ? '토론방 입장하기' : '참여신청하기'}
               </AppButton>
@@ -108,10 +113,13 @@ function DebateListContent({
           {data.page.content.map((debate) => {
             const isEntered = !!debate.members.find((m) => m.id === me?.id);
             return (
-              <DebateCard key={debate.id} data={debate}>
+              <DebateCard key={debate.id} data={debate} onClick={() => onButtonClick(debate)}>
                 <AppButton
                   appVariant={isEntered ? 'debate-enter' : 'debate-join'}
-                  onClick={() => onButtonClick(debate)}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onButtonClick(debate);
+                  }}
                 >
                   {isEntered ? '토론방 입장하기' : '참여신청하기'}
                 </AppButton>

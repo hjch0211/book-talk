@@ -203,7 +203,9 @@ const DebateModificationModal = ({ open, onClose, debate }: Props) => {
             sx={{ width: 200, height: 60, borderRadius: '10px', gap: '8px' }}
           >
             <DeleteOutline sx={{ fontSize: 24, color: '#7B7B7B' }} />
-            <Typography variant="labelM" color="inherit">토론방 삭제하기</Typography>
+            <Typography variant="labelM" color="inherit">
+              토론방 삭제하기
+            </Typography>
           </AppButton>
           <AppButton
             appVariant="filled"
@@ -212,7 +214,9 @@ const DebateModificationModal = ({ open, onClose, debate }: Props) => {
             loading={isPending}
             sx={{ width: 250, height: 60 }}
           >
-            <Typography variant="labelM" color="inherit">저장하기</Typography>
+            <Typography variant="labelM" color="inherit">
+              저장하기
+            </Typography>
           </AppButton>
         </ButtonRow>
       </ModalContainer>

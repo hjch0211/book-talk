@@ -27,13 +27,14 @@ function formatKoreanDate(isoString: string): string {
 interface DebateCardProps {
   data: FindAllDebateInfo;
   children: ReactNode;
+  onClick?: () => void;
 }
 
-export function DebateCard({ data, children }: DebateCardProps) {
+export function DebateCard({ data, children, onClick }: DebateCardProps) {
   const scheduledAt = formatKoreanDate(data.startAt);
 
   return (
-    <CardRoot>
+    <CardRoot onClick={onClick}>
       <CardImageWrapper>
         <CardImage imageUrl={data.bookInfo.imageUrl} />
       </CardImageWrapper>

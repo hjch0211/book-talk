@@ -91,19 +91,20 @@ function MyProfileDebateListSection({
         {rows.map((row, rowIndex) => (
           <CardRow key={`${rowIndex + 1}`}>
             {row.map((debate) => (
-              <DebateCard key={debate.id} data={debate}>
+              <DebateCard key={debate.id} data={debate} onClick={() => onCardClick(debate)}>
                 {filterChip === 'joined' ? null : filterChip === 'applied' ? (
                   <Box sx={{ display: 'flex', gap: '6px' }}>
                     <AppButton
                       appVariant="transparent"
                       fullWidth={false}
                       style={{ width: 98, height: 36, borderRadius: 10, fontSize: 12 }}
-                      onClick={() =>
+                      onClick={(e) => {
+                        e.stopPropagation();
                         openModal(CancelDebateModal, {
                           onConfirm: () => cancelMutation.mutate(debate.id),
                           isPending: cancelMutation.isPending,
-                        })
-                      }
+                        });
+                      }}
                     >
                       신청 취소
                     </AppButton>
@@ -111,7 +112,10 @@ function MyProfileDebateListSection({
                       appVariant="debate-join"
                       fullWidth={false}
                       style={{ width: 150, height: 36, borderRadius: 10, fontSize: 12 }}
-                      onClick={() => onCardClick(debate)}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onCardClick(debate);
+                      }}
                     >
                       토론방 입장
                     </AppButton>
@@ -121,7 +125,10 @@ function MyProfileDebateListSection({
                     appVariant={
                       debate.members.some((m) => m.id === myId) ? 'debate-enter' : 'debate-join'
                     }
-                    onClick={() => onCardClick(debate)}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onCardClick(debate);
+                    }}
                   >
                     {debate.members.some((m) => m.id === myId) ? '토론방 입장하기' : '참여신청하기'}
                   </AppButton>

@@ -6,7 +6,7 @@ import { useQuery } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import DebateCreationModal from './_components/DebateCreationModal';
-import DebateParticipationModal from './_components/DebateParticipationModal';
+import DebateDetailModal from './_components/DebateDetailModal';
 
 export function useHome() {
   const navigate = useNavigate();
@@ -28,7 +28,7 @@ export function useHome() {
   });
 
   const openDebateParticipationModalInner = useEffectEvent((debate: FindAllDebateInfo) => {
-    openModal(DebateParticipationModal, { debate, myId: me?.id });
+    openModal(DebateDetailModal, { debate, myId: me?.id });
   });
 
   useEffect(() => {
@@ -83,7 +83,7 @@ export function useHome() {
   };
 
   const openDebateParticipationModal = (debate: FindAllDebateInfo) => {
-    openModal(DebateParticipationModal, { debate, myId: me?.id });
+    openModal(DebateDetailModal, { debate, myId: me?.id });
   };
 
   return {

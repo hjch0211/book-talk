@@ -46,7 +46,7 @@ const formatTime = (isoString: string): string => {
   return m === 0 ? `${h}시` : `${h}시 ${m}분`;
 };
 
-const DebateParticipationModal = ({ open, onClose, debate, myId }: Props) => {
+const DebateDetailModal = ({ open, onClose, debate, myId }: Props) => {
   const { handleJoin, handleCancel, handleEnter, handleEdit, isJoinPending, isCancelPending } =
     useDebateParticipation(debate, onClose, myId);
   const myRole = debate.members.find((m) => m.id === myId)?.role;
@@ -115,4 +115,4 @@ const DebateParticipationModal = ({ open, onClose, debate, myId }: Props) => {
   );
 };
 
-export default DebateParticipationModal;
+export default DebateDetailModal;

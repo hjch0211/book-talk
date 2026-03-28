@@ -113,7 +113,9 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
                             </BookInfo>
                           </SearchResultItem>
                         ))}
-                        {isFetchingNextBooks && <NoResultText variant="captionM">불러오는 중...</NoResultText>}
+                        {isFetchingNextBooks && (
+                          <NoResultText variant="captionM">불러오는 중...</NoResultText>
+                        )}
                         <div ref={sentinelRef} style={{ height: 1 }} />
                       </>
                     ) : debouncedSearchQuery ? (

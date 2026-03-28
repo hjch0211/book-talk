@@ -3,7 +3,7 @@ import AppHeader from '@src/components/organisms/AppHeader';
 import PageContainer from '@src/components/templates/PageContainer';
 import type { FindAllDebateInfo } from '@src/externals/debate/schema';
 import { useModal } from '@src/hooks';
-import DebateParticipationModal from '@src/routes/Home/_components/DebateParticipationModal';
+import DebateDetailModal from '@src/routes/Home/_components/DebateDetailModal';
 import { DebateManagementSection } from '@src/routes/MyPage/_components/DebateManagementSection';
 import { MyInfoModificationSection } from '@src/routes/MyPage/_components/MyInfoModificationSection';
 import { MyPageTab } from '@src/routes/MyPage/_components/MyPageTab';
@@ -15,7 +15,7 @@ export function MyPage() {
   const { openModal } = useModal();
 
   const handleCardClick = (debate: FindAllDebateInfo) => {
-    openModal(DebateParticipationModal, { debate, myId: me?.id });
+    openModal(DebateDetailModal, { debate, myId: me?.id });
   };
 
   return (

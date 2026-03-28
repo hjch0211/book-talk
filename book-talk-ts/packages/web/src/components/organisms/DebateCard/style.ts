@@ -25,7 +25,9 @@ export const CardRoot = styled(Box)({
     'linear-gradient(#ffffff, #ffffff) padding-box, linear-gradient(180deg, #AACDFF 0%, #5F84FF 100%) border-box',
   overflow: 'hidden',
   flexShrink: 0,
-  transition: 'opacity 0.2s ease',
+  cursor: 'pointer',
+  userSelect: 'none',
+  transition: 'opacity 0.2s ease, transform 0.1s ease',
   '&:hover': {
     '--card-body-bg': '#E8EBFF',
     '& .MuiButtonBase-root': {
