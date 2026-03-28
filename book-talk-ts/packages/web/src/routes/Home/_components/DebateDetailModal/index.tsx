@@ -72,9 +72,7 @@ const DebateDetailModal = ({ open, onClose, debate, myId }: Props) => {
               <InfoColumn>
                 <TextSection>
                   <DebateTopic variant="labelL">{debate.topic}</DebateTopic>
-                  {debate.description && (
-                    <DebateDescription variant="body2">{debate.description}</DebateDescription>
-                  )}
+                  <DebateDescription variant="body2">{debate.description}</DebateDescription>
                 </TextSection>
 
                 <Divider />
