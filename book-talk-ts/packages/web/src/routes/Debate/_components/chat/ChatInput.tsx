@@ -235,11 +235,10 @@ export function ChatInput({ isSending, onSend, members, presentations }: ChatInp
       </ChatInputContainer>
 
       {/* 이미지 추가 모달 */}
-      <Modal open={showImageDialog} onClose={() => setShowImageDialog(false)} inner width={400}>
+      <Modal open={showImageDialog} onClose={() => setShowImageDialog(false)} inner width={600}>
         <ModalContent>
           <AppTextField
             autoFocus
-            label="이미지 URL"
             type="url"
             value={imageUrl}
             onChange={(e) => setImageUrl(e.target.value)}
@@ -255,11 +254,10 @@ export function ChatInput({ isSending, onSend, members, presentations }: ChatInp
       </Modal>
 
       {/* YouTube 추가 모달 */}
-      <Modal open={showYoutubeDialog} onClose={() => setShowYoutubeDialog(false)} inner width={400}>
+      <Modal open={showYoutubeDialog} onClose={() => setShowYoutubeDialog(false)} inner width={600}>
         <ModalContent>
           <AppTextField
             autoFocus
-            label="YouTube URL"
             type="url"
             fullWidth
             value={youtubeUrl}
