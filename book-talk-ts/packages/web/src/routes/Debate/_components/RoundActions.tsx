@@ -1,19 +1,8 @@
-import { Box, Stack, Tooltip, Typography } from '@mui/material';
+import { Box, Stack, Typography } from '@mui/material';
 import { AppButton } from '@src/components/molecules/AppButton';
 import type { RoundType } from '@src/hooks';
-import { useQueryClient } from '@tanstack/react-query';
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import raiseHandSvg from '../../../assets/raise-hand.svg';
 import { MicrophoneControlButton } from './MicrophoneControlButton.tsx';
-
-const KST_OFFSET = 9 * 60 * 60 * 1000;
-const toKst = (isoString: string) => new Date(new Date(isoString).getTime() + KST_OFFSET);
-const formatTime = (isoString: string): string => {
-  const d = toKst(isoString);
-  const h = d.getUTCHours();
-  const m = d.getUTCMinutes();
-  return m === 0 ? `${h}시` : `${h}시 ${m}분`;
-};
 
 interface RoundActionsProps {
   /** 현재 라운드 타입 */
@@ -24,8 +13,6 @@ interface RoundActionsProps {
   isCurrentSpeaker: boolean;
   /** 토론 시작 핸들러 */
   onStartDebate: () => void;
-  /** 토론 예정 시작 시간 (ISO string) */
-  startAt: string;
   /** 발표 종료 핸들러 */
   onEndPresentation: () => void;
   /** 손들기 토글 핸들러 */
@@ -52,30 +39,7 @@ export function RoundActions({
   isVoiceChatJoined,
   isVoiceMuted,
   onToggleMute,
-  startAt,
 }: RoundActionsProps) {
-  const queryClient = useQueryClient();
-  const [now, setNow] = useState(() => new Date());
-  const invalidatedRef = useRef(false);
-
-  const handleInvalidateQueries = useEffectEvent(() => {
-    void queryClient.invalidateQueries();
-  });
-
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const current = new Date();
-      setNow(current);
-      if (!invalidatedRef.current && current >= new Date(startAt)) {
-        invalidatedRef.current = true;
-        handleInvalidateQueries();
-      }
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [startAt]);
-
-  const isStarted = now >= new Date(startAt);
-
   return (
     <Box
       sx={{
@@ -90,18 +54,11 @@ export function RoundActions({
       {/* 상단 액션 버튼 그룹 */}
       <Stack spacing="12px">
         {roundType === 'PREPARATION' && myRole === 'HOST' && (
-          <Tooltip
-            title={!isStarted && startAt ? `${formatTime(startAt)}부터 시작 가능합니다` : ''}
-            arrow
-          >
-            <span>
-              <AppButton appVariant="styled-outlined" disabled={!isStarted} onClick={onStartDebate}>
-                <Typography variant="title3" color="inherit">
-                  토론시작
-                </Typography>
-              </AppButton>
-            </span>
-          </Tooltip>
+          <AppButton appVariant="styled-outlined" onClick={onStartDebate}>
+            <Typography variant="title3" color="inherit">
+              토론시작
+            </Typography>
+          </AppButton>
         )}
         {roundType !== 'FREE' && (
           <AppButton

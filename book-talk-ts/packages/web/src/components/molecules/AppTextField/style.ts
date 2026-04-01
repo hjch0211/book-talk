@@ -7,7 +7,7 @@ export const StyledTextField = styled(TextField, {
   width: 100%;
 
   .MuiOutlinedInput-root {
-    height: 52px;
+    height: 49px;
 
     &.MuiInputBase-multiline {
       height: auto;

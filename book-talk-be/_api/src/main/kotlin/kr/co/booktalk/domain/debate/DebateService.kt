@@ -180,7 +180,7 @@ class DebateService(
 
         val now = Instant.now()
 
-        /** 토론 정보 수정 (시작 전에만 가능) — 시작 후에는 라운드 관리로 진입 */
+        /** 토론 정보 수정 */
         if (debate.startAt.isAfter(now)) {
             if (debate.closedAt != null) httpBadRequest("종료된 토론의 정보는 수정할 수 없습니다.")
             if (request.startAt.isBefore(now)) httpBadRequest("토론 시작 시간은 현재 시간 이후여야 합니다.")
@@ -202,7 +202,6 @@ class DebateService(
                 }
             }
             notifyDebateUpdated(members, debate)
-            return
         }
 
         val currentRound = debateRoundRepository.findByDebateIdAndEndedAtIsNull(debate.id!!)

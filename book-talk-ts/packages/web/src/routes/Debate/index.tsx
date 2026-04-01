@@ -131,7 +131,6 @@ function DebatePageContent({ debateId }: Props) {
                 debate.currentRoundInfo.currentSpeaker?.accountId === myMemberInfo?.id
               }
               onStartDebate={handleOpenStartModal}
-              startAt={debate.startAt}
               onEndPresentation={round.endPresentation}
               onToggleHand={connection.toggleHand}
               isMyHandRaised={myMemberInfo?.id ? connection.isHandRaised(myMemberInfo.id) : false}
