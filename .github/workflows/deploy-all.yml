@@ -1,0 +1,37 @@
+name: Deploy All
+run-name: Deploy All to ${{ inputs.environment }} by @${{ github.triggering_actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select Environment'
+        type: choice
+        options:
+          - development
+          - production
+        default: 'development'
+        required: true
+
+jobs:
+  deploy-ai:
+    name: 1. Deploy AI
+    uses: ./.github/workflows/deploy-ai.yml
+    with:
+      environment: ${{ inputs.environment }}
+    secrets: inherit
+
+  deploy-api:
+    name: 2. Deploy API
+    uses: ./.github/workflows/deploy-api.yml
+    with:
+      environment: ${{ inputs.environment }}
+    secrets: inherit
+
+  deploy-web:
+    name: 3. Deploy Web
+    needs: [deploy-ai, deploy-api]
+    uses: ./.github/workflows/deploy-web.yml
+    with:
+      environment: ${{ inputs.environment }}
+    secrets: inherit

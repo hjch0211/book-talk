@@ -1,0 +1,80 @@
+name: Init DB (Postgres + Redis)
+run-name: Init DB for ${{ inputs.environment }} by @${{ github.triggering_actor }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Select Environment'
+        type: choice
+        options:
+          - development
+          - production
+        default: 'development'
+        required: true
+
+env:
+  DB_NAME: ${{ secrets.DB_NAME }}
+  DB_PORT: ${{ secrets.DB_PORT }}
+  DB_USER: ${{ secrets.DB_USER }}
+  DB_PASSWORD: ${{ secrets.DB_PASSWORD }}
+  REDIS_PORT: ${{ secrets.REDIS_PORT }}
+  REDIS_PASSWORD: ${{ secrets.REDIS_PASSWORD }}
+
+jobs:
+  init-db:
+    name: Start Postgres & Redis
+    runs-on: self-hosted
+    defaults:
+      run:
+        working-directory: book-talk-be
+    environment:
+      name: ${{ inputs.environment }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Ensure Docker network exists
+        run: docker network inspect booktalk-internal >/dev/null 2>&1 || docker network create booktalk-internal
+
+      - name: Set compose args
+        run: |
+          if [ "${{ inputs.environment }}" == "development" ]; then
+            echo "COMPOSE_ARGS=-p booktalk-dev -f docker-compose.dev.yml" >> $GITHUB_ENV
+          else
+            echo "COMPOSE_ARGS=-p booktalk-prod" >> $GITHUB_ENV
+          fi
+
+      - name: Start Postgres & Redis
+        run: docker compose ${{ env.COMPOSE_ARGS }} up -d postgres redis
+
+      - name: Wait for healthy
+        run: |
+          echo "Waiting for postgres and redis..."
+          if [ "${{ inputs.environment }}" == "development" ]; then
+            PG_NAME="book-talk-postgres-dev"
+            RD_NAME="book-talk-redis-dev"
+          else
+            PG_NAME="book-talk-postgres"
+            RD_NAME="book-talk-redis"
+          fi
+          for i in $(seq 1 30); do
+            PG=$(docker inspect --format='{{.State.Health.Status}}' "$PG_NAME" 2>/dev/null || echo "starting")
+            RD=$(docker inspect --format='{{.State.Health.Status}}' "$RD_NAME" 2>/dev/null || echo "starting")
+            echo "[$i/30] postgres=$PG redis=$RD"
+            if [ "$PG" = "healthy" ] && [ "$RD" = "healthy" ]; then
+              echo "Done!"
+              break
+            fi
+            if [ "$i" = "30" ]; then
+              echo "Timeout - DB logs:"
+              docker compose ${{ env.COMPOSE_ARGS }} logs postgres --tail=20
+              docker compose ${{ env.COMPOSE_ARGS }} logs redis --tail=20
+              exit 1
+            fi
+            sleep 5
+          done
+
+      - name: Show status
+        if: always()
+        run: docker compose ${{ env.COMPOSE_ARGS }} ps postgres redis

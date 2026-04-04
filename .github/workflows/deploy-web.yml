@@ -12,6 +12,11 @@ on:
           - production
         default: 'development'
         required: true
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
 
 concurrency:
   group: deploy-web

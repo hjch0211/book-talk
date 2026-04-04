@@ -7,6 +7,9 @@ COPY build.gradle.kts settings.gradle.kts ./
 COPY gradle gradle
 COPY gradlew ./
 
+# Download dependencies as a separate cached layer
+RUN ./gradlew dependencies --no-daemon
+
 # Copy all modules
 COPY _api ./_api
 COPY _batch ./_batch

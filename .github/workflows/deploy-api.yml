@@ -12,6 +12,11 @@ on:
           - production
         default: 'development'
         required: true
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
 
 concurrency:
   group: deploy-api
@@ -91,13 +96,13 @@ jobs:
           docker compose ${{ env.COMPOSE_ARGS }} rm -f backend batch
 
       - name: Build backend image
-        run: docker compose ${{ env.COMPOSE_ARGS }} build --no-cache backend
+        run: docker compose ${{ env.COMPOSE_ARGS }} build backend
 
       - name: Build batch image
-        run: docker compose ${{ env.COMPOSE_ARGS }} build --no-cache batch
+        run: docker compose ${{ env.COMPOSE_ARGS }} build batch
 
       - name: Start services
-        run: docker compose ${{ env.COMPOSE_ARGS }} up -d backend batch
+        run: docker compose ${{ env.COMPOSE_ARGS }} up -d --no-deps backend batch
 
       - name: Wait and health check
         run: |
