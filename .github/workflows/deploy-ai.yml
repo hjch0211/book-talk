@@ -6,7 +6,11 @@ on:
     inputs:
       environment:
         description: 'Select Environment'
-        type: environment
+        type: choice
+        options:
+          - development
+          - production
+        default: 'development'
         required: true
 
 concurrency:
@@ -58,17 +62,25 @@ jobs:
       - name: Build AI package
         run: yarn ai build
 
+      - name: Set compose file
+        run: |
+          if [ "${{ inputs.environment }}" == "development" ]; then
+            echo "COMPOSE_ARGS=-p booktalk-dev -f docker-compose.dev.yml" >> $GITHUB_ENV
+          else
+            echo "COMPOSE_ARGS=-p booktalk-prod" >> $GITHUB_ENV
+          fi
+
       - name: Stop existing AI container
-        run: docker compose down
+        run: docker compose ${{ env.COMPOSE_ARGS }} down --remove-orphans
 
       - name: Build and start AI container
-        run: docker compose up -d --build
+        run: docker compose ${{ env.COMPOSE_ARGS }} up -d --build
 
       - name: Wait and health check
         run: |
           sleep 10
-          docker compose ps
+          docker compose ${{ env.COMPOSE_ARGS }} ps
 
       - name: Show recent logs
         if: always()
-        run: docker compose logs --tail=20
+        run: docker compose ${{ env.COMPOSE_ARGS }} logs --tail=20

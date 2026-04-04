@@ -6,7 +6,11 @@ on:
     inputs:
       environment:
         description: 'Select Environment'
-        type: environment
+        type: choice
+        options:
+          - development
+          - production
+        default: 'development'
         required: true
 
 concurrency:
@@ -24,7 +28,6 @@ jobs:
       name: ${{ inputs.environment }}
     env:
       VITE_API_BASE_URL: ${{ secrets.VITE_API_BASE_URL }}
-      VITE_APP_ENV: production
       VITE_CLOUDFLARE_TURN_URL: ${{ secrets.VITE_CLOUDFLARE_TURN_URL }}
       VITE_CLOUDFLARE_API_TOKEN: ${{ secrets.VITE_CLOUDFLARE_API_TOKEN }}
     steps:
@@ -45,7 +48,17 @@ jobs:
         run: yarn web build
 
       - name: Deploy static files
-        run: sudo cp -r packages/web/dist/* /var/www/booktalk/frontend/
+        run: |
+          if [ "${{ inputs.environment }}" == "development" ]; then
+            sudo cp -r packages/web/dist/* /var/www/booktalk/frontend-dev/
+          else
+            sudo cp -r packages/web/dist/* /var/www/booktalk/frontend/
+          fi
 
       - name: Verify deployment
-        run: ls -la /var/www/booktalk/frontend/index.html
+        run: |
+          if [ "${{ inputs.environment }}" == "development" ]; then
+            ls -la /var/www/booktalk/frontend-dev/index.html
+          else
+            ls -la /var/www/booktalk/frontend/index.html
+          fi

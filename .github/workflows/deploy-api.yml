@@ -6,7 +6,11 @@ on:
     inputs:
       environment:
         description: 'Select Environment'
-        type: environment
+        type: choice
+        options:
+          - development
+          - production
+        default: 'development'
         required: true
 
 concurrency:
@@ -73,30 +77,38 @@ jobs:
       - name: Ensure Docker network exists
         run: docker network inspect booktalk-internal >/dev/null 2>&1 || docker network create booktalk-internal
 
+      - name: Set compose file
+        run: |
+          if [ "${{ inputs.environment }}" == "development" ]; then
+            echo "COMPOSE_ARGS=-p booktalk-dev -f docker-compose.dev.yml" >> $GITHUB_ENV
+          else
+            echo "COMPOSE_ARGS=-p booktalk-prod" >> $GITHUB_ENV
+          fi
+
       - name: Stop existing containers
         run: |
-          docker compose stop backend batch
-          docker compose rm -f backend batch
+          docker compose ${{ env.COMPOSE_ARGS }} stop backend batch
+          docker compose ${{ env.COMPOSE_ARGS }} rm -f backend batch
 
       - name: Build backend image
-        run: docker compose build --no-cache backend
+        run: docker compose ${{ env.COMPOSE_ARGS }} build --no-cache backend
 
       - name: Build batch image
-        run: docker compose build --no-cache batch
+        run: docker compose ${{ env.COMPOSE_ARGS }} build --no-cache batch
 
       - name: Start services
-        run: docker compose up -d backend batch
+        run: docker compose ${{ env.COMPOSE_ARGS }} up -d backend batch
 
       - name: Wait and health check
         run: |
           sleep 10
           echo "Container status:"
-          docker compose ps backend batch
+          docker compose ${{ env.COMPOSE_ARGS }} ps backend batch
 
       - name: Show recent logs
         if: always()
         run: |
           echo "=== Backend Logs ==="
-          docker compose logs --tail=20 backend
+          docker compose ${{ env.COMPOSE_ARGS }} logs --tail=20 backend
           echo "=== Batch Logs ==="
-          docker compose logs --tail=20 batch
+          docker compose ${{ env.COMPOSE_ARGS }} logs --tail=20 batch

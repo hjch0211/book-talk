@@ -1,0 +1,156 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: book-talk-postgres-dev
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${DB_USER}" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - booktalk-internal
+
+  redis:
+    image: redis:7-alpine
+    container_name: book-talk-redis-dev
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD}
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_data_dev:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "--raw", "PING" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: book-talk-backend-dev
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    environment:
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS}
+      APP_DEBATE_MAX_MEMBER_COUNT: ${APP_DEBATE_MAX_MEMBER_COUNT}
+      APP_DEBATE_ROUND_SPEAKER_SECONDS: ${APP_DEBATE_ROUND_SPEAKER_SECONDS}
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
+      DB_NAME: ${DB_NAME}
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JPA_SHOW_SQL: ${JPA_SHOW_SQL}
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      AES_SECRET_STRING: ${AES_SECRET_STRING}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_ACCESS_AUDIENCE: ${JWT_ACCESS_AUDIENCE}
+      JWT_ACCESS_ISSUER: ${JWT_ACCESS_ISSUER}
+      JWT_ACCESS_EXPIRING_TIME: ${JWT_ACCESS_EXPIRING_TIME}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_REFRESH_AUDIENCE: ${JWT_REFRESH_AUDIENCE}
+      JWT_REFRESH_ISSUER: ${JWT_REFRESH_ISSUER}
+      JWT_REFRESH_EXPIRING_TIME: ${JWT_REFRESH_EXPIRING_TIME}
+      NAVER_CLIENT_ID: ${NAVER_CLIENT_ID}
+      NAVER_CLIENT_SECRET: ${NAVER_CLIENT_SECRET}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+      AI_BASE_URL: ${AI_BASE_URL}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM_EMAIL: ${MAIL_FROM_EMAIL}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
+      APP_FRONTEND_URL: ${APP_FRONTEND_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - default
+      - booktalk-internal
+
+  batch:
+    build:
+      context: .
+      dockerfile: Dockerfile.batch
+    container_name: book-talk-batch-dev
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
+      SPRING_DATASOURCE_USERNAME: ${DB_USER}
+      SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME}
+      DB_NAME: ${DB_NAME}
+      DB_PORT: 5432
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      JPA_SHOW_SQL: ${JPA_SHOW_SQL}
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_REDIS_PASSWORD: ${REDIS_PASSWORD}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+      AES_SECRET_STRING: ${AES_SECRET_STRING}
+      JWT_ACCESS_SECRET: ${JWT_ACCESS_SECRET}
+      JWT_ACCESS_AUDIENCE: ${JWT_ACCESS_AUDIENCE}
+      JWT_ACCESS_ISSUER: ${JWT_ACCESS_ISSUER}
+      JWT_ACCESS_EXPIRING_TIME: ${JWT_ACCESS_EXPIRING_TIME}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      JWT_REFRESH_AUDIENCE: ${JWT_REFRESH_AUDIENCE}
+      JWT_REFRESH_ISSUER: ${JWT_REFRESH_ISSUER}
+      JWT_REFRESH_EXPIRING_TIME: ${JWT_REFRESH_EXPIRING_TIME}
+      SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
+      AI_BASE_URL: ${AI_BASE_URL}
+      MAIL_HOST: ${MAIL_HOST}
+      MAIL_PORT: ${MAIL_PORT}
+      MAIL_USERNAME: ${MAIL_USERNAME}
+      MAIL_PASSWORD: ${MAIL_PASSWORD}
+      MAIL_FROM_EMAIL: ${MAIL_FROM_EMAIL}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI}
+      APP_FRONTEND_URL: ${APP_FRONTEND_URL}
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - default
+      - booktalk-internal
+
+volumes:
+  postgres_data_dev:
+  redis_data_dev:
+
+networks:
+  booktalk-internal:
+    external: true
