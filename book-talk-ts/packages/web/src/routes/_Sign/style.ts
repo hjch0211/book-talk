@@ -149,8 +149,8 @@ export const FieldGroup = styled.div`
 `;
 
 export const InlineFieldRow = styled.div`
-  display: flex;
-  flex-direction: row;
+  display: grid;
+  grid-template-columns: 1fr auto;
   align-items: flex-start;
   gap: 12px;
   width: 384px;
