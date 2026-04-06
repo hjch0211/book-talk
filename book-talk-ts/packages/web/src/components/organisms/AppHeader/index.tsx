@@ -16,6 +16,7 @@ import {
 import signedProfileSvg from '@src/assets/header/signed-profile.svg';
 import unsignedProfileSvg from '@src/assets/header/unsigned-profile.svg';
 import { SuspenseErrorBoundary } from '@src/components/molecules/SuspenseErrorBoundary';
+import { env } from '@src/configs/env';
 import { meQueryOption } from '@src/externals/account';
 import { signOut } from '@src/externals/auth';
 import { clearTokens } from '@src/externals/client';
@@ -25,6 +26,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoSvg from '../../../assets/logo.svg';
 import {
+  DevBadge,
   DesktopNav,
   DrawerContent,
   DrawerProfileName,
@@ -234,6 +236,7 @@ const AppHeader = () => {
           <LogoLink onClick={() => navigate('/home')}>
             <img src={logoSvg} alt="BookTalk Logo" width={182} height={44} />
           </LogoLink>
+          {env.APP_ENV === 'development' && <DevBadge>(dev)</DevBadge>}
         </LogoContainer>
 
         {/* 데스크탑 네비게이션 */}

@@ -1,6 +1,15 @@
 import { AppBar, Box, IconButton, Toolbar, Typography } from '@mui/material';
 import { styled } from '@mui/material/styles';
 
+export const DevBadge = styled('span')({
+  fontFamily: "'S-Core Dream', sans-serif",
+  fontWeight: 500,
+  fontSize: '11px',
+  color: '#8E99FF',
+  letterSpacing: '0.5px',
+  userSelect: 'none',
+});
+
 export const LogoContainer = styled('div')({
   display: 'flex',
   flexDirection: 'row',

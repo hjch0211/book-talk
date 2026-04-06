@@ -3,6 +3,8 @@
  * @warning 환경변수 접근은 반드시 이 파일을 통해서만 사용
  */
 export const env = {
+  /** App environment: 'development' | 'production' | undefined (local) */
+  APP_ENV: import.meta.env.VITE_APP_ENV as 'development' | 'production' | undefined,
   /** Main server API URL */
   BASE_URL: String(import.meta.env.VITE_API_BASE_URL),
   /** cloudflare TURN url */
