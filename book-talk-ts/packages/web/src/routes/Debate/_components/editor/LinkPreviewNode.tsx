@@ -1,4 +1,3 @@
-import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
 import LinkIcon from '@mui/icons-material/Link';
 import { Box, Card, CardContent, CircularProgress, Link, Typography } from '@mui/material';
 import type { FetchOpenGraphResponse } from '@src/externals/presentation';
@@ -17,7 +16,6 @@ interface LinkPreviewAttrs {
 
 export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const attrs = node.attrs as LinkPreviewAttrs;
   const { url, title, image, siteName } = attrs;
 
@@ -34,12 +32,10 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
 
     const fetchData = async () => {
       setLoading(true);
-      setError(null);
 
       try {
         const data: FetchOpenGraphResponse = await fetchOpenGraph(url);
 
-        // 가져온 데이터로 노드 속성 업데이트
         updateAttributes({
           title: data.title,
           description: data.description,
@@ -49,8 +45,6 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
         });
       } catch (err) {
         console.error('Failed to fetch OpenGraph data:', err);
-        setError('링크 미리보기를 가져올 수 없습니다.');
-        // 에러 발생 시 빈 값으로 업데이트해서 재시도 방지
         updateAttributes({
           title: '',
           description: '',
@@ -63,7 +57,7 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
       }
     };
 
-    fetchData();
+    void fetchData();
   }, [url, title, updateAttributes]);
 
   // 로딩 상태
@@ -86,45 +80,7 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
     );
   }
 
-  // 에러 상태
-  if (error) {
-    return (
-      <NodeViewWrapper>
-        <Card
-          sx={{
-            maxWidth: 640,
-            margin: '16px 0',
-            border: '1px solid #f44336',
-            backgroundColor: '#ffebee',
-          }}
-        >
-          <CardContent>
-            <Box display="flex" alignItems="center" gap={1}>
-              <ErrorOutlineIcon color="error" />
-              <Typography variant="body2" color="error">
-                {error}
-              </Typography>
-            </Box>
-            <Link
-              href={url}
-              target="_blank"
-              rel="noopener noreferrer"
-              sx={{
-                display: 'block',
-                marginTop: 1,
-                fontSize: '0.875rem',
-                wordBreak: 'break-all',
-              }}
-            >
-              {url}
-            </Link>
-          </CardContent>
-        </Card>
-      </NodeViewWrapper>
-    );
-  }
-
-  // OpenGraph 데이터가 없는 경우 (빈 문자열인 경우)
+  // OG 데이터가 없는 경우 (fetch 실패 포함) — 일반 링크 카드
   if (title === '' || title === null) {
     return (
       <NodeViewWrapper>

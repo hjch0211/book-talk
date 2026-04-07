@@ -9,7 +9,7 @@ import type { JSONContent } from '@tiptap/core';
 import Heading from '@tiptap/extension-heading';
 import Placeholder from '@tiptap/extension-placeholder';
 import Youtube from '@tiptap/extension-youtube';
-import { EditorContent, useEditor } from '@tiptap/react';
+import { EditorContent, useEditor, useEditorState } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { ChatInputBox, ChatInputContainer } from '../../style.ts';
@@ -188,6 +188,12 @@ export function ChatInput({ isSending, onSend, members, presentations }: ChatInp
     setShowYoutubeDialog(false);
   });
 
+  const hasContent = useEditorState({
+    editor,
+    selector: (ctx) => hasSendableContent(ctx.editor?.getJSON()),
+  });
+  const canSend = !isSending && !!hasContent;
+
   return (
     <>
       <ChatInputContainer>
@@ -216,21 +222,21 @@ export function ChatInput({ isSending, onSend, members, presentations }: ChatInp
 
         <IconButton
           onClick={handleSend}
-          disabled={isSending || !hasSendableContent(editor?.getJSON())}
+          disabled={!canSend}
           sx={{
             width: '72px',
             height: '45px',
-            bgcolor: hasSendableContent(editor?.getJSON()) ? '#E8EBFF' : '#C4C4C4',
+            bgcolor: canSend ? '#E8EBFF' : '#C4C4C4',
             borderRadius: '24px',
             '&:hover': {
-              bgcolor: hasSendableContent(editor?.getJSON()) ? '#D8DBFF' : '#C4C4C4',
+              bgcolor: canSend ? '#D8DBFF' : '#C4C4C4',
             },
             '&:disabled': {
               bgcolor: '#C4C4C4',
             },
           }}
         >
-          <SendIcon sx={{ color: hasSendableContent(editor?.getJSON()) ? '#434343' : '#9D9D9D' }} />
+          <SendIcon sx={{ color: canSend ? '#434343' : '#9D9D9D' }} />
         </IconButton>
       </ChatInputContainer>
 
