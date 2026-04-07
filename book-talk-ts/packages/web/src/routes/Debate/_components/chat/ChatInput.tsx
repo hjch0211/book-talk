@@ -40,6 +40,19 @@ interface ChatInputProps {
   presentations: Array<{ id: string; accountId: string }>;
 }
 
+const isEmptyParagraph = (node: JSONContent): boolean => {
+  if (node.type !== 'paragraph') return false;
+  if (!node.content || node.content.length === 0) return true;
+  return node.content.every((child) => child.type === 'text' && !child.text?.trim());
+};
+
+const trimDoc = (doc: JSONContent): JSONContent => {
+  const content = [...(doc.content ?? [])];
+  while (content.length > 0 && isEmptyParagraph(content[0])) content.shift();
+  while (content.length > 0 && isEmptyParagraph(content[content.length - 1])) content.pop();
+  return { ...doc, content };
+};
+
 const hasSendableContent = (doc?: JSONContent | null): boolean => {
   if (!doc || !doc.content) return false;
 
@@ -158,8 +171,8 @@ export function ChatInput({ isSending, onSend, members, presentations }: ChatInp
     const json = editor.getJSON();
     if (!hasSendableContent(json)) return;
 
-    // JSON을 문자열로 변환하여 전송
-    onSend(JSON.stringify(json));
+    // JSON을 문자열로 변환하여 전송 (앞뒤 빈 paragraph 제거)
+    onSend(JSON.stringify(trimDoc(json)));
     editor.commands.clearContent();
 
     // scrollIntoView가 완료된 후 포커스 (ChatMessageList의 smooth scroll 이후)
