@@ -35,7 +35,7 @@ export const CardPersonaImage = styled.img`
 
 export const CardBody = styled.div`
   flex: 1;
-  padding: 12px 16px 14px;
+  padding: 6px 12px;
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -53,7 +53,7 @@ export const CardName = styled.div`
 export const CardDescription = styled.div`
   font-family: 'S-Core Dream', sans-serif;
   font-weight: 300;
-  font-size: 11px;
+  font-size: 10px;
   line-height: 1.7;
   color: #7a8898;
   letter-spacing: 0.2px;
