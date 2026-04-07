@@ -25,8 +25,8 @@ export function PersonaCarousel3D({ personas, selectedValue, onSelect }: Props) 
       selectedId={selectedValue}
       onSelect={onSelect}
       radius={400}
-      cardWidth={240}
-      cardHeight={380}
+      cardWidth={260}
+      cardHeight={400}
       sceneHeight={720}
       renderCard={(item, isSelected, selectCard) => (
         <Card $isSelected={isSelected} onClick={selectCard}>
