@@ -1,6 +1,6 @@
 import styled from '@emotion/styled';
 
-export const RoomTerminatedContainer = styled.div`
+export const OccupiedRoomContainer = styled.div`
   position: relative;
   width: 100%;
   height: 100vh;
@@ -26,7 +26,7 @@ export const Contents = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 36px;
-  width: 302px;
+  width: 394px;
 `;
 
 export const TextGroup = styled.div`
@@ -34,7 +34,7 @@ export const TextGroup = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 12px;
-  width: 302px;
+  width: 394px;
 `;
 
 export const Title = styled.p`
