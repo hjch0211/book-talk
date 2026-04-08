@@ -1,6 +1,7 @@
 package kr.co.booktalk.domain
 
 import jakarta.persistence.*
+import kr.co.booktalk.AuditableLongIdEntity
 import kr.co.booktalk.AuditableUuidEntity
 import org.hibernate.annotations.SQLRestriction
 import org.springframework.data.jpa.domain.support.AuditingEntityListener
@@ -33,4 +34,34 @@ interface AiChatRepository : JpaRepository<AiChatEntity, UUID> {
     @Transactional
     @Query("UPDATE AiChatEntity c SET c.archivedAt = :now WHERE c.debate = :debate AND c.archivedAt IS NULL")
     fun archiveAllByDebate(@Param("debate") debate: DebateEntity, @Param("now") now: Instant)
+}
+
+enum class AiChatSearchResultType { NEWS, BLOG }
+
+@Entity
+@Table(name = "ai_chat_search_result")
+@EntityListeners(AuditingEntityListener::class)
+class AiChatSearchResultEntity(
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "chat_id", nullable = false)
+    val chat: AiChatEntity,
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false, length = 10)
+    val type: AiChatSearchResultType,
+
+    @Column(name = "title", nullable = false, columnDefinition = "TEXT")
+    val title: String,
+
+    @Column(name = "url", nullable = false, columnDefinition = "TEXT")
+    val url: String,
+
+    @Column(name = "content", nullable = false, columnDefinition = "TEXT")
+    val content: String,
+) : AuditableLongIdEntity()
+
+@Transactional(readOnly = true)
+@Repository
+interface AiChatSearchResultRepository : JpaRepository<AiChatSearchResultEntity, Long> {
+    fun findByChatIdOrderByCreatedAtAsc(chatId: UUID): List<AiChatSearchResultEntity>
 }

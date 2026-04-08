@@ -70,9 +70,9 @@ jobs:
       - name: Set compose file
         run: |
           if [ "${{ inputs.environment }}" == "development" ]; then
-            echo "COMPOSE_ARGS=-p booktalk-dev -f docker-compose.dev.yml" >> $GITHUB_ENV
+            echo "COMPOSE_ARGS=-p booktalk-ai-dev -f docker-compose.dev.yml" >> $GITHUB_ENV
           else
-            echo "COMPOSE_ARGS=-p booktalk-prod" >> $GITHUB_ENV
+            echo "COMPOSE_ARGS=-p booktalk-ai-prod" >> $GITHUB_ENV
           fi
 
       - name: Stop existing AI container

@@ -13,12 +13,31 @@ data class FindOneAiChatResponse(
     val personaId: String,
     val agentId: String,
     val member: MemberInfo,
+    val debateInfo: DebateInfo,
+    val searchResults: SearchResults,
     val messages: List<MessageInfo>,
     val createdAt: Instant,
 ) {
     data class MemberInfo(
         val accountId: String,
         val accountName: String,
+    )
+
+    data class DebateInfo(
+        val topic: String,
+        val bookTitle: String,
+        val bookDescription: String?,
+    )
+
+    data class SearchResults(
+        val news: List<SearchResultItem>,
+        val blog: List<SearchResultItem>,
+    )
+
+    data class SearchResultItem(
+        val title: String,
+        val url: String,
+        val content: String,
     )
 
     data class MessageInfo(

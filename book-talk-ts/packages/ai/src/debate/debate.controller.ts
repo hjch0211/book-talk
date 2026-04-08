@@ -10,11 +10,8 @@ import {
 } from '@src/debate/_requests.js';
 import { DEBATE_SERVICE, type DebateService } from '@src/debate/debate.service.js';
 import { DEBATE_CHAT_SERVICE, type DebateChatService } from '@src/debate/debate-chat.service.js';
-import {
-  DEBATE_SEARCH_SERVICE,
-  type DebateSearchService,
-  type SearchWithAiResult,
-} from '@src/debate/debate-search.service.js';
+import { DEBATE_SEARCH_SERVICE, type DebateSearchService } from '@src/debate/debate-search.service.js';
+import type { SearchResult } from '@src/client/ai-search.client.js';
 
 @Controller()
 export class DebateController {
@@ -42,9 +39,9 @@ export class DebateController {
     return toResult(null);
   }
 
-  /** AI 검색 (뉴스 + 블로그) */
+  /** AI 검색 */
   @Post('debates/search')
-  async searchWithAi(@Body() request: SearchWithAiRequest): Promise<ApiResult<SearchWithAiResult>> {
+  async searchWithAi(@Body() request: SearchWithAiRequest): Promise<ApiResult<SearchResult[]>> {
     const validated = validate(SearchWithAiRequestSchema, request);
     const result = await this.debateSearchService.search(validated);
     return toResult(result);

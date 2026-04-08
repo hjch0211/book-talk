@@ -15,6 +15,8 @@ interface AiClient {
     suspend fun summarizeDebate(request: SummarizeRequest)
     /** AI 토론 채팅 */
     suspend fun chat(request: AiChatClientRequest)
+    /** AI 검색 */
+    suspend fun searchWithAi(request: AiSearchRequest): List<AiSearchResult>
 }
 
 data class SummarizeRequest(
@@ -25,6 +27,18 @@ data class AiChatClientRequest(
     val chatId: String,
     val message: String,
     val role: String = "user",
+)
+
+data class AiSearchRequest(
+    val bookTitle: String,
+    val topic: String,
+    val includeDomains: List<String> = emptyList(),
+)
+
+data class AiSearchResult(
+    val title: String,
+    val url: String,
+    val content: String,
 )
 
 /** book-talk-ai */
@@ -65,6 +79,26 @@ class AiServerClient(
             }
         }
     }
+
+    override suspend fun searchWithAi(request: AiSearchRequest): List<AiSearchResult> {
+        val url = "${properties.baseUrl}/debates/search"
+
+        return withContext(Dispatchers.IO) {
+            httpClient.post(url) {
+                contentType(ContentType.Application.Json)
+                setBody(mapOf(
+                    "bookTitle" to request.bookTitle,
+                    "topic" to request.topic,
+                    "includeDomains" to request.includeDomains,
+                ))
+            }
+        }.also {
+            if (!it.status.isSuccess()) {
+                logger.error { "AI 서버 searchWithAi 호출 실패: ${it.status}" }
+                throw RuntimeException("AI 서버 호출 실패: ${it.status}")
+            }
+        }.body()
+    }
 }
 
 class NoOpAiClient : AiClient {
@@ -76,5 +110,10 @@ class NoOpAiClient : AiClient {
 
     override suspend fun chat(request: AiChatClientRequest) {
         logger.warn { "[NoOp] chat: $request" }
+    }
+
+    override suspend fun searchWithAi(request: AiSearchRequest): List<AiSearchResult> {
+        logger.warn { "[NoOp] searchWithAi: $request" }
+        return emptyList()
     }
 }

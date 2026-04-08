@@ -7,7 +7,6 @@ export interface SearchResult {
   title: string;
   url: string;
   content: string;
-  score: number;
 }
 
 /** Tavily Search API 클라이언트 인터페이스 */
@@ -61,7 +60,6 @@ export class TavilySearchClient implements AiSearchClient {
       title: r.title,
       url: r.url,
       content: r.content,
-      score: r.score,
     }));
   }
 
