@@ -1,6 +1,12 @@
 import { ChatOpenAI } from '@langchain/openai';
 import { Logger, Module } from '@nestjs/common';
+import {
+  AI_SEARCH_CLIENT,
+  NoOpAiSearchClient,
+  TavilySearchClient,
+} from '@src/client/ai-search.client.js';
 import { PROMPT_STUDIO_CLIENT, type PromptStudioClient } from '@src/client/prompt-studio.client.js';
+import { TavilyProperties } from '@src/config/tavily.properties.js';
 import {
   DebatePersonaAAgentResponseSchema,
   DebateStarterAgentResponseSchema,
@@ -9,6 +15,7 @@ import {
 import { DebateController } from '@src/debate/debate.controller.js';
 import { DEBATE_SERVICE, DebateService } from '@src/debate/debate.service.js';
 import { DEBATE_CHAT_SERVICE, DebateChatService } from '@src/debate/debate-chat.service.js';
+import { DEBATE_SEARCH_SERVICE, DebateSearchService } from '@src/debate/debate-search.service.js';
 import { DEBATE_GRAPH, DebateGraph } from '@src/debate/graph/debate.graph.js';
 import {
   DEBATE_PERSONA_A_NODE,
@@ -97,6 +104,15 @@ import { createAgent, providerStrategy } from 'langchain';
     },
     { provide: DEBATE_TOOL_NODE, useClass: DebateToolNode },
     { provide: UNKNOWN_HANDLER_NODE, useClass: UnknownHandlerNode },
+    { provide: DEBATE_SEARCH_SERVICE, useClass: DebateSearchService },
+    {
+      provide: AI_SEARCH_CLIENT,
+      useFactory: (tavilyProperties: TavilyProperties) => {
+        if (!tavilyProperties.isValid()) return new NoOpAiSearchClient();
+        return new TavilySearchClient(tavilyProperties.apiKey);
+      },
+      inject: [TavilyProperties],
+    },
   ],
 })
 export class DebateModule {}

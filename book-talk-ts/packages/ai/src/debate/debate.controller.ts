@@ -4,10 +4,17 @@ import { validate } from '@src/api-validator.js';
 import {
   type ChatRequest,
   ChatRequestSchema,
+  type SearchWithAiRequest,
+  SearchWithAiRequestSchema,
   type SummarizeRequest,
 } from '@src/debate/_requests.js';
 import { DEBATE_SERVICE, type DebateService } from '@src/debate/debate.service.js';
 import { DEBATE_CHAT_SERVICE, type DebateChatService } from '@src/debate/debate-chat.service.js';
+import {
+  DEBATE_SEARCH_SERVICE,
+  type DebateSearchService,
+  type SearchWithAiResult,
+} from '@src/debate/debate-search.service.js';
 
 @Controller()
 export class DebateController {
@@ -15,8 +22,11 @@ export class DebateController {
     @Inject(DEBATE_SERVICE)
     private readonly debateService: DebateService,
     @Inject(DEBATE_CHAT_SERVICE)
-    private readonly debateChatService: DebateChatService
+    private readonly debateChatService: DebateChatService,
+    @Inject(DEBATE_SEARCH_SERVICE)
+    private readonly debateSearchService: DebateSearchService
   ) {}
+
   /** 토론 요약 */
   @Post('debates/summarization')
   summarize(@Body() request: SummarizeRequest): ApiResult<null> {
@@ -30,5 +40,13 @@ export class DebateController {
     const validated = validate(ChatRequestSchema, request);
     void this.debateChatService.chat(validated);
     return toResult(null);
+  }
+
+  /** AI 검색 (뉴스 + 블로그) */
+  @Post('debates/search')
+  async searchWithAi(@Body() request: SearchWithAiRequest): Promise<ApiResult<SearchWithAiResult>> {
+    const validated = validate(SearchWithAiRequestSchema, request);
+    const result = await this.debateSearchService.search(validated);
+    return toResult(result);
   }
 }

@@ -5,6 +5,7 @@ import { DatabaseProperties } from '@src/config/database.properties.js';
 import { LangfuseProperties } from '@src/config/langfuse.properties.js';
 import { OpenAIProperties } from '@src/config/openai.properties.js';
 import { SlackProperties } from '@src/config/slack.properties.js';
+import { TavilyProperties } from '@src/config/tavily.properties.js';
 
 @Global()
 @Module({
@@ -20,6 +21,7 @@ import { SlackProperties } from '@src/config/slack.properties.js';
     LangfuseProperties,
     OpenAIProperties,
     SlackProperties,
+    TavilyProperties,
   ],
   exports: [
     BooktalkProperties,
@@ -27,6 +29,7 @@ import { SlackProperties } from '@src/config/slack.properties.js';
     LangfuseProperties,
     OpenAIProperties,
     SlackProperties,
+    TavilyProperties,
   ],
 })
 export class ConfigModule {}

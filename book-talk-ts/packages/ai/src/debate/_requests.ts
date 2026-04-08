@@ -14,5 +14,15 @@ export const ChatRequestSchema = z.object({
   role: z.enum(['user', 'assistant']),
 });
 
+export const SearchWithAiRequestSchema = z.object({
+  /** 책 제목 */
+  bookTitle: z.string(),
+  /** 토론 주제 */
+  topic: z.string(),
+  /** 검색 포함 도메인 */
+  includeDomains: z.array(z.string()).optional(),
+});
+
 export type SummarizeRequest = z.infer<typeof SummarizeRequestSchema>;
 export type ChatRequest = z.infer<typeof ChatRequestSchema>;
+export type SearchWithAiRequest = z.infer<typeof SearchWithAiRequestSchema>;
