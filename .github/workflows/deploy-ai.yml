@@ -76,7 +76,7 @@ jobs:
           fi
 
       - name: Stop existing AI container
-        run: docker compose ${{ env.COMPOSE_ARGS }} down --remove-orphans
+        run: docker compose ${{ env.COMPOSE_ARGS }} down
 
       - name: Build and start AI container
         run: docker compose ${{ env.COMPOSE_ARGS }} up -d --build
