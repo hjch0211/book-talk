@@ -1,3 +1,4 @@
+import { env } from '@src/configs/env.ts';
 import { DebateExpired } from '@src/routes/_Error/DebateExpired';
 import { DebateFull } from '@src/routes/_Error/DebateFull';
 import { NotFound } from '@src/routes/_Error/NotFound';
@@ -28,8 +29,12 @@ export function AppRoutes() {
       <Route path="/terms-of-use" element={<TermsOfUsePage />} />
       <Route path="/my-page" element={<MyPage />} />
       <Route path="/debate/:debateId" element={<DebatePage />} />
-      <Route path="/ai-chat" element={<AiChatPage />} />
-      <Route path="/ai-chat/:chatId" element={<AiChatRoomPage />} />
+      {env.APP_ENV === 'development' && (
+        <>
+          <Route path="/ai-chat" element={<AiChatPage />} />
+          <Route path="/ai-chat/:chatId" element={<AiChatRoomPage />} />
+        </>
+      )}
       <Route path="/debate-full" element={<DebateFull />} />
       <Route path="/debate-expired" element={<DebateExpired />} />
       <Route path="*" element={<NotFound />} />
