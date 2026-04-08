@@ -7,6 +7,7 @@ import kr.co.booktalk.client.MailClient
 import kr.co.booktalk.client.MonitorClient
 import kr.co.booktalk.client.SendMailRequest
 import kr.co.booktalk.client.SendRequest
+import kr.co.booktalk.config.BatchProperties
 import kr.co.booktalk.coroutineGlobalExceptionHandler
 import kr.co.booktalk.domain.DebateMemberRepository
 import kr.co.booktalk.domain.DebateNotificationRepository
@@ -27,6 +28,7 @@ class DebateScheduler(
     private val debateRoundRepository: DebateRoundRepository,
     private val debateMemberRepository: DebateMemberRepository,
     private val debateNotificationRepository: DebateNotificationRepository,
+    private val batchProperties: BatchProperties,
 ) {
     private val kst = ZoneId.of("Asia/Seoul")
     private val dateTimeFormatter = DateTimeFormatter.ofPattern("yyyy년 MM월 dd일 HH:mm").withZone(kst)
@@ -118,7 +120,7 @@ class DebateScheduler(
 
             // host 외 참여자가 없는 토론 종료 (생성 후 하루 경과)
             val emptyCandidates = debateRepository.findAllCreatedBeforeWithNoNonHostMembers(
-                now.minusSeconds(24 * 60 * 60)
+                now.minusSeconds(batchProperties.debate.emptyCloseAfterSeconds)
             )
             if (emptyCandidates.isNotEmpty()) {
                 emptyCandidates.forEach { debate ->
@@ -141,9 +143,9 @@ class DebateScheduler(
                 }
             }
 
-            // 생성된 지 1주일이 지난 토론 종료
+            // 생성된 지 일정 기간이 지난 토론 종료
             val expiredDebates = debateRepository.findAllByCreatedAtBeforeAndClosedAtIsNull(
-                now.minusSeconds(7 * 24 * 60 * 60)
+                now.minusSeconds(batchProperties.debate.expireAfterSeconds)
             )
             expiredDebates.forEach { debate ->
                 debate.closedAt = now

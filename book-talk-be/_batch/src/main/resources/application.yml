@@ -9,3 +9,8 @@ spring:
     import:
       - classpath:application-data.yml
       - classpath:application-lib.yml
+
+batch:
+  debate:
+    empty-close-after-seconds: ${BATCH_DEBATE_EMPTY_CLOSE_AFTER_SECONDS:86400}
+    expire-after-seconds: ${BATCH_DEBATE_EXPIRE_AFTER_SECONDS:604800}
