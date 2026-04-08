@@ -89,6 +89,7 @@ export const ChatArea = styled.div`
     0 8px 32px rgba(80, 100, 160, 0.08),
     0 2px 8px rgba(107, 140, 222, 0.1);
   border-radius: 24px;
+  align-items: center;
   overflow: hidden;
 `;
 

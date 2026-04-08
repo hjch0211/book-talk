@@ -94,7 +94,6 @@ export function RoundActions({
           />
         </AppButton>
       </Box>
-      ;
     </Box>
   );
 }

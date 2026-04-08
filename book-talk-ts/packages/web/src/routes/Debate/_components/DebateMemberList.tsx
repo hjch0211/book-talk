@@ -53,7 +53,6 @@ export function DebateMemberList({
   nextSpeaker,
   realTimeRemainingSeconds,
   raisedHands = [],
-  currentRoundType,
   myAccountId,
   onPassSpeaker,
   presentations,
@@ -89,12 +88,9 @@ export function DebateMemberList({
   };
 
   const shouldShowMenu = (memberId: string) => {
-    // FREE 라운드에서 메뉴 표시
-    if (currentRoundType === 'FREE') {
-      return memberId !== myAccountId; // 자기 자신 제외
-    }
-    return false;
+    return memberId !== myAccountId; // 자기 자신 제외
   };
+
   return (
     <MemberListContainer>
       <MemberListHeader>
