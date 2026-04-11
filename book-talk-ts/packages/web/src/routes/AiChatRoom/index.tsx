@@ -66,7 +66,7 @@ function AiChatRoomContent({ chatId }: { chatId: string }) {
       id: i,
       debateId: chatRoom.debateId,
       accountId: msg.role === 'user' ? (me?.id ?? '') : 'ai',
-      accountName: msg.role === 'user' ? chatRoom.member.accountName : 'AI',
+      accountName: msg.role === 'user' ? chatRoom.name : 'AI',
       content: msg.content,
       createdAt: msg.createdAt,
     }));

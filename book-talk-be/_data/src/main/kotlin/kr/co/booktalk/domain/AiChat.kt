@@ -25,6 +25,9 @@ class AiChatEntity(
 
     @Column(name = "persona_id", nullable = false, length = 50)
     val personaId: String,
+
+    @Column(name = "name", nullable = false, length = 100)
+    val name: String,
 ) : AuditableUuidEntity()
 
 @Transactional(readOnly = true)

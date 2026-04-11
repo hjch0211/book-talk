@@ -1,4 +1,4 @@
-import { CircularProgress, Typography } from '@mui/material';
+import { Box, CircularProgress, Typography } from '@mui/material';
 import { CrayonButton } from '@src/components/molecules/CrayonButton';
 import { DebateCardSkeleton } from '@src/components/organisms/DebateCard/skeleton.tsx';
 import { AiPageRoot } from '@src/components/templates/AiPageRoot';
@@ -17,16 +17,19 @@ import {
   DebateCardWrapper,
   DebateCarousel,
   LoadingWrapper,
+  NameInput,
+  NameInputWrapper,
   NavigationRow,
   StepContainer,
   StepTitle,
 } from './style';
 
-type Step = 'welcome' | 'debate' | 'persona';
+type Step = 'welcome' | 'debate' | 'name' | 'persona';
 
 export function AiChatPage() {
   const [step, setStep] = useState<Step>('welcome');
   const [debateId, setDebateId] = useState('');
+  const [name, setName] = useState('');
   const [persona, setPersona] = useState('');
 
   const navigate = useNavigate();
@@ -38,7 +41,7 @@ export function AiChatPage() {
   const debates = debatesData?.page.content ?? [];
 
   const { mutate: handleCreateChat, isPending } = useMutation({
-    mutationFn: () => createAiChat({ debateId, persona }),
+    mutationFn: () => createAiChat({ debateId, persona, name }),
     onSuccess: (data) => {
       navigate(`/ai-chat/${data.chatId}`);
     },
@@ -52,7 +55,36 @@ export function AiChatPage() {
       {step === 'welcome' && (
         <AiChatContainer>
           <StepContainer>
-            <WelcomeStep onStart={() => setStep('debate')} />
+            <WelcomeStep onStart={() => setStep('name')} />
+          </StepContainer>
+        </AiChatContainer>
+      )}
+
+      {step === 'name' && (
+        <AiChatContainer>
+          <StepContainer>
+            <StepTitle>이름 입력하기</StepTitle>
+            <NameInputWrapper>
+              <NameInput
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                placeholder="채팅에서 사용할 이름을 입력하세요"
+                maxLength={20}
+                autoFocus
+              />
+              <Box sx={{ height: '200px' }} />
+              <Typography variant="captionS" color="gray">
+                * 개인 정보는 토론 진행 후 삭제되며 추가 목적으로 활용되지 않습니다.
+              </Typography>
+            </NameInputWrapper>
+            <NavigationRow>
+              <CrayonButton $variant="secondary" onClick={() => setStep('welcome')}>
+                ← 이전
+              </CrayonButton>
+              <CrayonButton disabled={!name.trim()} onClick={() => setStep('debate')}>
+                다음 →
+              </CrayonButton>
+            </NavigationRow>
           </StepContainer>
         </AiChatContainer>
       )}
@@ -84,7 +116,7 @@ export function AiChatPage() {
               />
             )}
             <NavigationRow>
-              <CrayonButton $variant="secondary" onClick={() => setStep('welcome')}>
+              <CrayonButton $variant="secondary" onClick={() => setStep('name')}>
                 ← 이전
               </CrayonButton>
               <CrayonButton disabled={!debateId} onClick={() => setStep('persona')}>

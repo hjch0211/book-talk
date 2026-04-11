@@ -5,6 +5,7 @@ import kr.co.booktalk.WebSocketMessage
 data class CreateAiChatRequest(
     val debateId: String,
     val persona: String,
+    val name: String,
 )
 
 data class SaveChatRequest(

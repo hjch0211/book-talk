@@ -12,6 +12,7 @@ data class FindOneAiChatResponse(
     val debateId: String,
     val personaId: String,
     val agentId: String,
+    val name: String,
     val member: MemberInfo,
     val debateInfo: DebateInfo,
     val searchResults: SearchResults,

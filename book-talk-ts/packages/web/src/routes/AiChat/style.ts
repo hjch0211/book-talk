@@ -83,6 +83,39 @@ export const LoadingWrapper = muiStyled(Box)({
   marginBottom: 24,
 });
 
+export const NameInputWrapper = muiStyled(Box)({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 12,
+  width: '100%',
+  maxWidth: 420,
+  marginBottom: 32,
+});
+
+export const NameInput = muiStyled('input')({
+  width: '100%',
+  padding: '14px 20px',
+  fontSize: 16,
+  fontFamily: "'S-Core Dream', sans-serif",
+  fontWeight: 400,
+  color: '#262626',
+  background: 'rgba(255, 255, 255, 0.2)',
+  border: '1px solid rgba(255, 255, 255, 0.3)',
+  borderRadius: 16,
+  backdropFilter: 'blur(5px)',
+  WebkitBackdropFilter: 'blur(5px)',
+  boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
+  outline: 'none',
+  boxSizing: 'border-box',
+  '&::placeholder': {
+    color: '#aaa',
+  },
+  '&:focus': {
+    border: '1px solid rgba(139, 124, 248, 0.6)',
+  },
+});
+
 export const NavigationRow = muiStyled(Box)({
   display: 'flex',
   flexDirection: 'row',

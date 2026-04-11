@@ -5,6 +5,7 @@ CREATE TABLE IF NOT EXISTS ai_chat
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     debate_id       UUID         NOT NULL,
     persona_id      VARCHAR(2)  NOT NULL,
+    name            VARCHAR(100) NOT NULL,
 
     created_at      TIMESTAMP    NOT NULL DEFAULT now(),
     updated_at      TIMESTAMP    NOT NULL DEFAULT now(),

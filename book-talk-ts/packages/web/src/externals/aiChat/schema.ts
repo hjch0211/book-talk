@@ -3,6 +3,7 @@ import { z } from 'zod';
 export const CreateAiChatRequestSchema = z.object({
   debateId: z.string().min(1, '토론 ID를 입력해주세요'),
   persona: z.string().min(1, '페르소나를 입력해주세요'),
+  name: z.string().min(1, '이름을 입력해주세요'),
 });
 
 export const CreateAiChatResponseSchema = z.object({
@@ -37,6 +38,7 @@ export const FindOneAiChatResponseSchema = z.object({
   debateId: z.string(),
   personaId: z.string(),
   agentId: z.string(),
+  name: z.string(),
   member: AiChatMemberInfoSchema,
   messages: z.array(AiChatMessageInfoSchema),
   createdAt: z.string(),

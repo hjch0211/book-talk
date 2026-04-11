@@ -60,7 +60,7 @@ class AiChatService(
         val account = accountRepository.findByIdOrNull((authAccount.id).toUUID())
             ?: httpBadRequest("존재하지 않는 계정입니다.")
 
-        val chat = aiChatRepository.saveAndFlush(AiChatEntity(debate = debate, personaId = request.persona))
+        val chat = aiChatRepository.saveAndFlush(AiChatEntity(debate = debate, personaId = request.persona, name = request.name))
         aiChatMemberRepository.save(AiChatMemberEntity(chat = chat, account = account))
 
         scope.launch {
@@ -113,6 +113,7 @@ class AiChatService(
             debateId = chat.debate.id.toString(),
             personaId = chat.personaId,
             agentId = persona.agentId,
+            name = chat.name,
             member = FindOneAiChatResponse.MemberInfo(
                 accountId = host.account.id.toString(),
                 accountName = host.account.name,
