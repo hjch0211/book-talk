@@ -26,8 +26,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import logoSvg from '../../../assets/logo.svg';
 import {
-  DevBadge,
   DesktopNav,
+  DevBadge,
   DrawerContent,
   DrawerProfileName,
   HamburgerButton,

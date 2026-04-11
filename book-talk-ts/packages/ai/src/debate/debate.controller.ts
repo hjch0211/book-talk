@@ -1,6 +1,7 @@
 import { Body, Controller, Inject, Post } from '@nestjs/common';
 import { type ApiResult, toResult } from '@src/api-result.js';
 import { validate } from '@src/api-validator.js';
+import type { SearchResult } from '@src/client/ai-search.client.js';
 import {
   type ChatRequest,
   ChatRequestSchema,
@@ -10,8 +11,10 @@ import {
 } from '@src/debate/_requests.js';
 import { DEBATE_SERVICE, type DebateService } from '@src/debate/debate.service.js';
 import { DEBATE_CHAT_SERVICE, type DebateChatService } from '@src/debate/debate-chat.service.js';
-import { DEBATE_SEARCH_SERVICE, type DebateSearchService } from '@src/debate/debate-search.service.js';
-import type { SearchResult } from '@src/client/ai-search.client.js';
+import {
+  DEBATE_SEARCH_SERVICE,
+  type DebateSearchService,
+} from '@src/debate/debate-search.service.js';
 
 @Controller()
 export class DebateController {
