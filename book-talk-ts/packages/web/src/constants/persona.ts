@@ -1,6 +1,9 @@
 import PersonaAImg from '@src/assets/persona/persona-a.png';
 import PersonaBImg from '@src/assets/persona/persona-b.png';
 import PersonaCImg from '@src/assets/persona/persona-c.png';
+import PersonaDImg from '@src/assets/persona/persona-d.png';
+import PersonaEImg from '@src/assets/persona/persona-e.png';
+import PersonaFImg from '@src/assets/persona/persona-f.png';
 
 export interface Persona {
   id: string;
@@ -27,5 +30,23 @@ export const PERSONAS: Persona[] = [
     label: '송하영',
     description: '밝고 귀여운 말투로 대화를 이어갑니다.',
     image: PersonaCImg,
+  },
+  {
+    id: 'd',
+    label: '원우',
+    description: '지적이고 차분한 대화로 이끌어갑니다.',
+    image: PersonaDImg,
+  },
+  {
+    id: 'e',
+    label: '마크',
+    description: '넘치는 에너지와 밝은 대화를 진행합니다.',
+    image: PersonaEImg,
+  },
+  {
+    id: 'f',
+    label: '박정민',
+    description: '생각이 깊고 솔직한 대화를 진행합니다.',
+    image: PersonaFImg,
   },
 ];
