@@ -4,7 +4,6 @@ import { meQueryOption } from '@src/externals/account';
 import { AiChatMessageStatus, findOneAiChatQueryOptions } from '@src/externals/aiChat';
 import { findOneDebateQueryOptions } from '@src/externals/debate';
 import { useAiChat } from '@src/hooks';
-import { ChatInput } from '@src/routes/Debate/_components/chat/ChatInput';
 import { ChatMessageList } from '@src/routes/Debate/_components/chat/ChatMessageList';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense, useEffect, useEffectEvent, useState } from 'react';
@@ -16,7 +15,6 @@ import {
   AvatarCircle,
   AvatarColumn,
   ChatArea,
-  ChatInputWrapper,
   DeleteButton,
   EmptyState,
   Header,
@@ -40,7 +38,7 @@ export function AiChatRoomPage() {
 }
 
 function AiChatRoomContent({ chatId }: { chatId: string }) {
-  const { isConnected, handleSendMessage, handleDeleteChat } = useAiChat({ chatId });
+  const { isConnected, handleDeleteChat } = useAiChat({ chatId });
   const { data: chatRoom, isFetching } = useSuspenseQuery(findOneAiChatQueryOptions(chatId));
   const { data: debate } = useSuspenseQuery(findOneDebateQueryOptions(chatRoom.debateId));
   const { data: me } = useSuspenseQuery(meQueryOption);
@@ -95,7 +93,7 @@ function AiChatRoomContent({ chatId }: { chatId: string }) {
         />
         <MessageList>
           {chats.length === 0 && !isWaiting && (
-            <EmptyState>메시지를 보내 대화를 시작하세요</EmptyState>
+            <EmptyState>상대가 공유한 자료를 확인해보세요!</EmptyState>
           )}
           <ChatMessageList
             chats={chats}
@@ -117,14 +115,6 @@ function AiChatRoomContent({ chatId }: { chatId: string }) {
             </MessageRow>
           )}
         </MessageList>
-        <ChatInputWrapper>
-          <ChatInput
-            isSending={isWaiting}
-            onSend={handleSendMessage}
-            members={[]}
-            presentations={[]}
-          />
-        </ChatInputWrapper>
       </ChatArea>
     </AiChatRoomContainer>
   );

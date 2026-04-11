@@ -26,13 +26,6 @@ export const useAiChat = ({ chatId }: Props) => {
     },
   });
 
-  /** 채팅 메시지 저장 */
-  const handleSendMessage = useEffectEvent(
-    (message: string, role: 'user' | 'assistant' = 'user') => {
-      connection.saveChat(chatId, message, role);
-    }
-  );
-
   /** 채팅방 삭제 */
   const handleDeleteChat = useEffectEvent(() => {
     deleteMutation.mutate(chatId);
@@ -41,8 +34,6 @@ export const useAiChat = ({ chatId }: Props) => {
   return {
     /** AI 채팅 웹소켓 연결 상태 */
     isConnected: connection.isConnected,
-    /** 채팅 메시지 저장 */
-    handleSendMessage,
     /** 채팅방 삭제 */
     handleDeleteChat,
   };
