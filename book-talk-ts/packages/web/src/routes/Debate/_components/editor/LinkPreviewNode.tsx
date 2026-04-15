@@ -144,7 +144,7 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
             flexDirection: 'column',
             alignItems: 'flex-start',
             padding: '0px',
-            width: '420px',
+            width: image ? '420px' : '100%',
             flex: 'none',
             order: 0,
             flexGrow: 0,
@@ -181,23 +181,23 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
           </Typography>
         </Box>
 
-        <Box
-          sx={{
-            width: '148px',
-            background: 'white',
-            borderRadius: '0px 12px 12px 0px',
-            flex: 'none',
-            order: 1,
-            alignSelf: 'stretch',
-            flexGrow: 1,
-            position: 'relative',
-            overflow: 'hidden',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-          }}
-        >
-          {image && (
+        {image && (
+          <Box
+            sx={{
+              width: '148px',
+              background: 'white',
+              borderRadius: '0px 12px 12px 0px',
+              flex: 'none',
+              order: 1,
+              alignSelf: 'stretch',
+              flexGrow: 1,
+              position: 'relative',
+              overflow: 'hidden',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
             <Box
               component="img"
               src={image}
@@ -208,8 +208,8 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
                 objectFit: 'cover',
               }}
             />
-          )}
-        </Box>
+          </Box>
+        )}
       </Box>
     </NodeViewWrapper>
   );
