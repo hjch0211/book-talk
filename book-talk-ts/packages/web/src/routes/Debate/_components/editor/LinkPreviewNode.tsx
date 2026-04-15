@@ -120,6 +120,7 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
           display: 'flex',
           flexDirection: 'row',
           alignItems: 'center',
+          margin: '16px 0',
           padding: '0px 0px 0px 32px',
           gap: '20px',
           width: '640px',
