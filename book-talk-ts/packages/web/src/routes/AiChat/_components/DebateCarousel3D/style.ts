@@ -64,8 +64,10 @@ export const CardDescription = styled.div`
   line-height: 1.7;
   letter-spacing: 0.2px;
   color: #7a8898;
+  flex: 1;
+  min-height: 0;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
+  -webkit-line-clamp: 20;
   -webkit-box-orient: vertical;
   overflow: hidden;
 `;
