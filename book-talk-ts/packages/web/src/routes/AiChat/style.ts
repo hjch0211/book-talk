@@ -123,5 +123,5 @@ export const NavigationRow = muiStyled(Box)({
   gap: 12,
   marginTop: 16,
   width: '100%',
-  maxWidth: 420,
+  maxWidth: 600,
 });

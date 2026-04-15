@@ -10,6 +10,7 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DebateCarousel3D } from './_components/DebateCarousel3D';
+import { DebateCreateStep } from './_components/DebateCreateStep';
 import { PersonaCarousel3D } from './_components/PersonaCarousel3D';
 import { WelcomeStep } from './_components/WelcomeStep';
 import {
@@ -24,13 +25,14 @@ import {
   StepTitle,
 } from './style';
 
-type Step = 'welcome' | 'debate' | 'name' | 'persona';
+type Step = 'welcome' | 'name' | 'debate' | 'create' | 'persona';
 
 export function AiChatPage() {
   const [step, setStep] = useState<Step>('welcome');
   const [debateId, setDebateId] = useState('');
   const [name, setName] = useState('');
   const [persona, setPersona] = useState('');
+  const [personaBackStep, setPersonaBackStep] = useState<'debate' | 'create'>('debate');
 
   const navigate = useNavigate();
   const { toast } = useToast();
@@ -82,7 +84,10 @@ export function AiChatPage() {
                 ← 이전
               </CrayonButton>
               <CrayonButton disabled={!name.trim()} onClick={() => setStep('debate')}>
-                다음 →
+                토론 선택하기 →
+              </CrayonButton>
+              <CrayonButton disabled={!name.trim()} onClick={() => setStep('create')}>
+                토론 생성하기 →
               </CrayonButton>
             </NavigationRow>
           </StepContainer>
@@ -119,10 +124,31 @@ export function AiChatPage() {
               <CrayonButton $variant="secondary" onClick={() => setStep('name')}>
                 ← 이전
               </CrayonButton>
-              <CrayonButton disabled={!debateId} onClick={() => setStep('persona')}>
+              <CrayonButton
+                disabled={!debateId}
+                onClick={() => {
+                  setPersonaBackStep('debate');
+                  setStep('persona');
+                }}
+              >
                 다음 →
               </CrayonButton>
             </NavigationRow>
+          </StepContainer>
+        </AiChatContainer>
+      )}
+
+      {step === 'create' && (
+        <AiChatContainer>
+          <StepContainer>
+            <DebateCreateStep
+              onBack={() => setStep('name')}
+              onSuccess={(id) => {
+                setDebateId(id);
+                setPersonaBackStep('create');
+                setStep('persona');
+              }}
+            />
           </StepContainer>
         </AiChatContainer>
       )}
@@ -133,7 +159,7 @@ export function AiChatPage() {
             <StepTitle>페르소나 선택하기</StepTitle>
             <PersonaCarousel3D personas={PERSONAS} selectedValue={persona} onSelect={setPersona} />
             <NavigationRow>
-              <CrayonButton $variant="secondary" onClick={() => setStep('debate')}>
+              <CrayonButton $variant="secondary" onClick={() => setStep(personaBackStep)}>
                 ← 이전
               </CrayonButton>
               <CrayonButton disabled={!persona || isPending} onClick={() => handleCreateChat()}>
