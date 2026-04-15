@@ -42,6 +42,12 @@ class DebateController(
         return debateService.findOne(id).toResult()
     }
 
+    /** Agent - 토론 단건 조회 */
+    @GetMapping("/debates/{id}/summary")
+    fun findOneSummarized(@PathVariable id: String): HttpResult<FindOneSummarizedResponse> {
+        return debateService.findOneSummarized(id).toResult()
+    }
+
     /** 토론 참여 */
     @PostMapping("/debates/participants")
     fun join(@RequestBody request: JoinRequest, authAccount: AuthAccount) {

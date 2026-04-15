@@ -121,6 +121,12 @@ class DebateService(
         )
     }
 
+    fun findOneSummarized(id: String): FindOneSummarizedResponse {
+        val debate = debateRepository.findByIdOrNull(id.toUUID())
+            ?: httpBadRequest("존재하지 않는 토론방입니다.")
+        return debate.toSummarizedResponse()
+    }
+
     @Transactional
     fun cancelJoin(debateId: String, authAccount: AuthAccount) {
         val account = accountRepository.findByIdOrNull(authAccount.id.toUUID()) ?: httpBadRequest("존재하지 않는 사용자입니다.")

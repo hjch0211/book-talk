@@ -108,6 +108,24 @@ data class FindOneResponse(
     )
 }
 
+data class FindOneSummarizedResponse(
+    val id: String,
+    val bookInfo: BookInfo,
+    val topic: String,
+    val description: String? = null,
+    val createdAt: Instant,
+    val updatedAt: Instant,
+    val archivedAt: Instant? = null,
+) {
+    data class BookInfo(
+        val title: String,
+        val author: String,
+        val description: String? = null,
+        val imageUrl: String? = null,
+        val detailUrl: String,
+    )
+}
+
 data class CreateChatResponse(
     val id: Long,
     val debateId: String,

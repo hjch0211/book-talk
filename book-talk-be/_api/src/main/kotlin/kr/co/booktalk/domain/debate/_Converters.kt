@@ -88,6 +88,24 @@ fun DebateEntity.toDebateInfo(members: List<DebateMemberEntity>): FindAllRespons
     )
 }
 
+fun DebateEntity.toSummarizedResponse(): FindOneSummarizedResponse {
+    return FindOneSummarizedResponse(
+        id = id.toString(),
+        bookInfo = FindOneSummarizedResponse.BookInfo(
+            title = book.title,
+            author = book.author,
+            description = book.description,
+            imageUrl = book.imageUrl,
+            detailUrl = book.detailUrl,
+        ),
+        topic = topic,
+        description = description,
+        createdAt = createdAt,
+        updatedAt = updatedAt,
+        archivedAt = archivedAt,
+    )
+}
+
 fun CreateRoundRequest.toEntity(debate: DebateEntity): DebateRoundEntity {
     return DebateRoundEntity(
         type = type,
