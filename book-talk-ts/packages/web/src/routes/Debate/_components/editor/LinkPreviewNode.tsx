@@ -14,20 +14,10 @@ interface LinkPreviewAttrs {
   type?: string | null;
 }
 
-const getFaviconUrl = (url: string) => {
-  try {
-    const { hostname } = new URL(url);
-    return `https://www.google.com/s2/favicons?domain=${hostname}&sz=128`;
-  } catch {
-    return null;
-  }
-};
-
 export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
   const attrs = node.attrs as LinkPreviewAttrs;
   const { url, title, image, siteName } = attrs;
   const [loading, setLoading] = useState(title === null && !!url);
-  const faviconUrl = getFaviconUrl(url);
 
   useEffect(() => {
     // 이미 OpenGraph 데이터가 있으면 API 호출하지 않음
@@ -206,7 +196,7 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
             justifyContent: 'center',
           }}
         >
-          {image ? (
+          {image && (
             <Box
               component="img"
               src={image}
@@ -217,18 +207,7 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
                 objectFit: 'cover',
               }}
             />
-          ) : faviconUrl ? (
-            <Box
-              component="img"
-              src={faviconUrl}
-              alt={siteName || ''}
-              sx={{
-                width: '24px',
-                height: '24px',
-                objectFit: 'contain',
-              }}
-            />
-          ) : null}
+          )}
         </Box>
       </Box>
     </NodeViewWrapper>
