@@ -5,8 +5,9 @@ export const StyledModal = styled(Modal, {
   shouldForwardProp: (prop) => prop !== 'inner',
 })<{ inner?: boolean }>(({ inner }) => ({
   display: 'flex',
-  alignItems: 'center',
+  alignItems: 'flex-start',
   justifyContent: 'center',
+  paddingTop: '120px',
   zIndex: inner ? 1400 : 1300,
 }));
 
