@@ -198,7 +198,7 @@ export const RoundInfoSchema = z.object({
 export const DebateRoundUpdatePayloadSchema = z.object({
   debateId: z.string(),
   round: RoundInfoSchema,
-  currentSpeaker: CurrentSpeakerInfoSchema,
+  currentSpeaker: CurrentSpeakerInfoSchema.nullable(),
 });
 
 export const DebateStartNotifiedPayloadSchema = z.object({

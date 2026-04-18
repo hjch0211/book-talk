@@ -1,7 +1,6 @@
 import { AudioPlayer } from '@src/components/molecules/AudioPlayer';
 import { SuspenseErrorBoundary } from '@src/components/molecules/SuspenseErrorBoundary';
 import { AudioActivationBanner } from '@src/components/organisms/AudioActivationBanner';
-import { MobileUnsupportedModal } from '@src/components/organisms/MobileUnsupportedModal';
 import { meQueryOption } from '@src/externals/account';
 import { type RoundType, useDebate, useModal } from '@src/hooks';
 import type { VoiceConnectionStatus } from '@src/hooks/domain/useDebateRealtimeConnection.tsx';
@@ -169,19 +168,14 @@ export function DebatePage() {
   const { debateId } = useParams<{ debateId: string }>();
 
   return (
-    <>
-      <MobileUnsupportedModal />
-      <SuspenseErrorBoundary
-        key={debateId}
-        onSuspense={
-          <DebateSkeleton title={'토론방에 입장 중...'} content={'잠시만 기다려주세요'} />
-        }
-        onError={
-          <DebateSkeleton title={'오류가 발생했습니다'} content={'페이지를 새로고침 해주세요'} />
-        }
-      >
-        <DebatePageContent debateId={debateId} />
-      </SuspenseErrorBoundary>
-    </>
+    <SuspenseErrorBoundary
+      key={debateId}
+      onSuspense={<DebateSkeleton title={'토론방에 입장 중...'} content={'잠시만 기다려주세요'} />}
+      onError={
+        <DebateSkeleton title={'오류가 발생했습니다'} content={'페이지를 새로고침 해주세요'} />
+      }
+    >
+      <DebatePageContent debateId={debateId} />
+    </SuspenseErrorBoundary>
   );
 }

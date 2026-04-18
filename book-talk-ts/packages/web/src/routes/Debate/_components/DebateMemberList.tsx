@@ -1,9 +1,10 @@
-import { MoreVert, Person } from '@mui/icons-material';
-import { Avatar, Menu, MenuItem } from '@mui/material';
+import { Person } from '@mui/icons-material';
+import { Avatar } from '@mui/material';
+import { AppTooltip } from '@src/components/organisms/AppTooltip';
 import type { CurrentRoundInfo, PresentationInfo, RoundType } from '@src/externals/debate';
 import type { RaisedHandInfo } from '@src/externals/websocket';
 import type { OnlineMember } from '@src/hooks/domain/useDebateRealtimeConnection';
-import { type MouseEvent, useState } from 'react';
+import { useState } from 'react';
 import hostIconSvg from '../../../assets/host-icon.svg';
 import raiseHandSvg from '../../../assets/raise-hand.svg';
 import {
@@ -17,15 +18,14 @@ import {
   MemberListGradient,
   MemberListHeader,
   MemberListHeaderText,
-  MemberMenuButton,
   MemberName,
   MemberOrder,
   MemberOrderContainer,
   MemberProfile,
   MemberProfileBox,
-  MemberStatus,
+  MemberProfileFrame,
   RaisedHandIcon,
-  SpeakerTimer,
+  StateTimeBadge,
 } from '../style.ts';
 import { PresentationViewModal } from './modal/PresentationViewModal.tsx';
 
@@ -57,44 +57,26 @@ export function DebateMemberList({
   onPassSpeaker,
   presentations,
 }: Props) {
-  const [menuAnchorEl, setMenuAnchorEl] = useState<{ [key: string]: HTMLElement | null }>({});
   const [viewPresentationMember, setViewPresentationMember] = useState<{
     memberId: string;
     memberName: string;
   } | null>(null);
 
-  const handleMenuOpen = (memberId: string) => (event: MouseEvent<HTMLElement>) => {
-    setMenuAnchorEl((prev) => ({ ...prev, [memberId]: event.currentTarget }));
-  };
-
-  const handleMenuClose = (memberId: string) => {
-    setMenuAnchorEl((prev) => ({ ...prev, [memberId]: null }));
-  };
-
   const handlePassSpeaker = (memberId: string) => () => {
     onPassSpeaker(memberId);
-    handleMenuClose(memberId);
   };
 
   const handleViewPresentation = (memberId: string) => () => {
     const member = members.find((m) => m.id === memberId);
     if (member) {
-      setViewPresentationMember({
-        memberId: member.id,
-        memberName: member.name,
-      });
+      setViewPresentationMember({ memberId: member.id, memberName: member.name });
     }
-    handleMenuClose(memberId);
-  };
-
-  const shouldShowMenu = (memberId: string) => {
-    return memberId !== myAccountId; // 자기 자신 제외
   };
 
   return (
     <MemberListContainer>
       <MemberListHeader>
-        <MemberListHeaderText>참여자 목록</MemberListHeaderText>
+        <MemberListHeaderText>참여자</MemberListHeaderText>
       </MemberListHeader>
 
       <MemberList>
@@ -103,6 +85,7 @@ export function DebateMemberList({
           const isNext = nextSpeaker?.accountId === member.id;
           const hasRaisedHand = raisedHands.some((hand) => hand.accountId === member.id);
           const isConnectingVoice = member.isConnecting;
+          const isMe = member.id === myAccountId;
 
           return (
             <MemberItem key={member.id}>
@@ -113,97 +96,60 @@ export function DebateMemberList({
                 </RaisedHandIcon>
               </MemberOrderContainer>
               <MemberProfile $isCurrentSpeaker={isCurrent}>
-                <MemberProfileBox>
-                  <AvatarContainer>
-                    <Avatar
-                      sx={{ width: 40, height: 40, bgcolor: '#BDBDBD', borderRadius: '100px' }}
-                    >
-                      <Person sx={{ color: '#FFFFFF' }} />
-                    </Avatar>
-                    {member.role === 'HOST' && (
-                      <BookCrownIcon>
-                        <img src={hostIconSvg} alt="Host Icon" width={40} height={26} />
-                      </BookCrownIcon>
-                    )}
-                  </AvatarContainer>
-                  <MemberInfo>
-                    <MemberName>
-                      {member.name}
-                      {member.isMe && <CurrentUserIndicator>(나)</CurrentUserIndicator>}
-                    </MemberName>
-                    {isConnectingVoice && <MemberStatus>연결중...</MemberStatus>}
-                    {isCurrent && <MemberStatus>발표중...</MemberStatus>}
-                    {isNext && <MemberStatus>다음 발표자</MemberStatus>}
-                  </MemberInfo>
-                  {isCurrent && realTimeRemainingSeconds > 0 && (
-                    <SpeakerTimer>{formatTime(realTimeRemainingSeconds)}</SpeakerTimer>
-                  )}
-                </MemberProfileBox>
-
-                {shouldShowMenu(member.id) && (
-                  <>
-                    <MemberMenuButton onClick={handleMenuOpen(member.id)}>
-                      <MoreVert />
-                    </MemberMenuButton>
-                    <Menu
-                      anchorEl={menuAnchorEl[member.id]}
-                      open={Boolean(menuAnchorEl[member.id])}
-                      onClose={() => handleMenuClose(member.id)}
-                      anchorOrigin={{
-                        vertical: 'bottom',
-                        horizontal: 'right',
-                      }}
-                      transformOrigin={{
-                        vertical: 'top',
-                        horizontal: 'right',
-                      }}
-                      slotProps={{
-                        paper: {
-                          sx: {
-                            width: '165px',
-                            boxShadow:
-                              '0px 1px 14px rgba(0, 0, 0, 0.12), 0px 5px 8px rgba(0, 0, 0, 0.14), 0px 3px 5px -1px rgba(0, 0, 0, 0.2)',
-                            borderRadius: '4px',
-                            padding: '8px 0px',
-                          },
-                        },
-                      }}
-                    >
-                      {currentSpeaker?.accountId === myAccountId && (
-                        <MenuItem
-                          onClick={handlePassSpeaker(member.id)}
-                          sx={{
-                            height: '32px',
-                            padding: '6px 16px',
-                            fontFamily: 'S-Core Dream',
-                            fontWeight: 200,
-                            fontSize: '14px',
-                            lineHeight: '20px',
-                            letterSpacing: '0.3px',
-                            color: 'rgba(0, 0, 0, 0.87)',
-                          }}
-                        >
-                          발표 넘겨주기
-                        </MenuItem>
-                      )}
-                      <MenuItem
-                        onClick={handleViewPresentation(member.id)}
+                <MemberProfileFrame>
+                  <MemberProfileBox>
+                    <AvatarContainer>
+                      <Avatar
                         sx={{
-                          height: '32px',
-                          padding: '6px 16px',
-                          fontFamily: 'S-Core Dream',
-                          fontWeight: 200,
-                          fontSize: '14px',
-                          lineHeight: '20px',
-                          letterSpacing: '0.3px',
-                          color: 'rgba(0, 0, 0, 0.87)',
+                          width: 32,
+                          height: 32,
+                          bgcolor: '#FFFFFF',
+                          border: '1px solid #F7F8FF',
+                          borderRadius: '100px',
                         }}
                       >
+                        <Person sx={{ color: '#BDBDBD', width: 20, height: 20 }} />
+                      </Avatar>
+                      {member.role === 'HOST' && (
+                        <BookCrownIcon>
+                          <img src={hostIconSvg} alt="Host Icon" width={40} height={26} />
+                        </BookCrownIcon>
+                      )}
+                    </AvatarContainer>
+                    <MemberInfo>
+                      {isConnectingVoice && (
+                        <StateTimeBadge $variant="connecting">연결중...</StateTimeBadge>
+                      )}
+                      {isCurrent && (
+                        <StateTimeBadge $variant="current">
+                          발표중
+                          {realTimeRemainingSeconds > 0 && (
+                            <span>{formatTime(realTimeRemainingSeconds)}</span>
+                          )}
+                        </StateTimeBadge>
+                      )}
+                      {isNext && <StateTimeBadge $variant="next">다음 발표자</StateTimeBadge>}
+                      <MemberName>
+                        {member.name}
+                        {member.isMe && <CurrentUserIndicator>(나)</CurrentUserIndicator>}
+                      </MemberName>
+                    </MemberInfo>
+                  </MemberProfileBox>
+
+                  {!isMe && (
+                    <AppTooltip>
+                      <AppTooltip.Item
+                        show={currentSpeaker?.accountId === myAccountId}
+                        onClick={handlePassSpeaker(member.id)}
+                      >
+                        발표 넘겨주기
+                      </AppTooltip.Item>
+                      <AppTooltip.Item onClick={handleViewPresentation(member.id)}>
                         발표페이지 보기
-                      </MenuItem>
-                    </Menu>
-                  </>
-                )}
+                      </AppTooltip.Item>
+                    </AppTooltip>
+                  )}
+                </MemberProfileFrame>
               </MemberProfile>
             </MemberItem>
           );

@@ -6,6 +6,7 @@ import {
   type MemberInfo,
   type RoundType,
 } from '@src/externals/debate';
+import { createSurvey } from '@src/externals/survey';
 import {
   type DebateRoundUpdateResponse,
   DebateWebSocketClient,
@@ -16,7 +17,8 @@ import {
 } from '@src/externals/websocket';
 import { useModal, useToast, useWebRTC } from '@src/hooks';
 import AiSummarizationModal from '@src/routes/Debate/_components/modal/AiSummarizationModal.tsx';
-import { useQueryClient } from '@tanstack/react-query';
+import SurveyModal from '@src/routes/Debate/_components/modal/SurveyModal';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -61,8 +63,19 @@ export const useDebateRealtimeConnection = (props: Props) => {
   const [isDebateJoined, setIsDebateJoined] = useState<boolean>(false);
   const [raisedHands, setRaisedHands] = useState<RaisedHandInfo[]>([]);
   const wsClientRef = useRef<DebateWebSocketClient | null>(null);
-  const { openModal } = useModal();
+  const latestOnlineIdsRef = useRef<Set<string>>(new Set());
+  const { openModal, closeModal } = useModal();
   const { toast } = useToast();
+
+  const createSurveyMutation = useMutation({
+    mutationFn: createSurvey,
+    onSuccess: () => {
+      closeModal();
+    },
+    onError: (error) => {
+      toast.error(error instanceof Error ? error.message : '설문조사 제출에 실패했습니다.');
+    },
+  });
 
   // Voice 연결 상태
   const [voiceConnectionStatus, setVoiceConnectionStatus] =
@@ -219,7 +232,9 @@ export const useDebateRealtimeConnection = (props: Props) => {
   });
 
   /** 온라인 멤버 목록 업데이트 */
-  const onOnlineMembersUpdate = useEffectEvent((onlineIds: Set<string>) => {
+  const onOnlineMembersUpdate = useEffectEvent(async (onlineIds: Set<string>) => {
+    latestOnlineIdsRef.current = onlineIds;
+
     const connectingIds = new Set(onlineMembers.filter((m) => m.isConnecting).map((m) => m.id));
 
     const members = debate.members
@@ -232,10 +247,28 @@ export const useDebateRealtimeConnection = (props: Props) => {
     setOnlineMembers(members);
 
     if (voiceConnectionStatus === 'PENDING') {
-      const isAlone = members.length <= 1;
+      const isAlone = onlineIds.size <= 1;
       if (isAlone) {
         setVoiceConnectionStatus('COMPLETED');
       }
+    }
+
+    if (
+      voiceConnectionStatus === 'COMPLETED' &&
+      !webRTC.localStream &&
+      onlineIds.size > 1 &&
+      debate.myMemberInfo?.id
+    ) {
+      setVoiceConnectionStatus('PENDING');
+      const stream = await webRTC.startLocalStream({ audio: true, video: false });
+      if (!stream) {
+        setVoiceConnectionStatus('FAILED');
+        return;
+      }
+      wsClientRef.current?.sendVoiceMessage({
+        type: WSRequestMessageType.C_VOICE_JOIN,
+        payload: { accountId: debate.myMemberInfo.id },
+      });
     }
 
     if (debateId) {
@@ -244,6 +277,22 @@ export const useDebateRealtimeConnection = (props: Props) => {
       });
     }
   });
+
+  useEffect(() => {
+    const onlineIds = latestOnlineIdsRef.current;
+    if (onlineIds.size === 0) return;
+
+    setOnlineMembers((prev) => {
+      const connectingIds = new Set(prev.filter((m) => m.isConnecting).map((m) => m.id));
+      return debate.members
+        .filter((member) => onlineIds.has(member.id))
+        .map((member) => ({
+          ...member,
+          isMe: member.id === debate.myMemberInfo?.id,
+          isConnecting: connectingIds.has(member.id),
+        }));
+    });
+  }, [debate.members, debate.myMemberInfo?.id]);
 
   /** 발언자 업데이트 */
   const onSpeakerUpdate = useEffectEvent(() => {
@@ -255,34 +304,31 @@ export const useDebateRealtimeConnection = (props: Props) => {
   });
 
   /** 라운드 업데이트 */
-  const onDebateRoundUpdate = useEffectEvent(async (roundInfo: DebateRoundUpdateResponse) => {
-    if (debateId) {
-      void queryClient.invalidateQueries({
-        queryKey: findOneDebateQueryOptions(debateId).queryKey,
-      });
-    }
-
+  const onDebateRoundUpdate = useEffectEvent((roundInfo: DebateRoundUpdateResponse) => {
     const roundType = roundInfo.payload.round.type as RoundType;
+
     if (roundType === 'PRESENTATION' || roundType === 'FREE') {
       onRoundStartBackdrop(roundType);
     }
 
-    if (roundType === 'PRESENTATION' && debateId) {
-      await queryClient
-        .fetchQuery({ ...findOneDebateQueryOptions(debateId), staleTime: 0 })
-        .then((debate) => {
-          openModal(AiSummarizationModal, {
-            bookTitle: `${debate.bookInfo.title} - ${debate.bookInfo.author}`,
-            topic: debate.topic,
-            bookImageUrl: debate.bookInfo.imageUrl ?? '',
-            summarization: debate.aiSummarized ?? '',
-          });
-        });
+    if (roundType === 'PRESENTATION') {
+      openModal(AiSummarizationModal, {
+        bookTitle: `${debate.bookInfo.title} - ${debate.bookInfo.author}`,
+        topic: debate.topic,
+        bookImageUrl: debate.bookInfo.imageUrl ?? '',
+        summarization: debate.aiSummarized ?? '',
+      });
     }
   });
 
   /** 토론 종료 */
   const onDebateClosed = useEffectEvent(() => {
+    openModal(SurveyModal, {
+      onConfirm: (rate: number) => {
+        createSurveyMutation.mutate({ rate });
+      },
+      isLoading: createSurveyMutation.isPending,
+    });
     navigate('/home');
   });
 

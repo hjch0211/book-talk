@@ -220,11 +220,12 @@ export class DebateWebSocketClient {
         break;
       case WSResponseMessageType.S_DEBATE_ROUND_UPDATE:
         if (this.handlers.onDebateRoundUpdate) {
-          this.handlers.onDebateRoundUpdate(message);
           if (message.payload?.round.endedAt != null) {
             this.handlers.onDebateClosed?.();
             break;
           }
+
+          this.handlers.onDebateRoundUpdate(message);
 
           if (this.handlers.onSpeakerUpdate && message.payload?.currentSpeaker) {
             const speakerUpdate: SpeakerUpdateResponse = {
@@ -268,12 +269,6 @@ export class DebateWebSocketClient {
           this.handlers.onDebateStartNotified();
         }
         break;
-      case WSResponseMessageType.S_AI_CHAT_COMPLETED:
-        if (this.handlers.onAiChatCompleted && message.payload) {
-          this.handlers.onAiChatCompleted(message.payload.chatId);
-        }
-        break;
-      default:
     }
   }
 

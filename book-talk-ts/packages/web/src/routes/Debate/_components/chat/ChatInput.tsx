@@ -131,7 +131,7 @@ export function ChatInput({ isSending, onSend, members, presentations }: ChatInp
           directions: ['top-left', 'top-right', 'bottom-left', 'bottom-right'],
           minWidth: 50,
           minHeight: 50,
-          alwaysPreserveAspectRatio: false,
+          alwaysPreserveAspectRatio: true,
         },
       }),
       Youtube.configure({
