@@ -73,14 +73,14 @@ const ProfileSection = () => {
   return (
     <AppTooltip trigger={profileTrigger}>
       {me ? (
-        <>
-          <Box sx={{ px: 2, py: 1 }}>
+        [
+          <Box key="name" sx={{ px: 2, py: 1 }}>
             <DrawerProfileName>{me.name}</DrawerProfileName>
-          </Box>
-          <Divider sx={{ my: 0 }} />
-          <AppTooltip.Item onClick={() => navigate('/my-page')}>마이페이지</AppTooltip.Item>
-          <AppTooltip.Item onClick={() => logoutMutation.mutate()}>로그아웃</AppTooltip.Item>
-        </>
+          </Box>,
+          <Divider key="divider" sx={{ my: 0 }} />,
+          <AppTooltip.Item key="mypage" onClick={() => navigate('/my-page')}>마이페이지</AppTooltip.Item>,
+          <AppTooltip.Item key="logout" onClick={() => logoutMutation.mutate()}>로그아웃</AppTooltip.Item>,
+        ]
       ) : (
         <AppTooltip.Item onClick={() => navigate('/sign-in')}>로그인</AppTooltip.Item>
       )}
