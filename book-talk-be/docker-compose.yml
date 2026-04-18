@@ -19,7 +19,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - booktalk-prod-internal
+      - net
 
   redis:
     image: redis:7-alpine
@@ -36,7 +36,7 @@ services:
       timeout: 5s
       retries: 5
     networks:
-      - booktalk-prod-internal
+      - net
 
   backend:
     build:
@@ -94,8 +94,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - booktalk-prod-internal
-      - booktalk-internal
+      - net
 
   batch:
     build:
@@ -148,8 +147,7 @@ services:
       redis:
         condition: service_healthy
     networks:
-      - booktalk-prod-internal
-      - booktalk-internal
+      - net
 
 volumes:
   postgres_data:
@@ -160,6 +158,4 @@ volumes:
     name: book-talk-be_redis_data
 
 networks:
-  booktalk-prod-internal:
-  booktalk-internal:
-    external: true
+  net:

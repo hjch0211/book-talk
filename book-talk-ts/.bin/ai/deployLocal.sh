@@ -11,16 +11,19 @@ fi
 
 export $(grep -v '^#' "$ENV_FILE" | grep -v '^$' | xargs)
 
+if ! docker network inspect booktalk-dev_net >/dev/null 2>&1; then
+  echo "booktalk-dev_net 네트워크가 없습니다. book-talk-be를 먼저 배포해주세요."
+  exit 1
+fi
+
 yarn install
 yarn ai build
 
-docker network inspect booktalk-internal >/dev/null 2>&1 || docker network create booktalk-internal
-
-docker compose down
-docker compose up -d --build
+docker compose -f docker-compose.dev.yml down
+docker compose -f docker-compose.dev.yml up -d --build
 
 echo ""
 echo "배포 완료!"
-echo "  로그 보기:    docker compose logs -f"
-echo "  상태 확인:    docker compose ps"
-echo "  중지:         docker compose down"
+echo "  로그 보기:    docker compose -f docker-compose.dev.yml logs -f"
+echo "  상태 확인:    docker compose -f docker-compose.dev.yml ps"
+echo "  중지:         docker compose -f docker-compose.dev.yml down"

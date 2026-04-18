@@ -22,8 +22,9 @@ services:
       SLACK_WEBHOOK_URL: ${SLACK_WEBHOOK_URL}
       NODE_ENV: development
     networks:
-      - booktalk-internal
+      - net
 
 networks:
-  booktalk-internal:
+  net:
     external: true
+    name: booktalk-dev_net
