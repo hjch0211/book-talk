@@ -103,6 +103,8 @@ export function RoundStartBackdrop({ show, roundType, onClose }: RoundStartBackd
       sx={{
         zIndex: 9999,
         backgroundColor: 'rgba(0, 0, 0, 0.4)',
+        alignItems: 'flex-start',
+        paddingTop: '120px',
         transitionProperty: 'opacity, visibility',
         transitionTimingFunction: 'ease-out',
         transitionDuration: show ? '500ms' : '300ms',
