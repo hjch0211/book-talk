@@ -63,6 +63,7 @@ export const useDebateRealtimeConnection = (props: Props) => {
   const [isDebateJoined, setIsDebateJoined] = useState<boolean>(false);
   const [raisedHands, setRaisedHands] = useState<RaisedHandInfo[]>([]);
   const wsClientRef = useRef<DebateWebSocketClient | null>(null);
+  const latestOnlineIdsRef = useRef<Set<string>>(new Set());
   const { openModal, closeModal } = useModal();
   const { toast } = useToast();
 
@@ -231,7 +232,9 @@ export const useDebateRealtimeConnection = (props: Props) => {
   });
 
   /** 온라인 멤버 목록 업데이트 */
-  const onOnlineMembersUpdate = useEffectEvent((onlineIds: Set<string>) => {
+  const onOnlineMembersUpdate = useEffectEvent(async (onlineIds: Set<string>) => {
+    latestOnlineIdsRef.current = onlineIds;
+
     const connectingIds = new Set(onlineMembers.filter((m) => m.isConnecting).map((m) => m.id));
 
     const members = debate.members
@@ -244,10 +247,28 @@ export const useDebateRealtimeConnection = (props: Props) => {
     setOnlineMembers(members);
 
     if (voiceConnectionStatus === 'PENDING') {
-      const isAlone = members.length <= 1;
+      const isAlone = onlineIds.size <= 1;
       if (isAlone) {
         setVoiceConnectionStatus('COMPLETED');
       }
+    }
+
+    if (
+      voiceConnectionStatus === 'COMPLETED' &&
+      !webRTC.localStream &&
+      onlineIds.size > 1 &&
+      debate.myMemberInfo?.id
+    ) {
+      setVoiceConnectionStatus('PENDING');
+      const stream = await webRTC.startLocalStream({ audio: true, video: false });
+      if (!stream) {
+        setVoiceConnectionStatus('FAILED');
+        return;
+      }
+      wsClientRef.current?.sendVoiceMessage({
+        type: WSRequestMessageType.C_VOICE_JOIN,
+        payload: { accountId: debate.myMemberInfo.id },
+      });
     }
 
     if (debateId) {
@@ -256,6 +277,22 @@ export const useDebateRealtimeConnection = (props: Props) => {
       });
     }
   });
+
+  useEffect(() => {
+    const onlineIds = latestOnlineIdsRef.current;
+    if (onlineIds.size === 0) return;
+
+    setOnlineMembers((prev) => {
+      const connectingIds = new Set(prev.filter((m) => m.isConnecting).map((m) => m.id));
+      return debate.members
+        .filter((member) => onlineIds.has(member.id))
+        .map((member) => ({
+          ...member,
+          isMe: member.id === debate.myMemberInfo?.id,
+          isConnecting: connectingIds.has(member.id),
+        }));
+    });
+  }, [debate.members, debate.myMemberInfo?.id]);
 
   /** 발언자 업데이트 */
   const onSpeakerUpdate = useEffectEvent(() => {
