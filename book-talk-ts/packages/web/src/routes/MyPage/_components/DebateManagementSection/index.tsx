@@ -23,10 +23,16 @@ import { useMutation, useQueryClient, useSuspenseInfiniteQuery } from '@tanstack
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
 type FilterChip = 'applied' | 'created' | 'joined';
-const SECTION_TITLES: Record<FilterChip, string> = {
+const SECTION_CHIP_TITLES: Record<FilterChip, string> = {
   applied: '신청한 토론방',
   created: '생성한 토론방',
   joined: '참여한 토론방',
+};
+
+const SECTION_TITLES: Record<FilterChip, string> = {
+  applied: '신청 완료한 토론방',
+  created: '생성한 토론방',
+  joined: '참여 완료한 토론방',
 };
 
 interface MyProfileDebateListSectionProps {
@@ -201,7 +207,9 @@ export const DebateManagementSection = ({ myId, onCardClick }: Props) => {
             active={filterChip === chip}
             onClick={() => setFilterChip(chip)}
           >
-            <FilterChipText active={filterChip === chip}>{SECTION_TITLES[chip]}</FilterChipText>
+            <FilterChipText active={filterChip === chip}>
+              {SECTION_CHIP_TITLES[chip]}
+            </FilterChipText>
           </FilterChipBox>
         ))}
       </ChipGroup>
