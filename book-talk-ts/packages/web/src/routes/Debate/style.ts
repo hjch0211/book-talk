@@ -499,7 +499,7 @@ export const MemberList = styled.div`
     align-items: flex-end;
     padding: 0px 0px 0px 8px;
     gap: 24px;
-    width: 286px;
+    width: 100%;
     height: 430px;
     overflow-y: scroll;
     flex: none;
@@ -533,8 +533,8 @@ export const MemberItem = styled(ListItem)`
     align-items: flex-start;
     padding: 0;
     gap: 0;
-    width: 278px;
-    height: 76px;
+    width: 100%;
+    min-height: 76px;
     flex: none;
     align-self: stretch;
     flex-grow: 0;
@@ -567,17 +567,16 @@ export const MemberProfile = styled.div<{ $isCurrentSpeaker?: boolean }>`
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
-    padding: 16px 24px;
+    padding: 0px 18px 0px 12px;
     gap: 10px;
     isolation: isolate;
-    width: 254px;
+    width: 280px;
     height: 76px;
-    background: ${(props) => (props.$isCurrentSpeaker ? '#F5F5F5' : '#FFFFFF')};
+    background: ${(props) => (props.$isCurrentSpeaker ? '#F7F8FF' : '#FFFFFF')};
     border-radius: 2px 50px 50px 2px;
     flex: none;
     order: 1;
     flex-grow: 0;
-    position: relative;
     transition: background-color 0.2s ease;
 
     &:hover {
@@ -586,17 +585,24 @@ export const MemberProfile = styled.div<{ $isCurrentSpeaker?: boolean }>`
     }
 `;
 
+export const MemberProfileFrame = styled.div`
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: 0px;
+    gap: 18px;
+    width: 100%;
+`;
+
 export const MemberProfileBox = styled.div`
     display: flex;
     flex-direction: row;
     align-items: center;
-    padding: 0;
-    gap: 14px;
-    width: 218px;
-    height: 40px;
+    padding: 0px;
+    gap: 12px;
     flex: none;
     order: 0;
-    flex-grow: 0;
+    flex-grow: 1;
 `;
 
 export const MemberInfo = styled.div`
@@ -604,8 +610,7 @@ export const MemberInfo = styled.div`
     flex-direction: column;
     justify-content: center;
     align-items: flex-start;
-    gap: 2px;
-    height: 20px;
+    gap: 9px;
     flex: none;
 `;
 
@@ -631,8 +636,8 @@ export const AvatarContainer = styled.div`
     align-items: center;
     padding: 0px;
     isolation: isolate;
-    width: 40px;
-    height: 40px;
+    width: 32px;
+    height: 32px;
     border-radius: 4px;
     flex: none;
     order: 0;
@@ -669,27 +674,6 @@ export const CurrentUserIndicator = styled.span`
     flex-grow: 0;
 `;
 
-export const MemberMenuButton = styled.div`
-    position: absolute;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    left: 222px;
-    top: calc(50% - 24px / 2);
-    cursor: pointer;
-    color: #7B7B7B;
-    flex: none;
-    order: 1;
-    flex-grow: 0;
-    z-index: 1;
-
-    &:hover {
-        color: #262626;
-    }
-`;
-
 export const SpeakerTimer = styled.div`
     font-family: 'S-Core Dream', sans-serif;
     font-weight: 300;
@@ -704,22 +688,32 @@ export const MemberOrderContainer = styled(Box)`
     width: 24px;
     height: 50px;
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
 `;
 
 export const RaisedHandIcon = styled(Box)`
-    position: absolute;
-    top: 0;
-    left: 0;
     transition: opacity 0.3s ease-in-out;
     pointer-events: none;
 `;
 
-export const MemberStatus = styled.div`
+export const StateTimeBadge = styled.div<{ $variant?: 'current' | 'next' | 'connecting' }>`
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 8px;
+    border-radius: 35px;
+    border: 1px solid ${(props) => (props.$variant === 'current' ? '#BEC3F5' : '#E9E9E9')};
+    font-family: 'S-Core Dream', sans-serif;
+    font-weight: 200;
     font-size: 12px;
     line-height: 150%;
     letter-spacing: 0.3px;
     color: #7B7B7B;
-    font-weight: 200;
+    white-space: nowrap;
 `;
 
 export const ActionButton = styled(Button)<{ borderColor?: string; backgroundColor?: string }>`
