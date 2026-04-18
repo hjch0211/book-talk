@@ -256,28 +256,23 @@ export const useDebateRealtimeConnection = (props: Props) => {
 
   /** 라운드 업데이트 */
   const onDebateRoundUpdate = useEffectEvent(async (roundInfo: DebateRoundUpdateResponse) => {
-    if (debateId) {
-      void queryClient.invalidateQueries({
-        queryKey: findOneDebateQueryOptions(debateId).queryKey,
-      });
-    }
-
     const roundType = roundInfo.payload.round.type as RoundType;
+
     if (roundType === 'PRESENTATION' || roundType === 'FREE') {
       onRoundStartBackdrop(roundType);
     }
 
     if (roundType === 'PRESENTATION' && debateId) {
-      await queryClient
-        .fetchQuery({ ...findOneDebateQueryOptions(debateId), staleTime: 0 })
-        .then((debate) => {
-          openModal(AiSummarizationModal, {
-            bookTitle: `${debate.bookInfo.title} - ${debate.bookInfo.author}`,
-            topic: debate.topic,
-            bookImageUrl: debate.bookInfo.imageUrl ?? '',
-            summarization: debate.aiSummarized ?? '',
-          });
-        });
+      const debate = await queryClient.fetchQuery({
+        ...findOneDebateQueryOptions(debateId),
+        staleTime: 0,
+      });
+      openModal(AiSummarizationModal, {
+        bookTitle: `${debate.bookInfo.title} - ${debate.bookInfo.author}`,
+        topic: debate.topic,
+        bookImageUrl: debate.bookInfo.imageUrl ?? '',
+        summarization: debate.aiSummarized ?? '',
+      });
     }
   });
 

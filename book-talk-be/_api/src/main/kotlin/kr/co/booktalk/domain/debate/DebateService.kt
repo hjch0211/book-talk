@@ -187,7 +187,7 @@ class DebateService(
         val now = Instant.now()
 
         /** 토론 정보 수정 */
-        if (debate.startAt.isAfter(now)) {
+        if (!request.ended && debate.startAt.isAfter(now)) {
             if (debate.closedAt != null) httpBadRequest("종료된 토론의 정보는 수정할 수 없습니다.")
             if (request.startAt.isBefore(now)) httpBadRequest("토론 시작 시간은 현재 시간 이후여야 합니다.")
             debate.topic = request.topic

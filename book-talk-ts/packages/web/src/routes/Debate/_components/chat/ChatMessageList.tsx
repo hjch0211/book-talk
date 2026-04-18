@@ -45,7 +45,7 @@ export function ChatMessageList({
         display: 'flex',
         flexDirection: 'column',
         gap: 2.25,
-        padding: '12px 35px',
+        padding: '12px',
         width: '100%',
       }}
     >

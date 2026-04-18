@@ -38,26 +38,30 @@ const tiptapStyles = css`
 
   /* Corner handles */
   [data-resize-handle='top-left'] {
-    top: -6px;
-    left: -6px;
+    top: 0;
+    left: 0;
+    transform: translate(-50%, -50%);
     cursor: nwse-resize;
   }
 
   [data-resize-handle='top-right'] {
-    top: -6px;
-    right: -6px;
+    top: 0;
+    right: 0;
+    transform: translate(50%, -50%);
     cursor: nesw-resize;
   }
 
   [data-resize-handle='bottom-left'] {
-    bottom: -6px;
-    left: -6px;
+    bottom: 0;
+    left: 0;
+    transform: translate(-50%, 50%);
     cursor: nesw-resize;
   }
 
   [data-resize-handle='bottom-right'] {
-    bottom: -6px;
-    right: -6px;
+    bottom: 0;
+    right: 0;
+    transform: translate(50%, 50%);
     cursor: nwse-resize;
   }
 
