@@ -14,23 +14,24 @@ on:
         required: true
 
 jobs:
-  deploy-ai:
-    name: 1. Deploy AI
-    uses: ./.github/workflows/deploy-ai.yml
+  deploy-api:
+    name: 1. Deploy API
+    uses: ./.github/workflows/deploy-api.yml
     with:
       environment: ${{ inputs.environment }}
     secrets: inherit
 
-  deploy-api:
-    name: 2. Deploy API
-    uses: ./.github/workflows/deploy-api.yml
+  deploy-ai:
+    name: 2. Deploy AI
+    needs: [deploy-api]
+    uses: ./.github/workflows/deploy-ai.yml
     with:
       environment: ${{ inputs.environment }}
     secrets: inherit
 
   deploy-web:
     name: 3. Deploy Web
-    needs: [deploy-ai, deploy-api]
+    needs: [deploy-ai]
     uses: ./.github/workflows/deploy-web.yml
     with:
       environment: ${{ inputs.environment }}

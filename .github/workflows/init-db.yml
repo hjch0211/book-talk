@@ -34,9 +34,6 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Ensure Docker network exists
-        run: docker network inspect booktalk-internal >/dev/null 2>&1 || docker network create booktalk-internal
-
       - name: Set compose args
         run: |
           if [ "${{ inputs.environment }}" == "development" ]; then
