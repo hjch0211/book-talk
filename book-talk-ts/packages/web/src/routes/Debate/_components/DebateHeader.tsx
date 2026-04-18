@@ -44,9 +44,9 @@ export function DebateHeader({ debate, isHost, endDebate }: Props) {
     try {
       const url = `${window.location.origin}/home?debateId=${debate.id}`;
       await navigator.clipboard.writeText(url);
-      toast.info('클립보드에 복사되었습니다.');
+      toast.info('초대링크가 복사되었습니다.');
     } catch {
-      toast.error('클립보드 복사에 실패했습니다. 다시 시도해주세요.');
+      toast.error('초대링크 복사가 실패했습니다. 다시 시도해주세요.');
     }
   };
 
