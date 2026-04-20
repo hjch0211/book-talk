@@ -1,5 +1,5 @@
 import { AccessTime, CalendarMonth, DeleteOutline } from '@mui/icons-material';
-import { InputAdornment, MenuItem, Typography } from '@mui/material';
+import { InputAdornment, MenuItem, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { AppButton } from '@src/components/molecules/AppButton';
 import { AppFieldMessage } from '@src/components/molecules/AppFieldMessage';
 import { AppTextField } from '@src/components/molecules/AppTextField';
@@ -34,6 +34,8 @@ interface Props {
 }
 
 const DebateModificationModal = ({ open, onClose, debate }: Props) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const { control, errors, isFormValid, onSubmit, onDelete, isPending, isDeletePending } =
     useDebateModification(debate, onClose);
   const { openModal, closeModal } = useInnerModal();
@@ -200,7 +202,7 @@ const DebateModificationModal = ({ open, onClose, debate }: Props) => {
             appVariant="transparent"
             onClick={handleDeleteClick}
             loading={isDeletePending}
-            sx={{ width: 200, height: 60, borderRadius: '10px', gap: '8px' }}
+            sx={{ width: isMobile ? '100%' : 200, height: isMobile ? 48 : 60, borderRadius: '10px', gap: '8px' }}
           >
             <DeleteOutline sx={{ fontSize: 24, color: '#7B7B7B' }} />
             <Typography variant="labelM" color="inherit">
@@ -212,7 +214,7 @@ const DebateModificationModal = ({ open, onClose, debate }: Props) => {
             onClick={onSubmit}
             disabled={!isFormValid}
             loading={isPending}
-            sx={{ width: 250, height: 60 }}
+            sx={{ width: isMobile ? '100%' : 250, height: isMobile ? 48 : 60 }}
           >
             <Typography variant="labelM" color="inherit">
               저장하기

@@ -159,3 +159,4 @@ volumes:
 
 networks:
   net:
+    name: booktalk-prod_net

@@ -1,20 +1,25 @@
+import { useMediaQuery, useTheme } from '@mui/material';
 import { AudioPlayer } from '@src/components/molecules/AudioPlayer';
 import { SuspenseErrorBoundary } from '@src/components/molecules/SuspenseErrorBoundary';
 import { AudioActivationBanner } from '@src/components/organisms/AudioActivationBanner';
+import PageContainer from '@src/components/templates/PageContainer';
 import { meQueryOption } from '@src/externals/account';
-import { type RoundType, useDebate, useModal } from '@src/hooks';
+import { type RoundType, useDebate, useModal, useToast } from '@src/hooks';
 import type { VoiceConnectionStatus } from '@src/hooks/domain/useDebateRealtimeConnection.tsx';
 import { useSuspenseQuery } from '@tanstack/react-query';
-import { useParams } from 'react-router-dom';
-import PageContainer from '../../components/templates/PageContainer';
-import { DebateHeader } from './_components/DebateHeader';
-import { DebateMemberList } from './_components/DebateMemberList';
-import { DebatePresentation } from './_components/DebatePresentation';
+import { useNavigate, useParams } from 'react-router-dom';
+import { MobileNavBar } from './_components/DebateHeader/mobile';
+import { DebateHeader } from './_components/DebateHeader/pc';
+import { MobilePresentation } from './_components/DebatePresentation/mobile';
+import { DebatePresentation } from './_components/DebatePresentation/pc';
 import { DebateSkeleton } from './_components/DebateSkeleton';
+import { MobileBottomBar } from './_components/DebateSideSection/mobile/MobileBottomBar';
+import { DebateCTASection } from './_components/DebateSideSection/pc/DebateCTASection';
+import { PCDebateMemberList } from './_components/DebateSideSection/pc/PCDebateMemberList';
+import AiSummarizationModal from './_components/modal/AiSummarizationModal.tsx';
 import StartDebateModal from './_components/modal/StartDebateModal.tsx';
-import { RoundActions } from './_components/RoundActions';
 import { RoundStartBackdrop } from './_components/RoundStartBackdrop';
-import { ContentRow, DebateContainer, MemberColumn } from './style.ts';
+import { ContentRow, DebateContainer, MemberColumn, MobileContainer } from './style.ts';
 
 interface Props {
   debateId: string | undefined;
@@ -22,6 +27,10 @@ interface Props {
 
 function DebatePageContent({ debateId }: Props) {
   const { openModal, closeModal } = useModal();
+  const { toast } = useToast();
+  const navigate = useNavigate();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
   const { data: me } = useSuspenseQuery(meQueryOption);
   const {
@@ -45,6 +54,30 @@ function DebatePageContent({ debateId }: Props) {
       },
       isLoading: round.isUpdating,
     });
+  };
+
+  const handleOpenAiSummarization = () => {
+    openModal(AiSummarizationModal, {
+      bookTitle: debate.bookInfo.title,
+      topic: debate.topic,
+      bookImageUrl: debate.bookInfo.imageUrl ?? undefined,
+      summarization: debate.aiSummarized ?? undefined,
+    });
+  };
+
+  const handleShareLink = async () => {
+    if (!debateId) return;
+    const url = `${window.location.origin}/debate/${debateId}`;
+    try {
+      await navigator.clipboard.writeText(url);
+      toast.success('초대 링크가 복사되었습니다.');
+    } catch {
+      toast.error('링크 복사에 실패했습니다.');
+    }
+  };
+
+  const handleLeave = () => {
+    navigate(-1);
   };
 
   if (!debateId) {
@@ -93,13 +126,77 @@ function DebatePageContent({ debateId }: Props) {
     );
   }
 
+  const isHost = myMemberInfo?.role === 'HOST';
+  const isDebateActive = currentRoundInfo.type !== 'PREPARATION';
+
+  if (isMobile) {
+    return (
+      <MobileContainer>
+        <MobileNavBar
+          topic={debate.topic}
+          isHost={isHost}
+          isDebateActive={isDebateActive}
+          onOpenAiSummarization={handleOpenAiSummarization}
+          onShareLink={() => void handleShareLink()}
+          onLeave={handleLeave}
+          onEndDebate={handleEndDebate}
+        />
+
+        <MobilePresentation currentRoundInfo={currentRoundInfo} />
+
+        <MobileBottomBar
+          roundType={currentRoundInfo.type as RoundType}
+          myRole={myMemberInfo?.role || ''}
+          isCurrentSpeaker={currentRoundInfo.currentSpeaker?.accountId === myMemberInfo?.id}
+          onStartDebate={handleOpenStartModal}
+          onEndPresentation={round.endPresentation}
+          isVoiceChatJoined={connection.voiceConnectionStatus === 'COMPLETED'}
+          isVoiceMuted={voiceChatUI.isMuted}
+          onToggleMute={voiceChatUI.toggleMute}
+          isMyHandRaised={myMemberInfo?.id ? connection.isHandRaised(myMemberInfo.id) : false}
+          onToggleHand={connection.toggleHand}
+          members={connection.onlineMembers}
+          myAccountId={myMemberInfo?.id}
+          currentSpeaker={currentRoundInfo.currentSpeaker}
+          nextSpeaker={currentRoundInfo.nextSpeaker}
+          raisedHands={connection.raisedHands}
+          realTimeRemainingSeconds={round.realTimeRemainingSeconds}
+          onPassSpeaker={round.passSpeaker}
+          presentations={debate.presentations}
+        />
+
+        <RoundStartBackdrop
+          show={roundStartBackdrop.show}
+          roundType={roundStartBackdrop.type}
+          onClose={roundStartBackdrop.close}
+        />
+
+        {connection.remoteStreams.map((rs) => (
+          <AudioPlayer
+            key={rs.peerId}
+            stream={rs.stream}
+            isAudioActive={voiceChatUI.isAudioActive}
+            onAutoplayBlocked={voiceChatUI.onAutoplayBlocked}
+          />
+        ))}
+        <AudioActivationBanner
+          open={!voiceChatUI.isAudioActive && connection.remoteStreams.length > 0}
+          onActivate={voiceChatUI.activateAudio}
+        />
+      </MobileContainer>
+    );
+  }
+
   return (
     <PageContainer sx={{ height: '100vh' }}>
       <DebateContainer>
         <DebateHeader
           debate={debate}
-          isHost={myMemberInfo?.role === 'HOST'}
+          isHost={isHost}
           endDebate={handleEndDebate}
+          onOpenAiSummarization={handleOpenAiSummarization}
+          onShareLink={() => void handleShareLink()}
+          onLeave={handleLeave}
         />
         <ContentRow>
           <DebatePresentation
@@ -112,7 +209,7 @@ function DebatePageContent({ debateId }: Props) {
             presentations={debate.presentations}
           />
           <MemberColumn>
-            <DebateMemberList
+            <PCDebateMemberList
               currentSpeaker={currentRoundInfo.currentSpeaker}
               nextSpeaker={currentRoundInfo.nextSpeaker}
               members={connection.onlineMembers}
@@ -123,12 +220,10 @@ function DebatePageContent({ debateId }: Props) {
               onPassSpeaker={round.passSpeaker}
               presentations={debate.presentations}
             />
-            <RoundActions
+            <DebateCTASection
               roundType={currentRoundInfo.type as RoundType}
               myRole={myMemberInfo?.role || ''}
-              isCurrentSpeaker={
-                debate.currentRoundInfo.currentSpeaker?.accountId === myMemberInfo?.id
-              }
+              isCurrentSpeaker={currentRoundInfo.currentSpeaker?.accountId === myMemberInfo?.id}
               onStartDebate={handleOpenStartModal}
               onEndPresentation={round.endPresentation}
               onToggleHand={connection.toggleHand}
@@ -146,7 +241,6 @@ function DebatePageContent({ debateId }: Props) {
           onClose={roundStartBackdrop.close}
         />
 
-        {/* 음성 채팅 */}
         {connection.remoteStreams.map((rs) => (
           <AudioPlayer
             key={rs.peerId}

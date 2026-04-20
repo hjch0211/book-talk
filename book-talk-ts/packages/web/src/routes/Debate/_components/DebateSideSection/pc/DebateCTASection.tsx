@@ -1,10 +1,11 @@
 import { Box, Stack, Typography } from '@mui/material';
+import micOffSvg from '@src/assets/mic-off.svg';
+import micOnSvg from '@src/assets/mic-on.svg';
+import raiseHandSvg from '@src/assets/raise-hand.svg';
 import { AppButton } from '@src/components/molecules/AppButton';
 import type { RoundType } from '@src/hooks';
-import raiseHandSvg from '../../../assets/raise-hand.svg';
-import { MicrophoneControlButton } from './MicrophoneControlButton.tsx';
 
-interface RoundActionsProps {
+interface DebateCTASectionProps {
   /** 현재 라운드 타입 */
   roundType: RoundType;
   /** 내 멤버 역할(host, member) */
@@ -28,7 +29,7 @@ interface RoundActionsProps {
 }
 
 /** 라운드별 Action button */
-export function RoundActions({
+export function DebateCTASection({
   roundType,
   myRole,
   isCurrentSpeaker,
@@ -39,7 +40,10 @@ export function RoundActions({
   isVoiceChatJoined,
   isVoiceMuted,
   onToggleMute,
-}: RoundActionsProps) {
+}: DebateCTASectionProps) {
+  const isMicOff = !isVoiceChatJoined || isVoiceMuted;
+  const micTitle = !isVoiceChatJoined ? '음성 채팅 연결 중...' : isMicOff ? '음소거 해제' : '음소거';
+
   return (
     <Box
       sx={{
@@ -73,12 +77,30 @@ export function RoundActions({
           </AppButton>
         )}
       </Stack>
+
+      {/* 음성/손들기 컨트롤 */}
       <Box sx={{ display: 'flex', flexDirection: 'row', gap: '8px', width: '200px' }}>
-        <MicrophoneControlButton
-          isActive={isVoiceChatJoined}
-          isMuted={isVoiceMuted}
-          onToggleMute={onToggleMute}
-        />
+        <AppButton
+          appVariant="rounded"
+          fullWidth
+          onClick={onToggleMute}
+          title={micTitle}
+          disabled={!isVoiceChatJoined}
+          sx={{
+            height: '60px',
+            borderRadius: '50px',
+            background: '#FFFFFF',
+            border: '1px solid #8E99FF',
+            boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)',
+          }}
+        >
+          <img
+            src={isMicOff ? micOffSvg : micOnSvg}
+            alt={isMicOff ? '마이크 끄기' : '마이크 켜기'}
+            width={14}
+            height={19}
+          />
+        </AppButton>
         <AppButton
           appVariant="rounded"
           sx={{

@@ -78,8 +78,12 @@ const ProfileSection = () => {
             <DrawerProfileName>{me.name}</DrawerProfileName>
           </Box>,
           <Divider key="divider" sx={{ my: 0 }} />,
-          <AppTooltip.Item key="mypage" onClick={() => navigate('/my-page')}>마이페이지</AppTooltip.Item>,
-          <AppTooltip.Item key="logout" onClick={() => logoutMutation.mutate()}>로그아웃</AppTooltip.Item>,
+          <AppTooltip.Item key="mypage" onClick={() => navigate('/my-page')}>
+            마이페이지
+          </AppTooltip.Item>,
+          <AppTooltip.Item key="logout" onClick={() => logoutMutation.mutate()}>
+            로그아웃
+          </AppTooltip.Item>,
         ]
       ) : (
         <AppTooltip.Item onClick={() => navigate('/sign-in')}>로그인</AppTooltip.Item>

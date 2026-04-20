@@ -1,29 +1,42 @@
-import styled from '@emotion/styled';
 import { Box, Button, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
-export const ModalContainer = styled(Box)({
+export const ModalContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   padding: '40px 60px 40px 40px',
   boxSizing: 'border-box',
   width: '100%',
-});
+  overflowY: 'auto',
+  [theme.breakpoints.down('md')]: {
+    padding: '24px 20px',
+  },
+}));
 
-export const InnerWrapper = styled(Box)({
+export const InnerWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'flex-end',
   gap: '20px',
   width: '780px',
-});
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+    alignItems: 'stretch',
+  },
+}));
 
-export const ContentArea = styled(Box)({
+export const ContentArea = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   gap: '60px',
   width: '780px',
-});
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+    gap: '24px',
+    alignItems: 'flex-start',
+  },
+}));
 
 /** Use variant="labelL" from parent */
 export const ModalTitle = styled(Typography)({
@@ -31,15 +44,21 @@ export const ModalTitle = styled(Typography)({
   color: '#262626',
 });
 
-export const ContentRow = styled(Box)({
+export const ContentRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'flex-start',
   gap: '30px',
   width: '780px',
-});
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+    flexDirection: 'column',
+    gap: '16px',
+    alignItems: 'stretch',
+  },
+}));
 
-export const BookProfile = styled(Button)({
+export const BookProfile = styled(Button)(({ theme }) => ({
   boxSizing: 'border-box',
   display: 'flex',
   flexDirection: 'column',
@@ -58,18 +77,31 @@ export const BookProfile = styled(Button)({
     borderColor: '#8E99FF',
     background: 'none',
   },
-});
+  [theme.breakpoints.down('md')]: {
+    flexDirection: 'row',
+    width: '100%',
+    height: '60px',
+    gap: '12px',
+    justifyContent: 'flex-start',
+    padding: '10px 16px',
+  },
+}));
 
 export const BookImageBox = styled(Box, {
   shouldForwardProp: (prop) => prop !== 'imageUrl',
-})<{ imageUrl?: string | null }>(({ imageUrl }) => ({
+})<{ imageUrl?: string | null }>(({ theme, imageUrl }) => ({
   width: '61px',
   height: '89px',
+  flexShrink: 0,
   backgroundColor: '#ECECEC',
   ...(imageUrl && { backgroundImage: `url(${imageUrl})` }),
   backgroundSize: 'cover',
   backgroundPosition: 'center',
   backgroundRepeat: 'no-repeat',
+  [theme.breakpoints.down('md')]: {
+    width: '27px',
+    height: '40px',
+  },
 }));
 
 /** Use variant="captionS" from parent */
@@ -108,14 +140,18 @@ export const DebateTopic = styled(Typography)({
 });
 
 /** Use variant="body2" from parent */
-export const DebateDescription = styled(Typography)({
+export const DebateDescription = styled(Typography)(({ theme }) => ({
   color: '#262626',
   height: '230px',
   display: '-webkit-box',
   WebkitLineClamp: 8,
   WebkitBoxOrient: 'vertical',
   overflow: 'hidden',
-});
+  [theme.breakpoints.down('md')]: {
+    height: '120px',
+    WebkitLineClamp: 4,
+  },
+}));
 
 export const Divider = styled(Box)({
   width: '100%',
@@ -171,20 +207,28 @@ export const WarningText = styled(Typography)({
   color: '#262626',
 });
 
-export const ButtonRow = styled(Box)({
+export const ButtonRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
   alignItems: 'flex-start',
   gap: '8px',
-});
+  [theme.breakpoints.down('md')]: {
+    flexDirection: 'column',
+    width: '100%',
+    gap: '8px',
+  },
+}));
 
-export const ButtonSection = styled(Box)({
+export const ButtonSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   gap: '8px',
   width: '250px',
-});
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+  },
+}));
 
 /** Use variant="captionS" from parent */
 export const Caption = styled(Typography)({

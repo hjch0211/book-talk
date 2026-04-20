@@ -25,8 +25,8 @@ function AiSummarizationModal({
       <Box
         sx={{
           position: 'absolute',
-          width: '1250px',
-          height: '784px',
+          width: { xs: '95%', md: '1250px' },
+          height: { xs: '80dvh', md: '784px' },
           left: '50%',
           top: '50%',
           transform: 'translate(-50%, -50%)',
@@ -40,7 +40,7 @@ function AiSummarizationModal({
           sx={{
             position: 'absolute',
             width: '100%',
-            height: '104px',
+            height: { xs: '60px', md: '104px' },
             left: '0px',
             top: '0px',
             background: 'linear-gradient(180deg, #FFFFFF 0%, rgba(255, 255, 255, 0.2) 100%)',
@@ -53,7 +53,7 @@ function AiSummarizationModal({
               position: 'absolute',
               width: '24px',
               height: '24px',
-              right: '40px',
+              right: { xs: '20px', md: '40px' },
               top: 'calc(50% - 12px)',
               color: '#7B7B7B',
               '&:hover': {
@@ -69,9 +69,10 @@ function AiSummarizationModal({
         <Box
           sx={{
             position: 'absolute',
-            height: '680px',
+            width: '100%',
+            height: { xs: 'calc(100dvh - 60px)', md: '680px' },
             left: '0px',
-            top: '104px',
+            top: { xs: '60px', md: '104px' },
             overflowY: 'auto',
             '&::-webkit-scrollbar': {
               width: '8px',
@@ -91,7 +92,7 @@ function AiSummarizationModal({
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'flex-start',
-              padding: '0px 80px',
+              padding: { xs: '0px 24px', md: '0px 80px' },
               gap: '32px',
             }}
           >
@@ -102,7 +103,7 @@ function AiSummarizationModal({
                 flexDirection: 'column',
                 alignItems: 'flex-start',
                 padding: '0px',
-                gap: '40px',
+                gap: { xs: '24px', md: '40px' },
               }}
             >
               {/* 제목 영역 */}
@@ -117,13 +118,20 @@ function AiSummarizationModal({
               >
                 {/* description - 책 제목 */}
                 {isLoading ? (
-                  <Skeleton variant="text" width={300} height={34} sx={{ borderRadius: '4px' }} />
+                  <Skeleton
+                    variant="text"
+                    sx={{
+                      width: { xs: '160px', md: '300px' },
+                      height: { xs: '24px', md: '34px' },
+                      borderRadius: '4px',
+                    }}
+                  />
                 ) : (
                   <Typography
                     sx={{
                       fontFamily: 'S-Core Dream',
                       fontWeight: 500,
-                      fontSize: '20px',
+                      fontSize: { xs: '16px', md: '20px' },
                       lineHeight: '170%',
                       display: 'flex',
                       alignItems: 'center',
@@ -137,13 +145,20 @@ function AiSummarizationModal({
 
                 {/* topic - 토론 주제 */}
                 {isLoading ? (
-                  <Skeleton variant="text" width={600} height={42} sx={{ borderRadius: '4px' }} />
+                  <Skeleton
+                    variant="text"
+                    sx={{
+                      width: { xs: '100%', md: '600px' },
+                      height: { xs: '32px', md: '42px' },
+                      borderRadius: '4px',
+                    }}
+                  />
                 ) : (
                   <Typography
                     sx={{
                       fontFamily: 'S-Core Dream',
                       fontWeight: 600,
-                      fontSize: '28px',
+                      fontSize: { xs: '20px', md: '28px' },
                       lineHeight: '150%',
                       display: 'flex',
                       alignItems: 'center',
@@ -160,9 +175,11 @@ function AiSummarizationModal({
               {isLoading ? (
                 <Skeleton
                   variant="rectangular"
-                  width={194}
-                  height={273}
-                  sx={{ borderRadius: '4px' }}
+                  sx={{
+                    width: { xs: '120px', md: '194px' },
+                    height: { xs: '170px', md: '273px' },
+                    borderRadius: '4px',
+                  }}
                 />
               ) : (
                 <Box
@@ -170,8 +187,8 @@ function AiSummarizationModal({
                   src={bookImageUrl}
                   alt={bookTitle}
                   sx={{
-                    width: '194px',
-                    height: '273px',
+                    width: { xs: '120px', md: '194px' },
+                    height: { xs: '170px', md: '273px' },
                     objectFit: 'cover',
                     borderRadius: '4px',
                   }}
@@ -188,27 +205,51 @@ function AiSummarizationModal({
                 alignItems: 'flex-start',
                 paddingBottom: '80px',
                 gap: '10px',
-                width: '1090px',
+                width: { xs: '100%', md: '1090px' },
               }}
             >
               {isLoading ? (
                 <>
-                  <Skeleton variant="text" width="100%" height={32} sx={{ borderRadius: '4px' }} />
-                  <Skeleton variant="text" width="100%" height={32} sx={{ borderRadius: '4px' }} />
-                  <Skeleton variant="text" width="100%" height={32} sx={{ borderRadius: '4px' }} />
-                  <Skeleton variant="text" width="100%" height={32} sx={{ borderRadius: '4px' }} />
-                  <Skeleton variant="text" width="100%" height={32} sx={{ borderRadius: '4px' }} />
-                  <Skeleton variant="text" width="100%" height={32} sx={{ borderRadius: '4px' }} />
-                  <Skeleton variant="text" width="100%" height={32} sx={{ borderRadius: '4px' }} />
-                  <Skeleton variant="text" width="80%" height={32} sx={{ borderRadius: '4px' }} />
+                  <Skeleton
+                    variant="text"
+                    sx={{ width: '100%', height: { xs: '24px', md: '32px' }, borderRadius: '4px' }}
+                  />
+                  <Skeleton
+                    variant="text"
+                    sx={{ width: '100%', height: { xs: '24px', md: '32px' }, borderRadius: '4px' }}
+                  />
+                  <Skeleton
+                    variant="text"
+                    sx={{ width: '100%', height: { xs: '24px', md: '32px' }, borderRadius: '4px' }}
+                  />
+                  <Skeleton
+                    variant="text"
+                    sx={{ width: '100%', height: { xs: '24px', md: '32px' }, borderRadius: '4px' }}
+                  />
+                  <Skeleton
+                    variant="text"
+                    sx={{ width: '100%', height: { xs: '24px', md: '32px' }, borderRadius: '4px' }}
+                  />
+                  <Skeleton
+                    variant="text"
+                    sx={{ width: '100%', height: { xs: '24px', md: '32px' }, borderRadius: '4px' }}
+                  />
+                  <Skeleton
+                    variant="text"
+                    sx={{ width: '100%', height: { xs: '24px', md: '32px' }, borderRadius: '4px' }}
+                  />
+                  <Skeleton
+                    variant="text"
+                    sx={{ width: '80%', height: { xs: '24px', md: '32px' }, borderRadius: '4px' }}
+                  />
                 </>
               ) : (
                 <Typography
                   sx={{
-                    width: '1090px',
+                    width: '100%',
                     fontFamily: 'S-Core Dream',
                     fontWeight: 200,
-                    fontSize: '18px',
+                    fontSize: { xs: '16px', md: '18px' },
                     lineHeight: '180%',
                     letterSpacing: '0.3px',
                     color: '#000000',

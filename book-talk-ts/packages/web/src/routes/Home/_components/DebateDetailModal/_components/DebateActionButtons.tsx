@@ -1,4 +1,4 @@
-import { Typography } from '@mui/material';
+import { Typography, useMediaQuery, useTheme } from '@mui/material';
 import { AppButton } from '@src/components/molecules/AppButton';
 import {
   ButtonRow,
@@ -34,13 +34,20 @@ export function DebateActionButtons({
   isJoinPending,
   isCancelPending,
 }: Props) {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
+
+  const btnHeight = isMobile ? 48 : 60;
+  const filledWidth = isMobile ? '100%' : 250;
+  const transparentWidth = isMobile ? '100%' : undefined;
+
   if (isFull) return;
   if (myRole === 'MEMBER') {
     return (
       <ButtonRow>
         <AppButton
           appVariant="transparent"
-          style={{ width: 200 }}
+          sx={{ width: transparentWidth ?? 200 }}
           onClick={onCancel}
           loading={isCancelPending}
         >
@@ -49,7 +56,11 @@ export function DebateActionButtons({
           </Typography>
         </AppButton>
         <ButtonSection>
-          <AppButton appVariant="filled" style={{ width: 250, height: 60 }} onClick={onEnter}>
+          <AppButton
+            appVariant="filled"
+            sx={{ width: filledWidth, height: btnHeight }}
+            onClick={onEnter}
+          >
             <Typography variant="labelM" color="inherit">
               토론방 입장하기
             </Typography>
@@ -63,13 +74,21 @@ export function DebateActionButtons({
   if (myRole === 'HOST') {
     return (
       <ButtonRow>
-        <AppButton appVariant="transparent" style={{ width: 162, height: 60 }} onClick={onEdit}>
+        <AppButton
+          appVariant="transparent"
+          sx={{ width: transparentWidth ?? 162, height: btnHeight }}
+          onClick={onEdit}
+        >
           <Typography variant="labelM" color="inherit">
             토론정보 수정하기
           </Typography>
         </AppButton>
         <ButtonSection>
-          <AppButton appVariant="filled" style={{ width: 250, height: 60 }} onClick={onEnter}>
+          <AppButton
+            appVariant="filled"
+            sx={{ width: filledWidth, height: btnHeight }}
+            onClick={onEnter}
+          >
             <Typography variant="labelM" color="inherit">
               토론방 입장하기
             </Typography>
@@ -85,7 +104,7 @@ export function DebateActionButtons({
       appVariant="filled"
       onClick={onJoin}
       loading={isJoinPending}
-      style={{ width: 250, height: 60 }}
+      sx={{ width: filledWidth, height: btnHeight }}
     >
       <Typography variant="labelM" color="inherit">
         참여 신청하기

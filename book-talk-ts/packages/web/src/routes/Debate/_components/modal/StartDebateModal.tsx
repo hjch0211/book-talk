@@ -11,15 +11,14 @@ interface Props {
 
 function StartDebateModal({ onConfirm, isLoading = false, onClose, open }: Props) {
   return (
-    <Modal open={open} onClose={onClose} inner hideBackdrop={false} width={470} height={200}>
+    <Modal open={open} onClose={onClose} inner hideBackdrop={false} width={470}>
       <Box
         sx={{
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'flex-start',
-          padding: '40px 60px 40px 40px',
-          gap: '40px',
-          height: '100%',
+          padding: { xs: '28px 24px', md: '40px 60px 40px 40px' },
+          gap: { xs: '24px', md: '40px' },
           boxSizing: 'border-box',
         }}
       >
@@ -28,15 +27,15 @@ function StartDebateModal({ onConfirm, isLoading = false, onClose, open }: Props
             display: 'flex',
             flexDirection: 'column',
             alignItems: 'center',
-            gap: '36px',
-            width: '370px',
+            gap: { xs: '24px', md: '36px' },
+            width: '100%',
           }}
         >
           <Typography
             sx={{
               fontFamily: 'S-Core Dream',
               fontWeight: 500,
-              fontSize: '16px',
+              fontSize: { xs: '14px', md: '16px' },
               lineHeight: '24px',
               textAlign: 'center',
               letterSpacing: '1px',
@@ -52,16 +51,14 @@ function StartDebateModal({ onConfirm, isLoading = false, onClose, open }: Props
               flexDirection: 'row',
               alignItems: 'center',
               gap: '10px',
-              width: '370px',
-              height: '60px',
+              width: '100%',
             }}
           >
             <AppButton
               appVariant="transparent"
               onClick={onClose}
               disabled={isLoading}
-              fullWidth={false}
-              sx={{ width: '180px' }}
+              fullWidth
             >
               <Typography variant="labelM" color="inherit">
                 아니오
@@ -72,9 +69,8 @@ function StartDebateModal({ onConfirm, isLoading = false, onClose, open }: Props
               appVariant="filled"
               onClick={onConfirm}
               disabled={isLoading}
-              fullWidth={false}
+              fullWidth
               sx={{
-                width: '180px',
                 background: '#F7F8FF',
                 border: 'none',
                 '&:hover': {

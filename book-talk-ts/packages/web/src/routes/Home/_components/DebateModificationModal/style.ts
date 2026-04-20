@@ -12,8 +12,8 @@ export {
   ScheduleTextField,
 } from '../DebateCreationModal/style.ts';
 
-import styled from '@emotion/styled';
 import { Box, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
 export const ModalTitle = styled(Typography)({
   color: '#545454',
@@ -21,7 +21,7 @@ export const ModalTitle = styled(Typography)({
   alignSelf: 'stretch',
 });
 
-export const BookReadOnlyBox = styled(Box)({
+export const BookReadOnlyBox = styled(Box)(({ theme }) => ({
   boxSizing: 'border-box',
   display: 'flex',
   flexDirection: 'row',
@@ -33,14 +33,17 @@ export const BookReadOnlyBox = styled(Box)({
   border: '1px solid #c4c4c4',
   borderRadius: '6px',
   gap: '12px',
-});
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+  },
+}));
 
 /** Use variant="captionM" from parent */
 export const BookReadOnlyText = styled(Typography)({
   color: '#7b7b7b',
 });
 
-export const ButtonRow = styled(Box)({
+export const ButtonRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
   justifyContent: 'center',
@@ -48,4 +51,9 @@ export const ButtonRow = styled(Box)({
   gap: '8px',
   width: '458px',
   height: '60px',
-});
+  [theme.breakpoints.down('md')]: {
+    flexDirection: 'column',
+    width: '100%',
+    height: 'auto',
+  },
+}));

@@ -1,30 +1,40 @@
-import styled from '@emotion/styled';
 import { Box, List, ListItem, Paper, Select, TextField, Typography } from '@mui/material';
+import { styled } from '@mui/material/styles';
 
-export const ModalContainer = styled(Box)({
+export const ModalContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
   padding: '30px 130px',
   gap: '48px',
-  height: '100%',
   overflowY: 'auto',
   boxSizing: 'border-box',
-});
+  [theme.breakpoints.down('md')]: {
+    padding: '20px 16px',
+    gap: '32px',
+  },
+}));
 
-export const FormContainer = styled(Box)({
+export const FormContainer = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   gap: '36px',
   width: '670px',
-});
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+    gap: '24px',
+  },
+}));
 
-export const FieldSection = styled(Box)({
+export const FieldSection = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   gap: '10px',
   width: '670px',
-});
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+  },
+}));
 
 export const FieldLabelRow = styled(Box)({
   display: 'flex',
@@ -55,7 +65,7 @@ export const FieldHint = styled(Typography)({
   color: '#262626',
 });
 
-export const InputBox = styled(Box)({
+export const InputBox = styled(Box)(({ theme }) => ({
   boxSizing: 'border-box',
   display: 'flex',
   flexDirection: 'row',
@@ -71,9 +81,12 @@ export const InputBox = styled(Box)({
   '&:focus-within': {
     borderColor: '#8E99FF',
   },
-});
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+  },
+}));
 
-export const StyledInput = styled.input({
+export const StyledInput = styled('input')({
   flex: 1,
   border: 'none',
   outline: 'none',
@@ -171,14 +184,18 @@ export const NoResultText = styled(Typography)({
   color: '#666666',
 });
 
-export const ScheduleRow = styled(Box)({
+export const ScheduleRow = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'row',
   gap: '10px',
   width: '670px',
-});
+  [theme.breakpoints.down('md')]: {
+    flexDirection: 'column',
+    width: '100%',
+  },
+}));
 
-export const ScheduleTextField = styled(TextField)({
+export const ScheduleTextField = styled(TextField)(({ theme }) => ({
   width: '330px',
   '& .MuiOutlinedInput-root': {
     height: '49px',
@@ -206,7 +223,10 @@ export const ScheduleTextField = styled(TextField)({
       cursor: 'pointer',
     },
   },
-});
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+  },
+}));
 
 export const ParticipantSelect = styled(Select<number>)({
   width: '74px',

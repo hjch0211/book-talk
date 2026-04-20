@@ -16,7 +16,6 @@ export const LogoContainer = styled('div')({
   justifyContent: 'center',
   alignItems: 'center',
   gap: '20px',
-  width: '182px',
   height: '44px',
 });
 

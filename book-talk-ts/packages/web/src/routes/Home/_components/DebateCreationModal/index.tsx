@@ -1,5 +1,5 @@
 import { Search } from '@mui/icons-material';
-import { MenuItem, Typography } from '@mui/material';
+import { MenuItem, Typography, useMediaQuery, useTheme } from '@mui/material';
 import { AppButton } from '@src/components/molecules/AppButton';
 import { AppFieldMessage } from '@src/components/molecules/AppFieldMessage';
 import { AppTextField } from '@src/components/molecules/AppTextField';
@@ -39,6 +39,8 @@ interface CreateDebateModalProps {
 }
 
 const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const {
     control,
     errors,
@@ -257,7 +259,7 @@ const DebateCreationModal = ({ open, onClose }: CreateDebateModalProps) => {
           onClick={onSubmit}
           disabled={!isFormValid}
           loading={isPending}
-          sx={{ width: 250, height: 60 }}
+          sx={{ width: isMobile ? '100%' : 250 }}
         >
           <Typography variant="labelM" color="inherit">
             토론방 생성

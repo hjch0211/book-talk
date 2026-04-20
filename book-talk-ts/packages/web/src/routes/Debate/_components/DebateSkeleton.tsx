@@ -19,6 +19,8 @@ import {
   SkeletonMemberListHeader,
   SkeletonMemberName,
   SkeletonMemberRole,
+  SkeletonMobileBarButton,
+  SkeletonMobileBottomBar,
   SkeletonNavContent,
   SkeletonNavigationBar,
   SkeletonPresentationArea,
@@ -84,6 +86,12 @@ export const DebateSkeleton = ({ title, content }: Props) => {
         <SkeletonActionButtonContainer>
           <SkeletonActionButton variant="rectangular" animation="wave" />
         </SkeletonActionButtonContainer>
+
+        <SkeletonMobileBottomBar>
+          <SkeletonMobileBarButton variant="rectangular" animation="wave" />
+          <SkeletonMobileBarButton variant="rectangular" animation="wave" />
+          <SkeletonMobileBarButton variant="rectangular" animation="wave" />
+        </SkeletonMobileBottomBar>
 
         <LoadingOverlay>
           <img src={debateLoadingGif} alt="로딩 중" width={316} />

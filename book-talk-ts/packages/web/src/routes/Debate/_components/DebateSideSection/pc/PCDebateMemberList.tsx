@@ -1,12 +1,13 @@
 import { Person } from '@mui/icons-material';
 import { Avatar } from '@mui/material';
+import hostIconSvg from '@src/assets/host-icon.svg';
+import raiseHandSvg from '@src/assets/raise-hand.svg';
 import { AppTooltip } from '@src/components/organisms/AppTooltip';
 import type { CurrentRoundInfo, PresentationInfo, RoundType } from '@src/externals/debate';
 import type { RaisedHandInfo } from '@src/externals/websocket';
 import type { OnlineMember } from '@src/hooks/domain/useDebateRealtimeConnection';
 import { useState } from 'react';
-import hostIconSvg from '../../../assets/host-icon.svg';
-import raiseHandSvg from '../../../assets/raise-hand.svg';
+import { PresentationViewModal } from '../../modal/PresentationViewModal.tsx';
 import {
   AvatarContainer,
   BookCrownIcon,
@@ -27,7 +28,6 @@ import {
   RaisedHandIcon,
   StateTimeBadge,
 } from '../style.ts';
-import { PresentationViewModal } from './modal/PresentationViewModal.tsx';
 
 interface Props {
   members: OnlineMember[];
@@ -47,12 +47,13 @@ function formatTime(seconds: number): string {
   return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-export function DebateMemberList({
+export function PCDebateMemberList({
   members,
   currentSpeaker,
   nextSpeaker,
   realTimeRemainingSeconds,
   raisedHands = [],
+  currentRoundType,
   myAccountId,
   onPassSpeaker,
   presentations,
@@ -128,7 +129,9 @@ export function DebateMemberList({
                           )}
                         </StateTimeBadge>
                       )}
-                      {isNext && <StateTimeBadge $variant="next">다음 발표자</StateTimeBadge>}
+                      {isNext && currentRoundType !== 'FREE' && (
+                        <StateTimeBadge $variant="next">다음 발표자</StateTimeBadge>
+                      )}
                       <MemberName>
                         {member.name}
                         {member.isMe && <CurrentUserIndicator>(나)</CurrentUserIndicator>}

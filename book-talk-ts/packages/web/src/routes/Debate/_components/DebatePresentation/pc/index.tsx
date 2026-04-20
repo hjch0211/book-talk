@@ -14,12 +14,12 @@ import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
 import { useCallback, useEffect, useState } from 'react';
 import { ChatInputWrapper, MainContent, PresentationArea, PresentationSection } from '../style.ts';
-import { ChatInput } from './chat/ChatInput.tsx';
-import { ChatMessageList } from './chat/ChatMessageList.tsx';
-import { ImageWithPaste } from './editor/ImageExtension.ts';
-import { LinkPreview } from './editor/LinkPreviewExtension.tsx';
-import { createSlashCommandExtension } from './editor/SlashCommandExtension.tsx';
-import { LastModified } from './LastModified';
+import { ChatInput } from '../../chat/ChatInput.tsx';
+import { ChatMessageList } from '../../chat/ChatMessageList.tsx';
+import { ImageWithPaste } from '../../editor/ImageExtension.ts';
+import { LinkPreview } from '../../editor/LinkPreviewExtension.tsx';
+import { createSlashCommandExtension } from '../../editor/SlashCommandExtension.tsx';
+import { LastModified } from '../../LastModified';
 
 interface Props {
   currentRoundInfo: CurrentRoundInfo;

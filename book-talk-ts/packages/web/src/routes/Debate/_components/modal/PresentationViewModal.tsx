@@ -19,143 +19,142 @@ interface Props {
   members?: Array<{ id: string; name: string }>;
 }
 
-const ModalContainer = styled(Box)`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 0 80px 80px;
-  position: relative;
-  width: 1020px;
-  background: #FFFFFF;
-  box-shadow: 0 2px 50px 10px #7B7B7B;
-  border-radius: 24px;
-  outline: none;
-  overflow-y: auto;
-  overflow-x: hidden;
+const ModalContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  padding: '0 80px 80px',
+  position: 'relative',
+  width: '1020px',
+  maxHeight: 'calc(100dvh - 80px)',
+  background: '#FFFFFF',
+  boxShadow: '0 2px 50px 10px #7B7B7B',
+  borderRadius: '24px',
+  outline: 'none',
+  overflowY: 'auto',
+  overflowX: 'hidden',
+  '&::-webkit-scrollbar': { display: 'none' },
+  msOverflowStyle: 'none',
+  scrollbarWidth: 'none',
+  [theme.breakpoints.down('md')]: {
+    width: '94vw',
+    padding: '0 20px 40px',
+    maxHeight: 'calc(100dvh - 120px)',
+    borderRadius: '16px',
+  },
+}));
 
-  /* Hide scrollbar for Chrome, Safari and Opera */
+const ModalHeader = styled(Box)(({ theme }) => ({
+  position: 'sticky',
+  top: 0,
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'center',
+  alignItems: 'center',
+  padding: '40px 0 32px',
+  isolation: 'isolate',
+  width: 'calc(100% + 160px)',
+  height: '96px',
+  margin: '0 -80px',
+  background: 'linear-gradient(180deg, #F7F8FF 70.84%, rgba(247, 248, 255, 0) 100%)',
+  borderRadius: '24px 24px 0 0',
+  flexShrink: 0,
+  zIndex: 10,
+  [theme.breakpoints.down('md')]: {
+    width: 'calc(100% + 40px)',
+    height: 'auto',
+    margin: '0 -20px',
+    padding: '20px 0 16px',
+    borderRadius: '16px 16px 0 0',
+  },
+}));
 
-  &::-webkit-scrollbar {
-    display: none;
-  }
+const ModalTitle = styled(Typography)(({ theme }) => ({
+  fontFamily: "'S-Core Dream', serif",
+  fontWeight: 500,
+  fontSize: '16px',
+  lineHeight: '24px',
+  textAlign: 'center',
+  letterSpacing: '1px',
+  color: '#555555',
+  zIndex: 0,
+  [theme.breakpoints.down('md')]: {
+    fontSize: '14px',
+  },
+}));
 
-  /* Hide scrollbar for IE, Edge and Firefox */
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-`;
+const CloseButton = styled(IconButton)(({ theme }) => ({
+  position: 'absolute',
+  width: 24,
+  height: 24,
+  top: 20,
+  right: 20,
+  padding: 0,
+  color: '#7B7B7B',
+  zIndex: 10,
+  [theme.breakpoints.down('md')]: {
+    top: 14,
+    right: 14,
+  },
+}));
 
-const ModalHeader = styled(Box)`
-  position: sticky;
-  top: 0;
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-  align-items: center;
-  padding: 40px 0 32px;
-  isolation: isolate;
-  width: 1020px;
-  height: 96px;
-  margin: 0 -80px;
-  background: linear-gradient(180deg, #F7F8FF 70.84%, rgba(247, 248, 255, 0) 100%);
-  border-radius: 24px 24px 0 0;
-  flex: none;
-  order: 0;
-  flex-grow: 0;
-  z-index: 10;
-`;
-
-const ModalTitle = styled(Typography)`
-    height: 24px;
-    font-family: 'S-Core Dream',serif;
-    font-style: normal;
-    font-weight: 500;
-    font-size: 16px;
-    line-height: 24px;
-    text-align: center;
-    letter-spacing: 1px;
-    color: #555555;
-    flex: none;
-    order: 0;
-    flex-grow: 0;
-    z-index: 0;
-`;
-
-const CloseButton = styled(IconButton)`
-    position: absolute;
-    width: 24px;
-    height: 24px;
-    top: 20px;
-    right: 20px;
-    padding: 0;
-    color: #7B7B7B;
-    flex: none;
-    order: 1;
-    flex-grow: 0;
-    z-index: 10;
-`;
-
-const EditorContainer = styled(Box)`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  padding: 70px 0 0;
-  width: 860px;
-  height: 594px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  flex: none;
-  order: 1;
-  flex-grow: 0;
-
-  /* Hide scrollbar for Chrome, Safari and Opera */
-
-  &::-webkit-scrollbar {
-    display: none;
-  }
-
-  /* Hide scrollbar for IE, Edge and Firefox */
-  -ms-overflow-style: none;
-  scrollbar-width: none;
-
-  .presentation-editor {
-    outline: none;
-    font-family: 'S-Core Dream', serif;
-    font-style: normal;
-    font-weight: 200;
-    font-size: 18px;
-    line-height: 180%;
-    letter-spacing: 0.3px;
-    color: #262626;
-
-    h1 {
-      font-size: 32px;
-      font-weight: 600;
-      margin-bottom: 16px;
-      color: #262626;
-    }
-
-    p {
-      font-size: 18px;
-      line-height: 180%;
-      letter-spacing: 0.3px;
-      color: #262626;
-      margin-bottom: 12px;
-    }
-
-    .presentation-image {
-      max-width: 100%;
-      height: auto;
-      border-radius: 8px;
-      margin: 16px 0;
-    }
-
-    .presentation-video {
-      margin: 16px 0;
-      border-radius: 8px;
-      overflow: hidden;
-    }
-  }
-`;
+const EditorContainer = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  padding: '70px 0 0',
+  width: '860px',
+  height: '594px',
+  overflowY: 'auto',
+  overflowX: 'hidden',
+  flexShrink: 0,
+  '&::-webkit-scrollbar': { display: 'none' },
+  msOverflowStyle: 'none',
+  scrollbarWidth: 'none',
+  '.presentation-editor': {
+    outline: 'none',
+    fontFamily: "'S-Core Dream', serif",
+    fontWeight: 200,
+    fontSize: '18px',
+    lineHeight: '180%',
+    letterSpacing: '0.3px',
+    color: '#262626',
+    h1: {
+      fontSize: '32px',
+      fontWeight: 600,
+      marginBottom: '16px',
+      color: '#262626',
+    },
+    p: {
+      fontSize: '18px',
+      lineHeight: '180%',
+      letterSpacing: '0.3px',
+      color: '#262626',
+      marginBottom: '12px',
+    },
+    '.presentation-image': {
+      maxWidth: '100%',
+      height: 'auto',
+      borderRadius: '8px',
+      margin: '16px 0',
+    },
+    '.presentation-video': {
+      margin: '16px 0',
+      borderRadius: '8px',
+      overflow: 'hidden',
+    },
+  },
+  [theme.breakpoints.down('md')]: {
+    width: '100%',
+    minHeight: '80%',
+    padding: '50px 0 0',
+    '.presentation-editor': {
+      fontSize: '15px',
+      h1: { fontSize: '22px' },
+      p: { fontSize: '15px' },
+    },
+  },
+}));
 
 export function PresentationViewModal({
   open,
@@ -205,8 +204,9 @@ export function PresentationViewModal({
       onClose={onClose}
       sx={{
         display: 'flex',
-        alignItems: 'center',
+        alignItems: { xs: 'flex-start', md: 'center' },
         justifyContent: 'center',
+        paddingTop: { xs: '60px', md: '0' },
       }}
     >
       <ModalContainer>
