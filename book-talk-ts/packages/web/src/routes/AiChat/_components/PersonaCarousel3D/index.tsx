@@ -24,7 +24,7 @@ export function PersonaCarousel3D({ personas, selectedValue, onSelect }: Props) 
       items={items}
       selectedId={selectedValue}
       onSelect={onSelect}
-      radius={300}
+      radius={400}
       cardWidth={260}
       cardHeight={400}
       sceneHeight={720}

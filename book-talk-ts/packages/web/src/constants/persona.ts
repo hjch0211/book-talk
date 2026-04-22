@@ -4,6 +4,7 @@ import PersonaCImg from '@src/assets/persona/persona-c.png';
 import PersonaDImg from '@src/assets/persona/persona-d.png';
 import PersonaEImg from '@src/assets/persona/persona-e.png';
 import PersonaFImg from '@src/assets/persona/persona-f.png';
+import PersonaGImg from '@src/assets/persona/persona-g.png';
 
 export interface Persona {
   id: string;
@@ -48,5 +49,11 @@ export const PERSONAS: Persona[] = [
     label: '박정민',
     description: '생각이 깊고 솔직한 대화를 진행합니다.',
     image: PersonaFImg,
+  },
+  {
+    id: 'g',
+    label: '한효주',
+    description: '차분하고 진실된 토론을 합니다.',
+    image: PersonaGImg,
   },
 ];
