@@ -42,7 +42,11 @@ export function DebateCTASection({
   onToggleMute,
 }: DebateCTASectionProps) {
   const isMicOff = !isVoiceChatJoined || isVoiceMuted;
-  const micTitle = !isVoiceChatJoined ? '음성 채팅 연결 중...' : isMicOff ? '음소거 해제' : '음소거';
+  const micTitle = !isVoiceChatJoined
+    ? '음성 채팅 연결 중...'
+    : isMicOff
+      ? '음소거 해제'
+      : '음소거';
 
   return (
     <Box

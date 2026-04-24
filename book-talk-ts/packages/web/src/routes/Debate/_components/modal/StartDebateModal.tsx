@@ -54,12 +54,7 @@ function StartDebateModal({ onConfirm, isLoading = false, onClose, open }: Props
               width: '100%',
             }}
           >
-            <AppButton
-              appVariant="transparent"
-              onClick={onClose}
-              disabled={isLoading}
-              fullWidth
-            >
+            <AppButton appVariant="transparent" onClick={onClose} disabled={isLoading} fullWidth>
               <Typography variant="labelM" color="inherit">
                 아니오
               </Typography>

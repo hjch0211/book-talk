@@ -1,8 +1,8 @@
 import { Divider } from '@mui/material';
-import type { Debate } from '@src/externals/debate';
 import aiBotSvg from '@src/assets/ai-bot.svg';
 import leaveIconSvg from '@src/assets/leave.svg';
 import userAddIconSvg from '@src/assets/user-add.svg';
+import type { Debate } from '@src/externals/debate';
 import {
   DebateTitle,
   NavButton,
@@ -21,12 +21,7 @@ interface Props {
   onLeave: () => void;
 }
 
-export function DebateHeader({
-  debate,
-  onOpenAiSummarization,
-  onShareLink,
-  onLeave,
-}: Props) {
+export function DebateHeader({ debate, onOpenAiSummarization, onShareLink, onLeave }: Props) {
   return (
     <NavigationBar>
       <NavContent>

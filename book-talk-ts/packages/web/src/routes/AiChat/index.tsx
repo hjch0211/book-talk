@@ -122,7 +122,7 @@ export function AiChatPage() {
             )}
             <NavigationRow>
               <CrayonButton $variant="secondary" onClick={() => setStep('name')}>
-                ← 이전
+                ← 이름 입력하기
               </CrayonButton>
               <CrayonButton
                 disabled={!debateId}
@@ -131,7 +131,7 @@ export function AiChatPage() {
                   setStep('persona');
                 }}
               >
-                다음 →
+                토론 상대 선택하기 →
               </CrayonButton>
             </NavigationRow>
           </StepContainer>
@@ -156,11 +156,11 @@ export function AiChatPage() {
       {step === 'persona' && (
         <AiChatContainer>
           <StepContainer>
-            <StepTitle>페르소나 선택하기</StepTitle>
+            <StepTitle>토론 상대 선택하기</StepTitle>
             <PersonaCarousel3D personas={PERSONAS} selectedValue={persona} onSelect={setPersona} />
             <NavigationRow>
               <CrayonButton $variant="secondary" onClick={() => setStep(personaBackStep)}>
-                ← 이전
+                ← 토론방 선택하기
               </CrayonButton>
               <CrayonButton disabled={!persona || isPending} onClick={() => handleCreateChat()}>
                 {isPending ? (

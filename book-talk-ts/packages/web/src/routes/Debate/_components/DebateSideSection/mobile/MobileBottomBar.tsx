@@ -11,10 +11,10 @@ import {
 import { MobileDebateCTASection } from './MobileDebateCTASection.tsx';
 import { MobilePartyList } from './MobilePartyList.tsx';
 
-const EXPAND_TRIGGER = 5;       // px — 이 이상 위로 움직이면 즉시 펼침
-const COLLAPSE_THRESHOLD = 60;  // px — 이 이상 아래로 드래그하면 접힘
+const EXPAND_TRIGGER = 5; // px — 이 이상 위로 움직이면 즉시 펼침
+const COLLAPSE_THRESHOLD = 60; // px — 이 이상 아래로 드래그하면 접힘
 const VELOCITY_THRESHOLD = 0.4; // px/ms — 빠른 아래 flick에 접힘
-const MAX_DRAG = 582 - 120;     // 최대 아래 드래그 범위 (expanded - collapsed)
+const MAX_DRAG = 582 - 120; // 최대 아래 드래그 범위 (expanded - collapsed)
 
 interface Props {
   roundType: RoundType;
@@ -127,9 +127,7 @@ export function MobileBottomBar({
       style={{
         // 축소 드래그 중에만 아래로 translateY 적용
         transform: collapseOffset > 0 ? `translateY(${collapseOffset}px)` : undefined,
-        transition: isCollapseDragging
-          ? 'none'
-          : 'height 0.25s ease, transform 0.25s ease',
+        transition: isCollapseDragging ? 'none' : 'height 0.25s ease, transform 0.25s ease',
       }}
     >
       <MobileBottomBarShadowWrapper>

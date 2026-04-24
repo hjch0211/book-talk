@@ -7,15 +7,19 @@ const buttonBounce = keyframes`
   60%       { transform: translateY(-3px); }
 `;
 
-export const CrayonButton = styled.button<{ $variant?: 'primary' | 'secondary' }>`
+export const CrayonButton = styled.button<{
+  $variant?: 'primary' | 'secondary';
+  underline?: boolean;
+}>`
   display: inline-flex;
   align-items: center;
   gap: 6px;
   padding: 8px 4px;
   border: none;
-  border-bottom: 2.5px dashed
-    ${({ $variant }) =>
-      $variant === 'secondary' ? 'rgba(160,160,180,0.45)' : 'rgba(139,124,248,0.5)'};
+  border-bottom: ${({ underline = true, $variant }) =>
+    underline
+      ? `2.5px dashed ${$variant === 'secondary' ? 'rgba(160,160,180,0.45)' : 'rgba(139,124,248,0.5)'}`
+      : 'none'};
   background: transparent;
   font-family: 'Gaegu', cursive;
   font-size: 22px;
@@ -26,8 +30,9 @@ export const CrayonButton = styled.button<{ $variant?: 'primary' | 'secondary' }
 
   &:hover:not(:disabled) {
     color: ${({ $variant }) => ($variant === 'secondary' ? '#8888a0' : '#6ec6ea')};
-    border-color: ${({ $variant }) =>
-      $variant === 'secondary' ? 'rgba(130,130,155,0.6)' : 'rgba(110,198,234,0.7)'};
+    ${({ underline = true, $variant }) =>
+      underline &&
+      `border-color: ${$variant === 'secondary' ? 'rgba(130,130,155,0.6)' : 'rgba(110,198,234,0.7)'};`}
     animation: ${buttonBounce} 0.5s ease;
   }
 

@@ -1,6 +1,14 @@
 import { keyframes } from '@emotion/react';
 import styled from '@emotion/styled';
 
+export const Wrapper = styled.div`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  padding: 0 100px;
+`;
+
+
 export const floatAnimation = keyframes`
   0%, 100% { transform: translateY(0px); }
   50%       { transform: translateY(-12px); }
@@ -8,7 +16,7 @@ export const floatAnimation = keyframes`
 
 export const Scene = styled.div<{ $height: number }>`
   position: relative;
-  width: 100%;
+  flex: 1;
   height: ${({ $height }) => $height}px;
   perspective: 1200px;
   perspective-origin: 50% 50%;
@@ -40,4 +48,5 @@ export const FloatWrapper = styled.div<{ $delay: string }>`
   justify-content: center;
   align-items: center;
   animation: ${floatAnimation} 3.5s ease-in-out ${({ $delay }) => $delay} infinite;
+  outline: none;
 `;

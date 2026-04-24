@@ -202,7 +202,12 @@ const DebateModificationModal = ({ open, onClose, debate }: Props) => {
             appVariant="transparent"
             onClick={handleDeleteClick}
             loading={isDeletePending}
-            sx={{ width: isMobile ? '100%' : 200, height: isMobile ? 48 : 60, borderRadius: '10px', gap: '8px' }}
+            sx={{
+              width: isMobile ? '100%' : 200,
+              height: isMobile ? 48 : 60,
+              borderRadius: '10px',
+              gap: '8px',
+            }}
           >
             <DeleteOutline sx={{ fontSize: 24, color: '#7B7B7B' }} />
             <Typography variant="labelM" color="inherit">

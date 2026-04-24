@@ -64,37 +64,109 @@ const muiTypographyConfig: TypographyVariantsOptions = {
   fontFamily: ['S-Core Dream', 'SpoqaHanSansNeo-Regular', 'sans-serif'].join(','),
 
   /** 36 / 180% */
-  headlineL: { fontSize: 36, lineHeight: 1.8, fontWeight: 600, letterSpacing: '0.3px', [below900]: { fontSize: 24 } },
+  headlineL: {
+    fontSize: 36,
+    lineHeight: 1.8,
+    fontWeight: 600,
+    letterSpacing: '0.3px',
+    [below900]: { fontSize: 24 },
+  },
   /** 32 / 125% */
-  headlineM: { fontSize: 32, lineHeight: 1.25, fontWeight: 600, letterSpacing: '0.3px', [below900]: { fontSize: 22 } },
+  headlineM: {
+    fontSize: 32,
+    lineHeight: 1.25,
+    fontWeight: 600,
+    letterSpacing: '0.3px',
+    [below900]: { fontSize: 22 },
+  },
   /** 28 / 150% */
-  headlineS: { fontSize: 28, lineHeight: 1.5, fontWeight: 600, letterSpacing: '0.3px', [below900]: { fontSize: 20 } },
+  headlineS: {
+    fontSize: 28,
+    lineHeight: 1.5,
+    fontWeight: 600,
+    letterSpacing: '0.3px',
+    [below900]: { fontSize: 20 },
+  },
 
   /** 24 / 125% */
-  title1: { fontSize: 24, lineHeight: 1.25, fontWeight: 500, letterSpacing: '0.3px', [below900]: { fontSize: 18 } },
+  title1: {
+    fontSize: 24,
+    lineHeight: 1.25,
+    fontWeight: 500,
+    letterSpacing: '0.3px',
+    [below900]: { fontSize: 18 },
+  },
   /** 20 / 170% */
-  title2: { fontSize: 20, lineHeight: 1.7, fontWeight: 500, letterSpacing: '0.3px', [below900]: { fontSize: 16 } },
+  title2: {
+    fontSize: 20,
+    lineHeight: 1.7,
+    fontWeight: 500,
+    letterSpacing: '0.3px',
+    [below900]: { fontSize: 16 },
+  },
   /** 18 / 150% */
-  title3: { fontSize: 18, lineHeight: 1.5, fontWeight: 500, letterSpacing: '1px', [below900]: { fontSize: 15 } },
+  title3: {
+    fontSize: 18,
+    lineHeight: 1.5,
+    fontWeight: 500,
+    letterSpacing: '1px',
+    [below900]: { fontSize: 15 },
+  },
 
   /** 16 / 24px → 1.5 */
-  labelL: { fontSize: 16, lineHeight: 1.5, fontWeight: 500, letterSpacing: '1px', [below900]: { fontSize: 14 } },
+  labelL: {
+    fontSize: 16,
+    lineHeight: 1.5,
+    fontWeight: 500,
+    letterSpacing: '1px',
+    [below900]: { fontSize: 14 },
+  },
   /** 14 / 20px → ~1.43 */
-  labelM: { fontSize: 14, lineHeight: 1.43, fontWeight: 500, letterSpacing: '0.3px', [below900]: { fontSize: 13 } },
+  labelM: {
+    fontSize: 14,
+    lineHeight: 1.43,
+    fontWeight: 500,
+    letterSpacing: '0.3px',
+    [below900]: { fontSize: 13 },
+  },
   /** 12 / 20px → ~1.67 */
   labelS: { fontSize: 12, lineHeight: 1.67, fontWeight: 500, letterSpacing: '1px' },
 
   /** 18 / 180% */
-  body1: { fontSize: 18, lineHeight: 1.8, fontWeight: 200, letterSpacing: '0.3px', [below900]: { fontSize: 14 } },
+  body1: {
+    fontSize: 18,
+    lineHeight: 1.8,
+    fontWeight: 200,
+    letterSpacing: '0.3px',
+    [below900]: { fontSize: 14 },
+  },
   /** 16 / 180% */
-  body2: { fontSize: 16, lineHeight: 1.8, fontWeight: 200, letterSpacing: '0.3px', [below900]: { fontSize: 13 } },
+  body2: {
+    fontSize: 16,
+    lineHeight: 1.8,
+    fontWeight: 200,
+    letterSpacing: '0.3px',
+    [below900]: { fontSize: 13 },
+  },
 
   /** 12 / 150% */
   captionS: { fontSize: 12, lineHeight: 1.5, fontWeight: 200, letterSpacing: '0.3px' },
   /** 14 / 20px → ~1.43 */
-  captionM: { fontSize: 14, lineHeight: 1.43, fontWeight: 200, letterSpacing: '0.3px', [below900]: { fontSize: 12 } },
+  captionM: {
+    fontSize: 14,
+    lineHeight: 1.43,
+    fontWeight: 200,
+    letterSpacing: '0.3px',
+    [below900]: { fontSize: 12 },
+  },
   /** 16 / 24px → 1.5 */
-  captionL: { fontSize: 16, lineHeight: 1.5, fontWeight: 200, letterSpacing: '0.3px', [below900]: { fontSize: 13 } },
+  captionL: {
+    fontSize: 16,
+    lineHeight: 1.5,
+    fontWeight: 200,
+    letterSpacing: '0.3px',
+    [below900]: { fontSize: 13 },
+  },
 
   h1: { fontSize: 80, color: appColor.primary },
   h2: { fontSize: 26, color: appColor.primary },

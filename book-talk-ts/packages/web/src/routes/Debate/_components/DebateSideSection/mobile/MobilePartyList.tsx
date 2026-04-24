@@ -11,15 +11,11 @@ import { PresentationViewModal } from '../../modal/PresentationViewModal.tsx';
 import {
   AvatarContainer,
   BookCrownIcon,
-  RaisedHandIcon,
-  StateTimeBadge,
-} from '../style.ts';
-import {
   MobilePartyCurrentUserIndicator,
   MobilePartyGradient,
-  MobilePartyList as MobilePartyListStyled,
   MobilePartyListHeader,
   MobilePartyListHeaderText,
+  MobilePartyList as MobilePartyListStyled,
   MobilePartyMemberInfo,
   MobilePartyMemberName,
   MobilePartyMemberRow,
@@ -27,6 +23,8 @@ import {
   MobilePartyOrderContainer,
   MobilePartyProfile,
   MobilePartyProfileList,
+  RaisedHandIcon,
+  StateTimeBadge,
 } from '../style.ts';
 
 interface Props {
