@@ -98,6 +98,11 @@ export function ChatMessage({ chat, isMyMessage, members, presentations }: ChatM
       sx={{
         width: '100%',
         filter: 'drop-shadow(0px 4px 4px rgba(0, 0, 0, 0.1))',
+        animation: 'msgFadeIn 0.3s ease-out both',
+        '@keyframes msgFadeIn': {
+          from: { opacity: 0, transform: 'translateY(10px)' },
+          to: { opacity: 1, transform: 'translateY(0)' },
+        },
       }}
     >
       {/* 왼쪽 메시지: 프로필 먼저 */}

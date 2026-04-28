@@ -1,5 +1,7 @@
 import { useConversation } from '@elevenlabs/react';
-import { AgentWrapper, Divider, OrbButton, StatusLabel } from './style';
+import MicOffRoundedIcon from '@mui/icons-material/MicOffRounded';
+import MicRoundedIcon from '@mui/icons-material/MicRounded';
+import { AgentWrapper, Divider, MicButton, StatusLabel } from './style';
 
 const STATUS_LABEL: Record<string, string> = {
   speaking: '말하는 중',
@@ -46,12 +48,18 @@ export function VoiceAgent({ chatId, debateId, myId, agentId }: Props) {
   return (
     <>
       <AgentWrapper>
-        <OrbButton
+        <MicButton
           type="button"
           $mode={mode}
           onClick={handleToggle}
           aria-label={conversation.status === 'connected' ? '음성 대화 종료' : '음성 대화 시작'}
-        />
+        >
+          {conversation.status === 'connected' ? (
+            <MicOffRoundedIcon sx={{ fontSize: 32, color: '#9ca3af' }} />
+          ) : (
+            <MicRoundedIcon sx={{ fontSize: 32, color: '#9ca3af' }} />
+          )}
+        </MicButton>
         <StatusLabel $mode={mode}>{STATUS_LABEL[mode]}</StatusLabel>
       </AgentWrapper>
       <Divider />
