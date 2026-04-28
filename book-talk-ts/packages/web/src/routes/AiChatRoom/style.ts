@@ -13,7 +13,7 @@ const fadeInUp = keyframes`
 
 export const AiChatRoomContainer = styled.div`
   width: 100%;
-  max-width: 1440px;
+  max-width: 1800px;
   height: 100vh;
   margin: 0 auto;
   display: flex;
@@ -76,10 +76,10 @@ export const DeleteButton = styled.button`
 
 export const ChatArea = styled.div`
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   margin: 0 120px;
   flex: 1;
-  max-width: 1440px;
+  max-width: 1800px;
   width: 100%;
   background: rgba(255, 255, 255, 0.82);
   backdrop-filter: blur(16px);
@@ -89,8 +89,27 @@ export const ChatArea = styled.div`
     0 8px 32px rgba(80, 100, 160, 0.08),
     0 2px 8px rgba(107, 140, 222, 0.1);
   border-radius: 24px;
+  overflow: hidden;
+  min-height: 0;
+`;
+
+export const MainPanel = styled.div`
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
   align-items: center;
   overflow: hidden;
+`;
+
+export const LogPanel = styled.div`
+  width: 400px;
+  flex-shrink: 0;
+  border-left: 1px solid rgba(200, 210, 240, 0.4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: rgba(248, 249, 255, 0.55);
 `;
 
 export const MessageList = styled.div`
