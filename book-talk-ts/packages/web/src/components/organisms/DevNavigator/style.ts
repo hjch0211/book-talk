@@ -19,8 +19,10 @@ export const FloatingButton = styled('button')({
   fontSize: '18px',
   fontWeight: 700,
   boxShadow: '0 4px 12px rgba(142, 153, 255, 0.5)',
-  transition: 'background-color 0.2s',
+  opacity: 0,
+  transition: 'opacity 0.2s, background-color 0.2s',
   '&:hover': {
+    opacity: 1,
     backgroundColor: '#7B85E8',
   },
 });
