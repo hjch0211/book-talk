@@ -1,6 +1,6 @@
 import heroImg from '@src/assets/logo.svg';
-import { CrayonButton } from '@src/components/molecules/CrayonButton';
-import { HeroArea, HeroImage, WelcomeSubtitle } from './style';
+import { AppButton } from '@src/components/molecules/AppButton';
+import { HeroImage, WelcomeContainer, WelcomeLogoGroup, WelcomeSubtitle } from './style';
 
 interface Props {
   onStart: () => void;
@@ -8,13 +8,18 @@ interface Props {
 
 export function WelcomeStep({ onStart }: Props) {
   return (
-    <>
-      <HeroArea>
+    <WelcomeContainer>
+      <WelcomeLogoGroup>
         <HeroImage src={heroImg} alt="Booktalk AI" draggable={false} />
-      </HeroArea>
-
-      <WelcomeSubtitle>Booktalk AI와 함께 토론을 시작해보세요</WelcomeSubtitle>
-      <CrayonButton onClick={onStart}>시작하기 →</CrayonButton>
-    </>
+        <WelcomeSubtitle>Booktalk AI와 함께 토론을 시작해보세요</WelcomeSubtitle>
+      </WelcomeLogoGroup>
+      <AppButton
+        fullWidth={false}
+        onClick={onStart}
+        sx={{ width: 286, height: 64, borderRadius: '18px' }}
+      >
+        시작하기
+      </AppButton>
+    </WelcomeContainer>
   );
 }

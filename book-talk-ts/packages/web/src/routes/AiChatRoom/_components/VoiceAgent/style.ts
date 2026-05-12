@@ -9,7 +9,6 @@ export const AgentWrapper = styled.div`
   padding: 28px 0 20px;
 `;
 
-
 export const MicButton = styled.button`
   width: 72px;
   height: 72px;
@@ -31,10 +30,10 @@ export const MicButton = styled.button`
 
 export const StatusLabel = styled.span<{ $mode: 'idle' | 'speaking' | 'listening' | 'connecting' }>`
   font-family: 'S-Core Dream', sans-serif;
-  font-weight: 300;
+  font-weight: 500;
   font-size: 12px;
   letter-spacing: 0.5px;
-  color: ${({ $mode }) => ($mode === 'idle' ? '#9ca3af' : '#6366f1')};
+  color: #8E99FF;
   transition: color 0.3s ease;
 `;
 
@@ -48,24 +47,27 @@ export const Divider = styled.div`
 // ── ConversationLog ──────────────────────────────────────────
 
 export const LogPanelHeader = styled.div`
-  padding: 20px 16px 12px;
+  height: 55px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 16px;
   font-family: 'S-Core Dream', sans-serif;
   font-weight: 500;
   font-size: 12px;
   letter-spacing: 0.8px;
-  color: #9ca3af;
+  color: #B6B6B6;
   text-transform: uppercase;
   border-bottom: 1px solid rgba(200, 210, 240, 0.35);
-  flex-shrink: 0;
 `;
 
 export const LogContainer = styled.div`
   flex: 1;
   overflow-y: auto;
-  padding: 14px 14px 14px;
+  padding: 12px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 30px;
 
   &::-webkit-scrollbar { width: 3px; }
   &::-webkit-scrollbar-thumb {
@@ -92,7 +94,7 @@ export const LogEmpty = styled.p`
 export const LogRow = styled.div<{ $role: 'user' | 'agent' }>`
   display: flex;
   align-items: flex-start;
-  gap: 6px;
+  gap: 4px;
   justify-content: ${({ $role }) => ($role === 'user' ? 'flex-end' : 'flex-start')};
 `;
 
@@ -114,19 +116,18 @@ export const LogAvatar = styled.div<{ $role: 'user' | 'agent' }>`
 `;
 
 export const LogBubble = styled.div<{ $role: 'user' | 'agent' }>`
-  max-width: 72%;
-  padding: 8px 11px;
+  max-width: 480px;
+  padding: 12px;
   border-radius: 12px;
   font-family: 'S-Core Dream', sans-serif;
   font-weight: 300;
-  font-size: 12.5px;
-  line-height: 1.6;
+  font-size: 14px;
+  line-height: 24px;
+  letter-spacing: 0.3px;
   word-break: break-word;
-  background: ${({ $role }) =>
-    $role === 'user' ? '#8E99FF' : 'rgba(255,255,255,0.95)'};
-  color: ${({ $role }) => ($role === 'user' ? '#fff' : '#374151')};
-  border: ${({ $role }) =>
-    $role === 'agent' ? '1px solid rgba(200,210,240,0.45)' : 'none'};
+  background: ${({ $role }) => ($role === 'user' ? '#E8EBFF' : 'rgba(255,255,255,0.95)')};
+  color: #374151;
+  border: ${({ $role }) => ($role === 'agent' ? '1px solid rgba(200,210,240,0.45)' : 'none')};
 `;
 
 const dotBounce = keyframes`

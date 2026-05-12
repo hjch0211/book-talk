@@ -1,20 +1,21 @@
 import { Search } from '@mui/icons-material';
 import { CircularProgress } from '@mui/material';
+import { AppButton } from '@src/components/molecules/AppButton';
 import { AppFieldMessage } from '@src/components/molecules/AppFieldMessage';
-import { CrayonButton } from '@src/components/molecules/CrayonButton';
-import { NavigationRow, StepTitle } from '@src/routes/AiChat/style';
+import { NameContentCard, NameStepTitle } from '@src/routes/AiChat/style';
 import { Controller } from 'react-hook-form';
 import {
   BookAuthor,
   BookImage,
   BookInfo,
   BookTitle,
-  CreateFormWrapper,
   FieldHint,
   FieldLabel,
   FieldLabelInner,
   FieldLabelRow,
   FieldSection,
+  FieldsContainer,
+  FormButtonRow,
   InputBox,
   NoResultText,
   RequiredMark,
@@ -55,131 +56,151 @@ export function DebateCreateStep({ onBack, onSuccess }: DebateCreateStepProps) {
 
   return (
     <>
-      <StepTitle>토론 생성하기</StepTitle>
+      <NameStepTitle>토론주제 생성하기</NameStepTitle>
 
-      <CreateFormWrapper>
-        <FieldSection>
-          <FieldLabelRow>
-            <FieldLabelInner>
-              <FieldLabel variant="captionM">책 제목</FieldLabel>
-              <RequiredMark variant="captionM">*</RequiredMark>
-            </FieldLabelInner>
-          </FieldLabelRow>
+      <NameContentCard sx={{ maxWidth: 750, gap: '60px' }}>
+        <FieldsContainer>
+          <FieldSection>
+            <FieldLabelRow>
+              <FieldLabelInner>
+                <FieldLabel variant="captionM">책 제목</FieldLabel>
+                <RequiredMark variant="captionM">*</RequiredMark>
+              </FieldLabelInner>
+            </FieldLabelRow>
 
-          <SearchInputWrapper ref={searchWrapperRef}>
-            <InputBox>
-              <Search sx={{ fontSize: 24, flexShrink: 0 }} />
-              <StyledInput
-                placeholder="토론하고 싶은 책을 검색해보세요"
-                value={searchQuery}
-                onChange={(e) => handleSearchChange(e.target.value)}
-                onFocus={handleSearchFocus}
-              />
-            </InputBox>
-
-            {showDropdown && searchQuery && (
-              <SearchDropdown ref={dropdownRef}>
-                <SearchResultList>
-                  {isSearchLoading ? (
-                    <NoResultText variant="captionM">검색 중...</NoResultText>
-                  ) : searchResults.length > 0 ? (
-                    <>
-                      {searchResults.map((book, index) => (
-                        <SearchResultItem
-                          key={`${book.isbn || index}`}
-                          onClick={() => handleBookSelect(book)}
-                        >
-                          <BookImage
-                            sx={{
-                              backgroundImage: book.imageUrl ? `url(${book.imageUrl})` : undefined,
-                            }}
-                          />
-                          <BookInfo>
-                            <BookTitle variant="labelS">{book.title}</BookTitle>
-                            <BookAuthor variant="captionS">
-                              {book.author} · {book.publisher}
-                            </BookAuthor>
-                          </BookInfo>
-                        </SearchResultItem>
-                      ))}
-                      {isFetchingNextBooks && (
-                        <NoResultText variant="captionM">불러오는 중...</NoResultText>
-                      )}
-                      <div ref={sentinelRef} style={{ height: 1 }} />
-                    </>
-                  ) : debouncedSearchQuery ? (
-                    <NoResultText variant="captionM">검색 결과가 없습니다</NoResultText>
-                  ) : null}
-                </SearchResultList>
-              </SearchDropdown>
-            )}
-          </SearchInputWrapper>
-
-          {errors.bookISBN && (
-            <AppFieldMessage type="error">{errors.bookISBN.message}</AppFieldMessage>
-          )}
-        </FieldSection>
-
-        <FieldSection>
-          <FieldLabelRow>
-            <FieldLabelInner>
-              <FieldLabel variant="captionM">토론주제</FieldLabel>
-              <RequiredMark variant="captionM">*</RequiredMark>
-            </FieldLabelInner>
-            <FieldHint variant="captionS">(최대 60자)</FieldHint>
-          </FieldLabelRow>
-
-          <Controller
-            name="topic"
-            control={control}
-            render={({ field }) => (
-              <InputBox sx={{ height: 'auto' }}>
+            <SearchInputWrapper ref={searchWrapperRef}>
+              <InputBox
+                sx={{ borderColor: '#8E99FF', '&:focus-within': { borderColor: '#8E99FF' } }}
+              >
+                <Search sx={{ fontSize: 24, flexShrink: 0 }} />
                 <StyledInput
-                  {...field}
-                  placeholder="토론 주제를 입력해주세요"
-                  maxLength={60}
-                  style={{ width: '100%' }}
+                  placeholder="토론하고 싶은 책을 검색해보세요"
+                  value={searchQuery}
+                  onChange={(e) => handleSearchChange(e.target.value)}
+                  onFocus={handleSearchFocus}
                 />
               </InputBox>
+
+              {showDropdown && searchQuery && (
+                <SearchDropdown ref={dropdownRef}>
+                  <SearchResultList>
+                    {isSearchLoading ? (
+                      <NoResultText variant="captionM">검색 중...</NoResultText>
+                    ) : searchResults.length > 0 ? (
+                      <>
+                        {searchResults.map((book, index) => (
+                          <SearchResultItem
+                            key={`${book.isbn || index}`}
+                            onClick={() => handleBookSelect(book)}
+                          >
+                            <BookImage
+                              sx={{
+                                backgroundImage: book.imageUrl
+                                  ? `url(${book.imageUrl})`
+                                  : undefined,
+                              }}
+                            />
+                            <BookInfo>
+                              <BookTitle variant="labelS">{book.title}</BookTitle>
+                              <BookAuthor variant="captionS">
+                                {book.author} · {book.publisher}
+                              </BookAuthor>
+                            </BookInfo>
+                          </SearchResultItem>
+                        ))}
+                        {isFetchingNextBooks && (
+                          <NoResultText variant="captionM">불러오는 중...</NoResultText>
+                        )}
+                        <div ref={sentinelRef} style={{ height: 1 }} />
+                      </>
+                    ) : debouncedSearchQuery ? (
+                      <NoResultText variant="captionM">검색 결과가 없습니다</NoResultText>
+                    ) : null}
+                  </SearchResultList>
+                </SearchDropdown>
+              )}
+            </SearchInputWrapper>
+
+            {errors.bookISBN && (
+              <AppFieldMessage type="error">{errors.bookISBN.message}</AppFieldMessage>
             )}
-          />
+          </FieldSection>
 
-          {errors.topic && <AppFieldMessage type="error">{errors.topic.message}</AppFieldMessage>}
-        </FieldSection>
+          <FieldSection>
+            <FieldLabelRow>
+              <FieldLabelInner>
+                <FieldLabel variant="captionM">토론주제</FieldLabel>
+                <RequiredMark variant="captionM">*</RequiredMark>
+              </FieldLabelInner>
+              <FieldHint variant="captionS">(최대 60자)</FieldHint>
+            </FieldLabelRow>
 
-        <FieldSection>
-          <FieldLabelRow>
-            <FieldLabel variant="captionM">토론설명</FieldLabel>
-            <FieldHint variant="captionS">(최대 300자)</FieldHint>
-          </FieldLabelRow>
+            <Controller
+              name="topic"
+              control={control}
+              render={({ field }) => (
+                <InputBox sx={{ height: 'auto' }}>
+                  <StyledInput
+                    {...field}
+                    placeholder="토론 주제를 입력해주세요"
+                    maxLength={60}
+                    style={{ width: '100%' }}
+                  />
+                </InputBox>
+              )}
+            />
 
-          <Controller
-            name="description"
-            control={control}
-            render={({ field }) => (
-              <StyledTextarea
-                {...field}
-                placeholder="토론에 대한 간략한 설명을 입력해주세요 (선택)"
-                maxLength={300}
-                rows={3}
-              />
+            {errors.topic && <AppFieldMessage type="error">{errors.topic.message}</AppFieldMessage>}
+          </FieldSection>
+
+          <FieldSection>
+            <FieldLabelRow>
+              <FieldLabel variant="captionM">토론설명</FieldLabel>
+              <FieldHint variant="captionS">(최대 300자)</FieldHint>
+            </FieldLabelRow>
+
+            <Controller
+              name="description"
+              control={control}
+              render={({ field }) => (
+                <StyledTextarea
+                  {...field}
+                  placeholder="토론에 대한 간략한 설명을 입력해주세요 (선택)"
+                  maxLength={300}
+                  rows={3}
+                />
+              )}
+            />
+
+            {errors.description && (
+              <AppFieldMessage type="error">{errors.description.message}</AppFieldMessage>
             )}
-          />
+          </FieldSection>
+        </FieldsContainer>
 
-          {errors.description && (
-            <AppFieldMessage type="error">{errors.description.message}</AppFieldMessage>
-          )}
-        </FieldSection>
-      </CreateFormWrapper>
-
-      <NavigationRow>
-        <CrayonButton $variant="secondary" onClick={onBack}>
-          ← 이전
-        </CrayonButton>
-        <CrayonButton disabled={!isFormValid || isPending} onClick={onSubmit}>
-          {isPending ? <CircularProgress size={16} sx={{ color: '#8b7cf8' }} /> : '페르소나 선택 →'}
-        </CrayonButton>
-      </NavigationRow>
+        <FormButtonRow>
+          <AppButton
+            appVariant="outlined"
+            fullWidth={false}
+            sx={{ width: 194, height: 52, borderRadius: '18px' }}
+            onClick={onBack}
+          >
+            ← 토론주제 선택하기
+          </AppButton>
+          <AppButton
+            fullWidth={false}
+            disabled={!isFormValid || isPending}
+            sx={{ width: 194, height: 52, borderRadius: '18px' }}
+            onClick={onSubmit}
+          >
+            {isPending ? (
+              <CircularProgress size={16} sx={{ color: '#fff' }} />
+            ) : (
+              '토론상대 선택하기 →'
+            )}
+          </AppButton>
+        </FormButtonRow>
+      </NameContentCard>
     </>
   );
 }

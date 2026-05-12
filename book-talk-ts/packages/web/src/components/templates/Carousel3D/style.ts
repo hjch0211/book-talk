@@ -8,19 +8,25 @@ export const Wrapper = styled.div`
   padding: 0 100px;
 `;
 
+export const WrapperColumn = styled.div`
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
 
 export const floatAnimation = keyframes`
   0%, 100% { transform: translateY(0px); }
-  50%       { transform: translateY(-12px); }
+  50%       { transform: translateY(-6px); }
 `;
 
 export const Scene = styled.div<{ $height: number }>`
   position: relative;
-  flex: 1;
+  width: 100%;
   height: ${({ $height }) => $height}px;
+  flex-shrink: 0;
   perspective: 1200px;
   perspective-origin: 50% 50%;
-  overflow: hidden;
 `;
 
 export const RotatingGroup = styled.div<{ $deg: number }>`
