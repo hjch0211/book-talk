@@ -1,5 +1,5 @@
 import { Box, CircularProgress, Typography } from '@mui/material';
-import { CrayonButton } from '@src/components/molecules/CrayonButton';
+import { AppButton } from '@src/components/molecules/AppButton';
 import { DebateCardSkeleton } from '@src/components/organisms/DebateCard/skeleton.tsx';
 import { AiPageRoot } from '@src/components/templates/AiPageRoot';
 import { PERSONAS } from '@src/constants/persona.ts';
@@ -11,18 +11,21 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DebateCarousel3D } from './_components/DebateCarousel3D';
 import { DebateCreateStep } from './_components/DebateCreateStep';
-import { PersonaCarousel3D } from './_components/PersonaCarousel3D';
+import { PersonaSelect } from './_components/PersonaSelect';
 import { WelcomeStep } from './_components/WelcomeStep';
 import {
   AiChatContainer,
+  ButtonRow,
   DebateCardWrapper,
   DebateCarousel,
+  DebateStepWrapper,
   LoadingWrapper,
+  NameContentCard,
   NameInput,
-  NameInputWrapper,
-  NavigationRow,
+  NameInputBody,
+  NameStepTitle,
+  PrivacyNotice,
   StepContainer,
-  StepTitle,
 } from './style';
 
 type Step = 'welcome' | 'name' | 'debate' | 'create' | 'persona';
@@ -56,6 +59,7 @@ export function AiChatPage() {
     <AiPageRoot>
       {step === 'welcome' && (
         <AiChatContainer>
+          <Box sx={{ height: '200px' }} />
           <StepContainer>
             <WelcomeStep onStart={() => setStep('name')} />
           </StepContainer>
@@ -65,76 +69,83 @@ export function AiChatPage() {
       {step === 'name' && (
         <AiChatContainer>
           <StepContainer>
-            <StepTitle>이름 입력하기</StepTitle>
-            <NameInputWrapper>
-              <NameInput
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                placeholder="채팅에서 사용할 이름을 입력하세요"
-                maxLength={20}
-                autoFocus
-              />
-              <Box sx={{ height: '200px' }} />
-              <Typography variant="captionS" color="gray">
-                * 개인 정보는 토론 진행 후 삭제되며 추가 목적으로 활용되지 않습니다.
-              </Typography>
-            </NameInputWrapper>
-            <NavigationRow>
-              <CrayonButton $variant="secondary" onClick={() => setStep('welcome')}>
-                ← 이전
-              </CrayonButton>
-              <CrayonButton disabled={!name.trim()} onClick={() => setStep('debate')}>
-                토론 선택하기 →
-              </CrayonButton>
-              <CrayonButton disabled={!name.trim()} onClick={() => setStep('create')}>
-                토론 생성하기 →
-              </CrayonButton>
-            </NavigationRow>
+            <NameStepTitle>토론에서 불리고 싶은 이름을 써주세요</NameStepTitle>
+            <NameContentCard>
+              <NameInputBody>
+                <NameInput
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="최대 10자"
+                  maxLength={10}
+                  autoFocus
+                />
+                <AppButton
+                  fullWidth={false}
+                  disabled={!name.trim()}
+                  onClick={() => setStep('debate')}
+                >
+                  토론주제 선택하기 →
+                </AppButton>
+              </NameInputBody>
+            </NameContentCard>
           </StepContainer>
+          <PrivacyNotice sx={{ position: 'absolute', bottom: 35, right: 80, m: 0 }}>
+            * 개인 정보는 토론 진행 후 삭제되며 추가 목적으로 활용되지 않습니다.
+          </PrivacyNotice>
         </AiChatContainer>
       )}
 
       {step === 'debate' && (
         <AiChatContainer>
           <StepContainer>
-            <StepTitle>토론 선택하기</StepTitle>
-            {isDebatesLoading ? (
-              <DebateCarousel>
-                {[0, 1, 2, 3].map((i) => (
-                  <DebateCardWrapper key={i} sx={{ pointerEvents: 'none' }}>
-                    <DebateCardSkeleton />
-                  </DebateCardWrapper>
-                ))}
-              </DebateCarousel>
-            ) : debates.length === 0 ? (
-              <LoadingWrapper>
-                <Typography sx={{ color: '#999', fontFamily: "'S-Core Dream', sans-serif" }}>
-                  참여 가능한 토론이 없습니다.
-                </Typography>
-              </LoadingWrapper>
-            ) : (
-              <DebateCarousel3D
-                key={debates.map((d) => d.id).join(',')}
-                debates={debates}
-                selectedId={debateId}
-                onSelect={setDebateId}
-              />
-            )}
-            <NavigationRow>
-              <CrayonButton $variant="secondary" onClick={() => setStep('name')}>
-                ← 이름 입력하기
-              </CrayonButton>
-              <CrayonButton
-                disabled={!debateId}
-                onClick={() => {
-                  setPersonaBackStep('debate');
-                  setStep('persona');
-                }}
-              >
-                토론 상대 선택하기 →
-              </CrayonButton>
-            </NavigationRow>
+            <NameStepTitle>토론주제 선택하기</NameStepTitle>
+            <DebateStepWrapper>
+              {isDebatesLoading ? (
+                <DebateCarousel>
+                  {[0, 1, 2, 3].map((i) => (
+                    <DebateCardWrapper key={i} sx={{ pointerEvents: 'none' }}>
+                      <DebateCardSkeleton />
+                    </DebateCardWrapper>
+                  ))}
+                </DebateCarousel>
+              ) : debates.length === 0 ? (
+                <LoadingWrapper>
+                  <Typography sx={{ color: '#999', fontFamily: "'S-Core Dream', sans-serif" }}>
+                    참여 가능한 토론이 없습니다.
+                  </Typography>
+                </LoadingWrapper>
+              ) : (
+                <DebateCarousel3D
+                  key={debates.map((d) => d.id).join(',')}
+                  debates={debates}
+                  selectedId={debateId}
+                  onSelect={setDebateId}
+                  onCreateDebate={() => setStep('create')}
+                />
+              )}
+            </DebateStepWrapper>
           </StepContainer>
+          <ButtonRow>
+            <AppButton
+              appVariant="outlined"
+              fullWidth={false}
+              sx={{ width: 167, height: 52, borderRadius: '18px' }}
+              onClick={() => setStep('name')}
+            >
+              ← 이름 입력하기
+            </AppButton>
+            <AppButton
+              fullWidth={false}
+              disabled={!debateId}
+              sx={{ width: 194, height: 52, borderRadius: '18px' }}
+              onClick={() => {
+                setPersonaBackStep('debate');
+                setStep('persona');
+              }}
+            >
+              토론 상대 선택하기 →
+            </AppButton>
+          </ButtonRow>
         </AiChatContainer>
       )}
 
@@ -142,7 +153,7 @@ export function AiChatPage() {
         <AiChatContainer>
           <StepContainer>
             <DebateCreateStep
-              onBack={() => setStep('name')}
+              onBack={() => setStep('debate')}
               onSuccess={(id) => {
                 setDebateId(id);
                 setPersonaBackStep('create');
@@ -156,21 +167,30 @@ export function AiChatPage() {
       {step === 'persona' && (
         <AiChatContainer>
           <StepContainer>
-            <StepTitle>토론 상대 선택하기</StepTitle>
-            <PersonaCarousel3D personas={PERSONAS} selectedValue={persona} onSelect={setPersona} />
-            <NavigationRow>
-              <CrayonButton $variant="secondary" onClick={() => setStep(personaBackStep)}>
-                ← 토론방 선택하기
-              </CrayonButton>
-              <CrayonButton disabled={!persona || isPending} onClick={() => handleCreateChat()}>
-                {isPending ? (
-                  <CircularProgress size={16} sx={{ color: '#8b7cf8' }} />
-                ) : (
-                  '채팅방 생성 →'
-                )}
-              </CrayonButton>
-            </NavigationRow>
+            <NameStepTitle>토론 상대 선택하기</NameStepTitle>
+            <PersonaSelect personas={PERSONAS} selectedValue={persona} onSelect={setPersona} />
           </StepContainer>
+          <ButtonRow>
+            <AppButton
+              appVariant="outlined"
+              fullWidth={false}
+              sx={{ width: 181, height: 52, borderRadius: '18px' }}
+              onClick={() => setStep(personaBackStep)}
+            >
+              ← 토론방 선택하기
+            </AppButton>
+            <AppButton
+              fullWidth={false}
+              disabled={!persona || isPending}
+              onClick={() => handleCreateChat()}
+            >
+              {isPending ? (
+                <CircularProgress size={16} sx={{ color: '#8b7cf8' }} />
+              ) : (
+                '채팅방 생성 →'
+              )}
+            </AppButton>
+          </ButtonRow>
         </AiChatContainer>
       )}
     </AiPageRoot>

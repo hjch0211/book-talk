@@ -13,7 +13,7 @@ const fadeInUp = keyframes`
 
 export const AiChatRoomContainer = styled.div`
   width: 100%;
-  max-width: 1800px;
+  max-width: 1500px;
   height: 100vh;
   margin: 0 auto;
   display: flex;
@@ -28,7 +28,7 @@ export const Header = styled.div`
   flex-direction: row;
   align-items: center;
   justify-content: space-between;
-  max-width: 1440px;
+  max-width: 1500px;
   width: 100%;
   padding: 60px 24px 24px 24px;
   z-index: 10;
@@ -42,12 +42,12 @@ export const HeaderLeft = styled.div`
 
 export const HeaderTitle = styled.h1`
   margin: 0;
-  font-family: 'S-Core Dream', sans-serif;
-  font-weight: 500;
+  font-family: 'MemomentKkukkukk', sans-serif;
+  font-weight: 400;
   font-size: 24px;
-  line-height: 125%;
+  line-height: 30px;
   letter-spacing: 0.3px;
-  color: #1a2a4a;
+  color: #262626;
 `;
 
 export const DeleteButton = styled.button`
@@ -82,8 +82,8 @@ export const ChatArea = styled.div`
   max-width: 1800px;
   width: 100%;
   background: rgba(255, 255, 255, 0.82);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   border: 1px solid rgba(200, 210, 240, 0.4);
   box-shadow:
     0 8px 32px rgba(80, 100, 160, 0.08),
@@ -103,7 +103,8 @@ export const MainPanel = styled.div`
 `;
 
 export const LogPanel = styled.div`
-  width: 400px;
+  position: relative;
+  width: 600px;
   flex-shrink: 0;
   border-left: 1px solid rgba(200, 210, 240, 0.4);
   display: flex;

@@ -1,23 +1,12 @@
 import { Box, List, ListItem, Paper, Typography } from '@mui/material';
 import { styled as muiStyled } from '@mui/material/styles';
 
-export const CreateFormWrapper = muiStyled(Box)({
+export const FieldsContainer = muiStyled(Box)({
   display: 'flex',
   flexDirection: 'column',
-  gap: 28,
+  gap: 24,
   width: '100%',
-  maxWidth: 480,
-  marginBottom: 24,
-  overflowY: 'auto',
-  maxHeight: '58vh',
-  paddingRight: 4,
-  scrollbarWidth: 'thin',
-  scrollbarColor: 'rgba(0,0,0,0.15) transparent',
-  '&::-webkit-scrollbar': { width: 4 },
-  '&::-webkit-scrollbar-thumb': {
-    background: 'rgba(0,0,0,0.15)',
-    borderRadius: 4,
-  },
+  alignSelf: 'stretch',
 });
 
 export const FieldSection = muiStyled(Box)({
@@ -63,7 +52,7 @@ export const InputBox = muiStyled(Box)({
   height: 49,
   background: '#FFFFFF',
   border: '1px solid #C4C4C4',
-  borderRadius: 6,
+  borderRadius: 18,
   gap: 12,
   transition: 'border-color 0.2s ease',
   '&:focus-within': {
@@ -103,7 +92,7 @@ export const StyledTextarea = muiStyled('textarea')({
   color: '#262626',
   background: '#FFFFFF',
   border: '1px solid #C4C4C4',
-  borderRadius: 6,
+  borderRadius: 18,
   outline: 'none',
   resize: 'none',
   boxSizing: 'border-box',
@@ -134,7 +123,7 @@ export const SearchDropdown = muiStyled(Paper)({
   zIndex: 1000,
   boxShadow: '0px 2px 4px rgba(0, 0, 0, 0.25)',
   background: '#FFFFFF',
-  borderRadius: 6,
+  borderRadius: 18,
 });
 
 export const SearchResultList = muiStyled(List)({ padding: 0 });
@@ -189,4 +178,14 @@ export const NoResultText = muiStyled(Typography)({
   padding: '20px',
   textAlign: 'center',
   color: '#666666',
+});
+
+export const FormButtonRow = muiStyled(Box)({
+  display: 'flex',
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  alignItems: 'center',
+  gap: 12,
+  width: '100%',
+  marginTop: 'auto',
 });

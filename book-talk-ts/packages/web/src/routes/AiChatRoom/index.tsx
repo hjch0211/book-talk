@@ -8,9 +8,9 @@ import { ChatMessageList } from '@src/routes/Debate/_components/chat/ChatMessage
 import { useSuspenseQuery } from '@tanstack/react-query';
 import { Suspense, useEffect, useEffectEvent, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import { VoiceAgent } from './_components/VoiceAgent';
 import { ConversationLog, type LogEntry } from './_components/VoiceAgent/ConversationLog';
 import { LogPanelHeader } from './_components/VoiceAgent/style';
-import { VoiceAgent } from './_components/VoiceAgent';
 import { AiChatRoomSkeleton } from './AiChatRoomSkeleton';
 import {
   AiChatRoomContainer,

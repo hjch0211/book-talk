@@ -1,13 +1,73 @@
 import styled from '@emotion/styled';
 
+export const CarouselControls = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+`;
+
+export const CarouselHintText = styled.button`
+  font-family: 'S-Core Dream', sans-serif;
+  font-weight: 200;
+  font-size: 12px;
+  line-height: 16px;
+  letter-spacing: 0.3px;
+  color: #b6b6b6;
+  text-decoration: underline;
+  text-align: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  &:hover { color: #9090a0; }
+`;
+
+export const CarouselNavPill = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  margin-top: 36px;
+`;
+
+export const NavPrevBtn = styled.button`
+  width: 72px;
+  height: 48px;
+  background: #ffffff;
+  border: none;
+  border-radius: 18px 0 0 18px;
+  padding: 12px 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  &:hover { background: #f5f5f5; }
+`;
+
+export const NavNextBtn = styled.button`
+  width: 72px;
+  height: 48px;
+  background: #ffffff;
+  border: none;
+  border-left: 1px solid #e9e9e9;
+  border-radius: 0 18px 18px 0;
+  padding: 12px 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  &:hover { background: #f5f5f5; }
+`;
+
 export const Card = styled.div<{ $isSelected: boolean }>`
   width: 80%;
   height: 80%;
   background: white;
   border-radius: 16px;
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-  backdrop-filter: blur(5px);
-  -webkit-backdrop-filter: blur(5px);
+  box-shadow: 0 4px 25px #E8EBFF;
+  backdrop-filter: blur(2.5px);
+  -webkit-backdrop-filter: blur(2.5px);
   border: 1px solid rgba(255, 255, 255, 0.3);
   cursor: pointer;
   font-family: 'S-Core Dream', sans-serif;
