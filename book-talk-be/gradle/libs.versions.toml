@@ -1,5 +1,5 @@
 [versions]
-ktor-client = "2.3.12"
+ktor-client = "3.5.0"
 
 [libraries]
 
