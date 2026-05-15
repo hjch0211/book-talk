@@ -18,7 +18,7 @@ dependencies {
     implementation("io.github.oshai:kotlin-logging-jvm:6.0.3")
     implementation("com.github.java-json-tools:json-patch:1.13")
     implementation("org.jsoup:jsoup:1.17.2")
-    implementation("org.openapitools:jackson-databind-nullable:0.2.7")
+    implementation("org.openapitools:jackson-databind-nullable:0.2.10")
 
     // Test
     testImplementation("org.springframework.boot:spring-boot-starter-test")
