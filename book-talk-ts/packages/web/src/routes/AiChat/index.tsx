@@ -1,3 +1,5 @@
+import ArrowBackIcon from '@mui/icons-material/ArrowBack';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { Box, CircularProgress, Typography } from '@mui/material';
 import { AppButton } from '@src/components/molecules/AppButton';
 import { DebateCardSkeleton } from '@src/components/organisms/DebateCard/skeleton.tsx';
@@ -34,7 +36,7 @@ export function AiChatPage() {
   const [step, setStep] = useState<Step>('welcome');
   const [debateId, setDebateId] = useState('');
   const [name, setName] = useState('');
-  const [persona, setPersona] = useState('');
+  const [persona, setPersona] = useState(PERSONAS[0].id);
   const [personaBackStep, setPersonaBackStep] = useState<'debate' | 'create'>('debate');
 
   const navigate = useNavigate();
@@ -82,9 +84,10 @@ export function AiChatPage() {
                 <AppButton
                   fullWidth={false}
                   disabled={!name.trim()}
+                  sx={{ borderRadius: '18px' }}
                   onClick={() => setStep('debate')}
                 >
-                  토론주제 선택하기 →
+                  토론주제 선택하기 <ArrowForwardIcon sx={{ width: 16, height: 16 }} />
                 </AppButton>
               </NameInputBody>
             </NameContentCard>
@@ -126,13 +129,8 @@ export function AiChatPage() {
             </DebateStepWrapper>
           </StepContainer>
           <ButtonRow>
-            <AppButton
-              appVariant="outlined"
-              fullWidth={false}
-              sx={{ width: 167, height: 52, borderRadius: '18px' }}
-              onClick={() => setStep('name')}
-            >
-              ← 이름 입력하기
+            <AppButton appVariant="white" fullWidth={false} onClick={() => setStep('name')}>
+              <ArrowBackIcon sx={{ width: 16, height: 16 }} /> 이름 수정하기
             </AppButton>
             <AppButton
               fullWidth={false}
@@ -143,7 +141,7 @@ export function AiChatPage() {
                 setStep('persona');
               }}
             >
-              토론 상대 선택하기 →
+              토론상대 선택하기 <ArrowForwardIcon sx={{ width: 16, height: 16 }} />
             </AppButton>
           </ButtonRow>
         </AiChatContainer>
@@ -167,27 +165,31 @@ export function AiChatPage() {
       {step === 'persona' && (
         <AiChatContainer>
           <StepContainer>
-            <NameStepTitle>토론 상대 선택하기</NameStepTitle>
+            <NameStepTitle>토론상대 선택하기</NameStepTitle>
             <PersonaSelect personas={PERSONAS} selectedValue={persona} onSelect={setPersona} />
           </StepContainer>
           <ButtonRow>
             <AppButton
-              appVariant="outlined"
+              appVariant="white"
               fullWidth={false}
-              sx={{ width: 181, height: 52, borderRadius: '18px' }}
               onClick={() => setStep(personaBackStep)}
             >
-              ← 토론방 선택하기
+              <ArrowBackIcon sx={{ width: 16, height: 16 }} />
+              토론주제 선택하기
             </AppButton>
             <AppButton
               fullWidth={false}
               disabled={!persona || isPending}
+              sx={{ borderRadius: '18px' }}
               onClick={() => handleCreateChat()}
             >
               {isPending ? (
                 <CircularProgress size={16} sx={{ color: '#8b7cf8' }} />
               ) : (
-                '채팅방 생성 →'
+                <>
+                  '채팅방 생성하기'
+                  <ArrowForwardIcon sx={{ width: 16, height: 16 }} />
+                </>
               )}
             </AppButton>
           </ButtonRow>

@@ -36,6 +36,8 @@ function badgePos(angleDeg: number) {
   };
 }
 
+const MotionBadgeChip = motion(BadgeChip);
+
 export function PersonaSelect({ personas, selectedValue, onSelect }: Props) {
   const selectedPersona = personas.find((p) => p.id === selectedValue) ?? personas[0];
   const tags = selectedPersona?.tags ?? [];
@@ -44,27 +46,32 @@ export function PersonaSelect({ personas, selectedValue, onSelect }: Props) {
     <PersonaSelectBody>
       <PersonaDisplayPanel>
         <PersonaFrame>
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={selectedPersona?.id}
-              initial={{ opacity: 0.2 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0.2 }}
-              transition={{ duration: 0.12 }}
-              style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
-            >
-              {tags.map((tag, i) => {
-                const pos = badgePos(badgeAngleDeg(i, tags.length));
-                return (
-                  <BadgeChip key={tag} style={{ left: pos.x, top: pos.y }}>
-                    {tag}
-                  </BadgeChip>
-                );
-              })}
-            </motion.div>
+          <AnimatePresence>
+            {tags.map((tag, i) => {
+              const pos = badgePos(badgeAngleDeg(i, tags.length));
+              const dx = IMG_CX - pos.x;
+              const dy = IMG_CY - pos.y;
+              return (
+                <MotionBadgeChip
+                  key={`${selectedPersona?.id}-${tag}`}
+                  transformTemplate={(_, generated) => `translate(-50%, -50%) ${generated}`}
+                  style={{ left: pos.x, top: pos.y }}
+                  initial={{ x: dx, y: dy, scale: 0.3, opacity: 0 }}
+                  animate={{ x: 0, y: 0, scale: 1, opacity: 1 }}
+                  exit={{ x: dx * 0.5, y: dy * 0.5, scale: 0.3, opacity: 0 }}
+                  transition={{
+                    delay: i * 0.05,
+                    type: 'spring',
+                    stiffness: 280,
+                    damping: 18,
+                  }}
+                >
+                  {tag}
+                </MotionBadgeChip>
+              );
+            })}
           </AnimatePresence>
 
-          {/* Circle image with crossfade on selection change */}
           <PersonaCircleOuter>
             <AnimatePresence mode="wait">
               {selectedPersona?.image ? (

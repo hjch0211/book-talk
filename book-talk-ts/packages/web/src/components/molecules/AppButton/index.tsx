@@ -12,7 +12,7 @@ export function AppButton({
       appVariant={appVariant}
       fullWidth={fullWidth}
       hoverAnimation={hoverAnimation}
-      variant={appVariant === 'outlined' ? 'outlined' : 'contained'}
+      variant={appVariant === 'outlined' || appVariant === 'white' ? 'outlined' : 'contained'}
       disableElevation
       disableRipple
       {...props}

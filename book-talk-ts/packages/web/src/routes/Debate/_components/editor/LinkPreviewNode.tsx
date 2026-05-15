@@ -185,7 +185,7 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
           <Box
             sx={{
               width: '148px',
-              background: 'white',
+              background: '#F7F8FF',
               borderRadius: '0px 12px 12px 0px',
               flex: 'none',
               order: 1,

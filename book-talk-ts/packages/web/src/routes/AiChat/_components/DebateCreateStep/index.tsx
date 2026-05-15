@@ -179,12 +179,7 @@ export function DebateCreateStep({ onBack, onSuccess }: DebateCreateStepProps) {
         </FieldsContainer>
 
         <FormButtonRow>
-          <AppButton
-            appVariant="outlined"
-            fullWidth={false}
-            sx={{ width: 194, height: 52, borderRadius: '18px' }}
-            onClick={onBack}
-          >
+          <AppButton appVariant="white" fullWidth={false} onClick={onBack}>
             ← 토론주제 선택하기
           </AppButton>
           <AppButton

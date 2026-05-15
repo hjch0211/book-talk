@@ -11,7 +11,8 @@ export type AppButtonVariant =
   | 'debate-join'
   | 'debate-enter'
   | 'debate-closed'
-  | 'transparent';
+  | 'transparent'
+  | 'white';
 
 export interface AppButtonProps extends Omit<ButtonProps, 'variant'> {
   appVariant?: AppButtonVariant;
@@ -168,6 +169,22 @@ export const StyledButton = styled(Button, {
       borderRadius: 10,
       background: '#FFFFFF',
       color: '#262626',
+      '&:hover': { background: '#f5f5f5' },
+    }),
+
+    ...(appVariant === 'white' && {
+      height: 52,
+      borderRadius: 18,
+      padding: '12px 24px',
+      gap: 8,
+      background: '#FFFFFF',
+      border: 'none',
+      color: '#262626',
+      fontFamily: "'S-Core Dream', sans-serif",
+      fontWeight: 500,
+      fontSize: 14,
+      lineHeight: '20px',
+      letterSpacing: '0.3px',
       '&:hover': { background: '#f5f5f5' },
     }),
   })
