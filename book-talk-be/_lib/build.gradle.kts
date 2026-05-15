@@ -9,7 +9,7 @@ description = "book-talk library"
 
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter")
-    implementation("io.github.oshai:kotlin-logging-jvm:6.0.3")
+    implementation("io.github.oshai:kotlin-logging-jvm:8.0.02")
     implementation("at.favre.lib:bcrypt:0.10.2")
     api("com.auth0:java-jwt:4.4.0")
     implementation(libs.bundles.ktor.client)

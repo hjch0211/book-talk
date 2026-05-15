@@ -15,7 +15,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-websocket")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation("io.github.oshai:kotlin-logging-jvm:6.0.3")
+    implementation("io.github.oshai:kotlin-logging-jvm:8.0.02")
     implementation("com.github.java-json-tools:json-patch:1.13")
     implementation("org.jsoup:jsoup:1.17.2")
     implementation("org.openapitools:jackson-databind-nullable:0.2.10")
