@@ -1,0 +1,30 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/book-talk-ts"
+    schedule:
+      interval: "daily"
+    groups:
+      npm_and_yarn:
+        patterns:
+          - "*"
+
+  - package-ecosystem: "gradle"
+    directory: "/book-talk-be"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "docker"
+    directory: "/book-talk-be"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "docker"
+    directory: "/book-talk-ts"
+    schedule:
+      interval: "daily"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
