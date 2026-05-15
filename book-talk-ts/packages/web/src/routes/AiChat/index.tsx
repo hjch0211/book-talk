@@ -187,7 +187,7 @@ export function AiChatPage() {
                 <CircularProgress size={16} sx={{ color: '#8b7cf8' }} />
               ) : (
                 <>
-                  '채팅방 생성하기'
+                  채팅방 생성하기
                   <ArrowForwardIcon sx={{ width: 16, height: 16 }} />
                 </>
               )}
