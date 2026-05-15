@@ -18,6 +18,7 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
   const attrs = node.attrs as LinkPreviewAttrs;
   const { url, title, image, siteName } = attrs;
   const [loading, setLoading] = useState(title === null && !!url);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     // 이미 OpenGraph 데이터가 있으면 API 호출하지 않음
@@ -181,10 +182,11 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
           </Typography>
         </Box>
 
-        {image && (
+        {image && !imageError && (
           <Box
             sx={{
               width: '148px',
+              height: '100%',
               background: '#F7F8FF',
               borderRadius: '0px 12px 12px 0px',
               flex: 'none',
@@ -193,15 +195,13 @@ export function LinkPreviewNode({ node, updateAttributes }: NodeViewProps) {
               flexGrow: 1,
               position: 'relative',
               overflow: 'hidden',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
             }}
           >
             <Box
               component="img"
               src={image}
-              alt={title || 'Link preview'}
+              alt=""
+              onError={() => setImageError(true)}
               sx={{
                 position: 'absolute',
                 inset: 0,
