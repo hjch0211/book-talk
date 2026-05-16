@@ -144,7 +144,8 @@ export const AvatarColumn = styled.div`
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  min-width: 60px;
+  width: 40px;
+  flex-shrink: 0;
 `;
 
 export const AvatarCircle = styled.div<{ $isUser: boolean }>`

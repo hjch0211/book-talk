@@ -107,7 +107,7 @@ export function ChatMessage({ chat, isMyMessage, members, presentations }: ChatM
     >
       {/* 왼쪽 메시지: 프로필 먼저 */}
       {!isMyMessage && (
-        <Stack alignItems="center" spacing={0.375} sx={{ width: '72px' }}>
+        <Stack alignItems="center" spacing={0.375} sx={{ width: '40px' }}>
           <img src={MessageSenderIcon} alt="" width={24} height={24} />
           <Typography
             variant="caption"
@@ -168,7 +168,7 @@ export function ChatMessage({ chat, isMyMessage, members, presentations }: ChatM
 
       {/* 오른쪽 메시지: 프로필 나중에 */}
       {isMyMessage && (
-        <Stack alignItems="center" spacing={0.375} sx={{ width: '72px' }}>
+        <Stack alignItems="center" spacing={0.375} sx={{ width: '40px' }}>
           <img src={MessageSenderIcon} alt="" width={24} height={24} />
           <Typography
             variant="caption"
