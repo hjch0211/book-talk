@@ -50,6 +50,41 @@ data class FindOneAiChatResponse(
     )
 }
 
+data class FindOneAiChatForAgentResponse(
+    val chatId: String,
+    val debateId: String,
+    val name: String,
+    val debateInfo: DebateInfo,
+    val searchResults: SearchResults,
+    val messages: List<MessageInfo>,
+    val createdAt: Instant,
+) {
+    data class DebateInfo(
+        val topic: String,
+        val bookTitle: String,
+        val bookDescription: String?,
+    )
+
+    data class SearchResults(
+        val news: List<SearchResultItem>,
+        val blog: List<SearchResultItem>,
+    )
+
+    data class SearchResultItem(
+        val title: String,
+        val url: String,
+        val content: String,
+    )
+
+    data class MessageInfo(
+        val id: String,
+        val role: String,
+        val content: String,
+        val status: String,
+        val createdAt: Instant,
+    )
+}
+
 data class UserMessageSavedResponse(
     override val payload: Payload
 ) : WebSocketMessage<UserMessageSavedResponse.Payload>() {

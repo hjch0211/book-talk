@@ -144,6 +144,46 @@ class AiChatService(
         )
     }
 
+    @Transactional(readOnly = true)
+    fun findOneForAgent(chatId: String): FindOneAiChatForAgentResponse {
+        val chat = aiChatRepository.findByIdOrNull(chatId.toUUID())
+            ?: httpBadRequest("채팅방을 찾을 수 없습니다.")
+        val members = aiChatMemberRepository.findByChatId(chat.id!!)
+        if (members.isEmpty()) httpBadRequest("채팅방 멤버를 찾을 수 없습니다.")
+
+        val messages = aiChatMessageRepository.findByChatIdOrderByCreatedAtAsc(chat.id!!)
+        val searchResults = aiChatSearchResultRepository.findByChatIdOrderByCreatedAtAsc(chat.id!!)
+
+        return FindOneAiChatForAgentResponse(
+            chatId = chat.id.toString(),
+            debateId = chat.debate.id.toString(),
+            name = chat.name,
+            debateInfo = FindOneAiChatForAgentResponse.DebateInfo(
+                topic = chat.debate.topic,
+                bookTitle = chat.debate.book.title,
+                bookDescription = chat.debate.book.description,
+            ),
+            searchResults = FindOneAiChatForAgentResponse.SearchResults(
+                news = searchResults.filter { it.type == NEWS }.map {
+                    FindOneAiChatForAgentResponse.SearchResultItem(title = it.title, url = it.url, content = it.content)
+                },
+                blog = searchResults.filter { it.type == BLOG }.map {
+                    FindOneAiChatForAgentResponse.SearchResultItem(title = it.title, url = it.url, content = it.content)
+                },
+            ),
+            messages = messages.map {
+                FindOneAiChatForAgentResponse.MessageInfo(
+                    id = it.id.toString(),
+                    role = it.role,
+                    content = it.content,
+                    status = it.status.name,
+                    createdAt = it.createdAt,
+                )
+            },
+            createdAt = chat.createdAt,
+        )
+    }
+
     fun onUserMessageSaved(chatId: String) {
         val members = aiChatMemberRepository.findByChatId(chatId.toUUID())
         if (members.isEmpty()) httpBadRequest("채팅방 멤버를 찾을 수 없습니다.")

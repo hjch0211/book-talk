@@ -34,6 +34,12 @@ class AiChatController(
         aiChatService.onUserMessageSaved(chatId)
     }
 
+    /** Agent용 - AI 채팅방 조회 */
+    @GetMapping("/ai/chats/{chatId}/agent")
+    fun findOneAiChatForAgent(@PathVariable chatId: String): HttpResult<FindOneAiChatForAgentResponse> {
+        return aiChatService.findOneForAgent(chatId).toResult()
+    }
+
     /** Agent용 - 채팅 저장 */
     @PostMapping("/ai/chats/agent/message")
     fun saveAgentMessage(@RequestBody request: SaveChatRequest) {
