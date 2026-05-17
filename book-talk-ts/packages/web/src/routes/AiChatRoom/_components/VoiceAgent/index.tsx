@@ -1,6 +1,7 @@
 import { useConversation } from '@elevenlabs/react';
 import MicOffRoundedIcon from '@mui/icons-material/MicOffRounded';
 import MicRoundedIcon from '@mui/icons-material/MicRounded';
+import { useToast } from '@src/hooks';
 import { motion } from 'framer-motion';
 import { useEffect, useEffectEvent } from 'react';
 import type { LogEntry } from './ConversationLog';
@@ -25,6 +26,7 @@ interface Props {
 }
 
 export function VoiceAgent({ chatId, debateId, myId, agentId, onMessage, onModeChange }: Props) {
+  const { toast } = useToast();
   const conversation = useConversation({
     onError: (message) => console.error('[VoiceAgent]', message),
     onMessage: ({ role, message }) => {
@@ -47,17 +49,26 @@ export function VoiceAgent({ chatId, debateId, myId, agentId, onMessage, onModeC
     notifyModeChange(mode);
   }, [mode]);
 
+  const startSession = async () => {
+    await conversation.startSession({
+      agentId,
+      connectionType: 'websocket',
+      dynamicVariables: { chatId, debateId, accountId: myId },
+      userId: myId,
+    });
+  };
+
   const handleToggle = async () => {
     if (conversation.status === 'connected') {
       await conversation.endSession();
     } else {
-      await navigator.mediaDevices.getUserMedia({ audio: true });
-      await conversation.startSession({
-        agentId,
-        connectionType: 'websocket',
-        dynamicVariables: { chatId, debateId, accountId: myId },
-        userId: myId,
-      });
+      try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+      } catch {
+        toast.warning('주소창 🔒 아이콘 → 마이크 → 허용으로 변경해주세요.');
+        return;
+      }
+      await startSession();
     }
   };
 
