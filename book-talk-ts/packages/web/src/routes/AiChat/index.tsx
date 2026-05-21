@@ -61,7 +61,7 @@ export function AiChatPage() {
     <AiPageRoot>
       {step === 'welcome' && (
         <AiChatContainer>
-          <Box sx={{ height: '200px' }} />
+          <Box sx={{ height: '240px' }} />
           <StepContainer>
             <WelcomeStep onStart={() => setStep('name')} />
           </StepContainer>
