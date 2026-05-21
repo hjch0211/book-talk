@@ -77,6 +77,7 @@ export function AiChatPage() {
                 <NameInput
                   value={name}
                   onChange={(e) => setName(e.target.value)}
+                  onKeyDown={(e) => e.key === 'Enter' && name.trim() && setStep('debate')}
                   placeholder="최대 10자"
                   maxLength={10}
                   autoFocus
