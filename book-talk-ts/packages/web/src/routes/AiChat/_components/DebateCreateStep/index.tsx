@@ -58,7 +58,20 @@ export function DebateCreateStep({ onBack, onSuccess }: DebateCreateStepProps) {
     <>
       <NameStepTitle>토론주제 생성하기</NameStepTitle>
 
-      <NameContentCard sx={{ maxWidth: 750, gap: '60px' }}>
+      <NameContentCard
+        sx={{ maxWidth: 750, gap: '60px' }}
+        onKeyDown={(e: React.KeyboardEvent) => {
+          if (
+            e.key === 'Enter' &&
+            !(e.target instanceof HTMLTextAreaElement) &&
+            !showDropdown &&
+            isFormValid &&
+            !isPending
+          ) {
+            onSubmit();
+          }
+        }}
+      >
         <FieldsContainer>
           <FieldSection>
             <FieldLabelRow>

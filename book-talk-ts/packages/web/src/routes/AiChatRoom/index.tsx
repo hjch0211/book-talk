@@ -1,4 +1,6 @@
 import DeleteIcon from '@mui/icons-material/Delete';
+import { Button } from '@mui/material';
+import { Toast } from '@src/components/organisms/Toast';
 import { AiPageRoot } from '@src/components/templates/AiPageRoot';
 import { meQueryOption } from '@src/externals/account';
 import { AiChatMessageStatus, findOneAiChatQueryOptions } from '@src/externals/aiChat';
@@ -56,6 +58,13 @@ function AiChatRoomContent({ chatId }: { chatId: string }) {
 
   const [log, setLog] = useState<LogEntry[]>([]);
   const [voiceMode, setVoiceMode] = useState<VoiceMode>('idle');
+  const [showEndToast, setShowEndToast] = useState(false);
+
+  useEffect(() => {
+    if (!isConnected) return;
+    const timer = window.setTimeout(() => setShowEndToast(true), 3 * 60 * 1000);
+    return () => clearTimeout(timer);
+  }, [isConnected]);
 
   const handleNavigateToSignIn = useEffectEvent(() => {
     navigate('/sign-in');
@@ -99,6 +108,17 @@ function AiChatRoomContent({ chatId }: { chatId: string }) {
 
   return (
     <AiChatRoomContainer>
+      <Toast
+        open={showEndToast}
+        message="토론 종료를 원하시면 토론 종료 버튼을 눌러주세요!"
+        duration={10000}
+        onClose={() => setShowEndToast(false)}
+        action={
+          <Button size="small" color="inherit" onClick={handleDeleteChat}>
+            토론 종료
+          </Button>
+        }
+      />
       <Header>
         <HeaderLeft>
           <HeaderTitle>{debate.topic}</HeaderTitle>
