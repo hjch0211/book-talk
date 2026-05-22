@@ -22,6 +22,11 @@ export const MicButton = styled.button`
   box-shadow: 0 4px 20px rgba(99, 102, 241, 0.35);
   position: relative;
   z-index: 1;
+  font-family: 'MemomentKkukkukk', sans-serif;
+  font-size: 16px;
+  color: #9ca3af;
+  line-height: 1;
+  letter-spacing: 0.5px;
 
   &:hover {
     box-shadow: 0 6px 28px rgba(99, 102, 241, 0.5);
@@ -35,6 +40,28 @@ export const StatusLabel = styled.span<{ $mode: 'idle' | 'speaking' | 'listening
   letter-spacing: 0.5px;
   color: #8E99FF;
   transition: color 0.3s ease;
+`;
+
+export const MuteButton = styled.button<{ $muted: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 12px 6px 9px;
+  border-radius: 20px;
+  border: 1.5px solid ${({ $muted }) => ($muted ? 'rgba(239,68,68,0.5)' : 'rgba(200,210,240,0.7)')};
+  cursor: pointer;
+  background: ${({ $muted }) => ($muted ? 'rgba(239,68,68,0.07)' : 'rgba(255,255,255,0.7)')};
+  color: ${({ $muted }) => ($muted ? '#ef4444' : '#9ca3af')};
+  font-family: 'S-Core Dream', sans-serif;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  transition: border-color 0.2s ease, background 0.2s ease, color 0.2s ease;
+  white-space: nowrap;
+
+  &:hover {
+    background: ${({ $muted }) => ($muted ? 'rgba(239,68,68,0.14)' : 'rgba(200,210,240,0.2)')};
+  }
 `;
 
 export const Divider = styled.div`
@@ -51,6 +78,7 @@ export const LogPanelHeader = styled.div`
   flex-shrink: 0;
   display: flex;
   align-items: center;
+  gap: 10px;
   padding: 0 16px;
   font-family: 'S-Core Dream', sans-serif;
   font-weight: 500;

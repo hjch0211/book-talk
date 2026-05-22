@@ -1,6 +1,4 @@
 import { useConversation } from '@elevenlabs/react';
-import MicOffRoundedIcon from '@mui/icons-material/MicOffRounded';
-import MicRoundedIcon from '@mui/icons-material/MicRounded';
 import { useToast } from '@src/hooks';
 import { motion } from 'framer-motion';
 import { useEffect, useEffectEvent } from 'react';
@@ -21,13 +19,24 @@ interface Props {
   debateId: string;
   myId: string;
   agentId: string;
+  isMuted: boolean;
   onMessage: (entry: LogEntry) => void;
   onModeChange: (mode: Mode) => void;
 }
 
-export function VoiceAgent({ chatId, debateId, myId, agentId, onMessage, onModeChange }: Props) {
+export function VoiceAgent({
+  chatId,
+  debateId,
+  myId,
+  agentId,
+  isMuted,
+  onMessage,
+  onModeChange,
+}: Props) {
   const { toast } = useToast();
+
   const conversation = useConversation({
+    micMuted: isMuted,
     onError: (message) => console.error('[VoiceAgent]', message),
     onMessage: ({ role, message }) => {
       onMessage({ role, text: message });
@@ -85,11 +94,7 @@ export function VoiceAgent({ chatId, debateId, myId, agentId, onMessage, onModeC
             onClick={handleToggle}
             aria-label={conversation.status === 'connected' ? '음성 대화 종료' : '음성 대화 시작'}
           >
-            {conversation.status === 'connected' ? (
-              <MicOffRoundedIcon sx={{ fontSize: 32, color: '#9ca3af' }} />
-            ) : (
-              <MicRoundedIcon sx={{ fontSize: 32, color: '#9ca3af' }} />
-            )}
+            {conversation.status === 'connected' ? '끝' : '시작'}
           </MicButton>
         </motion.div>
 

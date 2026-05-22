@@ -12,7 +12,9 @@ import { Suspense, useEffect, useEffectEvent, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { VoiceAgent } from './_components/VoiceAgent';
 import { ConversationLog, type LogEntry } from './_components/VoiceAgent/ConversationLog';
-import { LogPanelHeader } from './_components/VoiceAgent/style';
+import MicOffRoundedIcon from '@mui/icons-material/MicOffRounded';
+import MicRoundedIcon from '@mui/icons-material/MicRounded';
+import { LogPanelHeader, MuteButton } from './_components/VoiceAgent/style';
 import { AiChatRoomSkeleton } from './AiChatRoomSkeleton';
 import {
   AiChatRoomContainer,
@@ -59,6 +61,7 @@ function AiChatRoomContent({ chatId }: { chatId: string }) {
   const [log, setLog] = useState<LogEntry[]>([]);
   const [voiceMode, setVoiceMode] = useState<VoiceMode>('idle');
   const [showEndToast, setShowEndToast] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
 
   useEffect(() => {
     if (!isConnected) return;
@@ -135,6 +138,7 @@ function AiChatRoomContent({ chatId }: { chatId: string }) {
             debateId={chatRoom.debateId}
             myId={me?.id || ''}
             agentId={chatRoom.agentId}
+            isMuted={isMuted}
             onMessage={handleVoiceMessage}
             onModeChange={handleModeChange}
           />
@@ -165,7 +169,24 @@ function AiChatRoomContent({ chatId }: { chatId: string }) {
         </MainPanel>
 
         <LogPanel>
-          <LogPanelHeader>음성 대화</LogPanelHeader>
+          <LogPanelHeader>
+            음성 대화
+            {voiceMode !== 'idle' && (
+              <MuteButton
+                type="button"
+                $muted={isMuted}
+                onClick={() => setIsMuted((prev) => !prev)}
+                aria-label={isMuted ? '음소거 해제' : '음소거'}
+              >
+                {isMuted ? (
+                  <MicOffRoundedIcon sx={{ fontSize: 14 }} />
+                ) : (
+                  <MicRoundedIcon sx={{ fontSize: 14 }} />
+                )}
+                {isMuted ? '음소거 해제' : '음소거'}
+              </MuteButton>
+            )}
+          </LogPanelHeader>
           <ConversationLog entries={log} mode={voiceMode} />
         </LogPanel>
       </ChatArea>
