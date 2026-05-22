@@ -58,6 +58,19 @@ export function VoiceAgent({
     notifyModeChange(mode);
   }, [mode]);
 
+  const sendMuteUpdate = useEffectEvent((muted: boolean) => {
+    if (conversation.status !== 'connected') return;
+    conversation.sendContextualUpdate(
+      muted
+        ? '사용자가 음소거를 활성화했습니다. skip_turn을 사용하여 사용자가 음소거를 해제할 때까지 조용히 기다려주세요.'
+        : '사용자가 음소거를 해제했습니다. 대화를 재개해주세요.'
+    );
+  });
+
+  useEffect(() => {
+    sendMuteUpdate(isMuted);
+  }, [isMuted]);
+
   const startSession = async () => {
     await conversation.startSession({
       agentId,
