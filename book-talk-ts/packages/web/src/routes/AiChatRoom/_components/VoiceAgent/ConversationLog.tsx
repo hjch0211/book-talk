@@ -49,7 +49,7 @@ export function ConversationLog({ entries, mode }: Props) {
         </LogRow>
       ))}
 
-      {mode === 'listening' && (
+      {mode === 'listening' && entries.length > 2 && (
         <LogRow $role="user">
           <TypingBubble $role="user">
             <TypingDot />
