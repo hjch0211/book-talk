@@ -15,7 +15,7 @@ import { CardRow } from '@src/routes/Home/_components/DebateListSection/style';
 import { useSuspenseQuery } from '@tanstack/react-query';
 import {
   ContentWrapper,
-  CreateButtonWrapper,
+  DebateListWrapper,
   DebateSectionWrapper,
   EmptyStateText,
   EmptyStateWrapper,
@@ -167,26 +167,30 @@ export function HomePage() {
       <ContentWrapper>
         <SearchRow>
           <SearchInput value={searchValue} onChange={handleSearchChange} onSearch={handleSearch} />
-          <CreateButtonWrapper>
-            <AppButton appVariant="filled" onClick={handleCreateDebate}>
-              + 토론방 만들기
-            </AppButton>
-          </CreateButtonWrapper>
         </SearchRow>
 
         {queryKeyword && (
           <SearchResultLabel>{`'${queryKeyword}' 검색어에 대한 결과`}</SearchResultLabel>
         )}
 
-        <SuspenseErrorBoundary onSuspense={<DebateListSkeleton />} onError={<DebateListSkeleton />}>
-          <DebateListContent
-            page={page}
-            queryKeyword={queryKeyword}
-            onButtonClick={openDebateParticipationModal}
-            onPageChange={setPage}
-            onCreateDebate={handleCreateDebate}
-          />
-        </SuspenseErrorBoundary>
+        <DebateListWrapper>
+          <AppButton
+            appVariant="filled"
+            onClick={handleCreateDebate}
+            sx={{ width: 180, height: 48, borderRadius: '10px' }}
+          >
+            + 토론방 만들기
+          </AppButton>
+          <SuspenseErrorBoundary onSuspense={<DebateListSkeleton />} onError={<DebateListSkeleton />}>
+            <DebateListContent
+              page={page}
+              queryKeyword={queryKeyword}
+              onButtonClick={openDebateParticipationModal}
+              onPageChange={setPage}
+              onCreateDebate={handleCreateDebate}
+            />
+          </SuspenseErrorBoundary>
+        </DebateListWrapper>
       </ContentWrapper>
     </PageContainer>
   );

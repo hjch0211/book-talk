@@ -7,7 +7,7 @@ export const StyledWrapper = styled(Box, {
   width: '100%',
   minHeight: '100vh',
   background: bgColor || 'transparent',
-  overflowX: 'hidden',
+  overflowX: 'clip',
 }));
 
 export const StyledContainer = styled(Container)(() => ({

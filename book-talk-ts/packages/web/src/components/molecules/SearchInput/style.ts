@@ -13,7 +13,7 @@ export const StyledInput = styled(OutlinedInput)`
   && {
     width: 350px;
     height: 48px;
-    border-radius: 8px;
+    border-radius: 33px;
     font-family: 'S-Core Dream', sans-serif;
     font-weight: 500;
     font-size: 14px;
@@ -24,7 +24,7 @@ export const StyledInput = styled(OutlinedInput)`
   }
 
   && fieldset {
-    border: 1px solid #c4c4c4;
+    border: 1px solid #8E99FF;
   }
 
   &&:hover fieldset,

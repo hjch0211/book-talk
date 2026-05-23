@@ -47,12 +47,27 @@ export const NavMenuItemText = styled('button')({
 });
 
 export const HeaderAppBar = styled(AppBar)(({ theme }) => ({
-  backgroundColor: 'rgba(255, 255, 255, 0.92)',
-  backdropFilter: 'blur(8px)',
-  borderBottom: 'none',
-  height: 80,
+  backgroundColor: '#ffffff',
+  backdropFilter: 'none',
+  border: 'none',
+  height: 78,
   paddingLeft: '120px',
   paddingRight: '120px',
+  paddingTop: '0px',
+  paddingBottom: '0px',
+  overflow: 'visible',
+  zIndex: theme.zIndex.appBar,
+  '&::after': {
+    content: '""',
+    position: 'absolute',
+    bottom: 0,
+    left: '50%',
+    transform: 'translateX(-50%)',
+    width: '100vw',
+    height: '1px',
+    backgroundColor: '#D8DBFF',
+    zIndex: -1,
+  },
   [theme.breakpoints.down('md')]: {
     paddingLeft: '16px',
     paddingRight: '16px',

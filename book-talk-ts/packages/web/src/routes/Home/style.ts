@@ -7,7 +7,7 @@ export const ContentWrapper = styled(Box)(({ theme }) => ({
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'center',
-  gap: '70px',
+  gap: '60px',
   [theme.breakpoints.down('md')]: {
     padding: '40px 24px 60px',
     gap: '40px',
@@ -19,24 +19,27 @@ export const SearchRow = styled(Box)(({ theme }) => ({
   flexDirection: 'row',
   justifyContent: 'center',
   alignItems: 'flex-start',
-  padding: '0 0 0 423px',
+  padding: '0',
   gap: '234px',
-  width: 1187,
+  width: '100%',
   height: 48,
   [theme.breakpoints.down('md')]: {
     flexDirection: 'column',
-    padding: '0',
-    gap: '12px',
-    width: '100%',
-    height: 'auto',
     alignItems: 'center',
+    gap: '12px',
+    height: 'auto',
   },
 }));
 
-export const CreateButtonWrapper = styled(Box)(({ theme }) => ({
-  width: 180,
+export const DebateListWrapper = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-end',
+  width: 'fit-content',
+  gap: '48px',
   [theme.breakpoints.down('md')]: {
-    width: '350px',
+    width: '100%',
+    alignItems: 'center',
   },
 }));
 
