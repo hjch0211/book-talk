@@ -5,6 +5,7 @@ import Heading from '@tiptap/extension-heading';
 import Youtube from '@tiptap/extension-youtube';
 import { EditorContent, useEditor } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
+import { jsonrepair } from 'jsonrepair';
 import { useCallback, useEffect, useState } from 'react';
 import { ImageWithPaste } from '../editor/ImageExtension.ts';
 import { LinkPreview } from '../editor/LinkPreviewExtension.tsx';
@@ -81,10 +82,9 @@ export function ChatMessage({ chat, isMyMessage, members, presentations }: ChatM
   useEffect(() => {
     if (editor && chat.content) {
       try {
-        const parsedContent = JSON.parse(chat.content);
-        editor.commands.setContent(parsedContent);
-      } catch (e) {
-        // JSON 파싱 실패 시 일반 텍스트로 처리
+        const raw = jsonrepair(chat.content);
+        editor.commands.setContent(JSON.parse(raw));
+      } catch {
         editor.commands.setContent(chat.content);
       }
     }
