@@ -4,7 +4,6 @@ import PersonaCImg from '@src/assets/persona/persona-c.png';
 import PersonaDImg from '@src/assets/persona/persona-d.png';
 import PersonaEImg from '@src/assets/persona/persona-e.png';
 import PersonaFImg from '@src/assets/persona/persona-f.png';
-import PersonaGImg from '@src/assets/persona/persona-g.png';
 
 export interface Persona {
   id: string;
@@ -56,12 +55,5 @@ export const PERSONAS: Persona[] = [
     description: '생각이 깊고 솔직한 대화를 진행합니다.',
     image: PersonaFImg,
     tags: ['진중함', '솔직함', '깊은사고', '공감력', '진정성'],
-  },
-  {
-    id: 'g',
-    label: '한효주',
-    description: '차분하고 진실된 토론을 합니다.',
-    image: PersonaGImg,
-    tags: ['차분함', '진실됨', '우아함', '지혜', '배려'],
   },
 ];
